@@ -1,14 +1,35 @@
-body {
+/* App.css */
+
+/* Global reset to remove borders/margins */
+* {
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
-    background-color: #1a1a1a;
-    color: #fff;
+    box-sizing: border-box;
 }
 
-.error {
-    color: #ff3333;
-    text-align: center;
-    font-size: 1.5rem;
-    margin: 20px;
+/* Full-height layout */
+html,
+body {
+    height: 100%;
+    background: linear-gradient(135deg, #9146ff, #6441a5);
+    font-family: 'Inter', sans-serif;
 }
+
+header {
+    background-color: #202225;
+    color: white;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    header a {
+        text-decoration: none;
+        color: white;
+        font-weight: bold;
+    }
+
+        header a:hover {
+            text-decoration: underline;
+        }

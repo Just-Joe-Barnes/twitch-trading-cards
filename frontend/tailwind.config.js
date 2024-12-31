@@ -1,15 +1,13 @@
 module.exports = {
-    content: ["./src/**/*.{html,js}"],
+    content: [
+        "./src/**/*.{js,jsx,ts,tsx}", // Include all React components
+    ],
     theme: {
         extend: {
             colors: {
-                "common-border": "#777",
-                "uncommon-border": "#4CAF50",
-                "rare-border": "#2196F3",
-                "legendary-border": "#FF9800",
-                "mythic-border": "#FF1493",
+                twitch: "#9146ff",
             },
         },
     },
-    plugins: [require("@tailwindcss/typography")],
+    plugins: [],
 };
