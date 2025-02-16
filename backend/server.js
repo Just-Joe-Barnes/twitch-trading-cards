@@ -1,3 +1,5 @@
+// server.js
+
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
@@ -48,6 +50,11 @@ mongoose
         process.exit(1);
     });
 
+// Root endpoint (useful for Render's health check)
+app.get('/', (req, res) => {
+    res.status(200).send('OK');
+});
+
 // Health Check endpoint for Render
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
@@ -75,6 +82,10 @@ app.use((err, req, res, next) => {
 
 // Start server: bind to 0.0.0.0 so external traffic can connect
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+// Optional: Increase timeouts if needed (uncomment to enable)
+server.headersTimeout = 120000; // 120 seconds
+server.keepAliveTimeout = 120000;
