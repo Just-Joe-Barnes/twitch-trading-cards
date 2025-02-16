@@ -48,6 +48,11 @@ mongoose
         process.exit(1);
     });
 
+// Health Check endpoint for Render
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/packs', packRoutes);
@@ -57,7 +62,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/twitch', twitchRoutes);
 app.use('/api/trades', tradeRoutes);
 
-// Default 404 handler
+// Default 404 handler (for any unmatched routes)
 app.use((req, res) => {
     res.status(404).json({ message: "Route not found" });
 });
@@ -68,7 +73,7 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: "Internal server error", error: err.message });
 });
 
-// Start server with host bound to 0.0.0.0
+// Start server: bind to 0.0.0.0 so external traffic can connect
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
