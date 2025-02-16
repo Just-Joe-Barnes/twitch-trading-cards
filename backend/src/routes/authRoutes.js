@@ -5,6 +5,9 @@ const User = require("../models/userModel");
 
 const router = express.Router();
 
+// Use an environment variable for the front-end URL (fallback to localhost for development)
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+
 // Initiate Twitch login
 router.get("/twitch", passport.authenticate("twitch"));
 
@@ -12,7 +15,7 @@ router.get("/twitch", passport.authenticate("twitch"));
 router.get(
     "/twitch/callback",
     passport.authenticate("twitch", {
-        failureRedirect: "http://localhost:3000",
+        failureRedirect: FRONTEND_URL, // Redirect here if authentication fails
     }),
     async (req, res) => {
         const user = req.user;
@@ -37,7 +40,7 @@ router.get(
                 // Award pack and update firstLogin
                 dbUser = await User.findOneAndUpdate(
                     { twitchId: user.id },
-                    { $inc: { packs: 1 }, firstLogin: false }, // Increment packs and set firstLogin to false
+                    { $inc: { packs: 1 }, firstLogin: false },
                     { new: true }
                 );
                 console.log("1 pack awarded. Updated user:", dbUser);
@@ -58,8 +61,8 @@ router.get(
 
         console.log("Generated JWT Token:", token);
 
-        // Redirect to frontend login page with token
-        const redirectUrl = `http://localhost:3000/login?token=${token}`;
+        // Redirect to the frontend login page with the token in the query string
+        const redirectUrl = `${FRONTEND_URL}/login?token=${token}`;
         console.log("Redirecting to:", redirectUrl);
         res.redirect(redirectUrl);
     }
@@ -83,7 +86,7 @@ router.get("/logout", (req, res) => {
             return res.status(500).json({ message: "Logout failed." });
         }
         console.log("User logged out successfully");
-        res.redirect("http://localhost:3000");
+        res.redirect(FRONTEND_URL);
     });
 });
 
