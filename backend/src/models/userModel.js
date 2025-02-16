@@ -1,20 +1,34 @@
 const mongoose = require('mongoose');
 
 const cardSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    rarity: { type: String, required: true },
-    imageUrl: { type: String },
-    flavorText: { type: String },
-    mintNumber: { type: Number },
-    totalCopies: { type: Number },
+    name: String,
+    rarity: String,
+    mintNumber: Number,
+    imageUrl: String,
+    flavorText: String,
 });
 
 const userSchema = new mongoose.Schema({
-    twitchId: { type: String, required: true },
-    username: { type: String, required: true },
+    username: { type: String, required: true, unique: true, index: true },
     email: { type: String },
+    twitchId: { type: String, unique: true },
     packs: { type: Number, default: 0 },
-    cards: [cardSchema], // Ensure this field is properly defined
+    cards: [cardSchema], // Collection of cards owned by the user
+    openedCards: [cardSchema], // Cards obtained from packs
+    openedPacks: { type: Number, default: 0 }, // Number of packs the user has opened
+    featuredCards: [
+        {
+            name: { type: String, required: true },
+            rarity: { type: String, required: true },
+            mintNumber: { type: Number, required: true },
+            imageUrl: { type: String, required: true },
+            flavorText: { type: String }, // Added flavorText field
+        },
+    ], // Featured cards displayed on the user's profile
+    firstLogin: { type: Boolean, default: false }, // First login status
+    isAdmin: { type: Boolean, default: false }, // Admin status field
 });
 
-module.exports = mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;

@@ -1,23 +1,127 @@
+// backend/src/routes/cards.js
 const express = require('express');
+const { protect } = require('../middleware/authMiddleware'); // Middleware for auth
 const router = express.Router();
-const Card = require('../models/cardModel');
+const User = require('../models/userModel'); // Assuming User schema includes cards
+const Card = require('../models/cardModel'); // Import Card model for population
 
-// API to seed cards
-router.post('/seed', async (req, res) => {
-    const cards = [
-        { name: 'Dragon', imageUrl: '/public/images/cards/dragon.png', flavorText: 'COMMON DRAGON', rarity: 'Common', totalCopies: 500, remainingCopies: 500 },
-        { name: 'Dragon', imageUrl: '/images/dragon.jpg', flavorText: 'The fiery beast.', rarity: 'Uncommon', totalCopies: 300, remainingCopies: 300 },
-        { name: 'Dragon', imageUrl: '/images/dragon.jpg', flavorText: 'The fiery beast.', rarity: 'Rare', totalCopies: 100, remainingCopies: 100 },
-        { name: 'Dragon', imageUrl: '/images/dragon.jpg', flavorText: 'The fiery beast.', rarity: 'Legendary', totalCopies: 20, remainingCopies: 20 },
-        { name: 'Dragon', imageUrl: '/images/dragon.jpg', flavorText: 'The fiery beast.', rarity: 'Mythic', totalCopies: 1, remainingCopies: 1 },
-    ];
-
+// Fetch all cards in the user's collection
+router.get('/collection', protect, async (req, res) => {
     try {
-        await Card.insertMany(cards);
-        res.json({ message: 'Cards seeded successfully.' });
+        const user = await User.findById(req.user._id).populate({
+            path: 'cards',
+            model: Card,
+        });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        const enrichedCards = user.cards.map((card) => ({
+            ...card.toObject(),
+            maxMint: card.rarities.find((r) => r.rarity === card.rarity)?.totalCopies || '???',
+        }));
+        res.status(200).json({ cards: enrichedCards });
     } catch (error) {
-        console.error('Error seeding cards:', error);
-        res.status(500).json({ error: 'Failed to seed cards.' });
+        console.error('Error fetching card collection:', error.message);
+        res.status(500).json({ message: 'Failed to fetch card collection.' });
+    }
+});
+
+// Fetch a single card by ID
+router.get('/:cardId', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).populate('cards');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        const card = user.cards.find((card) => card._id.toString() === req.params.cardId);
+        if (!card) {
+            return res.status(404).json({ message: 'Card not found in your collection.' });
+        }
+        const enrichedCard = {
+            ...card.toObject(),
+            maxMint: card.rarities.find((r) => r.rarity === card.rarity)?.totalCopies || '???',
+        };
+        res.status(200).json({ card: enrichedCard });
+    } catch (error) {
+        console.error('Error fetching card:', error.message);
+        res.status(500).json({ message: 'Failed to fetch card.' });
+    }
+});
+
+// Fetch cards filtered by rarity
+router.get('/rarity/:rarity', protect, async (req, res) => {
+    try {
+        const { rarity } = req.params;
+        const user = await User.findById(req.user._id).populate('cards');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        const filteredCards = user.cards
+            .filter((card) => card.rarities.some((r) => r.rarity === rarity))
+            .map((card) => ({
+                ...card.toObject(),
+                maxMint: card.rarities.find((r) => r.rarity === rarity)?.totalCopies || '???',
+            }));
+        res.status(200).json({ cards: filteredCards });
+    } catch (error) {
+        console.error('Error fetching cards by rarity:', error.message);
+        res.status(500).json({ message: 'Failed to fetch cards by rarity.' });
+    }
+});
+
+// Fetch featured cards for the user
+router.get('/featured-cards', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).populate({
+            path: 'featuredCards',
+            model: Card,
+        });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        const enrichedFeaturedCards = user.featuredCards.map((card) => ({
+            ...card.toObject(),
+            maxMint: card.rarities.find((r) => r.rarity === card.rarity)?.totalCopies || '???',
+        }));
+        res.status(200).json({ featuredCards: enrichedFeaturedCards });
+    } catch (error) {
+        console.error('Error fetching featured cards:', error.message);
+        res.status(500).json({ message: 'Failed to fetch featured cards.' });
+    }
+});
+
+// Update featured cards for the user
+router.put('/featured-cards', protect, async (req, res) => {
+    try {
+        const { featuredCards } = req.body;
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        const validCardIds = featuredCards.filter((cardId) =>
+            user.cards.some((userCard) => userCard.toString() === cardId)
+        );
+        if (validCardIds.length !== featuredCards.length) {
+            return res.status(400).json({ message: 'Invalid featured cards selected.' });
+        }
+        user.featuredCards = validCardIds;
+        await user.save();
+        res.status(200).json({ message: 'Featured cards updated successfully.' });
+    } catch (error) {
+        console.error('Error updating featured cards:', error.message);
+        res.status(500).json({ message: 'Failed to update featured cards.' });
+    }
+});
+
+// *** NEW: Catalogue Route ***
+// GET /api/cards - Return all cards (for catalogue)
+router.get('/', async (req, res) => {
+    try {
+        const cards = await Card.find({});
+        res.status(200).json({ cards, totalCards: cards.length });
+    } catch (error) {
+        console.error('Error fetching cards:', error.message);
+        res.status(500).json({ message: 'Failed to fetch cards.' });
     }
 });
 

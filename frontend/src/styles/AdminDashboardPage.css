@@ -1,0 +1,280 @@
+:root {
+    --brand-primary: #db88db;
+    --brand-secondary: #88cddb;
+    --background-dark: #0a0a0a;
+    --surface-dark: #1a1a1a;
+    --surface-darker: #141414;
+    --text-primary: rgba(255, 255, 255, 0.95);
+    --border-dark: rgba(255, 255, 255, 0.12);
+    --border-radius: 16px;
+    --transition: all 0.3s ease;
+}
+
+/* Main container with increased top padding for spacing below the navbar */
+.dashboard-container {
+    padding: 6rem 1.5rem 2rem; /* Increased top padding */
+    background: var(--background-dark);
+    min-height: 100vh;
+    color: var(--text-primary);
+    box-sizing: border-box;
+    position: relative;
+}
+
+    /* Dashboard Title using a pseudo-element for consistency */
+    .dashboard-container::before {
+        content: "Dashboard";
+        display: block;
+        text-align: center;
+        font-size: 2.25rem;
+        font-weight: 500;
+        margin-bottom: 2rem;
+        padding-bottom: 0.5rem;
+        color: var(--text-primary);
+        position: relative;
+    }
+
+        .dashboard-container::before::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 2px;
+            background: var(--brand-primary);
+            border-radius: 2px;
+        }
+
+/* Grid Container */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+/* Users with Packs Section */
+.users-with-packs {
+    grid-column: 1 / 2;
+    background: var(--surface-dark);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+    .users-with-packs h2 {
+        font-size: 1.5rem;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        text-align: center;
+        border-bottom: 2px solid var(--brand-primary);
+        padding-bottom: 0.5rem;
+    }
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+    .users-table th,
+    .users-table td {
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid var(--border-dark);
+    }
+
+    .users-table th {
+        background: var(--surface-darker);
+        color: var(--text-primary);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        border-bottom: 2px solid var(--brand-primary);
+    }
+
+    .users-table tr:hover {
+        background-color: var(--surface-darker);
+    }
+
+    .users-table tr.selected {
+        background-color: var(--brand-primary);
+        color: var(--text-primary);
+    }
+
+/* Open Pack Section */
+.selected-user-section {
+    grid-column: 2 / 3;
+    background: var(--surface-dark);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    max-height: 320px;
+}
+
+    .selected-user-section h2 {
+        font-size: 1.5rem;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+    .selected-user-section button {
+        padding: 0.75rem 1.5rem;
+        background: var(--brand-primary);
+        color: var(--text-primary);
+        border: none;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 1rem;
+    }
+
+        .selected-user-section button:hover {
+            background: var(--brand-secondary);
+        }
+
+        .selected-user-section button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+/* Card Rarity Key Section - Reworked for a clean, multi-column layout */
+.card-rarity-key {
+    grid-column: 3 / 4;
+    background: var(--surface-dark);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    height: 320px; /* Fixed height to match other panels */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-y: auto;
+}
+
+    .card-rarity-key h2 {
+        text-align: center;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+        color: var(--text-primary);
+    }
+
+/* Rarity List displayed in 2 columns by default, 3 on wider screens */
+.rarity-list {
+    width: 100%;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 900px) {
+    .rarity-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.rarity-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--border-radius);
+    background: var(--surface-darker);
+    transition: var(--transition);
+}
+
+    .rarity-item:hover {
+        background: var(--surface-dark);
+    }
+
+.color-box {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.rarity-text {
+    font-size: 1rem;
+    color: var(--text-primary);
+    text-align: left;
+    flex-grow: 1;
+}
+
+/* Opened Cards Section */
+.opened-cards {
+    grid-column: 1 / 4;
+    background: var(--surface-dark);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+    .opened-cards h2 {
+        text-align: center;
+        font-size: 1.5rem;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+.cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Remove borders from opened cards on hover */
+.opened-cards .card-wrapper {
+    border: none !important;
+}
+
+/* Fade-in Animation for Opened Cards */
+.card-wrapper.hidden {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.card-wrapper.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* Pack Opening Overlay - Full Screen Video */
+.pack-opening-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pack-opening-video {
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    animation: fadeInOut 0.5s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}

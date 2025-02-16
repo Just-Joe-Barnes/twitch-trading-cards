@@ -1,0 +1,169 @@
+:root {
+    --brand-primary: #db88db;
+    --brand-secondary: #88cddb;
+    --background-dark: #0a0a0a;
+    --surface-dark: #1a1a1a;
+    --surface-darker: #141414;
+    --text-primary: rgba(255, 255, 255, 0.95);
+    --border-dark: rgba(255, 255, 255, 0.12);
+    --border-radius: 16px;
+    --transition: all 0.3s ease;
+}
+
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: var(--background-dark);
+    color: var(--text-primary);
+}
+
+/* Profile page container with extra top padding to clear the navbar */
+.profile-page {
+    padding: 6rem 1.5rem 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Title Container - simple text with underline */
+.title-container {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+    .title-container h1 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 2.25rem;
+        font-weight: 500;
+        margin: 2rem 0;
+        padding-bottom: 0.5rem;
+        position: relative;
+    }
+
+        .title-container h1::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 2px;
+            background: var(--brand-primary);
+            border-radius: 2px;
+        }
+
+/* Profile Overview Section */
+.profile-overview {
+    background: var(--surface-dark);
+    border: 1px solid var(--border-dark);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+    .profile-overview h2 {
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .profile-overview .stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        font-size: 1.1rem;
+    }
+
+    .profile-overview .stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+        .profile-overview .stat span {
+            font-weight: bold;
+            margin-top: 0.5rem;
+            color: var(--brand-secondary);
+        }
+
+/* Featured Cards Container styled as a card */
+.featured-cards-container {
+    background: var(--surface-dark);
+    border: 1px solid var(--border-dark);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+    .featured-cards-container h2 {
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        padding-bottom: 0.5rem;
+    }
+
+        .featured-cards-container h2::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 2px;
+            background: var(--brand-primary);
+            border-radius: 2px;
+        }
+
+/* Featured Cards Section */
+.featured-cards {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding-bottom: 1rem;
+}
+
+/* View Collection Button */
+.view-collection-button-container {
+    display: flex;
+    justify-content: center;
+}
+
+.view-collection-button {
+    background-color: var(--brand-primary);
+    color: var(--text-primary);
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1.5rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+    .view-collection-button:hover {
+        background-color: #722ebf;
+        transform: scale(1.05);
+    }
+
+    .view-collection-button:focus {
+        outline: none;
+        box-shadow: 0 0 8px rgba(145, 70, 255, 0.8);
+    }
+
+@media (max-width: 768px) {
+    .view-collection-button {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+    }
+}

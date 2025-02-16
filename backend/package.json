@@ -22,8 +22,11 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.12.0",
     "mongoose": "^8.9.2",
+    "morgan": "^1.10.0",
     "passport": "^0.7.0",
+    "passport-twitch-new": "^0.0.3",
     "passport-twitch-strategy": "^2.2.0",
+    "raw-body": "^3.0.0",
     "twitch-auth": "^4.6.7"
   },
   "devDependencies": {

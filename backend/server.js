@@ -1,36 +1,75 @@
-const express = require("express");
-const session = require("express-session");
-const passport = require("passport");
-const path = require("path");
-require("dotenv").config();
+const express = require('express');
+const cors = require('cors');
+const session = require('express-session');
+const mongoose = require('mongoose');
+const morgan = require('morgan');
+require('dotenv').config();
 
 const authRoutes = require('./src/routes/authRoutes');
+const packRoutes = require('./src/routes/packRoutes');
+const collectionRoutes = require('./src/routes/collectionRoutes');
+const userRoutes = require('./src/routes/userRoutes');
+const twitchRoutes = require('./src/routes/twitchRoutes');
+const cardRoutes = require('./src/routes/cardRoutes');
+const tradeRoutes = require('./src/routes/tradeRoutes');
 
 const app = express();
 
-// Session middleware
-app.use(
-    session({
-        secret: process.env.SESSION_SECRET,
-        resave: false,
-        saveUninitialized: false,
+// Middleware
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+
+// Middleware to handle raw body only for Twitch webhook
+const rawBodyMiddleware = (req, res, buf, encoding) => {
+    if (req.originalUrl === '/api/twitch/webhook') {
+        req.rawBody = buf.toString(encoding || 'utf-8');
+    }
+};
+app.use(express.json({ verify: rawBodyMiddleware }));
+
+// General Middleware
+app.use(session({
+    secret: process.env.SESSION_SECRET || "your-session-secret",
+    resave: false,
+    saveUninitialized: false,
+}));
+
+// Logging middleware
+app.use(morgan('dev'));
+
+// MongoDB Connection
+mongoose
+    .connect(process.env.MONGO_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
     })
-);
+    .then(() => console.log("MongoDB connected successfully"))
+    .catch((err) => {
+        console.error("MongoDB connection error:", err.message);
+        process.exit(1);
+    });
 
-// Initialize passport
-app.use(passport.initialize());
-app.use(passport.session());
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/packs', packRoutes);
+app.use('/api/users', collectionRoutes);
+app.use('/api/cards', cardRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/twitch', twitchRoutes);
+app.use('/api/trades', tradeRoutes);
 
-// Use routes
-app.use("/api/auth", authRoutes);
-
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, "../frontend/build")));
-
-// Catch-all handler for React
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/build", "index.html"));
+// Default 404 handler
+app.use((req, res) => {
+    res.status(404).json({ message: "Route not found" });
 });
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: "Internal server error", error: err.message });
+});
+
+// Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});

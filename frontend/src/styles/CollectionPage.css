@@ -1,0 +1,292 @@
+﻿:root {
+    --brand-primary: #db88db;
+    --brand-secondary: #88cddb;
+    --background-dark: #0a0a0a;
+    --surface-dark: #1a1a1a;
+    --surface-darker: #141414;
+    --text-primary: rgba(255, 255, 255, 0.95);
+    --border-dark: rgba(255, 255, 255, 0.12);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    background: var(--background-dark);
+}
+
+.collection-page {
+    padding: 4rem 1.5rem 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+    /* Page Title with Brand Accent */
+    .collection-page h1 {
+        text-align: center;
+        font-size: 2.25rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin: 2rem 0 3rem;
+        position: relative;
+    }
+
+        .collection-page h1::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 2px;
+            background: var(--brand-primary);
+            border-radius: 2px;
+        }
+
+/* Instructions Section */
+.instructions {
+    background: var(--surface-dark);
+    border: 1px solid var(--border-dark);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    text-align: center;
+    font-size: 1rem;
+}
+
+/* Cards Grid */
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+    background: var(--surface-darker);
+    border-radius: 16px;
+    border: 1px solid var(--border-dark);
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+    .cards-container::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 16px;
+        box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.3);
+        pointer-events: none;
+    }
+
+/* Card Styling (used by BaseCard) */
+.card {
+    background: var(--surface-dark);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-dark);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+    .card:hover {
+        transform: translateY(-4px);
+        border-color: var(--brand-primary);
+        box-shadow: 0 4px 24px rgba(219, 136, 219, 0.1);
+    }
+
+/* Filters Section */
+.filters {
+    display: flex;
+    justify-content: center;
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+}
+
+    .filters input[type="text"],
+    .filters select {
+        background: var(--surface-dark);
+        border: 1px solid var(--border-dark);
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        color: var(--text-primary);
+        font-family: 'Poppins', sans-serif;
+        width: 240px;
+        transition: all 0.3s ease;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2388cddb'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1em;
+        cursor: pointer;
+    }
+
+    .filters select {
+        cursor: pointer;
+        padding-right: 2.5rem;
+    }
+
+        .filters select::-ms-expand {
+            display: none;
+        }
+
+        .filters select option {
+            background: var(--surface-darker);
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .filters select:focus {
+            outline: 2px solid var(--brand-secondary);
+            outline-offset: 2px;
+            box-shadow: 0 0 0 3px rgba(136, 205, 219, 0.1);
+        }
+
+    .filters input:-webkit-autofill,
+    .filters input:-webkit-autofill:hover,
+    .filters input:-webkit-autofill:focus {
+        -webkit-text-fill-color: var(--text-primary);
+        -webkit-box-shadow: 0 0 0px 1000px var(--surface-dark) inset;
+    }
+
+    .filters select:-moz-focusring {
+        color: transparent;
+        text-shadow: 0 0 0 var(--text-primary);
+    }
+
+    .filters ::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+/* Featured Filter Toggle */
+.featured-filter-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+}
+
+/* Selection Indicator for Selected Cards */
+.card-item.selected {
+    border: 2px solid var(--brand-primary) !important;
+    position: relative;
+    overflow: visible;
+}
+
+    .card-item.selected::after {
+        content: '✓';
+        position: absolute;
+        top: -12px;
+        right: -12px;
+        background: var(--brand-primary);
+        color: var(--surface-dark);
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        font-weight: 700;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+/* Overlay Message for Double-Click Feedback */
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    80% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+.card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    color: var(--brand-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    pointer-events: none;
+    animation: fadeInOut 1.5s ease-in-out forwards;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .cards-container {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        padding: 1.5rem;
+    }
+
+    .collection-page h1 {
+        font-size: 2rem;
+    }
+
+    .filters {
+        flex-direction: column;
+        align-items: center;
+    }
+
+        .filters input[type="text"],
+        .filters select {
+            width: 100%;
+        }
+}
+
+@media (max-width: 480px) {
+    .collection-page {
+        padding: 1.5rem 1rem;
+    }
+
+    .card {
+        padding: 1.25rem;
+    }
+}
+
+/* Featured controls container styling */
+.featured-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Clear Featured Cards button styling */
+.clear-featured-button {
+    padding: 8px 16px;
+    background-color: var(--brand-primary); /* Use your brand primary color */
+    color: var(--background-dark); /* Contrasting color */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .clear-featured-button:hover {
+        background-color: var(--brand-secondary); /* Use your brand secondary color */
+    }
+
+/* Catalogue description paragraph styling */
+.catalogue-description {
+    text-align: center;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+}
+

@@ -1,0 +1,132 @@
+/* Overall page container */
+.catalogue-page {
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    color: #f5f5dc;
+    background-color: #1a1a1a;
+    min-height: 100vh;
+}
+
+    .catalogue-page h1 {
+        text-align: center;
+        margin-top: 100px;
+        margin-bottom: 10px;
+        font-size: 2.5rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        /* Flat styling with brand colors */
+    }
+
+.catalogue-description {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    color: #f5f5dc;
+}
+
+/* Container for filters arranged in a column */
+.filters-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+/* Search box styling */
+.search-box {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+    .search-box input {
+        padding: 12px 16px;
+        width: 100%;
+        max-width: 500px;
+        border: none;
+        border-radius: 8px;
+        background-color: #333;
+        color: #f5f5dc;
+        font-size: 1rem;
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+        transition: box-shadow 0.3s ease;
+    }
+
+        .search-box input:focus {
+            outline: none;
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+/* Rarity selector buttons */
+.rarity-selector {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.rarity-button {
+    background-color: #2c2c2c;
+    color: #fff;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-size: 1rem;
+}
+
+    .rarity-button:hover {
+        background-color: #444;
+        transform: scale(1.05);
+    }
+
+    .rarity-button.active {
+        background-color: #00ced1; /* Use the brand color for active state */
+        color: #fff;
+    }
+
+/* Sort box styling */
+.sort-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+    .sort-box label {
+        font-size: 1rem;
+        color: #f5f5dc;
+    }
+
+    .sort-box select {
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        background-color: #333;
+        color: #f5f5dc;
+        font-size: 1rem;
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+        transition: box-shadow 0.3s ease;
+    }
+
+        .sort-box select:focus {
+            outline: none;
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+/* Grid layout for catalogue cards */
+.catalogue-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.catalogue-card {
+    display: flex;
+    justify-content: center;
+}
