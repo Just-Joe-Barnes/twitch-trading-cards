@@ -17,8 +17,9 @@ const tradeRoutes = require('./src/routes/tradeRoutes');
 
 const app = express();
 
-// Middleware
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+// Use an environment variable (e.g., CLIENT_URL) with a fallback to localhost
+app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:3000", credentials: true }));
+
 
 // Middleware to handle raw body only for Twitch webhook
 const rawBodyMiddleware = (req, res, buf, encoding) => {

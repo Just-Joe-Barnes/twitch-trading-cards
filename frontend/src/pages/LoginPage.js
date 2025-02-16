@@ -1,10 +1,11 @@
+// src/pages/LoginPage.js
 import React, { useEffect } from 'react';
 import '../styles/LoginPage.css';
 
 const LoginPage = () => {
-    // Redirect to Twitch authentication endpoint
+    // Redirect to Twitch authentication endpoint using environment variable
     const handleLogin = () => {
-        window.location.href = 'http://localhost:5000/api/auth/twitch';
+        window.location.href = `${process.env.REACT_APP_API_BASE_URL}/api/auth/twitch`;
     };
 
     // Check if a token is present in the URL; if so, save it and redirect to the dashboard
