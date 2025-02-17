@@ -12,6 +12,8 @@ import PendingTrades from './pages/PendingTrades';
 import DebugTradePage from './pages/DebugTradePage';
 import CataloguePage from './pages/CataloguePage'; // New Catalogue page import
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 const App = () => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -33,7 +35,7 @@ const App = () => {
                 return;
             }
             try {
-                const response = await fetch('http://localhost:5000/api/auth/validate', {
+                const response = await fetch(`${API_BASE_URL}/api/auth/validate`, {
                     method: 'POST',
                     headers: { Authorization: `Bearer ${token}` },
                 });
