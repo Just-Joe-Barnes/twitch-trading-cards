@@ -14,6 +14,9 @@ import CataloguePage from './pages/CataloguePage'; // New Catalogue page import
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
+console.log("API_BASE_URL in production:", API_BASE_URL);
+
+
 const App = () => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
