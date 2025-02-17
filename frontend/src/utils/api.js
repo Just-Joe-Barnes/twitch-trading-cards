@@ -1,6 +1,6 @@
 // src/utils/api.js
+export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-export const API_BASE_URL = ""; // Leave empty to rely on proxy from package.json
 
 export const fetchWithAuth = async (endpoint, options = {}) => {
     try {
