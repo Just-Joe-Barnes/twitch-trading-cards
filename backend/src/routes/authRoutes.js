@@ -26,13 +26,17 @@ router.get(
 
         if (!dbUser) {
             console.log("New user detected, awarding 1 login pack.");
-            // Create a new user with 1 pack for the first login
-            dbUser = await User.create({
+            // Build newUserData without email if it's null or undefined
+            let newUserData = {
                 twitchId: user.id,
                 username: user.display_name,
                 packs: 1, // Award 1 pack on first login
                 firstLogin: false, // Set firstLogin to false after awarding
-            });
+            };
+            if (user.email) {
+                newUserData.email = user.email;
+            }
+            dbUser = await User.create(newUserData);
         } else {
             console.log("Returning user detected, checking firstLogin status.");
             if (dbUser.firstLogin) {
