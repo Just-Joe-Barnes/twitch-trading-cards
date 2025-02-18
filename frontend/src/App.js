@@ -11,6 +11,7 @@ import TradingPage from './pages/TradingPage';
 import PendingTrades from './pages/PendingTrades';
 import DebugTradePage from './pages/DebugTradePage';
 import CataloguePage from './pages/CataloguePage'; // New Catalogue page import
+import 'normalize.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
