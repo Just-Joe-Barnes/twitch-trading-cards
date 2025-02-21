@@ -1,5 +1,10 @@
 /* App.css */
 
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+
 /* Global reset to remove borders/margins */
 * {
     margin: 0;
