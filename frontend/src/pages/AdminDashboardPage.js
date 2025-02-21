@@ -62,8 +62,10 @@ const AdminDashboardPage = ({ user }) => {
             const { newCards } = response;
             console.log('New cards received:', newCards);
             setOpenedCards(newCards);
+            // Initially, no cards are revealed
             setRevealedCards(Array(newCards.length).fill(false));
 
+            // Decrease the user's pack count
             setUsersWithPacks((prev) =>
                 prev.map((u) =>
                     u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
@@ -77,38 +79,21 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // Directly handle the card reveal when the video ends
+    // After the video ends, reveal all cards at once
     const handleVideoEnd = () => {
-        console.log("Pack opening video ended. Starting card reveal...");
-        const revealDelay = 200; // Wait 200ms before starting reveal
-        setTimeout(() => {
-            console.log("Number of cards to reveal:", openedCards.length);
-            openedCards.forEach((_, index) => {
-                setTimeout(() => {
-                    setRevealedCards((prev) => {
-                        const updated = [...prev];
-                        updated[index] = true;
-                        console.log(`Revealed card ${index}`);
-                        return updated;
-                    });
-                }, index * 1000); // 1 second delay between each card
-            });
-            setIsOpeningAnimation(false);
-        }, revealDelay);
+        console.log("Pack opening video ended. Revealing all cards...");
+        setRevealedCards(Array(openedCards.length).fill(true));
+        setIsOpeningAnimation(false);
     };
 
-    // Manual fallback button to trigger card reveal if needed
-    const manualReveal = () => {
-        console.log("Manual reveal triggered");
-        handleVideoEnd();
-    };
-
+    // Reset pack state to allow opening another pack
     const handleResetPack = () => {
         console.log("Resetting pack opening state.");
         setOpenedCards([]);
         setRevealedCards([]);
         setIsOpeningAnimation(false);
-        // Optionally, reset selected user: setSelectedUser(null);
+        // Optionally, reset selected user if desired:
+        // setSelectedUser(null);
     };
 
     const toggleUserSelection = (u) => {
@@ -129,12 +114,6 @@ const AdminDashboardPage = ({ user }) => {
                         onError={(e) => console.error("Pack opening video error:", e)}
                         onEnded={() => setTimeout(handleVideoEnd, 500)}
                     />
-                    <button
-                        onClick={manualReveal}
-                        style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1100 }}
-                    >
-                        Reveal Cards Manually
-                    </button>
                 </div>
             )}
 
