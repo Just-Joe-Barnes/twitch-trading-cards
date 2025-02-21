@@ -237,16 +237,19 @@
 }
 
 /* Fade-in Animation for Opened Cards */
-.card-wrapper.hidden {
-    opacity: 0;
-    transform: translateY(20px);
-}
-
-.card-wrapper.fade-in {
-    opacity: 1;
-    transform: translateY(0);
+.card-wrapper {
     transition: opacity 0.5s ease, transform 0.5s ease;
 }
+
+    .card-wrapper.hidden {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    .card-wrapper.fade-in {
+        opacity: 1;
+        transform: translateY(0);
+    }
 
 /* Pack Opening Overlay - Full Screen Video */
 .pack-opening-overlay {
