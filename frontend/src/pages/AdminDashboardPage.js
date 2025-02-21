@@ -77,30 +77,40 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
+    // This function now simply logs when the video ends.
     const handleVideoEnd = () => {
-        console.log("Pack opening video ended. Waiting for state updates...");
-        // Add a delay to ensure openedCards and revealedCards state are updated
-        setTimeout(() => {
-            console.log("Starting card reveal after delay.");
-            console.log("Number of cards to reveal:", openedCards.length);
-            openedCards.forEach((_, index) => {
-                setTimeout(() => {
-                    setRevealedCards((prev) => {
-                        const updated = [...prev];
-                        updated[index] = true;
-                        console.log(`Revealed card ${index}`);
-                        return updated;
-                    });
-                }, index * 1000); // 1 second delay between each card
-            });
-            setIsOpeningAnimation(false);
-        }, 200); // 200ms delay after video ends
+        console.log("Pack opening video ended.");
+        // The reveal logic is now handled by the useEffect below.
     };
+
+    // useEffect to trigger card reveal after openedCards and isOpeningAnimation update.
+    useEffect(() => {
+        if (openedCards.length > 0 && isOpeningAnimation) {
+            console.log("Triggering card reveal via useEffect.");
+            console.log("Number of cards to reveal:", openedCards.length);
+            // Wait a short delay to ensure state is fully updated.
+            const revealDelay = 200; // 200ms delay before starting reveal
+            setTimeout(() => {
+                openedCards.forEach((_, index) => {
+                    setTimeout(() => {
+                        setRevealedCards((prev) => {
+                            const updated = [...prev];
+                            updated[index] = true;
+                            console.log(`Revealed card ${index}`);
+                            return updated;
+                        });
+                    }, index * 1000); // 1 second delay between each card
+                });
+                setIsOpeningAnimation(false);
+            }, revealDelay);
+        }
+    }, [openedCards, isOpeningAnimation]);
 
     // Manual fallback button to trigger card reveal if needed
     const manualReveal = () => {
         console.log("Manual reveal triggered");
-        handleVideoEnd();
+        // If needed, we can force the reveal via the same useEffect logic.
+        setIsOpeningAnimation(true);
     };
 
     const toggleUserSelection = (u) => {
