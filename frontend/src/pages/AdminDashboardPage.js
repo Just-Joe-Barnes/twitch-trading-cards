@@ -32,7 +32,6 @@ const AdminDashboardPage = ({ user }) => {
             navigate('/login');
             return;
         }
-
         const fetchUsersWithPacks = async () => {
             try {
                 setLoading(true);
@@ -44,27 +43,23 @@ const AdminDashboardPage = ({ user }) => {
                 setLoading(false);
             }
         };
-
         fetchUsersWithPacks();
     }, [user, navigate]);
 
     const openPackForUser = async () => {
         if (!selectedUser) return;
-
         try {
             setLoading(true);
             setIsOpeningAnimation(true);
-
-            const response = await fetchWithAuth(`/api/packs/admin/openPacksForUser/${selectedUser._id}`, {
-                method: 'POST',
-            });
-
+            const response = await fetchWithAuth(
+                `/api/packs/admin/openPacksForUser/${selectedUser._id}`,
+                { method: 'POST' }
+            );
             const { newCards } = response;
             console.log('New cards received:', newCards);
             setOpenedCards(newCards);
-            // Initially, no cards are revealed
+            // Initially, all cards are hidden
             setRevealedCards(Array(newCards.length).fill(false));
-
             // Decrease the user's pack count
             setUsersWithPacks((prev) =>
                 prev.map((u) =>
@@ -79,21 +74,19 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // After the video ends, reveal all cards at once
+    // When video ends, reveal all cards at once.
     const handleVideoEnd = () => {
-        console.log("Pack opening video ended. Revealing all cards...");
+        console.log("Pack opening video ended. Revealing all cards at once...");
         setRevealedCards(Array(openedCards.length).fill(true));
         setIsOpeningAnimation(false);
     };
 
-    // Reset pack state to allow opening another pack
+    // Reset pack state for opening another pack.
     const handleResetPack = () => {
-        console.log("Resetting pack opening state.");
+        console.log("Resetting pack state.");
         setOpenedCards([]);
         setRevealedCards([]);
         setIsOpeningAnimation(false);
-        // Optionally, reset selected user if desired:
-        // setSelectedUser(null);
     };
 
     const toggleUserSelection = (u) => {

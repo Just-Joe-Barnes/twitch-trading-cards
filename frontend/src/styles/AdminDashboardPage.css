@@ -143,14 +143,14 @@
             cursor: not-allowed;
         }
 
-/* Card Rarity Key Section - Reworked for a clean, multi-column layout */
+/* Card Rarity Key Section */
 .card-rarity-key {
     grid-column: 3 / 4;
     background: var(--surface-dark);
     padding: 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-    height: 320px; /* Fixed height to match other panels */
+    height: 320px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -164,7 +164,7 @@
         font-size: 1.5rem;
         color: var(--text-primary);
     }
-/* Rarity List displayed in 2 columns by default, 3 on wider screens */
+
 .rarity-list {
     width: 100%;
     display: grid;
@@ -230,30 +230,26 @@
     justify-content: center;
 }
 
-/* Remove borders from opened cards on hover */
 .opened-cards .card-wrapper {
     border: none !important;
 }
 
-/* Fade-in Animation for Opened Cards */
 .card-wrapper {
     transition: opacity 0.5s ease, transform 0.5s ease !important;
 }
 
-    /* Hidden state: fully transparent & moved down */
     .card-wrapper.hidden {
         opacity: 0;
         transform: translateY(20px);
-        pointer-events: none; /* so it’s unclickable while hidden */
+        pointer-events: none;
     }
 
-    /* Fade-in state: fully visible & back to original position */
     .card-wrapper.fade-in {
         opacity: 1;
         transform: translateY(0);
     }
 
-/* Pack Opening Overlay - Full Screen Video */
+/* Pack Opening Overlay */
 .pack-opening-overlay {
     position: fixed;
     top: 0;
