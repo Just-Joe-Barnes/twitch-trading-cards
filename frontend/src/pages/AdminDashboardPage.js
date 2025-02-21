@@ -77,11 +77,11 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // When the video ends, we wait a bit and then trigger the sequential reveal
+    // Directly handle the card reveal when the video ends
     const handleVideoEnd = () => {
-        console.log("Pack opening video ended. Waiting for state updates...");
+        console.log("Pack opening video ended. Starting card reveal...");
+        const revealDelay = 200; // Wait 200ms before starting reveal
         setTimeout(() => {
-            console.log("Starting card reveal after delay.");
             console.log("Number of cards to reveal:", openedCards.length);
             openedCards.forEach((_, index) => {
                 setTimeout(() => {
@@ -94,23 +94,21 @@ const AdminDashboardPage = ({ user }) => {
                 }, index * 1000); // 1 second delay between each card
             });
             setIsOpeningAnimation(false);
-        }, 200); // 200ms delay after video ends
+        }, revealDelay);
     };
 
-    // Manual fallback button to trigger reveal if needed
+    // Manual fallback button to trigger card reveal if needed
     const manualReveal = () => {
         console.log("Manual reveal triggered");
         handleVideoEnd();
     };
 
-    // New function: reset the pack opening state for another attempt
     const handleResetPack = () => {
         console.log("Resetting pack opening state.");
         setOpenedCards([]);
         setRevealedCards([]);
         setIsOpeningAnimation(false);
-        // Optionally, you can also clear the selected user if needed:
-        // setSelectedUser(null);
+        // Optionally, reset selected user: setSelectedUser(null);
     };
 
     const toggleUserSelection = (u) => {
