@@ -164,7 +164,6 @@
         font-size: 1.5rem;
         color: var(--text-primary);
     }
-
 /* Rarity List displayed in 2 columns by default, 3 on wider screens */
 .rarity-list {
     width: 100%;
@@ -238,14 +237,17 @@
 
 /* Fade-in Animation for Opened Cards */
 .card-wrapper {
-    transition: opacity 0.5s ease, transform 0.5s ease;
+    transition: opacity 0.5s ease, transform 0.5s ease !important;
 }
 
+    /* Hidden state: fully transparent & moved down */
     .card-wrapper.hidden {
         opacity: 0;
         transform: translateY(20px);
+        pointer-events: none; /* so it’s unclickable while hidden */
     }
 
+    /* Fade-in state: fully visible & back to original position */
     .card-wrapper.fade-in {
         opacity: 1;
         transform: translateY(0);
