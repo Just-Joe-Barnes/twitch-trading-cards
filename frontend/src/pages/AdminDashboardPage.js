@@ -77,14 +77,16 @@ const AdminDashboardPage = ({ user }) => {
     };
 
     const handleVideoEnd = () => {
+        console.log("Pack opening video ended. Starting card reveal...");
         openedCards.forEach((_, index) => {
             setTimeout(() => {
                 setRevealedCards((prev) => {
                     const updated = [...prev];
                     updated[index] = true;
+                    console.log(`Revealed card ${index}`);
                     return updated;
                 });
-            }, index * 1000);
+            }, index * 500); // 500ms delay between each card
         });
         setIsOpeningAnimation(false);
     };
