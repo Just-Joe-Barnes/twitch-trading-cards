@@ -78,23 +78,26 @@ const AdminDashboardPage = ({ user }) => {
     };
 
     const handleVideoEnd = () => {
-        console.log("Pack opening video ended. Starting card reveal...");
-        console.log("Number of cards to reveal:", openedCards.length);
-        // Reveal each card with a delay of 1000ms per card
-        openedCards.forEach((_, index) => {
-            setTimeout(() => {
-                setRevealedCards((prev) => {
-                    const updated = [...prev];
-                    updated[index] = true;
-                    console.log(`Revealed card ${index}`);
-                    return updated;
-                });
-            }, index * 1000);
-        });
-        setIsOpeningAnimation(false);
+        console.log("Pack opening video ended. Waiting for state updates...");
+        // Add a delay to ensure openedCards and revealedCards state are updated
+        setTimeout(() => {
+            console.log("Starting card reveal after delay.");
+            console.log("Number of cards to reveal:", openedCards.length);
+            openedCards.forEach((_, index) => {
+                setTimeout(() => {
+                    setRevealedCards((prev) => {
+                        const updated = [...prev];
+                        updated[index] = true;
+                        console.log(`Revealed card ${index}`);
+                        return updated;
+                    });
+                }, index * 1000); // 1 second delay between each card
+            });
+            setIsOpeningAnimation(false);
+        }, 200); // 200ms delay after video ends
     };
 
-    // Manual fallback button to trigger card reveal
+    // Manual fallback button to trigger card reveal if needed
     const manualReveal = () => {
         console.log("Manual reveal triggered");
         handleVideoEnd();
@@ -116,7 +119,6 @@ const AdminDashboardPage = ({ user }) => {
                         controls={false}
                         onLoadedData={() => console.log("Pack opening video loaded")}
                         onError={(e) => console.error("Pack opening video error:", e)}
-                        // Add a slight delay after video end to ensure state updates
                         onEnded={() => setTimeout(handleVideoEnd, 500)}
                     />
                     <button
