@@ -60,6 +60,7 @@ const AdminDashboardPage = ({ user }) => {
             });
 
             const { newCards } = response;
+            console.log('New cards received:', newCards);
             setOpenedCards(newCards);
             setRevealedCards(Array(newCards.length).fill(false));
 
@@ -78,6 +79,7 @@ const AdminDashboardPage = ({ user }) => {
 
     const handleVideoEnd = () => {
         console.log("Pack opening video ended. Starting card reveal...");
+        console.log("Number of cards to reveal:", openedCards.length);
         openedCards.forEach((_, index) => {
             setTimeout(() => {
                 setRevealedCards((prev) => {
@@ -89,6 +91,12 @@ const AdminDashboardPage = ({ user }) => {
             }, index * 500); // 500ms delay between each card
         });
         setIsOpeningAnimation(false);
+    };
+
+    // Manual fallback button to trigger card reveal
+    const manualReveal = () => {
+        console.log("Manual reveal triggered");
+        handleVideoEnd();
     };
 
     const toggleUserSelection = (u) => {
@@ -107,6 +115,10 @@ const AdminDashboardPage = ({ user }) => {
                         controls={false}
                         onEnded={handleVideoEnd}
                     />
+                    {/* Manual fallback button for debugging */}
+                    <button onClick={manualReveal} style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1100 }}>
+                        Reveal Cards Manually
+                    </button>
                 </div>
             )}
 
