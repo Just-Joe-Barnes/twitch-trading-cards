@@ -10,10 +10,9 @@ const AdminDashboardPage = ({ user }) => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [loading, setLoading] = useState(false);
     const [openedCards, setOpenedCards] = useState([]);
-    const [revealedCards, setRevealedCards] = useState([]);
+    const [cardsVisible, setCardsVisible] = useState(false);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
 
-    // Basic card rarity definitions (unchanged)
     const cardRarities = [
         { rarity: 'Basic', color: '#a0a0a0', maxMint: 1000 },
         { rarity: 'Common', color: '#78c2ad', maxMint: 800 },
@@ -27,7 +26,6 @@ const AdminDashboardPage = ({ user }) => {
         { rarity: 'Divine', color: 'white', maxMint: 1 },
     ];
 
-    // On mount, fetch users with packs if admin
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -48,25 +46,20 @@ const AdminDashboardPage = ({ user }) => {
         fetchUsersWithPacks();
     }, [user, navigate]);
 
-    // Open pack for selected user
     const openPackForUser = async () => {
         if (!selectedUser) return;
         try {
             setLoading(true);
             setIsOpeningAnimation(true);
-
+            setCardsVisible(false);
             const response = await fetchWithAuth(
                 `/api/packs/admin/openPacksForUser/${selectedUser._id}`,
                 { method: 'POST' }
             );
             const { newCards } = response;
             console.log('New cards received:', newCards);
-
-            // Set the opened cards, mark them all as hidden initially
             setOpenedCards(newCards);
-            setRevealedCards(Array(newCards.length).fill(false));
-
-            // Decrement the user's pack count
+            // Decrease user's pack count
             setUsersWithPacks((prev) =>
                 prev.map((u) =>
                     u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
@@ -80,20 +73,20 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // Once the video ends, reveal all cards at once
+    // When the video ends, simply set cardsVisible to true.
     const handleVideoEnd = () => {
-        console.log("Pack opening video ended. Revealing all cards at once...");
-        setRevealedCards(Array(openedCards.length).fill(true));
+        console.log("Pack opening video ended. Setting cardsVisible = true.");
+        setCardsVisible(true);
         setIsOpeningAnimation(false);
     };
 
-    // Reset to allow opening another pack
+    // Reset state for another pack.
     const handleResetPack = () => {
-        console.log("Resetting pack opening state.");
+        console.log("Resetting pack state.");
         setOpenedCards([]);
-        setRevealedCards([]);
+        setCardsVisible(false);
         setIsOpeningAnimation(false);
-        // If desired, reset selected user: setSelectedUser(null);
+        // Optionally: setSelectedUser(null);
     };
 
     const toggleUserSelection = (u) => {
@@ -102,7 +95,6 @@ const AdminDashboardPage = ({ user }) => {
 
     return (
         <div className="dashboard-container">
-            {/* Video overlay during pack opening */}
             {isOpeningAnimation && (
                 <div className="pack-opening-overlay">
                     <video
@@ -119,7 +111,7 @@ const AdminDashboardPage = ({ user }) => {
             )}
 
             <div className="grid-container">
-                {/* Users with Packs */}
+                {/* Users with Packs Section */}
                 <div className="users-with-packs">
                     <h2>Users with Packs</h2>
                     <table className="users-table">
@@ -161,7 +153,7 @@ const AdminDashboardPage = ({ user }) => {
                     )}
                 </div>
 
-                {/* Card Rarity Key */}
+                {/* Card Rarity Key Section */}
                 <div className="card-rarity-key">
                     <h2>Card Rarity Key</h2>
                     <div className="rarity-list">
@@ -186,7 +178,7 @@ const AdminDashboardPage = ({ user }) => {
                         {openedCards.map((card, index) => (
                             <div
                                 key={index}
-                                className={`card-wrapper ${revealedCards[index] ? 'fade-in' : 'hidden'}`}
+                                className={`card-wrapper ${cardsVisible ? 'visible' : 'hidden'}`}
                             >
                                 <BaseCard
                                     name={card.name}
@@ -198,8 +190,6 @@ const AdminDashboardPage = ({ user }) => {
                             </div>
                         ))}
                     </div>
-
-                    {/* Reset button to open another pack */}
                     {openedCards.length > 0 && !isOpeningAnimation && (
                         <button
                             onClick={handleResetPack}

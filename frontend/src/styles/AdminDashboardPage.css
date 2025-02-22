@@ -10,7 +10,7 @@
     --transition: all 0.3s ease;
 }
 
-/* MAIN CONTAINER */
+/* Main container */
 .dashboard-container {
     padding: 6rem 1.5rem 2rem;
     background: var(--background-dark);
@@ -44,7 +44,7 @@
             border-radius: 2px;
         }
 
-/* GRID LAYOUT */
+/* Grid layout */
 .grid-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -52,7 +52,7 @@
     margin-top: 1rem;
 }
 
-/* USERS WITH PACKS */
+/* Users with Packs */
 .users-with-packs {
     grid-column: 1 / 2;
     background: var(--surface-dark);
@@ -101,7 +101,7 @@
         color: var(--text-primary);
     }
 
-/* OPEN PACK SECTION */
+/* Open Pack Section */
 .selected-user-section {
     grid-column: 2 / 3;
     background: var(--surface-dark);
@@ -142,7 +142,7 @@
             cursor: not-allowed;
         }
 
-/* CARD RARITY KEY */
+/* Card Rarity Key */
 .card-rarity-key {
     grid-column: 3 / 4;
     background: var(--surface-dark);
@@ -206,7 +206,7 @@
     flex-grow: 1;
 }
 
-/* OPENED CARDS SECTION */
+/* Opened Cards Section */
 .opened-cards {
     grid-column: 1 / 4;
     background: var(--surface-dark);
@@ -233,25 +233,23 @@
     border: none !important;
 }
 
-/* TRANSITIONS FOR HIDDEN/FADE-IN */
+/* Card Wrapper - Using a "visible" class when cards are to be shown */
 .card-wrapper {
     transition: opacity 0.5s ease, transform 0.5s ease !important;
 }
 
-    /* .hidden -> fully transparent, pointer-events none */
     .card-wrapper.hidden {
         opacity: 0 !important;
         transform: translateY(20px) !important;
         pointer-events: none;
     }
 
-    /* .fade-in -> fully visible, normal pointer-events */
-    .card-wrapper.fade-in {
+    .card-wrapper.visible {
         opacity: 1 !important;
         transform: translateY(0) !important;
     }
 
-/* VIDEO OVERLAY */
+/* Pack Opening Overlay */
 .pack-opening-overlay {
     position: fixed;
     top: 0;
