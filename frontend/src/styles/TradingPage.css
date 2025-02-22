@@ -28,6 +28,7 @@
         color: var(--text-primary);
         margin-bottom: 1rem; /* Reduced from 2rem */
         position: relative;
+        margin-top: 1rem;
     }
 
         .trading-container h1::after {
