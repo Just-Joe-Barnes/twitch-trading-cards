@@ -6,103 +6,118 @@ import '../styles/AdminDashboardPage.css';
 
 const AdminDashboardPage = ({ user }) => {
     const navigate = useNavigate();
+
     const [usersWithPacks, setUsersWithPacks] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
+
     const [loading, setLoading] = useState(false);
-    const [openedCards, setOpenedCards] = useState([]);
-    const [revealedCards, setRevealedCards] = useState([]);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
 
+    const [openedCards, setOpenedCards] = useState([]);
+    const [revealedCards, setRevealedCards] = useState([]);
+
+    // Simple rarities (unchanged)
     const cardRarities = [
-        { rarity: 'Basic', color: '#a0a0a0', maxMint: 1000 },
-        { rarity: 'Common', color: '#78c2ad', maxMint: 800 },
-        { rarity: 'Standard', color: '#4a90e2', maxMint: 600 },
-        { rarity: 'Uncommon', color: '#9068be', maxMint: 400 },
-        { rarity: 'Rare', color: '#e5a228', maxMint: 300 },
-        { rarity: 'Epic', color: '#ff4500', maxMint: 200 },
-        { rarity: 'Legendary', color: '#72f1fc', maxMint: 100 },
-        { rarity: 'Mythic', color: 'hotpink', maxMint: 50 },
-        { rarity: 'Unique', color: 'black', maxMint: 10 },
-        { rarity: 'Divine', color: 'white', maxMint: 1 },
+        { rarity: 'Basic', color: '#a0a0a0' },
+        { rarity: 'Common', color: '#78c2ad' },
+        { rarity: 'Standard', color: '#4a90e2' },
+        { rarity: 'Uncommon', color: '#9068be' },
+        { rarity: 'Rare', color: '#e5a228' },
+        { rarity: 'Epic', color: '#ff4500' },
+        { rarity: 'Legendary', color: '#72f1fc' },
+        { rarity: 'Mythic', color: 'hotpink' },
+        { rarity: 'Unique', color: 'black' },
+        { rarity: 'Divine', color: 'white' },
     ];
 
+    // On mount, verify admin and fetch users
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
             navigate('/login');
             return;
         }
-        const fetchUsersWithPacks = async () => {
+        const fetchData = async () => {
+            setLoading(true);
             try {
-                setLoading(true);
                 const data = await fetchWithAuth('/api/packs/usersWithPacks');
                 setUsersWithPacks(data.users || []);
-            } catch (error) {
-                console.error('Error fetching users with unopened packs:', error.message);
+            } catch (err) {
+                console.error('Error fetching packs:', err);
             } finally {
                 setLoading(false);
             }
         };
-        fetchUsersWithPacks();
+        fetchData();
     }, [user, navigate]);
 
+    // Select user
+    const toggleUserSelection = (u) => {
+        setSelectedUser((prev) => (prev?._id === u._id ? null : u));
+    };
+
+    // Open pack for user
     const openPackForUser = async () => {
         if (!selectedUser) return;
+        setLoading(true);
+        setIsOpeningAnimation(true);
+        setOpenedCards([]);
+        setRevealedCards([]);
         try {
-            setLoading(true);
-            setIsOpeningAnimation(true);
-            // Reset any previous reveal state
-            setOpenedCards([]);
-            setRevealedCards([]);
-            const response = await fetchWithAuth(
-                `/api/packs/admin/openPacksForUser/${selectedUser._id}`,
-                { method: 'POST' }
-            );
-            const { newCards } = response;
-            console.log('New cards received:', newCards);
+            const res = await fetchWithAuth(`/api/packs/admin/openPacksForUser/${selectedUser._id}`, {
+                method: 'POST',
+            });
+            const { newCards } = res;
+            console.log('New cards:', newCards);
             setOpenedCards(newCards);
-            // Initially, all cards are hidden (false)
+            // Initially all false
             setRevealedCards(Array(newCards.length).fill(false));
-            // Decrement selected user's pack count
+            // Decrement user’s pack count
             setUsersWithPacks((prev) =>
-                prev.map((u) =>
-                    u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
-                )
+                prev.map((u) => (u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u))
             );
-        } catch (error) {
-            console.error('Error opening pack for user:', error.message);
+        } catch (err) {
+            console.error('Error opening pack:', err);
             setIsOpeningAnimation(false);
         } finally {
             setLoading(false);
         }
     };
 
-    // When the video ends, reveal cards one at a time sequentially.
+    // Video ends -> reveal cards sequentially
     const handleVideoEnd = () => {
-        console.log("Pack opening video ended. Starting sequential reveal...");
-        openedCards.forEach((_, index) => {
+        console.log('Video ended. Starting sequential reveal...');
+        openedCards.forEach((_, i) => {
             setTimeout(() => {
                 setRevealedCards((prev) => {
                     const updated = [...prev];
-                    updated[index] = true;
-                    console.log(`Revealed card ${index}`);
+                    updated[i] = true;
+                    console.log(`Card ${i} revealed`);
                     return updated;
                 });
-            }, index * 1000); // 1 second delay between each card
+            }, i * 1000); // 1s delay per card
         });
         setIsOpeningAnimation(false);
     };
 
-    // Reset state to allow opening another pack.
+    // Fallback: if after 4s none are revealed, reveal them all
+    useEffect(() => {
+        if (openedCards.length > 0 && !revealedCards.some(Boolean)) {
+            const timer = setTimeout(() => {
+                console.log('Fallback: revealing all cards after 4s');
+                setRevealedCards(Array(openedCards.length).fill(true));
+                setIsOpeningAnimation(false);
+            }, 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [openedCards, revealedCards]);
+
+    // Reset pack state
     const handleResetPack = () => {
-        console.log("Resetting pack state.");
+        console.log('Resetting pack state');
         setOpenedCards([]);
         setRevealedCards([]);
         setIsOpeningAnimation(false);
-    };
-
-    const toggleUserSelection = (u) => {
-        setSelectedUser((prev) => (prev?._id === u._id ? null : u));
     };
 
     return (
@@ -115,17 +130,18 @@ const AdminDashboardPage = ({ user }) => {
                         autoPlay
                         playsInline
                         controls={false}
-                        onLoadedData={() => console.log("Pack opening video loaded")}
-                        onError={(e) => console.error("Pack opening video error:", e)}
                         onEnded={() => setTimeout(handleVideoEnd, 500)}
+                        onLoadedData={() => console.log('Video loaded')}
+                        onError={(e) => console.error('Video error:', e)}
                     />
                 </div>
             )}
 
             <div className="grid-container">
-                {/* Users with Packs Section */}
+                {/* Users with Packs */}
                 <div className="users-with-packs">
                     <h2>Users with Packs</h2>
+                    {loading && <p>Loading users...</p>}
                     <table className="users-table">
                         <thead>
                             <tr>
@@ -165,32 +181,27 @@ const AdminDashboardPage = ({ user }) => {
                     )}
                 </div>
 
-                {/* Card Rarity Key Section */}
+                {/* Card Rarity Key */}
                 <div className="card-rarity-key">
                     <h2>Card Rarity Key</h2>
                     <div className="rarity-list">
-                        {cardRarities.map((rarity) => (
-                            <div key={rarity.rarity} className="rarity-item">
-                                <span
-                                    className="color-box"
-                                    style={{ backgroundColor: rarity.color }}
-                                ></span>
-                                <span className="rarity-text">
-                                    {rarity.rarity} {rarity.maxMint === 1 ? "#1" : `(#/${rarity.maxMint})`}
-                                </span>
+                        {cardRarities.map((r) => (
+                            <div key={r.rarity} className="rarity-item">
+                                <span className="color-box" style={{ backgroundColor: r.color }} />
+                                <span className="rarity-text">{r.rarity}</span>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                {/* Opened Cards Section */}
+                {/* Opened Cards */}
                 <div className="opened-cards">
                     <h2>Opened Cards</h2>
                     <div className="cards-container">
-                        {openedCards.map((card, index) => (
+                        {openedCards.map((card, i) => (
                             <div
-                                key={index}
-                                className={`card-wrapper ${revealedCards[index] ? 'visible' : 'hidden'}`}
+                                key={i}
+                                className={`card-wrapper ${revealedCards[i] ? 'visible' : 'hidden'}`}
                             >
                                 <BaseCard
                                     name={card.name}

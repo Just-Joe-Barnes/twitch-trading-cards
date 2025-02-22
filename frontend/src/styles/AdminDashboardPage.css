@@ -10,7 +10,7 @@
     --transition: all 0.3s ease;
 }
 
-/* Main container */
+/* Container */
 .dashboard-container {
     padding: 6rem 1.5rem 2rem;
     background: var(--background-dark);
@@ -52,7 +52,7 @@
     margin-top: 1rem;
 }
 
-/* Users with Packs Section */
+/* Users with Packs */
 .users-with-packs {
     grid-column: 1 / 2;
     background: var(--surface-dark);
@@ -142,7 +142,7 @@
             cursor: not-allowed;
         }
 
-/* Card Rarity Key Section */
+/* Card Rarity Key */
 .card-rarity-key {
     grid-column: 3 / 4;
     background: var(--surface-dark);
@@ -233,19 +233,17 @@
     border: none !important;
 }
 
-/* Card wrapper transition */
+/* Card wrapper transitions */
 .card-wrapper {
-    transition: opacity 0.5s ease, transform 0.5s ease !important;
+    transition: opacity 0.6s ease, transform 0.6s ease !important;
 }
 
-    /* Hidden state: opacity 0 */
     .card-wrapper.hidden {
         opacity: 0 !important;
         transform: translateY(20px) !important;
         pointer-events: none;
     }
 
-    /* Visible state: opacity 1 */
     .card-wrapper.visible {
         opacity: 1 !important;
         transform: translateY(0) !important;
