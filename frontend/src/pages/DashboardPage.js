@@ -36,6 +36,12 @@ const DashboardPage = () => {
         return <p className="error-message">{error}</p>;
     }
 
+    // Multiple parent parameters for local dev and Netlify
+    const twitchIframeSrc =
+        'https://player.twitch.tv/?channel=just_joe_'
+        + '&parent=localhost'
+        + '&parent=myapp.netlify.app';
+
     return (
         <div className="dashboard">
             <h1>Dashboard</h1>
@@ -64,11 +70,12 @@ const DashboardPage = () => {
                 <div className="twitch-section section-card">
                     <h2>Watch The Just Joe Show Live</h2>
                     <iframe
-                        src="https://player.twitch.tv/?channel=just_joe_&parent=localhost"
+                        src={twitchIframeSrc}
                         title="Twitch Stream"
                         frameBorder="0"
+                        allow="autoplay; fullscreen"
                         allowFullScreen
-                    ></iframe>
+                    />
                     <p className="twitch-details">
                         Check out the Just Joe Show live or watch past streams to see the moments that inspired these collectible cards!
                     </p>
