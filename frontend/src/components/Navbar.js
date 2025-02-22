@@ -57,7 +57,11 @@ const Navbar = ({ isAdmin }) => {
     return (
         <nav className="navbar">
             <div className="navbar-logo">
-                <h1>Ned's Decks</h1>
+                {/* Replace the text with your logo image */}
+                <img
+                    src="/images/NedsDecksLogo.png"
+                    alt="Ned's Decks"
+                />
             </div>
 
             <div className="navbar-search">
