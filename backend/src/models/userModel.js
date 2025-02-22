@@ -10,7 +10,7 @@ const cardSchema = new mongoose.Schema({
 
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true, index: true },
-    email: { type: String },
+    email: { type: String, unique: true, sparse: true }, // Updated: use sparse unique index
     twitchId: { type: String, unique: true },
     packs: { type: Number, default: 0 },
     cards: [cardSchema], // Collection of cards owned by the user
