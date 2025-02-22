@@ -52,7 +52,7 @@
     margin-top: 1rem;
 }
 
-/* Users with Packs */
+/* Users with Packs Section */
 .users-with-packs {
     grid-column: 1 / 2;
     background: var(--surface-dark);
@@ -142,7 +142,7 @@
             cursor: not-allowed;
         }
 
-/* Card Rarity Key */
+/* Card Rarity Key Section */
 .card-rarity-key {
     grid-column: 3 / 4;
     background: var(--surface-dark);
@@ -233,17 +233,19 @@
     border: none !important;
 }
 
-/* Card Wrapper - Using a "visible" class when cards are to be shown */
+/* Card wrapper transition */
 .card-wrapper {
     transition: opacity 0.5s ease, transform 0.5s ease !important;
 }
 
+    /* Hidden state: opacity 0 */
     .card-wrapper.hidden {
         opacity: 0 !important;
         transform: translateY(20px) !important;
         pointer-events: none;
     }
 
+    /* Visible state: opacity 1 */
     .card-wrapper.visible {
         opacity: 1 !important;
         transform: translateY(0) !important;

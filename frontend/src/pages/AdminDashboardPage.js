@@ -10,7 +10,7 @@ const AdminDashboardPage = ({ user }) => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [loading, setLoading] = useState(false);
     const [openedCards, setOpenedCards] = useState([]);
-    const [cardsVisible, setCardsVisible] = useState(false);
+    const [revealedCards, setRevealedCards] = useState([]);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
 
     const cardRarities = [
@@ -51,7 +51,9 @@ const AdminDashboardPage = ({ user }) => {
         try {
             setLoading(true);
             setIsOpeningAnimation(true);
-            setCardsVisible(false);
+            // Reset any previous reveal state
+            setOpenedCards([]);
+            setRevealedCards([]);
             const response = await fetchWithAuth(
                 `/api/packs/admin/openPacksForUser/${selectedUser._id}`,
                 { method: 'POST' }
@@ -59,7 +61,9 @@ const AdminDashboardPage = ({ user }) => {
             const { newCards } = response;
             console.log('New cards received:', newCards);
             setOpenedCards(newCards);
-            // Decrease user's pack count
+            // Initially, all cards are hidden (false)
+            setRevealedCards(Array(newCards.length).fill(false));
+            // Decrement selected user's pack count
             setUsersWithPacks((prev) =>
                 prev.map((u) =>
                     u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
@@ -73,20 +77,28 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // When the video ends, simply set cardsVisible to true.
+    // When the video ends, reveal cards one at a time sequentially.
     const handleVideoEnd = () => {
-        console.log("Pack opening video ended. Setting cardsVisible = true.");
-        setCardsVisible(true);
+        console.log("Pack opening video ended. Starting sequential reveal...");
+        openedCards.forEach((_, index) => {
+            setTimeout(() => {
+                setRevealedCards((prev) => {
+                    const updated = [...prev];
+                    updated[index] = true;
+                    console.log(`Revealed card ${index}`);
+                    return updated;
+                });
+            }, index * 1000); // 1 second delay between each card
+        });
         setIsOpeningAnimation(false);
     };
 
-    // Reset state for another pack.
+    // Reset state to allow opening another pack.
     const handleResetPack = () => {
         console.log("Resetting pack state.");
         setOpenedCards([]);
-        setCardsVisible(false);
+        setRevealedCards([]);
         setIsOpeningAnimation(false);
-        // Optionally: setSelectedUser(null);
     };
 
     const toggleUserSelection = (u) => {
@@ -178,7 +190,7 @@ const AdminDashboardPage = ({ user }) => {
                         {openedCards.map((card, index) => (
                             <div
                                 key={index}
-                                className={`card-wrapper ${cardsVisible ? 'visible' : 'hidden'}`}
+                                className={`card-wrapper ${revealedCards[index] ? 'visible' : 'hidden'}`}
                             >
                                 <BaseCard
                                     name={card.name}
