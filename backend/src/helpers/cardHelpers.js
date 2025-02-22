@@ -18,70 +18,83 @@ const rarityProbabilities = [
 const pickRarity = () => {
     const random = Math.random();
     let cumulativeProbability = 0;
-
     for (const { rarity, probability } of rarityProbabilities) {
         cumulativeProbability += probability;
         if (random <= cumulativeProbability) {
             return rarity;
         }
     }
-
     return 'Basic'; // Fallback if probabilities don't sum to 1
 };
 
-// Generate a card with probabilities
+// Generate a card with probabilities using optimized queries
 const generateCardWithProbability = async () => {
     try {
-        // Determine rarity
         const selectedRarity = pickRarity();
 
-        // Find all cards with the selected rarity
-        const cards = await Card.find({ 'rarities.rarity': selectedRarity });
+        // Use aggregation to randomly select a card with the desired rarity and available copies
+        const cards = await Card.aggregate([
+            {
+                $match: {
+                    'rarities.rarity': selectedRarity,
+                    'rarities.remainingCopies': { $gt: 0 },
+                    'rarities.availableMintNumbers.0': { $exists: true } // ensure there is at least one available mint number
+                }
+            },
+            { $sample: { size: 1 } }
+        ]);
 
-        if (!cards.length) {
+        if (!cards || cards.length === 0) {
             console.warn(`No cards found for rarity: ${selectedRarity}`);
             return null;
         }
+        const selectedCard = cards[0];
 
-        // Pick a random card of the selected rarity
-        const card = cards[Math.floor(Math.random() * cards.length)];
-
-        // Get the rarity object
-        const rarity = card.rarities.find((r) => r.rarity === selectedRarity);
-
-        if (!rarity || rarity.remainingCopies <= 0) {
-            console.warn(
-                `No remaining copies for rarity: ${selectedRarity} in card: ${card.name}`
-            );
+        // Find the subdocument for the selected rarity
+        const rarityObj = selectedCard.rarities.find(r => r.rarity === selectedRarity);
+        if (!rarityObj || rarityObj.remainingCopies <= 0 || !rarityObj.availableMintNumbers || rarityObj.availableMintNumbers.length === 0) {
+            console.warn(`No valid rarity data for rarity: ${selectedRarity} in card: ${selectedCard.name}`);
             return null;
         }
 
-        // Select a random mint number from available pool
-        const randomIndex = Math.floor(Math.random() * rarity.availableMintNumbers.length);
-        const mintNumber = rarity.availableMintNumbers.splice(randomIndex, 1)[0];
+        // Select a random mint number from availableMintNumbers
+        const randomIndex = Math.floor(Math.random() * rarityObj.availableMintNumbers.length);
+        const mintNumber = rarityObj.availableMintNumbers[randomIndex];
 
-        // Update remaining copies
-        rarity.remainingCopies--;
+        // Atomically update the card:
+        // Decrement remainingCopies and remove the chosen mint number from availableMintNumbers
+        const updatedCard = await Card.findOneAndUpdate(
+            {
+                _id: selectedCard._id,
+                'rarities.rarity': selectedRarity,
+                'rarities.remainingCopies': { $gt: 0 }
+            },
+            {
+                $inc: { 'rarities.$.remainingCopies': -1 },
+                $pull: { 'rarities.$.availableMintNumbers': mintNumber }
+            },
+            { new: true }
+        );
 
-        // Save updated card state
-        await Card.findByIdAndUpdate(card._id, { rarities: card.rarities });
+        if (!updatedCard) {
+            console.warn(`Failed to update card: ${selectedCard.name}`);
+            return null;
+        }
 
-        // Log generated card for debugging
         console.log('[generateCardWithProbability] Generated card:', {
-            name: card.name,
+            name: selectedCard.name,
             rarity: selectedRarity,
             mintNumber,
-            imageUrl: card.imageUrl,
-            flavorText: card.flavorText,
+            imageUrl: selectedCard.imageUrl,
+            flavorText: selectedCard.flavorText,
         });
 
-        // Return generated card details
         return {
-            name: card.name,
+            name: selectedCard.name,
             rarity: selectedRarity,
             mintNumber,
-            imageUrl: card.imageUrl,
-            flavorText: card.flavorText || 'No flavor text available', // Default if missing
+            imageUrl: selectedCard.imageUrl,
+            flavorText: selectedCard.flavorText || 'No flavor text available',
         };
     } catch (error) {
         console.error('[generateCardWithProbability] Error:', error.message);
@@ -89,5 +102,4 @@ const generateCardWithProbability = async () => {
     }
 };
 
-
-module.exports = { generateCardWithProbability };
+module.exports = { generateCardWithProbability, pickRarity };

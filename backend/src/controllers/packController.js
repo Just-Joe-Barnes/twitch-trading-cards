@@ -17,34 +17,24 @@ const openPack = async (req, res) => {
     try {
         const userId = req.user.id;
         const user = await User.findById(userId);
-
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-
         if (user.packs <= 0) {
             return res.status(400).json({ message: 'No unopened packs available' });
         }
 
         const newCard = await generateCardWithProbability();
-
         if (!newCard) {
             return res.status(500).json({ message: 'Failed to generate a card' });
         }
 
-        const updatedCard = {
-            ...newCard,
-            flavorText: newCard.flavorText || 'No flavor text available',
-        };
-
-        user.cards.push(updatedCard);
-        user.openedPacks += 1; // Increment opened packs
+        user.cards.push(newCard);
+        user.openedPacks += 1;
         user.packs -= 1;
-
-        // Save user changes
         await user.save();
 
-        res.status(200).json({ message: 'Pack opened successfully', card: updatedCard, packs: user.packs });
+        res.status(200).json({ message: 'Pack opened successfully', card: newCard, packs: user.packs });
     } catch (error) {
         console.error('[openPack] Error:', error.message);
         res.status(500).json({ message: 'Failed to open pack' });
@@ -66,25 +56,16 @@ const openPacksForUser = async (req, res) => {
     try {
         const { userId } = req.params;
         const user = await User.findById(userId);
-
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-
         if (user.packs <= 0) {
             return res.status(400).json({ message: 'No unopened packs available for this user' });
         }
 
-        const newCards = [];
-        for (let i = 0; i < 5; i++) {
-            const card = await generateCardWithProbability();
-            if (card) {
-                newCards.push({
-                    ...card,
-                    flavorText: card.flavorText || 'No flavor text available',
-                });
-            }
-        }
+        // Open 5 cards concurrently
+        const cardPromises = Array.from({ length: 5 }, () => generateCardWithProbability());
+        const newCards = (await Promise.all(cardPromises)).filter(card => card);
 
         if (!newCards.length) {
             return res.status(500).json({ message: 'Failed to generate cards for the pack' });
@@ -93,12 +74,11 @@ const openPacksForUser = async (req, res) => {
         user.packs -= 1;
         user.openedPacks += 1;
         user.cards.push(...newCards);
-
         await user.save();
 
         res.status(200).json({ message: 'Pack opened successfully', newCards });
     } catch (error) {
-        console.error('[Open Packs for User] Error:', error.message);
+        console.error('[openPacksForUser] Error:', error.message);
         res.status(500).json({ message: 'Failed to open pack' });
     }
 };
@@ -108,11 +88,9 @@ const getMyPacks = async (req, res) => {
     try {
         const userId = req.user.id;
         const user = await User.findById(userId);
-
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-
         res.status(200).json({ packs: user.packs });
     } catch (error) {
         console.error('[getMyPacks] Error:', error);
@@ -124,24 +102,14 @@ const getMyPacks = async (req, res) => {
 const openPackById = async (req, res) => {
     try {
         const { packId } = req.params;
-
         const pack = await Pack.findById(packId);
-
         if (!pack) {
             return res.status(404).json({ message: 'Pack not found' });
         }
 
-        const cards = [];
-        for (let i = 0; i < 5; i++) {
-            const card = await generateCardWithProbability();
-            if (card) {
-                cards.push({
-                    ...card,
-                    flavorText: card.flavorText || 'No flavor text available',
-                });
-            }
-        }
-
+        // Open 5 cards concurrently for the pack
+        const cardPromises = Array.from({ length: 5 }, () => generateCardWithProbability());
+        const cards = (await Promise.all(cardPromises)).filter(card => card);
         if (!cards.length) {
             return res.status(500).json({ message: 'Failed to generate cards' });
         }
@@ -159,5 +127,5 @@ module.exports = {
     getAllPacks,
     openPacksForUser,
     getMyPacks,
-    openPackById, // Ensure this is exported
+    openPackById,
 };
