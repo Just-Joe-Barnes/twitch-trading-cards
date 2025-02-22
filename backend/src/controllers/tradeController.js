@@ -77,8 +77,8 @@ const getPendingTrades = async (req, res) => {
             $or: [{ sender: userId }, { recipient: userId }],
             status: 'pending'
         })
-            .populate('sender', 'username cards')  // Include sender's cards
-            .populate('recipient', 'username cards');  // Include recipient's cards
+            .populate('sender', 'username cards')
+            .populate('recipient', 'username cards');
 
         // Enrich trades with card details
         const enrichedTrades = pendingTrades.map(trade => {
@@ -141,7 +141,6 @@ const getTradesForUser = async (req, res) => {
 };
 
 // Update trade status (accept, reject, or cancel)
-// Update trade status (accept, reject, or cancel)
 const updateTradeStatus = async (req, res) => {
     const { tradeId } = req.params;
     const { status } = req.body;
@@ -181,33 +180,54 @@ const updateTradeStatus = async (req, res) => {
                 return res.status(404).json({ message: "Sender or Recipient not found" });
             }
 
-            console.log(`Before transfer: Sender Packs: ${sender.packs}, Recipient Packs: ${recipient.packs}`);
+            // --- Transfer Packs ---
+            console.log(`Before pack transfer: Sender Packs: ${sender.packs}, Recipient Packs: ${recipient.packs}`);
 
-            // Check if sender has enough packs
+            // Check if sender has enough packs to offer
             if (sender.packs < trade.offeredPacks) {
                 console.log("[Trade Status Update] Sender does not have enough packs");
                 return res.status(400).json({ message: "Sender does not have enough packs" });
             }
-
-            // Check if recipient has enough packs
+            // Check if recipient has enough packs to cover their requested packs
             if (recipient.packs < trade.requestedPacks) {
                 console.log("[Trade Status Update] Recipient does not have enough packs");
                 return res.status(400).json({ message: "Recipient does not have enough packs" });
             }
 
             // Transfer packs
-            sender.packs -= trade.offeredPacks;
-            recipient.packs += trade.offeredPacks;
+            sender.packs = sender.packs - trade.offeredPacks + trade.requestedPacks;
+            recipient.packs = recipient.packs - trade.requestedPacks + trade.offeredPacks;
+            console.log(`After pack transfer: Sender Packs: ${sender.packs}, Recipient Packs: ${recipient.packs}`);
 
-            recipient.packs -= trade.requestedPacks;
-            sender.packs += trade.requestedPacks;
+            // --- Transfer Card Items ---
+            // Transfer offeredItems: Remove from sender and add to recipient
+            trade.offeredItems.forEach((itemId) => {
+                const index = sender.cards.findIndex(card => card._id.toString() === itemId.toString());
+                if (index !== -1) {
+                    const card = sender.cards.splice(index, 1)[0];
+                    recipient.cards.push(card);
+                } else {
+                    console.warn(`Offered card with ID ${itemId} not found in sender's collection.`);
+                }
+            });
 
-            console.log(`After transfer: Sender Packs: ${sender.packs}, Recipient Packs: ${recipient.packs}`);
+            // Transfer requestedItems: Remove from recipient and add to sender
+            trade.requestedItems.forEach((itemId) => {
+                const index = recipient.cards.findIndex(card => card._id.toString() === itemId.toString());
+                if (index !== -1) {
+                    const card = recipient.cards.splice(index, 1)[0];
+                    sender.cards.push(card);
+                } else {
+                    console.warn(`Requested card with ID ${itemId} not found in recipient's collection.`);
+                }
+            });
 
+            // Save the updated user collections
             await sender.save();
             await recipient.save();
         }
 
+        // Update the trade status (works for accepted, rejected, or cancelled)
         trade.status = status;
         await trade.save();
 
@@ -218,7 +238,6 @@ const updateTradeStatus = async (req, res) => {
         res.status(500).json({ message: "Failed to update trade status", error: error.message });
     }
 };
-
 
 module.exports = {
     createTrade,
