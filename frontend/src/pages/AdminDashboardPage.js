@@ -13,6 +13,7 @@ const AdminDashboardPage = ({ user }) => {
     const [revealedCards, setRevealedCards] = useState([]);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
 
+    // Basic card rarity definitions (unchanged)
     const cardRarities = [
         { rarity: 'Basic', color: '#a0a0a0', maxMint: 1000 },
         { rarity: 'Common', color: '#78c2ad', maxMint: 800 },
@@ -26,6 +27,7 @@ const AdminDashboardPage = ({ user }) => {
         { rarity: 'Divine', color: 'white', maxMint: 1 },
     ];
 
+    // On mount, fetch users with packs if admin
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -46,21 +48,25 @@ const AdminDashboardPage = ({ user }) => {
         fetchUsersWithPacks();
     }, [user, navigate]);
 
+    // Open pack for selected user
     const openPackForUser = async () => {
         if (!selectedUser) return;
         try {
             setLoading(true);
             setIsOpeningAnimation(true);
+
             const response = await fetchWithAuth(
                 `/api/packs/admin/openPacksForUser/${selectedUser._id}`,
                 { method: 'POST' }
             );
             const { newCards } = response;
             console.log('New cards received:', newCards);
+
+            // Set the opened cards, mark them all as hidden initially
             setOpenedCards(newCards);
-            // Initially, all cards are hidden
             setRevealedCards(Array(newCards.length).fill(false));
-            // Decrease the user's pack count
+
+            // Decrement the user's pack count
             setUsersWithPacks((prev) =>
                 prev.map((u) =>
                     u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
@@ -74,19 +80,20 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // When video ends, reveal all cards at once.
+    // Once the video ends, reveal all cards at once
     const handleVideoEnd = () => {
         console.log("Pack opening video ended. Revealing all cards at once...");
         setRevealedCards(Array(openedCards.length).fill(true));
         setIsOpeningAnimation(false);
     };
 
-    // Reset pack state for opening another pack.
+    // Reset to allow opening another pack
     const handleResetPack = () => {
-        console.log("Resetting pack state.");
+        console.log("Resetting pack opening state.");
         setOpenedCards([]);
         setRevealedCards([]);
         setIsOpeningAnimation(false);
+        // If desired, reset selected user: setSelectedUser(null);
     };
 
     const toggleUserSelection = (u) => {
@@ -95,6 +102,7 @@ const AdminDashboardPage = ({ user }) => {
 
     return (
         <div className="dashboard-container">
+            {/* Video overlay during pack opening */}
             {isOpeningAnimation && (
                 <div className="pack-opening-overlay">
                     <video
@@ -111,7 +119,7 @@ const AdminDashboardPage = ({ user }) => {
             )}
 
             <div className="grid-container">
-                {/* Users with Packs Section */}
+                {/* Users with Packs */}
                 <div className="users-with-packs">
                     <h2>Users with Packs</h2>
                     <table className="users-table">
@@ -153,7 +161,7 @@ const AdminDashboardPage = ({ user }) => {
                     )}
                 </div>
 
-                {/* Card Rarity Key Section */}
+                {/* Card Rarity Key */}
                 <div className="card-rarity-key">
                     <h2>Card Rarity Key</h2>
                     <div className="rarity-list">
@@ -190,6 +198,8 @@ const AdminDashboardPage = ({ user }) => {
                             </div>
                         ))}
                     </div>
+
+                    {/* Reset button to open another pack */}
                     {openedCards.length > 0 && !isOpeningAnimation && (
                         <button
                             onClick={handleResetPack}

@@ -10,9 +10,9 @@
     --transition: all 0.3s ease;
 }
 
-/* Main container with increased top padding for spacing below the navbar */
+/* MAIN CONTAINER */
 .dashboard-container {
-    padding: 6rem 1.5rem 2rem; /* Increased top padding */
+    padding: 6rem 1.5rem 2rem;
     background: var(--background-dark);
     min-height: 100vh;
     color: var(--text-primary);
@@ -20,7 +20,6 @@
     position: relative;
 }
 
-    /* Dashboard Title using a pseudo-element for consistency */
     .dashboard-container::before {
         content: "Dashboard";
         display: block;
@@ -45,7 +44,7 @@
             border-radius: 2px;
         }
 
-/* Grid Container */
+/* GRID LAYOUT */
 .grid-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -53,7 +52,7 @@
     margin-top: 1rem;
 }
 
-/* Users with Packs Section */
+/* USERS WITH PACKS */
 .users-with-packs {
     grid-column: 1 / 2;
     background: var(--surface-dark);
@@ -102,7 +101,7 @@
         color: var(--text-primary);
     }
 
-/* Open Pack Section */
+/* OPEN PACK SECTION */
 .selected-user-section {
     grid-column: 2 / 3;
     background: var(--surface-dark);
@@ -143,7 +142,7 @@
             cursor: not-allowed;
         }
 
-/* Card Rarity Key Section */
+/* CARD RARITY KEY */
 .card-rarity-key {
     grid-column: 3 / 4;
     background: var(--surface-dark);
@@ -207,7 +206,7 @@
     flex-grow: 1;
 }
 
-/* Opened Cards Section */
+/* OPENED CARDS SECTION */
 .opened-cards {
     grid-column: 1 / 4;
     background: var(--surface-dark);
@@ -234,22 +233,25 @@
     border: none !important;
 }
 
+/* TRANSITIONS FOR HIDDEN/FADE-IN */
 .card-wrapper {
     transition: opacity 0.5s ease, transform 0.5s ease !important;
 }
 
+    /* .hidden -> fully transparent, pointer-events none */
     .card-wrapper.hidden {
-        opacity: 0;
-        transform: translateY(20px);
+        opacity: 0 !important;
+        transform: translateY(20px) !important;
         pointer-events: none;
     }
 
+    /* .fade-in -> fully visible, normal pointer-events */
     .card-wrapper.fade-in {
-        opacity: 1;
-        transform: translateY(0);
+        opacity: 1 !important;
+        transform: translateY(0) !important;
     }
 
-/* Pack Opening Overlay */
+/* VIDEO OVERLAY */
 .pack-opening-overlay {
     position: fixed;
     top: 0;
