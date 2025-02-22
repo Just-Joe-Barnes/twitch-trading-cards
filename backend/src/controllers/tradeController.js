@@ -147,10 +147,16 @@ const updateTradeStatus = async (req, res) => {
 
     console.log(`[Trade Status Update] Received request to ${status} trade with ID: ${tradeId}`);
 
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
-        const trade = await Trade.findById(tradeId);
+        // Find the trade with the session
+        const trade = await Trade.findById(tradeId).session(session);
         if (!trade) {
             console.log("[Trade Status Update] Trade not found");
+            await session.abortTransaction();
+            session.endSession();
             return res.status(404).json({ message: "Trade not found" });
         }
 
@@ -161,40 +167,49 @@ const updateTradeStatus = async (req, res) => {
         if ((['accepted', 'rejected'].includes(status) && !isRecipient) ||
             (status === 'cancelled' && !isSender)) {
             console.log("[Trade Status Update] Unauthorized action");
+            await session.abortTransaction();
+            session.endSession();
             return res.status(403).json({ message: "Unauthorized action" });
         }
 
         if (!['accepted', 'rejected', 'cancelled'].includes(status)) {
             console.log("[Trade Status Update] Invalid status provided");
+            await session.abortTransaction();
+            session.endSession();
             return res.status(400).json({ message: "Invalid status" });
         }
 
+        // Process acceptance inside transaction
         if (status === 'accepted') {
             console.log("[Trade Status Update] Processing trade acceptance...");
 
-            const sender = await User.findById(trade.sender);
-            const recipient = await User.findById(trade.recipient);
+            // Find sender and recipient with session
+            const sender = await User.findById(trade.sender).session(session);
+            const recipient = await User.findById(trade.recipient).session(session);
 
             if (!sender || !recipient) {
                 console.log("[Trade Status Update] Sender or Recipient not found");
+                await session.abortTransaction();
+                session.endSession();
                 return res.status(404).json({ message: "Sender or Recipient not found" });
             }
 
             // --- Transfer Packs ---
             console.log(`Before pack transfer: Sender Packs: ${sender.packs}, Recipient Packs: ${recipient.packs}`);
 
-            // Check if sender has enough packs to offer
             if (sender.packs < trade.offeredPacks) {
                 console.log("[Trade Status Update] Sender does not have enough packs");
+                await session.abortTransaction();
+                session.endSession();
                 return res.status(400).json({ message: "Sender does not have enough packs" });
             }
-            // Check if recipient has enough packs to cover their requested packs
             if (recipient.packs < trade.requestedPacks) {
                 console.log("[Trade Status Update] Recipient does not have enough packs");
+                await session.abortTransaction();
+                session.endSession();
                 return res.status(400).json({ message: "Recipient does not have enough packs" });
             }
 
-            // Transfer packs
             sender.packs = sender.packs - trade.offeredPacks + trade.requestedPacks;
             recipient.packs = recipient.packs - trade.requestedPacks + trade.offeredPacks;
             console.log(`After pack transfer: Sender Packs: ${sender.packs}, Recipient Packs: ${recipient.packs}`);
@@ -222,19 +237,24 @@ const updateTradeStatus = async (req, res) => {
                 }
             });
 
-            // Save the updated user collections
-            await sender.save();
-            await recipient.save();
+            // Save both users within the session
+            await sender.save({ session });
+            await recipient.save({ session });
         }
 
-        // Update the trade status (works for accepted, rejected, or cancelled)
+        // Update the trade status (applies to accepted, rejected, or cancelled)
         trade.status = status;
-        await trade.save();
+        await trade.save({ session });
+
+        await session.commitTransaction();
+        session.endSession();
 
         console.log(`[Trade Status Update] Trade ${status} successfully`);
         res.status(200).json({ message: `Trade ${status} successfully`, trade });
     } catch (error) {
         console.error("[Trade Status Update] Error updating trade status:", error);
+        await session.abortTransaction();
+        session.endSession();
         res.status(500).json({ message: "Failed to update trade status", error: error.message });
     }
 };
