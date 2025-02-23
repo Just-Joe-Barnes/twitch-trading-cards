@@ -148,6 +148,12 @@ router.post('/refresh-token', async (req, res) => {
         console.error('Error refreshing Twitch Access Token:', error.response?.data || error.message);
         res.status(500).json({ error: 'Failed to refresh token' });
     }
+
+    router.get('/test', (req, res) => {
+        console.log('GET /api/twitch/test reached!');
+        res.send('Twitch route test OK');
+    });
+
 });
 
 module.exports = router;
