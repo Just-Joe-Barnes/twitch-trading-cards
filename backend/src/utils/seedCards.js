@@ -127,6 +127,17 @@ const seedDatabase = async () => {
                 availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
             })),
         },
+        {
+            name: 'Damien',
+            imageUrl: '/images/cards/damien.webp',
+            flavorText: '“Man is just another animal, sometimes better, but more often worse than those walk on all fours, who, because of his “divine spiritual and intellectual development,” has become the most vicious animal off all! - joshyoatcakes',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
+        },
     ];
 
     try {

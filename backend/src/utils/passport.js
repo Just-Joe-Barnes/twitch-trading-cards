@@ -15,16 +15,17 @@ passport.use(
             clientID: process.env.TWITCH_CLIENT_ID,
             clientSecret: process.env.TWITCH_CLIENT_SECRET,
             callbackURL: process.env.TWITCH_REDIRECT_URI,
-            scope: ["user_read", "channel_read"],
+            scope: ["user:read:email", "channel:read:subscriptions"],
         },
         (accessToken, refreshToken, profile, done) => {
-            profile.token = accessToken; // Attach token to the user profile
-            console.log('AccessToken:', accessToken); // Debugging AccessToken
-            console.log('RefreshToken:', refreshToken); // Debugging RefreshToken
-            console.log('Profile:', profile); // Debugging Profile
+            profile.token = accessToken;
+            console.log("AccessToken:", accessToken);
+            console.log("RefreshToken:", refreshToken);
+            console.log("Profile:", profile);
             return done(null, profile);
         }
     )
 );
+
 
 module.exports = passport;
