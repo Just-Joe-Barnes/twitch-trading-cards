@@ -256,7 +256,7 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
 
             {/* Add a brief paragraph explaining the catalogue */}
             <p className="catalogue-description">
-                Browse the complete catalogue of cards available in the system. Use the search and filters below to find cards by name, rarity, or sort order. Click on a card to view details and manage your featured collection.
+                Browse your entire collection here! Use the filters below to limit your searches by rarity, name or mint number. You can also add up to 4 cards to your profile page as "featured cards". Double them them again, or click the "Clear Featured Cards" button to remove all cards from the featured section.
             </p>
 
             {/* Filters */}
@@ -276,14 +276,17 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
                             return (
                                 <option
                                     key={r.name}
-                                    value={lower}
+                                    value={r.name.toLowerCase()}
                                     style={{
-                                        color: rarityColors[lower],
-                                        ...(lower === 'unique' ? { WebkitTextStroke: '0.5px white' } : {})
+                                        color: rarityColors[r.name.toLowerCase()],
+                                        ...(r.name.toLowerCase() === 'unique'
+                                            ? { textShadow: '1px 1px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white' }
+                                            : {})
                                     }}
                                 >
                                     {r.name}
                                 </option>
+
                             );
                         })}
                 </select>
