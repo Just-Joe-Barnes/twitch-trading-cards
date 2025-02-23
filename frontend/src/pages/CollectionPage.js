@@ -270,16 +270,22 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
                 <select value={rarity} onChange={(e) => setRarity(e.target.value)}>
                     <option value="">All Rarities</option>
                     {rarities
-                        .filter((r) => r !== 'All')
-                        .map((r) => (
-                            <option
-                                key={r.name}
-                                value={r.name.toLowerCase()}
-                                style={{ color: rarityColors[r.name.toLowerCase()] }}
-                            >
-                                {r.name}
-                            </option>
-                        ))}
+                        .filter((r) => r.name !== 'All')
+                        .map((r) => {
+                            const lower = r.name.toLowerCase();
+                            return (
+                                <option
+                                    key={r.name}
+                                    value={lower}
+                                    style={{
+                                        color: rarityColors[lower],
+                                        ...(lower === 'unique' ? { WebkitTextStroke: '0.5px white' } : {})
+                                    }}
+                                >
+                                    {r.name}
+                                </option>
+                            );
+                        })}
                 </select>
                 <select value={sort} onChange={(e) => setSort(e.target.value)}>
                     <option value="">Sort By</option>

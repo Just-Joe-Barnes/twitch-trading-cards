@@ -203,7 +203,7 @@ body {
         opacity: 1;
     }
 
-    80% {
+    70% {
         opacity: 1;
     }
 
@@ -225,7 +225,7 @@ body {
     justify-content: center;
     font-size: 1rem;
     pointer-events: none;
-    animation: fadeInOut 1.5s ease-in-out forwards;
+    animation: fadeInOut 2.5s ease-in-out forwards;
 }
 
 /* Responsive Styles */
