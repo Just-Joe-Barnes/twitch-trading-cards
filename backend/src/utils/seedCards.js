@@ -138,13 +138,42 @@ const seedDatabase = async () => {
                 availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
             })),
         },
+        {
+            name: 'The Cursed Bristles',
+            imageUrl: '/images/cards/thecursedbristles.png',
+            flavorText: 'Worn by a long-forgotten pirate lord, this beard carries the whispers of the deep. Each strand is tangled with lost treasure, but those who dare to claim it are doomed to an itch that never fades. -ItchyBeard',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
+        },
+        {
+            name: 'Suspicious Harddrive',
+            imageUrl: '/images/cards/suspiciousharddrive.webp',
+            flavorText: 'A sussy harddrive left behind by a character with... particular... taste.',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
+        },
+        {
+            name: 'Helm Of A Hero',
+            imageUrl: '/images/cards/helmofahero.webp',
+            flavorText: 'The head piece of choice for a soon to be, Elden Lord.',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
+        },
     ];
 
     try {
-        // Clear the existing cards from the Card collection
-        await Card.deleteMany({});
-        console.log('Existing cards cleared from the Card collection.');
-
         // Insert the new cards
         await Card.insertMany(cards);
         console.log('Cards seeded successfully.');
