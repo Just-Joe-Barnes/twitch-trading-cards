@@ -85,7 +85,12 @@ const handleTwitchEvent = async (event) => {
                 break;
 
             case 'channel.channel_points_custom_reward_redemption.add':
-                if (reward && reward.title === 'Earn a Pack') {
+                // Check that the reward title and cost match what we expect
+                if (
+                    reward &&
+                    reward.title === "Get A Ned's Decks Pack" &&
+                    reward.cost === 10000
+                ) {
                     console.log(`Processing channel points redemption for user ${user_name}`);
                     const updatedPointsUser = await User.findOneAndUpdate(
                         { twitchId: user_id },
@@ -143,7 +148,6 @@ router.post('/webhook', verifyTwitchRequest, async (req, res) => {
     console.log('Unhandled message type received:', messageType);
     res.status(400).send('Bad Request');
 });
-
 
 // Endpoint to manually refresh the token for testing purposes
 router.post('/refresh-token', async (req, res) => {
