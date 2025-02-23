@@ -86,7 +86,7 @@ const seedDatabase = async () => {
         {
             name: 'The Pirate Legend',
             imageUrl: '/images/cards/piratelegend.webp',
-            flavorText: 'Its not getting to 100 hours, never has, never will.',
+            flavorText: "Its not getting to 100 hours, never has, never will.",
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,
@@ -174,6 +174,10 @@ const seedDatabase = async () => {
     ];
 
     try {
+        // Clear existing cards first to avoid duplicates
+        await Card.deleteMany({});
+        console.log('Existing cards cleared.');
+
         // Insert the new cards
         await Card.insertMany(cards);
         console.log('Cards seeded successfully.');

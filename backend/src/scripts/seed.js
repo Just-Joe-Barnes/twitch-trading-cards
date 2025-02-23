@@ -25,11 +25,7 @@ mongoose
     .then(async () => {
         console.log('Connected to MongoDB.');
 
-        // Clear the cards array from every user
-        await User.updateMany({}, { $set: { cards: [] } });
-        console.log('All user cards cleared.');
-
-        // Seed the Card collection
+        // Seed the Card collection (this will clear existing cards before inserting new ones)
         await seedDatabase();
 
         await mongoose.disconnect();
