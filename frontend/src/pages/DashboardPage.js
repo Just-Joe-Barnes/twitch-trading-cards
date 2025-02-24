@@ -39,8 +39,8 @@ const DashboardPage = () => {
     // Multiple parent parameters for local dev and Netlify
     const twitchIframeSrc =
         'https://player.twitch.tv/?channel=just_joe_'
-        + '&parent=localhost'
-        + '&parent=myapp.netlify.app';
+        + '&parent=localhost'               // for local dev
+        + '&parent=nedsdecks.netlify.app';  // your live Netlify domain
 
     return (
         <div className="dashboard">
