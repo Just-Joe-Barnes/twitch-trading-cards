@@ -80,13 +80,16 @@ const getPendingTrades = async (req, res) => {
             .populate('sender', 'username cards')
             .populate('recipient', 'username cards');
 
-        // Enrich trades with card details
+        // Enrich trades with card details while guarding against null sender/recipient
         const enrichedTrades = pendingTrades.map(trade => {
-            const offeredCards = trade.sender.cards.filter(card =>
+            const senderData = trade.sender ? trade.sender : { cards: [] };
+            const recipientData = trade.recipient ? trade.recipient : { cards: [] };
+
+            const offeredCards = (senderData.cards || []).filter(card =>
                 trade.offeredItems.some(itemId => itemId.equals(card._id))
             );
 
-            const requestedCards = trade.recipient.cards.filter(card =>
+            const requestedCards = (recipientData.cards || []).filter(card =>
                 trade.requestedItems.some(itemId => itemId.equals(card._id))
             );
 
@@ -104,6 +107,7 @@ const getPendingTrades = async (req, res) => {
         res.status(500).json({ message: 'Failed to fetch pending trades', error: err.message });
     }
 };
+
 
 // Get trades for a user (incoming and outgoing)
 const getTradesForUser = async (req, res) => {
