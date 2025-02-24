@@ -97,7 +97,7 @@ body {
     border: 1px solid var(--border-dark);
     padding: 2rem;
     border-radius: var(--border-radius);
-    text-align: center;
+    text-align: center; /* This centers the container title and such */
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     width: 100%;
     max-width: 1400px;
@@ -130,6 +130,7 @@ body {
     overflow-x: auto;
     scroll-behavior: smooth;
     padding-bottom: 1rem;
+    text-align: left;
 }
 
 /* View Collection Button */

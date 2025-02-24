@@ -30,12 +30,19 @@ const ProfilePage = () => {
                     profile = await fetchUserProfile();
                 }
                 setUsername(profile.username || 'User');
-                // Set featured cards from the profile response.
-                setFeaturedCards(profile.featuredCards || []);
+                // Get featured cards from the profile response.
+                let tempFeatured = profile.featuredCards || [];
                 if (profile._id) {
                     const collectionData = await fetchUserCollection(profile._id);
                     setCollectionCount(collectionData.cards ? collectionData.cards.length : 0);
+                    if (collectionData.cards) {
+                        // Filter out any featured card that is no longer in the collection.
+                        tempFeatured = tempFeatured.filter(card =>
+                            collectionData.cards.some(c => c._id === card._id)
+                        );
+                    }
                 }
+                setFeaturedCards(tempFeatured);
             } catch (error) {
                 console.error('Error fetching user profile:', error);
             } finally {
