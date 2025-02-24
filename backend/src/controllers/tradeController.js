@@ -120,13 +120,17 @@ const getTradesForUser = async (req, res) => {
             .populate('sender', 'username cards')
             .populate('recipient', 'username cards');
 
-        // Enrich trades with full card details
+        // Enrich trades with full card details, safely handling missing sender/recipient
         const enrichedTrades = trades.map(trade => {
-            const offeredCards = trade.sender.cards.filter(card =>
+            // If sender or recipient is missing, default to an object with an empty cards array
+            const senderData = trade.sender ? trade.sender : { cards: [] };
+            const recipientData = trade.recipient ? trade.recipient : { cards: [] };
+
+            const offeredCards = (senderData.cards || []).filter(card =>
                 trade.offeredItems.some(itemId => itemId.equals(card._id))
             );
 
-            const requestedCards = trade.recipient.cards.filter(card =>
+            const requestedCards = (recipientData.cards || []).filter(card =>
                 trade.requestedItems.some(itemId => itemId.equals(card._id))
             );
 
@@ -140,7 +144,7 @@ const getTradesForUser = async (req, res) => {
         res.status(200).json(enrichedTrades);
     } catch (error) {
         console.error("[Backend] Error fetching trades:", error);
-        res.status(500).json({ message: "Failed to fetch trades." });
+        res.status(500).json({ message: "Failed to fetch trades.", error: error.message });
     }
 };
 
