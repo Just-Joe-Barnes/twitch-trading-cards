@@ -46,6 +46,8 @@ const handleTwitchEvent = async (event) => {
         switch (type) {
             case 'channel.subscribe':
                 console.log(`Processing channel.subscribe event for user ${user_name} (${user_id})`);
+                // For subscription events, you may choose to update packs only if user exists.
+                // For now, we use findOneAndUpdate with upsert: true (as before) unless you want to add a check.
                 const updatedUser = await User.findOneAndUpdate(
                     { twitchId: user_id },
                     { $inc: { packs: 1 } },
@@ -81,15 +83,14 @@ const handleTwitchEvent = async (event) => {
                     reward.cost === 10000
                 ) {
                     console.log(`Processing channel points redemption for user ${user_name}`);
-                    const updatedPointsUser = await User.findOneAndUpdate(
-                        { twitchId: user_id },
-                        { $inc: { packs: 1 } },
-                        { upsert: true, new: true }
-                    );
-                    if (updatedPointsUser) {
-                        console.log(`1 pack successfully awarded to user ${user_name} for redeeming channel points. Updated packs: ${updatedPointsUser.packs}`);
+                    // Validate that the user exists in our database by matching the twitchId.
+                    const existingUser = await User.findOne({ twitchId: user_id });
+                    if (existingUser) {
+                        existingUser.packs += 1;
+                        await existingUser.save();
+                        console.log(`1 pack successfully awarded to user ${user_name} for redeeming channel points. Updated packs: ${existingUser.packs}`);
                     } else {
-                        console.error(`Failed to update user ${user_name} (${user_id})`);
+                        console.error(`User not found for Twitch ID ${user_id} (${user_name}). Redemption ignored.`);
                     }
                 } else {
                     console.log(`Unhandled reward title: ${reward?.title}`);
@@ -161,12 +162,11 @@ router.post('/refresh-token', async (req, res) => {
         console.error('Error refreshing Twitch Access Token:', error.response?.data || error.message);
         res.status(500).json({ error: 'Failed to refresh token' });
     }
+});
 
-    router.get('/test', (req, res) => {
-        console.log('GET /api/twitch/test reached!');
-        res.send('Twitch route test OK');
-    });
-
+router.get('/test', (req, res) => {
+    console.log('GET /api/twitch/test reached!');
+    res.send('Twitch route test OK');
 });
 
 module.exports = router;
