@@ -1,3 +1,4 @@
+// src/pages/ProfilePage.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import BaseCard from '../components/BaseCard';
@@ -30,7 +31,7 @@ const ProfilePage = () => {
                     profile = await fetchUserProfile();
                 }
                 setUsername(profile.username || 'User');
-                // Get featured cards from the profile response.
+                // Set featured cards from the profile response.
                 let tempFeatured = profile.featuredCards || [];
                 if (profile._id) {
                     const collectionData = await fetchUserCollection(profile._id);
@@ -38,7 +39,7 @@ const ProfilePage = () => {
                     if (collectionData.cards) {
                         // Filter out any featured card that is no longer in the collection.
                         tempFeatured = tempFeatured.filter(card =>
-                            collectionData.cards.some(c => c._id === card._id)
+                            collectionData.cards.some(c => c._id.toString() === card._id.toString())
                         );
                     }
                 }
