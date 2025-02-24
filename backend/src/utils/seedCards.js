@@ -170,6 +170,17 @@ const seedDatabase = async () => {
                 remainingCopies: rarity.totalCopies,
                 availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
             })),
+        },
+        {
+            name: 'Lightbringer',
+            imageUrl: '/images/cards/lightbringer.webp',
+            flavorText: 'Not all those who wander are lost. - johnt7uk (Papa John)',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
         }
     ];
 
