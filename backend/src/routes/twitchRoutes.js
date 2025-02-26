@@ -46,8 +46,7 @@ const handleTwitchEvent = async (event) => {
         switch (type) {
             case 'channel.subscribe':
                 console.log(`Processing channel.subscribe event for user ${user_name} (${user_id})`);
-                // For subscription events, you may choose to update packs only if user exists.
-                // For now, we use findOneAndUpdate with upsert: true (as before) unless you want to add a check.
+                // Using upsert: true to create a user if one doesn't exist (if that's desired for subs)
                 const updatedUser = await User.findOneAndUpdate(
                     { twitchId: user_id },
                     { $inc: { packs: 1 } },
@@ -111,11 +110,12 @@ const handleTwitchEvent = async (event) => {
 router.post('/webhook', verifyTwitchRequest, async (req, res) => {
     const messageType = req.headers['twitch-eventsub-message-type'];
     const event = req.body.event;
-    const subscriptionType = req.body.subscription?.type;
+    // Use the subscription type if available; otherwise fall back to event.type.
+    const eventType = req.body.subscription ? req.body.subscription.type : event.type;
 
     console.log('--- DEBUG LOGS: /webhook ---');
     console.log('Message Type:', messageType);
-    console.log('Subscription Type:', subscriptionType);
+    console.log('Event Type:', eventType);
     console.log('Event Data:', event);
 
     if (messageType === 'webhook_callback_verification') {
@@ -126,7 +126,7 @@ router.post('/webhook', verifyTwitchRequest, async (req, res) => {
     if (messageType === 'notification') {
         try {
             console.log('Processing notification...');
-            await handleTwitchEvent({ ...event, type: subscriptionType }); // Pass type explicitly
+            await handleTwitchEvent({ ...event, type: eventType });
             console.log('Notification processed successfully.');
             return res.status(200).send('Event processed');
         } catch (error) {
