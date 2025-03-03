@@ -9,6 +9,7 @@ const AdminDashboardPage = ({ user }) => {
 
     const [usersWithPacks, setUsersWithPacks] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const [loading, setLoading] = useState(false);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
@@ -50,6 +51,11 @@ const AdminDashboardPage = ({ user }) => {
         };
         fetchData();
     }, [user, navigate]);
+
+    // Compute filtered users based on the search query
+    const filteredUsers = usersWithPacks.filter(u =>
+        u.username.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     // Select user
     const toggleUserSelection = (u) => {
@@ -141,6 +147,16 @@ const AdminDashboardPage = ({ user }) => {
                 {/* Users with Packs */}
                 <div className="users-with-packs">
                     <h2>Users with Packs</h2>
+                    {/* New search bar */}
+                    <div className="users-search">
+                        <input
+                            type="text"
+                            placeholder="Search users..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="users-search-input"
+                        />
+                    </div>
                     {loading && <p>Loading users...</p>}
                     <table className="users-table">
                         <thead>
@@ -151,7 +167,7 @@ const AdminDashboardPage = ({ user }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {usersWithPacks.map((u) => (
+                            {filteredUsers.map((u) => (
                                 <tr
                                     key={u._id}
                                     className={selectedUser?._id === u._id ? 'selected' : ''}

@@ -46,7 +46,7 @@ const handleTwitchEvent = async (event) => {
         switch (type) {
             case 'channel.subscribe':
                 console.log(`Processing channel.subscribe event for user ${user_name} (${user_id})`);
-                // Using upsert: true to create a user if one doesn't exist (if that's desired for subs)
+                // For standard subscriptions, award 1 pack to the subscriber.
                 const updatedUser = await User.findOneAndUpdate(
                     { twitchId: user_id },
                     { $inc: { packs: 1 } },
@@ -60,17 +60,25 @@ const handleTwitchEvent = async (event) => {
                 break;
 
             case 'channel.subscription.gift':
+                // Log the entire event payload for debugging
+                console.log('Processing channel.subscription.gift event:', event);
+                // Typically, user_id represents the gifter.
+                // If user_id is not available, fallback to event.recipient_id.
                 const giftedCount = total || 1;
-                console.log(`Processing channel.subscription.gift with ${giftedCount} gifts by user ${user_name}`);
+                const targetId = user_id || event.recipient_id;
+                if (!targetId) {
+                    console.error("No valid Twitch ID found for gifted subscription event", event);
+                    break;
+                }
                 const updatedGiftedUser = await User.findOneAndUpdate(
-                    { twitchId: user_id },
+                    { twitchId: targetId },
                     { $inc: { packs: giftedCount } },
                     { upsert: true, new: true }
                 );
                 if (updatedGiftedUser) {
-                    console.log(`${giftedCount} packs successfully awarded to user ${user_name}. Updated packs: ${updatedGiftedUser.packs}`);
+                    console.log(`${giftedCount} packs successfully awarded to user with Twitch ID ${targetId}. Updated packs: ${updatedGiftedUser.packs}`);
                 } else {
-                    console.error(`Failed to update user ${user_name} (${user_id})`);
+                    console.error(`Failed to update user for gifted subscription event with Twitch ID ${targetId}`);
                 }
                 break;
 

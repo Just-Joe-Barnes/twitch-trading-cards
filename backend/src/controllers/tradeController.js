@@ -13,7 +13,7 @@ const createTrade = async (req, res) => {
         const sender = await User.findById(senderId);
         if (!sender) {
             console.log("Sender not found:", senderId);
-            return res.status(404).json({ message: "Sender not found" });
+            return res.status(404).json({ popupMessage: "Sender not found" });
         }
 
         // Check recipient (username or ObjectId)
@@ -26,7 +26,18 @@ const createTrade = async (req, res) => {
 
         if (!recipientUser) {
             console.log("Recipient not found:", recipient);
-            return res.status(404).json({ message: "Recipient not found" });
+            return res.status(404).json({ popupMessage: "Recipient not found" });
+        }
+
+        // Validate pack availability:
+        if (sender.packs < offeredPacks) {
+            console.log(`Sender ${sender.username} does not have enough packs. Has: ${sender.packs}, Offered: ${offeredPacks}`);
+            return res.status(400).json({ popupMessage: "Sender does not have enough packs to offer." });
+        }
+
+        if (recipientUser.packs < requestedPacks) {
+            console.log(`Recipient ${recipientUser.username} does not have enough packs. Has: ${recipientUser.packs}, Requested: ${requestedPacks}`);
+            return res.status(400).json({ popupMessage: "Recipient does not have enough packs to fulfill the request." });
         }
 
         // Fetch offered card details from the sender's cards array
@@ -42,12 +53,12 @@ const createTrade = async (req, res) => {
         console.log('Offered Cards:', offeredCardsDetails);
         console.log('Requested Cards:', requestedCardsDetails);
 
-        // Ensure we have card details before saving
-        if (offeredCardsDetails.length === 0 && requestedCardsDetails.length === 0) {
-            return res.status(400).json({ message: "No matching cards found in users' collections." });
+        // Ensure we have at least some valid trade data
+        if (offeredCardsDetails.length === 0 && requestedCardsDetails.length === 0 && offeredPacks === 0 && requestedPacks === 0) {
+            return res.status(400).json({ popupMessage: "No matching cards found in users' collections and no packs offered." });
         }
 
-        // Save the trade with card IDs
+        // Save the trade with card IDs and pack numbers
         const trade = new Trade({
             sender: sender._id,
             recipient: recipientUser._id,
@@ -63,7 +74,7 @@ const createTrade = async (req, res) => {
         res.status(201).json(trade);
     } catch (err) {
         console.error("Error creating trade:", err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ popupMessage: err.message });
     }
 };
 
