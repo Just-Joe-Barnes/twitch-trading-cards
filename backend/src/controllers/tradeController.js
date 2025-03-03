@@ -32,12 +32,16 @@ const createTrade = async (req, res) => {
         // Validate pack availability:
         if (sender.packs < offeredPacks) {
             console.log(`Sender ${sender.username} does not have enough packs. Has: ${sender.packs}, Offered: ${offeredPacks}`);
-            return res.status(400).json({ popupMessage: "Sender does not have enough packs to offer." });
+            return res.status(400).json({
+                popupMessage: `Trade failed: Sender only has ${sender.packs} pack(s), but tried to offer ${offeredPacks}.`
+            });
         }
 
         if (recipientUser.packs < requestedPacks) {
             console.log(`Recipient ${recipientUser.username} does not have enough packs. Has: ${recipientUser.packs}, Requested: ${requestedPacks}`);
-            return res.status(400).json({ popupMessage: "Recipient does not have enough packs to fulfill the request." });
+            return res.status(400).json({
+                popupMessage: `Trade failed: Recipient only has ${recipientUser.packs} pack(s), but ${requestedPacks} were requested.`
+            });
         }
 
         // Fetch offered card details from the sender's cards array
