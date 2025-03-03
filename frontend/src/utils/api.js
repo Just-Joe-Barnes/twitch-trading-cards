@@ -140,7 +140,6 @@ export const updateFeaturedCards = async (featuredCards) => {
 
 // Create a new trade
 export const createTrade = async (tradeData) => {
-    console.log('Trade creation endpoint hit!');
     try {
         const response = await fetch(`${API_BASE_URL}/api/trades`, {
             method: 'POST',
@@ -150,9 +149,22 @@ export const createTrade = async (tradeData) => {
             },
             body: JSON.stringify(tradeData),
         });
+
+        // If the response is not OK, parse the JSON error
         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+            let errorMessage = `HTTP error! Status: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                if (errorData.popupMessage) {
+                    errorMessage = errorData.popupMessage;
+                }
+            } catch (parseError) {
+                console.error('Error parsing JSON error response:', parseError);
+            }
+            throw new Error(errorMessage);
         }
+
+        // If response is OK, parse the JSON for the trade data
         return await response.json();
     } catch (error) {
         console.error('Error creating trade:', error);
