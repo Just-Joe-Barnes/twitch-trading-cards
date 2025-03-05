@@ -20,7 +20,7 @@ const seedDatabase = async () => {
         {
             name: 'Glintstone Guardian',
             imageUrl: '/images/cards/glintstoneguardian.webp',
-            flavorText: 'The only thing between you and the academy'
+            flavorText: 'The only thing between you and the academy',  // <-- Added comma here
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,
@@ -181,7 +181,7 @@ const seedDatabase = async () => {
                 remainingCopies: rarity.totalCopies,
                 availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
             })),
-        }
+        },
         {
             name: 'Solstice',
             imageUrl: '/images/cards/solstice.png',
@@ -192,10 +192,10 @@ const seedDatabase = async () => {
                 remainingCopies: rarity.totalCopies,
                 availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
             })),
-        }
+        },
         {
             name: 'Pre-Game Boogie',
-            imageUrl: '/images/cards/solstice.png',
+            imageUrl: '/images/cards/pregameboogie.webp',
             flavorText: 'Before throwing themselves into the horde of bugs, the team get together to throw back some beers and have a little boogie',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -203,11 +203,22 @@ const seedDatabase = async () => {
                 remainingCopies: rarity.totalCopies,
                 availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
             })),
-        }
+        },
         {
             name: 'The Lord Of Blood',
-            imageUrl: '/images/cards/lordofblood.png',
+            imageUrl: '/images/cards/lordofblood.webp',
             flavorText: 'Honored guest, welcome to the birthplace of our dynasty.',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
+        },
+        {
+            name: 'Touch Grass',
+            imageUrl: '/images/cards/touchgrass.png',
+            flavorText: 'Sometimes we all need to take a break from clicking heads, completing quests and cursing our teammates.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,
