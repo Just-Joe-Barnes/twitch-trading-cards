@@ -1,286 +1,388 @@
-﻿const mongoose = require('mongoose');
-const Trade = require('../models/tradeModel');
-const User = require('../models/userModel');
+﻿import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { fetchTrades, createTrade, searchUsers, fetchWithAuth } from "../utils/api";
+import BaseCard from "../components/BaseCard";
+import "../styles/TradingPage.css";
+import { rarities } from "../constants/rarities";
 
-// Create a new trade
-const createTrade = async (req, res) => {
-    console.log('Trade creation endpoint hit!');
-    const { senderId, recipient, offeredItems, requestedItems, offeredPacks, requestedPacks } = req.body;
-    console.log('Trade data received:', req.body);
+const TradingPage = ({ userId }) => {
+    const [showTradeForm, setShowTradeForm] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [userSuggestions, setUserSuggestions] = useState([]);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [showTradePreview, setShowTradePreview] = useState(true);
+    const [userCollection, setUserCollection] = useState([]);
+    const [recipientCollection, setRecipientCollection] = useState([]);
+    const [tradeOffer, setTradeOffer] = useState([]);
+    const [tradeRequest, setTradeRequest] = useState([]);
+    const [offeredPacks, setOfferedPacks] = useState(0);
+    const [requestedPacks, setRequestedPacks] = useState(0);
+    const [loggedInUser, setLoggedInUser] = useState(null);
 
-    try {
-        // Check sender
-        const sender = await User.findById(senderId);
-        if (!sender) {
-            console.log("Sender not found:", senderId);
-            return res.status(404).json({ popupMessage: "Sender not found" });
-        }
+    const [leftSearch, setLeftSearch] = useState("");
+    const [leftRarity, setLeftRarity] = useState("");
+    const [leftSort, setLeftSort] = useState("mintNumber");
+    const [leftSortDir, setLeftSortDir] = useState("asc");
+    const [rightSearch, setRightSearch] = useState("");
+    const [rightRarity, setRightRarity] = useState("");
+    const [rightSort, setRightSort] = useState("mintNumber");
+    const [rightSortDir, setRightSortDir] = useState("asc");
 
-        // Check recipient (username or ObjectId)
-        let recipientUser;
-        if (mongoose.Types.ObjectId.isValid(recipient)) {
-            recipientUser = await User.findById(recipient);
+    // Fetch logged-in user data
+    useEffect(() => {
+        fetchWithAuth("/api/users/me")
+            .then((data) => {
+                setLoggedInUser(data);
+            })
+            .catch(console.error);
+    }, []);
+
+    // Fetch user search suggestions
+    useEffect(() => {
+        if (searchQuery.length > 1) {
+            searchUsers(searchQuery)
+                .then(setUserSuggestions)
+                .catch(console.error);
         } else {
-            recipientUser = await User.findOne({ username: recipient });
+            setUserSuggestions([]);
         }
+    }, [searchQuery]);
 
-        if (!recipientUser) {
-            console.log("Recipient not found:", recipient);
-            return res.status(404).json({ popupMessage: "Recipient not found" });
+    // Fetch collections for logged-in user and selected user
+    useEffect(() => {
+        if (selectedUser && loggedInUser?._id) {
+            fetchWithAuth(`/api/users/${loggedInUser._id}/collection`)
+                .then((data) => setUserCollection(data.cards || []))
+                .catch(console.error);
+
+            fetchWithAuth(`/api/users/${selectedUser}/collection`)
+                .then((data) => setRecipientCollection(data.cards || []))
+                .catch(console.error);
         }
+    }, [selectedUser, loggedInUser]);
 
-        // Validate pack availability:
-        if (sender.packs < offeredPacks) {
-            console.log(`Sender ${sender.username} does not have enough packs. Has: ${sender.packs}, Offered: ${offeredPacks}`);
-            return res.status(400).json({
-                popupMessage: `Trade failed: Sender only has ${sender.packs} pack(s), but tried to offer ${offeredPacks}.`
-            });
-        }
+    const handleUserSelect = (username) => {
+        setSelectedUser(username);
+        setSearchQuery("");
+        setUserSuggestions([]);
+    };
 
-        if (recipientUser.packs < requestedPacks) {
-            console.log(`Recipient ${recipientUser.username} does not have enough packs. Has: ${recipientUser.packs}, Requested: ${requestedPacks}`);
-            return res.status(400).json({
-                popupMessage: `Trade failed: Recipient only has ${recipientUser.packs} pack(s), but ${requestedPacks} were requested.`
-            });
-        }
-
-        // Fetch offered card details from the sender's cards array
-        const offeredCardsDetails = sender.cards.filter(card =>
-            offeredItems.includes(card._id.toString())
-        );
-
-        // Fetch requested card details from the recipient's cards array
-        const requestedCardsDetails = recipientUser.cards.filter(card =>
-            requestedItems.includes(card._id.toString())
-        );
-
-        console.log('Offered Cards:', offeredCardsDetails);
-        console.log('Requested Cards:', requestedCardsDetails);
-
-        // Ensure we have at least some valid trade data
-        if (offeredCardsDetails.length === 0 && requestedCardsDetails.length === 0 && offeredPacks === 0 && requestedPacks === 0) {
-            return res.status(400).json({ popupMessage: "No matching cards found in users' collections and no packs offered." });
-        }
-
-        // Save the trade with card IDs and pack numbers
-        const trade = new Trade({
-            sender: sender._id,
-            recipient: recipientUser._id,
-            offeredItems: offeredCardsDetails.map(card => card._id),
-            requestedItems: requestedCardsDetails.map(card => card._id),
-            offeredPacks,
-            requestedPacks,
-            status: 'pending'
-        });
-
-        await trade.save();
-        console.log('Trade saved successfully:', trade);
-        res.status(201).json(trade);
-    } catch (err) {
-        console.error("Error creating trade:", err);
-        res.status(500).json({ popupMessage: err.message });
-    }
-};
-
-// Get pending trades for a user
-const getPendingTrades = async (req, res) => {
-    const { userId } = req.params;
-
-    try {
-        // Fetch pending trades
-        const pendingTrades = await Trade.find({
-            $or: [{ sender: userId }, { recipient: userId }],
-            status: 'pending'
-        })
-            .populate('sender', 'username cards')
-            .populate('recipient', 'username cards');
-
-        // Enrich trades with card details while guarding against null sender/recipient
-        const enrichedTrades = pendingTrades.map(trade => {
-            const senderData = trade.sender ? trade.sender : { cards: [] };
-            const recipientData = trade.recipient ? trade.recipient : { cards: [] };
-
-            const offeredCards = (senderData.cards || []).filter(card =>
-                trade.offeredItems.some(itemId => itemId.equals(card._id))
-            );
-
-            const requestedCards = (recipientData.cards || []).filter(card =>
-                trade.requestedItems.some(itemId => itemId.equals(card._id))
-            );
-
-            return {
-                ...trade.toObject(),
-                offeredItems: offeredCards,
-                requestedItems: requestedCards
-            };
-        });
-
-        console.log("[Backend] Pending trades fetched with populated items:", enrichedTrades);
-        res.status(200).json(enrichedTrades);
-    } catch (err) {
-        console.error("[Backend] Error fetching pending trades:", err);
-        res.status(500).json({ message: 'Failed to fetch pending trades', error: err.message });
-    }
-};
-
-// Get trades for a user (incoming and outgoing)
-const getTradesForUser = async (req, res) => {
-    const userId = req.params.userId;
-
-    try {
-        const trades = await Trade.find({
-            $or: [{ sender: userId }, { recipient: userId }]
-        })
-            .populate('sender', 'username cards')
-            .populate('recipient', 'username cards');
-
-        // Enrich trades with full card details, safely handling missing sender/recipient
-        const enrichedTrades = trades.map(trade => {
-            const senderData = trade.sender ? trade.sender : { cards: [] };
-            const recipientData = trade.recipient ? trade.recipient : { cards: [] };
-
-            const offeredCards = (senderData.cards || []).filter(card =>
-                trade.offeredItems.some(itemId => itemId.equals(card._id))
-            );
-
-            const requestedCards = (recipientData.cards || []).filter(card =>
-                trade.requestedItems.some(itemId => itemId.equals(card._id))
-            );
-
-            return {
-                ...trade.toObject(),
-                offeredItems: offeredCards,
-                requestedItems: requestedCards
-            };
-        });
-
-        res.status(200).json(enrichedTrades);
-    } catch (error) {
-        console.error("[Backend] Error fetching trades:", error);
-        res.status(500).json({ message: "Failed to fetch trades.", error: error.message });
-    }
-};
-
-// Update trade status (accept, reject, or cancel)
-const updateTradeStatus = async (req, res) => {
-    const { tradeId } = req.params;
-    const { status } = req.body;
-
-    console.log(`[Trade Status Update] Received request to ${status} trade with ID: ${tradeId}`);
-
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
-    try {
-        // Find the trade with the session
-        const trade = await Trade.findById(tradeId).session(session);
-        if (!trade) {
-            console.log("[Trade Status Update] Trade not found");
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(404).json({ popupMessage: "Trade not found" });
-        }
-
-        // Authorization Check
-        const isRecipient = trade.recipient.toString() === req.user.id;
-        const isSender = trade.sender.toString() === req.user.id;
-
-        if ((['accepted', 'rejected'].includes(status) && !isRecipient) ||
-            (status === 'cancelled' && !isSender)) {
-            console.log("[Trade Status Update] Unauthorized action");
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(403).json({ popupMessage: "Unauthorized action" });
-        }
-
-        if (!['accepted', 'rejected', 'cancelled'].includes(status)) {
-            console.log("[Trade Status Update] Invalid status provided");
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(400).json({ popupMessage: "Invalid status" });
-        }
-
-        // Process acceptance inside transaction
-        if (status === 'accepted') {
-            console.log("[Trade Status Update] Processing trade acceptance...");
-
-            // Find sender and recipient with session
-            const sender = await User.findById(trade.sender).session(session);
-            const recipient = await User.findById(trade.recipient).session(session);
-
-            if (!sender || !recipient) {
-                console.log("[Trade Status Update] Sender or Recipient not found");
-                await session.abortTransaction();
-                session.endSession();
-                return res.status(404).json({ popupMessage: "Sender or Recipient not found" });
-            }
-
-            // Check packs before processing trade acceptance
-            if (sender.packs < trade.offeredPacks) {
-                console.log(`[Trade Status Update] Sender ${sender.username} only has ${sender.packs} pack(s) but offered ${trade.offeredPacks}`);
-                await session.abortTransaction();
-                session.endSession();
-                return res.status(400).json({ popupMessage: `Trade acceptance failed: Sender only has ${sender.packs} pack(s), but tried to offer ${trade.offeredPacks}.` });
-            }
-            if (recipient.packs < trade.requestedPacks) {
-                console.log(`[Trade Status Update] Recipient ${recipient.username} only has ${recipient.packs} pack(s) but requested ${trade.requestedPacks}`);
-                await session.abortTransaction();
-                session.endSession();
-                return res.status(400).json({ popupMessage: `Trade acceptance failed: Recipient only has ${recipient.packs} pack(s), but ${trade.requestedPacks} were requested.` });
-            }
-
-            console.log(`Before pack transfer: Sender Packs: ${sender.packs}, Recipient Packs: ${recipient.packs}`);
-            sender.packs = sender.packs - trade.offeredPacks + trade.requestedPacks;
-            recipient.packs = recipient.packs - trade.requestedPacks + trade.offeredPacks;
-            console.log(`After pack transfer: Sender Packs: ${sender.packs}, Recipient Packs: ${recipient.packs}`);
-
-            // Transfer offered card items from sender to recipient
-            trade.offeredItems.forEach((itemId) => {
-                const index = sender.cards.findIndex(card => card._id.toString() === itemId.toString());
-                if (index !== -1) {
-                    const card = sender.cards.splice(index, 1)[0];
-                    recipient.cards.push(card);
-                } else {
-                    console.warn(`Offered card with ID ${itemId} not found in sender's collection.`);
+    const applyFilters = (collection, search, rarity, sortBy, sortDir) => {
+        return collection
+            .filter((card) =>
+                card.name.toLowerCase().includes(search.toLowerCase()) &&
+                (rarity ? card.rarity.toLowerCase() === rarity.toLowerCase() : true)
+            )
+            .sort((a, b) => {
+                let result = 0;
+                switch (sortBy) {
+                    case "mintNumber":
+                        result = a.mintNumber - b.mintNumber;
+                        break;
+                    case "name":
+                        result = a.name.localeCompare(b.name);
+                        break;
+                    case "rarity":
+                        const rarityA = rarities.findIndex((r) => r.name === a.rarity);
+                        const rarityB = rarities.findIndex((r) => r.name === b.rarity);
+                        result = rarityA - rarityB;
+                        break;
+                    default:
+                        result = 0;
                 }
-            });
+                return sortDir === "asc" ? result : -result;
+            })
+            .slice(0, 15);
+    };
 
-            // Transfer requested card items from recipient to sender
-            trade.requestedItems.forEach((itemId) => {
-                const index = recipient.cards.findIndex(card => card._id.toString() === itemId.toString());
-                if (index !== -1) {
-                    const card = recipient.cards.splice(index, 1)[0];
-                    sender.cards.push(card);
-                } else {
-                    console.warn(`Requested card with ID ${itemId} not found in recipient's collection.`);
-                }
-            });
+    const handleSelectItem = (item, type) => {
+        const setter = type === "offer" ? setTradeOffer : setTradeRequest;
+        setter((prev) => {
+            const exists = prev.some((i) => i._id === item._id);
+            return exists
+                ? prev.filter((i) => i._id !== item._id)
+                : prev.length < 3
+                    ? [...prev, item]
+                    : prev;
+        });
+    };
 
-            // Save both users within the session
-            await sender.save({ session });
-            await recipient.save({ session });
+    const handleRemoveItem = (card, type) => {
+        const setter = type === "offer" ? setTradeOffer : setTradeRequest;
+        setter((prev) => prev.filter((c) => c._id !== card._id));
+    };
+
+    const handleSubmit = async () => {
+        if (!selectedUser) {
+            alert("Select a user first!");
+            return;
+        }
+        if (!tradeOffer.length && !offeredPacks) {
+            alert("Add items to offer!");
+            return;
+        }
+        if (!tradeRequest.length && !requestedPacks) {
+            alert("Add items to request!");
+            return;
+        }
+        if (!loggedInUser?._id) {
+            alert("User authentication error!");
+            return;
         }
 
-        // Update the trade status (applies to accepted, rejected, or cancelled)
-        trade.status = status;
-        await trade.save({ session });
+        const tradePayload = {
+            senderId: loggedInUser._id,
+            recipient: selectedUser,
+            offeredItems: tradeOffer.map((item) => item._id),
+            requestedItems: tradeRequest.map((item) => item._id),
+            offeredPacks: Number(offeredPacks),
+            requestedPacks: Number(requestedPacks)
+        };
 
-        await session.commitTransaction();
-        session.endSession();
+        try {
+            await createTrade(tradePayload);
+            alert("Trade submitted successfully!");
+            setTradeOffer([]);
+            setTradeRequest([]);
+            setOfferedPacks(0);
+            setRequestedPacks(0);
+        } catch (error) {
+            console.error("Error creating trade:", error);
+            alert(`Error creating trade: ${error.message}`);
+        }
+    };
 
-        console.log(`[Trade Status Update] Trade ${status} successfully`);
-        res.status(200).json({ popupMessage: `Trade ${status} successfully`, trade });
-    } catch (error) {
-        console.error("[Trade Status Update] Error updating trade status:", error);
-        await session.abortTransaction();
-        session.endSession();
-        res.status(500).json({ popupMessage: "Failed to update trade status", error: error.message });
-    }
+    return (
+        <div className="trading-container">
+            <h1>Trading</h1>
+            <p className="trading-info">
+                Welcome to the trading system! You can trade up to 3 cards and/or up to 10 packs with other users.
+                Double-click on any selected card to remove it from your trade. Make sure to review your offers
+                and requests carefully before confirming a trade. Pending trades can be managed through the "View Pending Trades" button below.
+            </p>
+
+            <div className="trade-control-buttons">
+                <button
+                    className="toggle-form-button"
+                    onClick={() => setShowTradeForm(!showTradeForm)}
+                >
+                    {showTradeForm ? "Hide Trade Form" : "Create New Trade"}
+                </button>
+                <Link to="/trades/pending">
+                    <button className="view-pending-button">View Pending Trades</button>
+                </Link>
+            </div>
+
+            {showTradeForm && (
+                <>
+                    <div className="user-search">
+                        <input
+                            type="text"
+                            placeholder="Search user to trade with..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        <ul className="suggestions">
+                            {userSuggestions.map((user) => (
+                                <li key={user._id} onClick={() => handleUserSelect(user.username)}>
+                                    {user.username}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {selectedUser && (
+                        <div className="trade-interface">
+                            <div className="trade-preview-control">
+                                <button
+                                    className="toggle-preview-button"
+                                    onClick={() => setShowTradePreview(!showTradePreview)}
+                                >
+                                    {showTradePreview ? "Hide Trade Preview" : "Show Trade Preview"}
+                                </button>
+                            </div>
+
+                            {showTradePreview && (
+                                <div className="trade-preview">
+                                    <div className="offer-section">
+                                        <h3>Your Offer</h3>
+                                        <div className="cards-horizontal">
+                                            {tradeOffer.map((card) => (
+                                                <div
+                                                    key={card._id}
+                                                    className="card-preview-wrapper"
+                                                    onDoubleClick={() => handleRemoveItem(card, "offer")}
+                                                >
+                                                    <BaseCard
+                                                        name={card.name}
+                                                        image={card.imageUrl}
+                                                        description={card.flavorText}
+                                                        rarity={card.rarity}
+                                                        mintNumber={card.mintNumber}
+                                                        maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="pack-control">
+                                            <label>Packs: </label>
+                                            <input
+                                                type="number"
+                                                value={offeredPacks}
+                                                onChange={(e) =>
+                                                    setOfferedPacks(Math.min(10, Math.max(0, e.target.value)))
+                                                }
+                                                min="0"
+                                                max="10"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="request-section">
+                                        <h3>Your Request</h3>
+                                        <div className="cards-horizontal">
+                                            {tradeRequest.map((card) => (
+                                                <div
+                                                    key={card._id}
+                                                    className="card-preview-wrapper"
+                                                    onDoubleClick={() => handleRemoveItem(card, "request")}
+                                                >
+                                                    <BaseCard
+                                                        name={card.name}
+                                                        image={card.imageUrl}
+                                                        description={card.flavorText}
+                                                        rarity={card.rarity}
+                                                        mintNumber={card.mintNumber}
+                                                        maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="pack-control">
+                                            <label>Packs: </label>
+                                            <input
+                                                type="number"
+                                                value={requestedPacks}
+                                                onChange={(e) =>
+                                                    setRequestedPacks(Math.min(10, Math.max(0, e.target.value)))
+                                                }
+                                                min="0"
+                                                max="10"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="collections-wrapper">
+                                <div className="collection-panel">
+                                    <div className="filters">
+                                        <input
+                                            type="text"
+                                            placeholder="Search your collection..."
+                                            value={leftSearch}
+                                            onChange={(e) => setLeftSearch(e.target.value)}
+                                        />
+                                        <select value={leftRarity} onChange={(e) => setLeftRarity(e.target.value)}>
+                                            <option value="">All Rarities</option>
+                                            {rarities.map((r) => (
+                                                <option key={r.name} value={r.name}>
+                                                    {r.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <select value={leftSort} onChange={(e) => setLeftSort(e.target.value)}>
+                                            <option value="mintNumber">Mint Number</option>
+                                            <option value="name">Name</option>
+                                            <option value="rarity">Rarity</option>
+                                        </select>
+                                        <select value={leftSortDir} onChange={(e) => setLeftSortDir(e.target.value)}>
+                                            <option value="asc">Ascending</option>
+                                            <option value="desc">Descending</option>
+                                        </select>
+                                    </div>
+                                    <div className="cards-grid">
+                                        {applyFilters(userCollection, leftSearch, leftRarity, leftSort, leftSortDir).map((card) => (
+                                            <div
+                                                key={card._id}
+                                                className={`card-wrapper ${tradeOffer.some((c) => c._id === card._id) ? "selected" : ""}`}
+                                                onClick={() => handleSelectItem(card, "offer")}
+                                            >
+                                                <BaseCard
+                                                    name={card.name}
+                                                    image={card.imageUrl}
+                                                    description={card.flavorText}
+                                                    rarity={card.rarity}
+                                                    mintNumber={card.mintNumber}
+                                                    maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
+                                                />
+                                                {tradeOffer.some((c) => c._id === card._id) && (
+                                                    <div className="selection-badge">✓</div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="collection-panel">
+                                    <div className="filters">
+                                        <input
+                                            type="text"
+                                            placeholder={`Search ${selectedUser}'s collection...`}
+                                            value={rightSearch}
+                                            onChange={(e) => setRightSearch(e.target.value)}
+                                        />
+                                        <select value={rightRarity} onChange={(e) => setRightRarity(e.target.value)}>
+                                            <option value="">All Rarities</option>
+                                            {rarities.map((r) => (
+                                                <option key={r.name} value={r.name}>
+                                                    {r.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <select value={rightSort} onChange={(e) => setRightSort(e.target.value)}>
+                                            <option value="mintNumber">Mint Number</option>
+                                            <option value="name">Name</option>
+                                            <option value="rarity">Rarity</option>
+                                        </select>
+                                        <select value={rightSortDir} onChange={(e) => setRightSortDir(e.target.value)}>
+                                            <option value="asc">Ascending</option>
+                                            <option value="desc">Descending</option>
+                                        </select>
+                                    </div>
+                                    <div className="cards-grid">
+                                        {applyFilters(recipientCollection, rightSearch, rightRarity, rightSort, rightSortDir).map((card) => (
+                                            <div
+                                                key={card._id}
+                                                className={`card-wrapper ${tradeRequest.some((c) => c._id === card._id) ? "selected" : ""}`}
+                                                onClick={() => handleSelectItem(card, "request")}
+                                            >
+                                                <BaseCard
+                                                    name={card.name}
+                                                    image={card.imageUrl}
+                                                    description={card.flavorText}
+                                                    rarity={card.rarity}
+                                                    mintNumber={card.mintNumber}
+                                                    maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
+                                                />
+                                                {tradeRequest.some((c) => c._id === card._id) && (
+                                                    <div className="selection-badge">✓</div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button className="submit-button" onClick={handleSubmit}>
+                                Confirm Trade
+                            </button>
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    );
 };
 
-module.exports = {
-    createTrade,
-    getTradesForUser,
-    getPendingTrades,
-    updateTradeStatus
-};
+export default TradingPage;
