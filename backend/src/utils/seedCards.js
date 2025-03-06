@@ -31,7 +31,7 @@ const seedDatabase = async () => {
         {
             name: 'The Flamboyance',
             imageUrl: '/images/cards/theflamboyance.webp',
-            flavorText: 'The best community on Twitch, the Just Joe Show community.',
+            flavorText: 'The best community on Twitch, the viewers of The Just Joe Show.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,
