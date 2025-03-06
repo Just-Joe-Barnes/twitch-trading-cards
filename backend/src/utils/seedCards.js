@@ -218,7 +218,18 @@ const seedDatabase = async () => {
         {
             name: 'Touch Grass',
             imageUrl: '/images/cards/touchgrass.png',
-            flavorText: 'Sometimes we all need to take a break from clicking heads, completing quests and cursing our teammates.',
+            flavorText: 'Sometimes we all need to take a break from clicking heads, completing quests and cursing our teammates. - scorpion7771',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
+        },
+        {
+            name: 'One More Heist',
+            imageUrl: '/images/cards/onemoreheist.png',
+            flavorText: 'Stealth with a hint on chaos.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,
