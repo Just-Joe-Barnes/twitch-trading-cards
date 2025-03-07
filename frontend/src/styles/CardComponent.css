@@ -60,23 +60,12 @@
     border-color: #e32232;
 }
 
-@keyframes rainbow {
-    0% {
-        border-image: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet) 1;
-    }
-
-    100% {
-        border-image: linear-gradient(90deg, violet, red, orange, yellow, green, blue, indigo) 1;
-    }
-}
-
 .card-container.mythic .card-border {
     border-width: 8px;
     border-style: solid;
     border-image-slice: 1;
-    animation: rainbow 3s linear infinite;
+    border-image: linear-gradient(90deg, #ffcccb, #ffb6c1, #ff69b4, #ff1493, #c71585) 1;
 }
-
 
 .card-container.unique .card-border {
     border-color: black; /* unchanged */
