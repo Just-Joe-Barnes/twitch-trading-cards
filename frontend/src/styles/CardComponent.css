@@ -33,11 +33,11 @@
 
 /* Updated Rarity Border Colors */
 .card-container.basic .card-border {
-    border-color: #8D8D8D; 
+    border-color: #8D8D8D;
 }
 
 .card-container.common .card-border {
-    border-color: #64B5F6; 
+    border-color: #64B5F6;
 }
 
 .card-container.standard .card-border {
@@ -157,6 +157,33 @@
 }
 
 /**************************************
+ * Glare (Lower Rarity)
+ **************************************/
+.card-glare {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 150%;
+    height: 150%;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 3;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 4%, rgba(255,255,255,0) 8%);
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+    transition: opacity 0.1s ease, transform 0.1s ease;
+}
+
+/* Reintroduced Hover Effect for Lower Rarities (Basic, Common, Standard, Uncommon) */
+.card-container.basic:hover .card-glare,
+.card-container.common:hover .card-glare,
+.card-container.standard:hover .card-glare,
+.card-container.uncommon:hover .card-glare {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
+/**************************************
  * Rare Rarity – Holo VStar Effect (Updated)
  **************************************/
 .card-container.rare {
@@ -233,7 +260,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-image: linear-gradient(40deg, transparent 30%, red 50%, transparent 40%), linear-gradient(40deg, transparent 35%, red 50%, transparent 65%), linear-gradient(40deg, transparent 55%, red 50%, transparent 65%), url('../assets/textures/holo3.png'), url('../assets/textures/holo3.png'), url('../assets/textures/galaxy.jpg');
+        background-image: linear-gradient(40deg, transparent 30%, rgba(0,206,209,0.8) 50%, transparent 90%), linear-gradient(40deg, transparent 35%, rgba(0,190,220,0.75) 50%, transparent 65%), linear-gradient(40deg, transparent 25%, rgba(0,230,215,0.7) 50%, transparent 75%), url('../assets/textures/holo3.png'), url('../assets/textures/holo3.png'), url('../assets/textures/galaxy.jpg');
         background-blend-mode: screen, screen, screen, overlay, soft-light, multiply;
         background-size: 200% 100%, 200% 100%, 200% 100%, cover, cover, cover;
         background-repeat: no-repeat;
@@ -264,11 +291,11 @@
 
 @keyframes legendaryGlow {
     0% {
-        filter: brightness(1.2) drop-shadow(0 0 10px red);
+        filter: brightness(1.2) drop-shadow(0 0 10px #00ced1);
     }
 
     100% {
-        filter: brightness(1.3) drop-shadow(0 0 20px red);
+        filter: brightness(1.3) drop-shadow(0 0 20px #00ced1);
     }
 }
 
@@ -324,7 +351,7 @@
 /**************************************
  * Mythic Rarity – Enhanced Effect
  *
- * Existing mythic effects remain unchanged.
+ * Existing mythic effects remain unchanged except for the border.
  **************************************/
 .card-container.mythic {
     position: relative;
@@ -334,11 +361,11 @@
 
 @keyframes pulse-border {
     0%, 100% {
-        box-shadow: 0 0 10px 2px rgba(239,83,80,0.5);
+        box-shadow: 0 0 10px 2px rgba(255,105,180,0.5);
     }
 
     50% {
-        box-shadow: 0 0 20px 4px rgba(239,83,80,0.8);
+        box-shadow: 0 0 20px 4px rgba(255,105,180,0.8);
     }
 }
 
@@ -346,12 +373,20 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(133deg, #EF5350, #EF5350);
+    background: linear-gradient(133deg, #ff69b4, #ff1493);
     opacity: 0;
     transition: opacity 1s ease;
     z-index: 1;
 }
 
+.card-container.mythic:hover::before {
+    opacity: 1;
+}
+
+.card-container.mythic:hover {
+    box-shadow: 0 0 30px 15px rgba(255,105,180,1);
+    border: none;
+}
 
 .card-container.mythic .mythic-particles,
 .card-container.mythic .mythic-holographic-overlay,
@@ -422,6 +457,8 @@
 }
 
 /* --- New Mythic Overlays (Only Affect Mythic Cards) --- */
+
+/* Rainbow overlay using a GIF for mythic cards is replaced with a gradient of pink tones */
 .card-container.mythic .mythic-rainbow-overlay {
     position: absolute;
     top: 0;
@@ -475,6 +512,7 @@
     position: relative;
     overflow: hidden;
     filter: grayscale(90%) contrast(2) brightness(1.2);
+    background: #444444;
 }
 
     .card-container.unique .neo-rain {
@@ -515,6 +553,8 @@
     .card-container.unique:hover .card-mint {
         text-shadow: 0 0 10px #c90a0a, 0 0 20px #c90a0a, 0 0 30px #c90a0a, 0 0 40px #c90a0a;
         color: white;
+        background: black;
+        border-color: deeppink;
     }
 
     .card-container.unique:hover .card-artwork img {
