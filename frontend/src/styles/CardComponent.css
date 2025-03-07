@@ -515,8 +515,6 @@
     .card-container.unique:hover .card-mint {
         text-shadow: 0 0 10px #c90a0a, 0 0 20px #c90a0a, 0 0 30px #c90a0a, 0 0 40px #c90a0a;
         color: white;
-        background: black;
-        border-color: deeppink;
     }
 
     .card-container.unique:hover .card-artwork img {
