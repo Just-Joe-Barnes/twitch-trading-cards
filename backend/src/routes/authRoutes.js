@@ -18,6 +18,9 @@ router.get(
         failureRedirect: FRONTEND_URL, // Redirect here if authentication fails
     }),
     async (req, res) => {
+        // Added log to confirm the environment variable
+        console.log("[AuthRoutes] process.env.FRONTEND_URL:", process.env.FRONTEND_URL);
+
         const user = req.user;
         console.log("Twitch login successful, user:", user);
 
@@ -67,7 +70,9 @@ router.get(
 
         // Redirect to the frontend login page with the token in the query string
         const redirectUrl = `${FRONTEND_URL}/login?token=${token}`;
-        console.log("Redirecting to:", redirectUrl);
+        // Added log to confirm the final redirect URL
+        console.log("[AuthRoutes] Redirecting to:", redirectUrl);
+
         res.redirect(redirectUrl);
     }
 );
