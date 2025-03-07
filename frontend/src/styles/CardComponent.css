@@ -33,35 +33,35 @@
 
 /* Updated Rarity Border Colors */
 .card-container.basic .card-border {
-    border-color: #8D8D8D; /* darker gray */
+    border-color: #8D8D8D; 
 }
 
 .card-container.common .card-border {
-    border-color: #B0B0B0; /* lighter gray, clearly distinct from Basic */
+    border-color: #64B5F6; 
 }
 
 .card-container.standard .card-border {
-    border-color: #64B5F6; /* light blue */
+    border-color: #66BB6A;
 }
 
 .card-container.uncommon .card-border {
-    border-color: #66BB6A; /* vibrant green */
+    border-color: #1976D2;
 }
 
 .card-container.rare .card-border {
-    border-color: #1976D2; /* a deeper, more saturated blue than standard */
+    border-color: #AB47BC;
 }
 
 .card-container.epic .card-border {
-    border-color: #AB47BC; /* deep purple */
+    border-color: #FFA726;
 }
 
 .card-container.legendary .card-border {
-    border-color: #FFA726; /* warm orange */
+    border-color: #EF5350;
 }
 
 .card-container.mythic .card-border {
-    border-color: #EF5350; /* rich red */
+    border-color: #ed51d8;
 }
 
 .card-container.unique .card-border {
