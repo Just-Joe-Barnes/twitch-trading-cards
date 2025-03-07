@@ -175,7 +175,7 @@
            3. A gold-tone gradient.
            4. A cyan/blue gradient.
         */
-        background-image: linear-gradient(130deg, transparent 40%, purple 50%, transparent 60%), url('../assets/textures/holo3.png'), linear-gradient(130deg, transparent 0%, rgba(229,226,40,0.5) 50%, transparent 100%), linear-gradient(130deg, transparent 0%, rgba(0,206,209,0.5) 50%, transparent 100%);
+        background-image: linear-gradient(130deg, transparent 40%, purple 50%, transparent 60%), url('../assets/textures/holo3.png'), linear-gradient(130deg, transparent 0%, purple 50%, transparent 100%), linear-gradient(130deg, transparent 0%, purple 50%, transparent 100%);
         background-blend-mode: screen, multiply, color-dodge, color-dodge;
         background-size: 200% 100%, cover, 200% 100%, 200% 100%;
         background-repeat: no-repeat;
@@ -231,7 +231,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-image: linear-gradient(40deg, transparent 30%, rgba(0,206,209,0.8) 50%, transparent 90%), linear-gradient(40deg, transparent 35%, rgba(0,190,220,0.75) 50%, transparent 65%), linear-gradient(40deg, transparent 25%, rgba(0,230,215,0.7) 50%, transparent 75%), url('../assets/textures/holo3.png'), url('../assets/textures/holo3.png'), url('../assets/textures/galaxy.jpg');
+        background-image: linear-gradient(40deg, transparent 30%, #db0d1e 50%, transparent 90%), linear-gradient(40deg, transparent 35%, #e03f4c 50%, transparent 65%), linear-gradient(40deg, transparent 25%, #87101a 50%, transparent 75%), url('../assets/textures/holo3.png'), url('../assets/textures/holo3.png'), url('../assets/textures/galaxy.jpg');
         background-blend-mode: screen, screen, screen, overlay, soft-light, multiply;
         background-size: 200% 100%, 200% 100%, 200% 100%, cover, cover, cover;
         background-repeat: no-repeat;
