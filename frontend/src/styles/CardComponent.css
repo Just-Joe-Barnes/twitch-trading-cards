@@ -113,12 +113,12 @@
     mix-blend-mode: screen;
     pointer-events: none;
     z-index: 5;
-    opacity: 0.5; /* default increased to 0.5 */
+    opacity: 0.5; /* default */
     transition: opacity 0.3s ease;
 }
 
 .card-container.legendary .card-artwork:hover::before {
-    opacity: 0.9; /* on hover increased to 0.9 */
+    opacity: 0.9; /* on hover */
 }
 
 /* Text Styles */
@@ -231,25 +231,6 @@
     position: relative;
     overflow: hidden;
 }
-
-    .card-container.legendary .card-artwork::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: url('../assets/textures/lightning.gif') calc(50% + var(--lightning-x, 0)) calc(50% + var(--lightning-y, 0)) / cover no-repeat;
-        mix-blend-mode: screen;
-        pointer-events: none;
-        z-index: 5;
-        opacity: 0.5;
-        transition: opacity 0.3s ease;
-    }
-
-    .card-container.legendary .card-artwork:hover::before {
-        opacity: 0.9;
-    }
 
     .card-container.legendary::after {
         content: "";
@@ -495,7 +476,7 @@
         opacity: 0.5;
     }
 
-    /* Ensure text elements retain the same background on hover */
+    /* Ensure text elements match the container color (#444444) both on/off hover */
     .card-container.unique .card-name,
     .card-container.unique .card-description,
     .card-container.unique .card-mint {
@@ -517,9 +498,6 @@
 
     .card-container.unique:hover {
         background: #444444;
-    }
-
-    .card-container.unique:hover {
         box-shadow: 0 0 30px 10px rgba(255, 0, 0, 0.9);
     }
 
