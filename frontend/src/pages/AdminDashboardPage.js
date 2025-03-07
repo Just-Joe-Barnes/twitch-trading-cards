@@ -19,13 +19,13 @@ const AdminDashboardPage = ({ user }) => {
 
     // Simple rarities (unchanged)
     const cardRarities = [
-        { rarity: 'Basic', color: '#a0a0a0' },
-        { rarity: 'Common', color: '#78c2ad' },
-        { rarity: 'Standard', color: '#4a90e2' },
-        { rarity: 'Uncommon', color: '#9068be' },
-        { rarity: 'Rare', color: '#e5a228' },
-        { rarity: 'Epic', color: '#ff4500' },
-        { rarity: 'Legendary', color: '#72f1fc' },
+        { rarity: 'Basic', color: '#8D8D8D' },
+        { rarity: 'Common', color: '#64B5F6' },
+        { rarity: 'Standard', color: '#66BB6A' },
+        { rarity: 'Uncommon', color: '#1976D2' },
+        { rarity: 'Rare', color: '#AB47BC' },
+        { rarity: 'Epic', color: '#FFA726' },
+        { rarity: 'Legendary', color: '#e32232' },
         { rarity: 'Mythic', color: 'hotpink' },
         { rarity: 'Unique', color: 'black' },
         { rarity: 'Divine', color: 'white' },
