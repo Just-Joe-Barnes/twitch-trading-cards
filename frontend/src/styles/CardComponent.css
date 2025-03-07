@@ -61,7 +61,6 @@
 }
 
 .card-container.mythic .card-border {
-    border-width: 8px;
     border-style: solid;
     border-image-slice: 1;
     border-image: linear-gradient(90deg, #ffcccb, #ffb6c1, #ff69b4, #ff1493, #c71585) 1;
@@ -330,7 +329,6 @@
 .card-container.mythic {
     position: relative;
     transition: box-shadow 1s ease, border 1s ease;
-    border: 2px solid #EF5350;
     animation: pulse-border 2s infinite;
 }
 
