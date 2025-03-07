@@ -526,7 +526,7 @@
     }
 
     .card-container.unique:hover {
-        box-shadow: 0 0 30px 10px rgba(255, 0, 0, 0.8);
+        box-shadow: 0 0 30px 10px rgba(255, 0, 0, 0.9);
     }
 
 /**************************************
