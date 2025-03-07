@@ -475,7 +475,6 @@
     position: relative;
     overflow: hidden;
     filter: grayscale(90%) contrast(2) brightness(1.2);
-    background: #444444;
 }
 
     .card-container.unique .neo-rain {
