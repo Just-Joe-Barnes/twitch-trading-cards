@@ -31,45 +31,45 @@
     z-index: 2;
 }
 
-/* Rarity Border Colors */
+/* Updated Rarity Border Colors */
 .card-container.basic .card-border {
-    border-color: #9E9E9E;
+    border-color: #8D8D8D; /* darker gray */
 }
 
 .card-container.common .card-border {
-    border-color: #C0C0C0;
+    border-color: #B0B0B0; /* lighter gray, clearly distinct from Basic */
 }
 
 .card-container.standard .card-border {
-    border-color: #64B5F6;
+    border-color: #64B5F6; /* light blue */
 }
 
 .card-container.uncommon .card-border {
-    border-color: #66BB6A;
+    border-color: #66BB6A; /* vibrant green */
 }
 
 .card-container.rare .card-border {
-    border-color: #42A5F5;
+    border-color: #1976D2; /* a deeper, more saturated blue than standard */
 }
 
 .card-container.epic .card-border {
-    border-color: #AB47BC;
+    border-color: #AB47BC; /* deep purple */
 }
 
 .card-container.legendary .card-border {
-    border-color: #FFA726;
+    border-color: #FFA726; /* warm orange */
 }
 
 .card-container.mythic .card-border {
-    border-color: #EF5350;
+    border-color: #EF5350; /* rich red */
 }
 
 .card-container.unique .card-border {
-    border-color: black;
+    border-color: black; /* unchanged */
 }
 
 .card-container.divine .card-border {
-    border-color: #ffd700;
+    border-color: #ffd700; /* unchanged */
 }
 
 /**************************************
@@ -170,11 +170,11 @@
         width: 100%;
         height: 100%;
         /* Four background layers:
-         1. A linear gradient stripe (rotated 130°) that reveals a narrow horizontal stripe.
-         2. The holo texture using holo3.png.
-         3. A gold-tone gradient.
-         4. A cyan/blue gradient.
-      */
+           1. A linear gradient stripe (rotated 130°) that reveals a narrow horizontal stripe.
+           2. The holo texture using holo3.png.
+           3. A gold-tone gradient.
+           4. A cyan/blue gradient.
+        */
         background-image: linear-gradient(130deg, transparent 40%, white 50%, transparent 60%), url('../assets/textures/holo3.png'), linear-gradient(130deg, transparent 0%, rgba(229,226,40,0.5) 50%, transparent 100%), linear-gradient(130deg, transparent 0%, rgba(0,206,209,0.5) 50%, transparent 100%);
         background-blend-mode: screen, multiply, color-dodge, color-dodge;
         background-size: 200% 100%, cover, 200% 100%, 200% 100%;
@@ -205,10 +205,6 @@
     overflow: hidden;
 }
 
-    /* Legendary Lightning Overlay (applied to the card image via an inner overlay)
-   This rule will be applied only to the .card-artwork element of legendary cards.
-   It uses lightning.gif at low opacity with parallax.
-*/
     .card-container.legendary .card-artwork::before {
         content: "";
         position: absolute;
@@ -228,12 +224,6 @@
         opacity: 0.6;
     }
 
-    /* Legendary overlay with extra layers:
-   – Three linear gradient stripes (rotated 40°) with different blue tones,
-   – A holo overlay using holo4.png,
-   – A second holo overlay using holo2.png,
-   – A galaxy overlay using galaxy.jpg for extra shine.
-*/
     .card-container.legendary::after {
         content: "";
         position: absolute;
@@ -246,7 +236,6 @@
         background-size: 200% 100%, 200% 100%, 200% 100%, cover, cover, cover;
         background-repeat: no-repeat;
         background-position: var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, center, center, center;
-        /* Use a mask to reveal a narrow horizontal stripe following the cursor */
         -webkit-mask-image: linear-gradient(40deg, transparent 40%, white 50%, transparent 60%);
         mask-image: linear-gradient(40deg, transparent 35%, white 50%, transparent 65%);
         -webkit-mask-size: 200% 100%;
@@ -263,7 +252,6 @@
         opacity: 0.4;
     }
 
-    /* Legendary Card Image Glow */
     .card-container.legendary .card-artwork img {
         transition: filter 0.3s ease;
     }
@@ -441,8 +429,6 @@
 }
 
 /* --- New Mythic Overlays (Only Affect Mythic Cards) --- */
-
-/* Rainbow overlay using rainbowtrip.gif */
 .card-container.mythic .mythic-rainbow-overlay {
     position: absolute;
     top: 0;
@@ -461,7 +447,6 @@
     opacity: 0.3;
 }
 
-/* Holo overlay using holo5.png with a 40° rotated linear gradient stripe and masking */
 .card-container.mythic .mythic-holo-overlay {
     position: absolute;
     top: 0;
@@ -493,16 +478,13 @@
 /**************************************
  * Unique Effects – Gothic & Moody (Reworked)
  **************************************/
-/* Retain the base Unique container styling (borders, box-shadow, etc.) as defined elsewhere */
 .card-container.unique {
     position: relative;
     overflow: hidden;
     filter: grayscale(90%) contrast(2) brightness(1.2);
     background: #444444;
-    /* (Existing animations such as gradientBorder and greyscalePulse remain defined in your base CSS) */
 }
 
-    /* --- Full-Card Neo-Rain Overlay --- */
     .card-container.unique .neo-rain {
         position: absolute;
         inset: 0;
@@ -519,7 +501,6 @@
         transform: scale(1.05);
     }
 
-    /* --- Gothic Unique Overlay --- */
     .card-container.unique .unique-overlay {
         position: absolute;
         inset: 0;
