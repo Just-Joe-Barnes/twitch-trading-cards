@@ -113,13 +113,12 @@
     mix-blend-mode: screen;
     pointer-events: none;
     z-index: 5;
-    /* Increased opacities: default 0.5, hover 0.9 */
-    opacity: 0.5;
+    opacity: 0.5; /* default increased to 0.5 */
     transition: opacity 0.3s ease;
 }
 
 .card-container.legendary .card-artwork:hover::before {
-    opacity: 0.9;
+    opacity: 0.9; /* on hover increased to 0.9 */
 }
 
 /* Text Styles */
@@ -175,7 +174,6 @@
     border-radius: 50%;
     pointer-events: none;
     z-index: 3;
-    /* Use the custom glare color from the container */
     background: radial-gradient(circle at var(--glare-position, 50% 50%), var(--glare-color, rgba(255,255,255,0.5)) 0%, rgba(255,255,255,0) 70%);
     opacity: 0;
     transform: translate(-50%, -50%) scale(0);
@@ -205,12 +203,6 @@
         left: 0;
         width: 100%;
         height: 100%;
-        /* Four background layers:
-       1. Linear gradient stripe (rotated 130°)
-       2. Holo texture from holo3.png
-       3. Gold-tone gradient
-       4. Cyan/blue gradient
-    */
         background-image: linear-gradient(130deg, transparent 40%, purple 50%, transparent 60%), url('../assets/textures/holo3.png'), linear-gradient(130deg, transparent 0%, purple 50%, transparent 100%), linear-gradient(130deg, transparent 0%, purple 50%, transparent 100%);
         background-blend-mode: screen, multiply, color-dodge, color-dodge;
         background-size: 200% 100%, cover, 200% 100%, 200% 100%;
@@ -251,12 +243,12 @@
         mix-blend-mode: screen;
         pointer-events: none;
         z-index: 5;
-        opacity: 0.5; /* default increased to 0.5 */
+        opacity: 0.5;
         transition: opacity 0.3s ease;
     }
 
     .card-container.legendary .card-artwork:hover::before {
-        opacity: 0.9; /* hover increased to 0.9 */
+        opacity: 0.9;
     }
 
     .card-container.legendary::after {
@@ -503,10 +495,10 @@
         opacity: 0.5;
     }
 
+    /* Ensure text elements retain the same background on hover */
     .card-container.unique .card-name,
     .card-container.unique .card-description,
     .card-container.unique .card-mint {
-        /* Keep the same background as the container (#444444) both on and off hover */
         background: #444444;
         transition: none;
     }
@@ -514,7 +506,6 @@
     .card-container.unique:hover .card-name,
     .card-container.unique:hover .card-description,
     .card-container.unique:hover .card-mint {
-        /* Remove the hover background change */
         background: #444444;
         text-shadow: 0 0 10px #c90a0a, 0 0 20px #c90a0a, 0 0 30px #c90a0a, 0 0 40px #c90a0a;
         color: white;
