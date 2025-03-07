@@ -57,7 +57,7 @@
 }
 
 .card-container.legendary .card-border {
-    border-color: #EF5350;
+    border-color: #e32232;
 }
 
 .card-container.mythic .card-border {
@@ -175,7 +175,7 @@
            3. A gold-tone gradient.
            4. A cyan/blue gradient.
         */
-        background-image: linear-gradient(130deg, transparent 40%, white 50%, transparent 60%), url('../assets/textures/holo3.png'), linear-gradient(130deg, transparent 0%, rgba(229,226,40,0.5) 50%, transparent 100%), linear-gradient(130deg, transparent 0%, rgba(0,206,209,0.5) 50%, transparent 100%);
+        background-image: linear-gradient(130deg, transparent 40%, purple 50%, transparent 60%), url('../assets/textures/holo3.png'), linear-gradient(130deg, transparent 0%, rgba(229,226,40,0.5) 50%, transparent 100%), linear-gradient(130deg, transparent 0%, rgba(0,206,209,0.5) 50%, transparent 100%);
         background-blend-mode: screen, multiply, color-dodge, color-dodge;
         background-size: 200% 100%, cover, 200% 100%, 200% 100%;
         background-repeat: no-repeat;
@@ -262,11 +262,11 @@
 
 @keyframes legendaryGlow {
     0% {
-        filter: brightness(1.2) drop-shadow(0 0 10px #00ced1);
+        filter: brightness(1.2) drop-shadow(0 0 10px #e33232);
     }
 
     100% {
-        filter: brightness(1.3) drop-shadow(0 0 20px #00ced1);
+        filter: brightness(1.3) drop-shadow(0 0 20px #e33232);
     }
 }
 
@@ -351,14 +351,6 @@
     z-index: 1;
 }
 
-.card-container.mythic:hover::before {
-    opacity: 1;
-}
-
-.card-container.mythic:hover {
-    box-shadow: 0 0 30px 15px rgba(239,83,80,1);
-    border: none;
-}
 
 .card-container.mythic .mythic-particles,
 .card-container.mythic .mythic-holographic-overlay,
