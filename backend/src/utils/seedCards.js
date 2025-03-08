@@ -258,6 +258,17 @@ const seedDatabase = async () => {
                 remainingCopies: rarity.totalCopies,
                 availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
             })),
+        },
+        {
+            name: 'Flameforged Defender',
+            imageUrl: '/images/cards/flameforgeddefender.jpg',
+            flavorText: 'Blood, fire, tears, misery - we work where the Devil dances - Feuerfly',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
         }
     ];
 
