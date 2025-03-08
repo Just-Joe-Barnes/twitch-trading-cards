@@ -290,3 +290,28 @@ body {
     color: var(--text-primary);
 }
 
+/* Horizontal Card Rarity Key */
+.card-rarity-key-horizontal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.rarity-item-horizontal {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+    .rarity-item-horizontal .color-box {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+
+    .rarity-item-horizontal .rarity-text {
+        font-size: 0.9rem;
+        color: var(--text-primary);
+    }
