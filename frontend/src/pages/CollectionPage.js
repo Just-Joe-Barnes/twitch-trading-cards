@@ -11,7 +11,6 @@ import BaseCard from '../components/BaseCard';
 import '../styles/CollectionPage.css';
 import { rarities } from '../constants/rarities';
 
-// Define a rarity key with colors matching our design
 const cardRarities = [
     { rarity: 'Basic', color: '#8D8D8D' },
     { rarity: 'Common', color: '#64B5F6' },
@@ -25,7 +24,13 @@ const cardRarities = [
     { rarity: 'Divine', color: 'white' },
 ];
 
-const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = false, collectionTitle }) => {
+const CollectionPage = ({
+    mode,
+    onSelectItem,
+    selectedItems = [],
+    hideHeader = false,
+    collectionTitle,
+}) => {
     const { username: collectionOwner } = useParams();
     const [loggedInUser, setLoggedInUser] = useState(null);
     const [allCards, setAllCards] = useState([]);
@@ -37,7 +42,6 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
     const [order, setOrder] = useState('asc');
     const [packQuantity, setPackQuantity] = useState(0);
     const [featuredCards, setFeaturedCards] = useState([]);
-    const [overlayMessages, setOverlayMessages] = useState({});
     const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
 
     const clickTimerRef = useRef(null);
@@ -94,24 +98,27 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
     useEffect(() => {
         let filtered = [...allCards];
 
+        // Search filter
         if (search) {
             filtered = filtered.filter((card) =>
                 card.name.toLowerCase().includes(search.toLowerCase())
             );
         }
 
+        // Rarity filter
         if (rarityFilter) {
             filtered = filtered.filter(
                 (card) => card.rarity.trim().toLowerCase() === rarityFilter.trim().toLowerCase()
             );
         }
 
+        // Sorting
         if (sort) {
             filtered.sort((a, b) => {
                 if (sort === 'mintNumber') {
-                    return order === 'asc'
-                        ? parseInt(a.mintNumber, 10) - parseInt(b.mintNumber, 10)
-                        : parseInt(b.mintNumber, 10) - parseInt(a.mintNumber, 10);
+                    const aNum = parseInt(a.mintNumber, 10);
+                    const bNum = parseInt(b.mintNumber, 10);
+                    return order === 'asc' ? aNum - bNum : bNum - aNum;
                 } else if (sort === 'name') {
                     return order === 'asc'
                         ? a.name.localeCompare(b.name)
@@ -129,6 +136,7 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
             });
         }
 
+        // Show Featured Only
         if (showFeaturedOnly) {
             filtered = filtered.filter((card) =>
                 featuredCards.some((fc) => fc._id === card._id)
@@ -147,7 +155,10 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
                 updatedSelection = selectedItems.filter((item) => item.itemId !== card._id);
             } else {
                 if (selectedItems.length < 4) {
-                    updatedSelection = [...selectedItems, { itemId: card._id, itemType: 'card', card }];
+                    updatedSelection = [
+                        ...selectedItems,
+                        { itemId: card._id, itemType: 'card', card },
+                    ];
                 } else {
                     return;
                 }
@@ -184,31 +195,27 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
 
     const handleCardDoubleClick = async (card) => {
         if (!isOwner) return;
+        // If user already has 4 featured cards, block adding a new one
         const isCurrentlyFeatured = featuredCards.some((fc) => fc._id === card._id);
         if (!isCurrentlyFeatured && featuredCards.length >= 4) {
-            setOverlayMessages((prev) => ({ ...prev, [card._id]: "Maximum of 4 featured cards allowed" }));
-            setTimeout(() => {
-                setOverlayMessages((prev) => {
-                    const newObj = { ...prev };
-                    delete newObj[card._id];
-                    return newObj;
-                });
-            }, 1500);
+            // You could show a toast or quick highlight to indicate "no more featured allowed."
             return;
         }
+
+        // Toggle featured
         try {
             await handleToggleFeatured(card);
-            const message = isCurrentlyFeatured ? "Card removed from featured cards" : "Card added to featured cards";
-            setOverlayMessages((prev) => ({ ...prev, [card._id]: message }));
-            setTimeout(() => {
-                setOverlayMessages((prev) => {
-                    const newObj = { ...prev };
-                    delete newObj[card._id];
-                    return newObj;
-                });
-            }, 1500);
         } catch (error) {
             console.error(error);
+        }
+
+        // Add a short highlight animation on the card
+        const cardElement = document.getElementById(`card-${card._id}`);
+        if (cardElement) {
+            cardElement.classList.add('double-clicked');
+            setTimeout(() => {
+                cardElement.classList.remove('double-clicked');
+            }, 1000); // 1 second “pop” animation
         }
     };
 
@@ -246,9 +253,10 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
             )}
 
             <p className="catalogue-description">
-                Browse your entire collection here! Use the filters below to search by name, rarity, or mint number.
-                You can also add up to 4 cards to your profile page as "featured cards" by double clicking them.
-                Double clicking a card again, or clicking the "Clear Featured Cards" button, will remove them from the featured section.
+                Browse your entire collection here! Use the filters below to search by name, rarity,
+                or mint number. You can also add up to 4 cards to your profile page as "featured
+                cards" by double clicking them. Double clicking a card again, or clicking the "Clear
+                Featured Cards" button, will remove them from the featured section.
             </p>
 
             {/* Filters */}
@@ -314,7 +322,11 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
                     filteredCards.map((card) => (
                         <div
                             key={card._id}
-                            className={`card-item ${selectedItems.some((item) => item.itemId === card._id) ? 'selected' : ''}`}
+                            id={`card-${card._id}`}
+                            className={`card-item ${selectedItems.some((item) => item.itemId === card._id)
+                                    ? 'selected'
+                                    : ''
+                                }`}
                             onClick={() => handleClick(card)}
                             onDoubleClick={() => handleDoubleClick(card)}
                             style={{ position: 'relative' }}
@@ -326,15 +338,11 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
                                 description={card.flavorText}
                                 mintNumber={card.mintNumber}
                                 maxMint={
-                                    rarities.find((r) => r.name.toLowerCase() === card.rarity.toLowerCase())?.totalCopies ||
-                                    '???'
+                                    rarities.find(
+                                        (r) => r.name.toLowerCase() === card.rarity.toLowerCase()
+                                    )?.totalCopies || '???'
                                 }
                             />
-                            {overlayMessages[card._id] && (
-                                <div className="card-overlay">
-                                    {overlayMessages[card._id]}
-                                </div>
-                            )}
                         </div>
                     ))
                 ) : (

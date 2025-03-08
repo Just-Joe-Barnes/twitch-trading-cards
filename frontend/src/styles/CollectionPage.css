@@ -201,41 +201,37 @@ body {
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
 
-/* Overlay Message for Double-Click Feedback */
-@keyframes fadeInOut {
+/* Pop / Highlight animation on double-click */
+.double-clicked {
+    animation: highlightPop 1s ease;
+    z-index: 2; /* So it appears above other cards while animating */
+}
+
+@keyframes highlightPop {
     0% {
-        opacity: 0;
+        transform: scale(1);
+        box-shadow: none;
     }
 
-    15% {
-        opacity: 1;
+    20% {
+        transform: scale(1.1);
+        box-shadow: 0 0 16px var(--brand-primary);
     }
 
-    85% {
-        opacity: 1;
+    40% {
+        transform: scale(1.1);
+        box-shadow: 0 0 24px var(--brand-primary);
+    }
+
+    60% {
+        transform: scale(1.05);
+        box-shadow: 0 0 12px var(--brand-primary);
     }
 
     100% {
-        opacity: 0;
+        transform: scale(1);
+        box-shadow: none;
     }
-}
-
-.card-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.75);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    font-weight: bold;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
-    pointer-events: none;
-    animation: fadeInOut 4s ease-in-out forwards;
 }
 
 /* Horizontal Card Rarity Key with background like cards grid */
