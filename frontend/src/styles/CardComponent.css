@@ -75,7 +75,7 @@
 }
 
 /**************************************
- * Artwork & Text
+ * Artwork
  **************************************/
 .card-artwork {
     flex: none;
@@ -101,65 +101,52 @@
         transition: filter 0.3s ease;
     }
 
-/* Legendary Card – Lightning Overlay (Red-themed) */
-.card-container.legendary .card-artwork::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: url('../assets/textures/lightning.gif') calc(50% + var(--lightning-x, 0)) calc(50% + var(--lightning-y, 0)) / cover no-repeat;
-    mix-blend-mode: screen;
-    pointer-events: none;
-    z-index: 5;
-    opacity: 0.5; /* default */
-    transition: opacity 0.3s ease;
-}
-
-.card-container.legendary .card-artwork:hover::before {
-    opacity: 0.9; /* on hover */
-}
-
-/* Text Styles */
-.card-name,
+/**************************************
+ * Text Elements
+ **************************************/
+/* Remove the brown background globally for .card-description & .card-mint */
 .card-description,
 .card-mint {
     position: relative;
     z-index: 4;
     color: #f5f5dc;
     text-shadow: 1px 1px 2px black;
+    font-style: italic;
+    border-radius: 10px;
+    background: transparent !important; /* Key fix: no more #3a2525 */
+    transition: none;
 }
 
-.card-name {
-    font-size: 1.1rem;
-    margin-bottom: 15px;
-    text-transform: capitalize;
-    margin-left: 10px;
-}
-
+/* Additional styling for .card-description */
 .card-description {
     font-size: 0.9rem;
     margin: 8px 10px;
-    font-style: italic;
     height: 90px;
     overflow: hidden;
     text-overflow: ellipsis;
     padding: 5px;
-    background: #3a2525;
-    border-radius: 10px;
 }
 
+/* Additional styling for .card-mint */
 .card-mint {
     text-align: right;
     font-size: 0.7rem;
     margin-right: 10px;
     margin-bottom: 5px;
-    font-style: italic;
     padding: 3px 6px;
-    background: #3a2525;
-    border-radius: 8px;
     display: inline-block;
+}
+
+/* Name text */
+.card-name {
+    position: relative;
+    z-index: 4;
+    color: #f5f5dc;
+    text-shadow: 1px 1px 2px black;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    text-transform: capitalize;
+    margin-left: 10px;
 }
 
 /**************************************
@@ -189,7 +176,7 @@
 }
 
 /**************************************
- * Rare Rarity – Holo VStar Effect (Updated)
+ * Rare Rarity – Holo VStar Effect
  **************************************/
 .card-container.rare {
     position: relative;
@@ -225,12 +212,31 @@
     }
 
 /**************************************
- * Legendary Rarity – Enhanced Epic Effect (Red-Themed)
+ * Legendary Rarity – Red-Themed
  **************************************/
 .card-container.legendary {
     position: relative;
     overflow: hidden;
 }
+
+    .card-container.legendary .card-artwork::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('../assets/textures/lightning.gif') calc(50% + var(--lightning-x, 0)) calc(50% + var(--lightning-y, 0)) / cover no-repeat;
+        mix-blend-mode: screen;
+        pointer-events: none;
+        z-index: 5;
+        opacity: 0.5;
+        transition: opacity 0.3s ease;
+    }
+
+    .card-container.legendary .card-artwork:hover::before {
+        opacity: 0.9;
+    }
 
     .card-container.legendary::after {
         content: "";
@@ -279,7 +285,7 @@
 }
 
 /**************************************
- * Epic Rarity – Enhanced Effect (Updated)
+ * Epic Rarity – Enhanced Effect
  **************************************/
 .card-container.epic {
     position: relative;
@@ -434,7 +440,7 @@
 }
 
 /**************************************
- * Unique Effects – Gothic & Moody (Reworked)
+ * Unique Effects – Gothic & Moody
  **************************************/
 .card-container.unique {
     position: relative;
@@ -476,7 +482,7 @@
         opacity: 0.5;
     }
 
-    /* Ensure text elements match the container color (#444444) both on/off hover */
+    /* Keep unique text background consistent (#444444) */
     .card-container.unique .card-name,
     .card-container.unique .card-description,
     .card-container.unique .card-mint {
