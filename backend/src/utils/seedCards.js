@@ -19,7 +19,7 @@ const seedDatabase = async () => {
     const cards = [
         {
             name: 'Glintstone Guardian',
-            imageUrl: '/images/cards/glintstoneguardian.webp',
+            imageUrl: '/images/cards/glintstoneguardian.jpg',
             flavorText: 'The only thing between you and the academy',  // <-- Added comma here
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -30,7 +30,7 @@ const seedDatabase = async () => {
         },
         {
             name: 'The Flamboyance',
-            imageUrl: '/images/cards/theflamboyance.webp',
+            imageUrl: '/images/cards/theflamboyance.jpg',
             flavorText: 'The best community on Twitch, the Just Joe Show community.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -41,7 +41,7 @@ const seedDatabase = async () => {
         },
         {
             name: 'Banjos Vanguard',
-            imageUrl: '/images/cards/banjosvanguard.webp',
+            imageUrl: '/images/cards/banjosvanguard.jpg',
             flavorText: 'A former ice guard who protected his country from war and crimes. He is the last surviving Ice Guardian because he was saved by Banjo. - BanjoVGC',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -63,7 +63,7 @@ const seedDatabase = async () => {
         },
         {
             name: 'The Best to Ever Do It',
-            imageUrl: '/images/cards/besttoeverdoit.png',
+            imageUrl: '/images/cards/besttoeverdoit.jpg',
             flavorText: 'All loot, stealth only, DSOD. Gaming.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -74,7 +74,7 @@ const seedDatabase = async () => {
         },
         {
             name: 'Partner In Crime',
-            imageUrl: '/images/cards/partnerincrime.png',
+            imageUrl: '/images/cards/partnerincrime.jpg',
             flavorText: 'They will never see me with these shades on.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -85,7 +85,7 @@ const seedDatabase = async () => {
         },
         {
             name: 'The Pirate Legend',
-            imageUrl: '/images/cards/piratelegend.webp',
+            imageUrl: '/images/cards/piratelegend.jpg',
             flavorText: "Its not getting to 100 hours, never has, never will.",
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -96,7 +96,7 @@ const seedDatabase = async () => {
         },
         {
             name: 'Sneaking Clown',
-            imageUrl: '/images/cards/sneakingclown.webp',
+            imageUrl: '/images/cards/sneakingclown.jpg',
             flavorText: 'Smooth, sleek, sly.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -107,7 +107,7 @@ const seedDatabase = async () => {
         },
         {
             name: 'The Gentlemens Choice',
-            imageUrl: '/images/cards/thegentlemenschoice.webp',
+            imageUrl: '/images/cards/thegentlemenschoice.jpg',
             flavorText: 'Smooth, sleek, sly.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -118,7 +118,7 @@ const seedDatabase = async () => {
         },
         {
             name: 'The Queen',
-            imageUrl: '/images/cards/thequeen.webp',
+            imageUrl: '/images/cards/thequeen.jpg',
             flavorText: 'All hail, the queen. - omgeorgiaa',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -129,7 +129,7 @@ const seedDatabase = async () => {
         },
         {
             name: 'Damien',
-            imageUrl: '/images/cards/damien.png',
+            imageUrl: '/images/cards/damien.jpg',
             flavorText: 'Man is just another animal, sometimes better, but more often worse than those who walk on all fours, who, because of his "divine spiritual and intellectual development," has become the most vicious animal of all! - joshyoatcakes',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -140,7 +140,7 @@ const seedDatabase = async () => {
         },
         {
             name: 'The Cursed Bristles',
-            imageUrl: '/images/cards/thecursedbristles.png',
+            imageUrl: '/images/cards/thecursedbristles.jpg',
             flavorText: 'Worn by a long-forgotten pirate lord, this beard carries the whispers of the deep. Each strand is tangled with lost treasure, but those who dare to claim it are doomed to an itch that never fades. -ItchyBeard',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -151,7 +151,7 @@ const seedDatabase = async () => {
         },
         {
             name: 'Suspicious Harddrive',
-            imageUrl: '/images/cards/suspiciousharddrive.webp',
+            imageUrl: '/images/cards/suspiciousharddrive.jpg',
             flavorText: 'A sussy harddrive left behind by a character with... particular... taste.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -162,7 +162,7 @@ const seedDatabase = async () => {
         },
         {
             name: 'Helm Of A Hero',
-            imageUrl: '/images/cards/helmofahero.webp',
+            imageUrl: '/images/cards/helmofahero.jpg',
             flavorText: 'The head piece of choice for a soon to be, Elden Lord.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -173,7 +173,7 @@ const seedDatabase = async () => {
         },
         {
             name: 'Lightbringer',
-            imageUrl: '/images/cards/lightbringer.webp',
+            imageUrl: '/images/cards/lightbringer.jpg',
             flavorText: 'Not all those who wander are lost. - johnt7uk (Papa John)',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -184,7 +184,7 @@ const seedDatabase = async () => {
         },
         {
             name: 'Solstice',
-            imageUrl: '/images/cards/solstice.png',
+            imageUrl: '/images/cards/solstice.jpg',
             flavorText: 'It is said that in the harshest winters this figure can be seen roaming the forest, her presence a reminder that the heart of winter is alive, ancient and forever protected. - wintertree',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -195,7 +195,7 @@ const seedDatabase = async () => {
         },
         {
             name: 'Pre-Game Boogie',
-            imageUrl: '/images/cards/pregameboogie.webp',
+            imageUrl: '/images/cards/pregameboogie.jpg',
             flavorText: 'Before throwing themselves into the horde of bugs, the team get together to throw back some beers and have a little boogie',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -206,7 +206,7 @@ const seedDatabase = async () => {
         },
         {
             name: 'The Lord Of Blood',
-            imageUrl: '/images/cards/lordofblood.webp',
+            imageUrl: '/images/cards/lordofblood.jpg',
             flavorText: 'Honored guest, welcome to the birthplace of our dynasty.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
@@ -217,7 +217,7 @@ const seedDatabase = async () => {
         },
         {
             name: 'Touch Grass',
-            imageUrl: '/images/cards/touchgrass.png',
+            imageUrl: '/images/cards/touchgrass.jpg',
             flavorText: 'Sometimes we all need to take a break from clicking heads, completing quests and cursing our teammates.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
