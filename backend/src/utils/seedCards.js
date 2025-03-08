@@ -218,7 +218,40 @@ const seedDatabase = async () => {
         {
             name: 'Touch Grass',
             imageUrl: '/images/cards/touchgrass.jpg',
-            flavorText: 'Sometimes we all need to take a break from clicking heads, completing quests and cursing our teammates.',
+            flavorText: 'Sometimes we all need to take a break from clicking heads, completing quests and cursing our teammates. - scorpion7771',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
+        },
+        {
+            name: 'Roundest Zoo',
+            imageUrl: '/images/cards/roundestzoo.jpg',
+            flavorText: 'A new take on a modern zoo, with all the corners cut, literally',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
+        },
+        {
+            name: 'Ads Are Served',
+            imageUrl: '/images/cards/adsareserved.jpg',
+            flavorText: 'Hate to run them, have to run them, screw the purple app.',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
+        },
+        {
+            name: 'Anti-Nerd Spray',
+            imageUrl: '/images/cards/antinerdspray.jpg',
+            flavorText: 'For the poor and nerdy! Spray today!',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,
