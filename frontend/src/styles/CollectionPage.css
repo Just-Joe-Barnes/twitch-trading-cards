@@ -207,11 +207,11 @@ body {
         opacity: 0;
     }
 
-    20% {
+    15% {
         opacity: 1;
     }
 
-    70% {
+    85% {
         opacity: 1;
     }
 
@@ -226,14 +226,16 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    color: var(--brand-primary);
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
     pointer-events: none;
-    animation: fadeInOut 2.5s ease-in-out forwards;
+    animation: fadeInOut 4s ease-in-out forwards;
 }
 
 /* Horizontal Card Rarity Key with background like cards grid */
