@@ -1,11 +1,40 @@
 ﻿// src/pages/TradingPage.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { fetchTrades, createTrade, searchUsers, fetchWithAuth } from "../utils/api";
 import BaseCard from "../components/BaseCard";
 import LoadingSpinner from "../components/LoadingSpinner"; // Import the spinner component
 import "../styles/TradingPage.css";
 import { rarities } from "../constants/rarities";
+
+// Define applyFilters function if not already defined
+const applyFilters = (collection, search, rarity, sortBy, sortDir) => {
+    return collection
+        .filter((card) =>
+            card.name.toLowerCase().includes(search.toLowerCase()) &&
+            (rarity ? card.rarity.toLowerCase() === rarity.toLowerCase() : true)
+        )
+        .sort((a, b) => {
+            let result = 0;
+            switch (sortBy) {
+                case "mintNumber":
+                    result = a.mintNumber - b.mintNumber;
+                    break;
+                case "name":
+                    result = a.name.localeCompare(b.name);
+                    break;
+                case "rarity":
+                    const rarityA = rarities.findIndex((r) => r.name === a.rarity);
+                    const rarityB = rarities.findIndex((r) => r.name === b.rarity);
+                    result = rarityA - rarityB;
+                    break;
+                default:
+                    result = 0;
+            }
+            return sortDir === "asc" ? result : -result;
+        })
+        .slice(0, 15);
+};
 
 const TradingPage = ({ userId }) => {
     const [showTradeForm, setShowTradeForm] = useState(false);
@@ -30,16 +59,19 @@ const TradingPage = ({ userId }) => {
     const [rightSort, setRightSort] = useState("mintNumber");
     const [rightSortDir, setRightSortDir] = useState("asc");
 
-    // Fetch logged-in user data on mount
+    // For handling clicks (to distinguish single from double)
+    const clickTimerRef = useRef(null);
+
+    // Fetch logged-in user data
     useEffect(() => {
         fetchWithAuth("/api/users/me")
             .then((data) => {
                 setLoggedInUser(data);
             })
-            .catch((err) => console.error("Error fetching user data:", err));
+            .catch(console.error);
     }, []);
 
-    // If loggedInUser is not loaded yet, show the global spinner.
+    // If loggedInUser hasn't loaded yet, show the global spinner
     if (!loggedInUser) {
         return <LoadingSpinner />;
     }
@@ -72,34 +104,6 @@ const TradingPage = ({ userId }) => {
         setSelectedUser(username);
         setSearchQuery("");
         setUserSuggestions([]);
-    };
-
-    const applyFilters = (collection, search, rarity, sortBy, sortDir) => {
-        return collection
-            .filter((card) =>
-                card.name.toLowerCase().includes(search.toLowerCase()) &&
-                (rarity ? card.rarity.toLowerCase() === rarity.toLowerCase() : true)
-            )
-            .sort((a, b) => {
-                let result = 0;
-                switch (sortBy) {
-                    case "mintNumber":
-                        result = a.mintNumber - b.mintNumber;
-                        break;
-                    case "name":
-                        result = a.name.localeCompare(b.name);
-                        break;
-                    case "rarity":
-                        const rarityA = rarities.findIndex((r) => r.name === a.rarity);
-                        const rarityB = rarities.findIndex((r) => r.name === b.rarity);
-                        result = rarityA - rarityB;
-                        break;
-                    default:
-                        result = 0;
-                }
-                return sortDir === "asc" ? result : -result;
-            })
-            .slice(0, 15);
     };
 
     const handleSelectItem = (item, type) => {
@@ -157,6 +161,24 @@ const TradingPage = ({ userId }) => {
             console.error("Error creating trade:", error);
             alert(`Error creating trade: ${error.message}`);
         }
+    };
+
+    // Single-click -> select card
+    const handleCardClick = (card) => {
+        if (clickTimerRef.current) return;
+        clickTimerRef.current = setTimeout(() => {
+            handleSelectItem(card, "offer"); // Or handle as needed based on your design
+            clickTimerRef.current = null;
+        }, 250);
+    };
+
+    // Double-click -> remove or toggle featured; using same logic for now.
+    const handleDoubleClick = (card) => {
+        if (clickTimerRef.current) {
+            clearTimeout(clickTimerRef.current);
+            clickTimerRef.current = null;
+        }
+        handleRemoveItem(card, "offer");
     };
 
     return (
