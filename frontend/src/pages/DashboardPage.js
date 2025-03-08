@@ -1,5 +1,7 @@
+// frontend/src/DashboardPage.js
 import React, { useState, useEffect } from 'react';
 import { fetchUserProfile, fetchMyPacks } from '../utils/api';
+import LoadingSpinner from '../components/LoadingSpinner'; // Import your spinner
 import '../styles/DashboardPage.css';
 
 const DashboardPage = () => {
@@ -29,7 +31,8 @@ const DashboardPage = () => {
     }, []);
 
     if (loading) {
-        return <p className="loading-message">Loading...</p>;
+        // Instead of plain text, display the spinner.
+        return <LoadingSpinner />;
     }
 
     if (error) {
@@ -38,9 +41,9 @@ const DashboardPage = () => {
 
     // Multiple parent parameters for local dev and Netlify
     const twitchIframeSrc =
-        'https://player.twitch.tv/?channel=just_joe_'
-        + '&parent=localhost'               // for local dev
-        + '&parent=nedsdecks.netlify.app';  // your live Netlify domain
+        'https://player.twitch.tv/?channel=just_joe_' +
+        '&parent=localhost' +               // for local dev
+        '&parent=nedsdecks.netlify.app';     // your live Netlify domain
 
     return (
         <div className="dashboard">
