@@ -11,19 +11,19 @@ import BaseCard from '../components/BaseCard';
 import '../styles/CollectionPage.css';
 import { rarities } from '../constants/rarities';
 
-// Mapping of rarity names to their corresponding border colors
-const rarityColors = {
-    basic: "#a0a0a0",
-    common: "#78c2ad",
-    standard: "#4a90e2",
-    uncommon: "#9068be",
-    rare: "#e5a228",
-    epic: "#ff4500",
-    legendary: "#00ced1",
-    mythic: "#ff69b4",
-    unique: "black",
-    divine: "#ffd700"
-};
+// Define a rarity key with colors matching our design
+const cardRarities = [
+    { rarity: 'Basic', color: '#8D8D8D' },
+    { rarity: 'Common', color: '#64B5F6' },
+    { rarity: 'Standard', color: '#66BB6A' },
+    { rarity: 'Uncommon', color: '#1976D2' },
+    { rarity: 'Rare', color: '#AB47BC' },
+    { rarity: 'Epic', color: '#FFA726' },
+    { rarity: 'Legendary', color: '#e32232' },
+    { rarity: 'Mythic', color: 'hotpink' },
+    { rarity: 'Unique', color: 'black' },
+    { rarity: 'Divine', color: 'white' },
+];
 
 const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = false, collectionTitle }) => {
     const { username: collectionOwner } = useParams();
@@ -32,17 +32,16 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
     const [filteredCards, setFilteredCards] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
-    const [rarity, setRarity] = useState('');
+    const [rarityFilter, setRarity] = useState('');
     const [sort, setSort] = useState('');
     const [order, setOrder] = useState('asc');
     const [packQuantity, setPackQuantity] = useState(0);
-    const [featuredCards, setFeaturedCards] = useState([]); // current list of featured cards
-    const [overlayMessages, setOverlayMessages] = useState({}); // mapping cardId -> message
-    const [showFeaturedOnly, setShowFeaturedOnly] = useState(false); // filter toggle
+    const [featuredCards, setFeaturedCards] = useState([]);
+    const [overlayMessages, setOverlayMessages] = useState({});
+    const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
 
     const clickTimerRef = useRef(null);
 
-    // Fetch logged-in user's profile
     useEffect(() => {
         const fetchProfile = async () => {
             try {
@@ -55,7 +54,6 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
         fetchProfile();
     }, []);
 
-    // Fetch collection cards
     useEffect(() => {
         const fetchCollection = async () => {
             try {
@@ -78,7 +76,6 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
         fetchCollection();
     }, [collectionOwner, loggedInUser]);
 
-    // Fetch featured cards (only for the owner)
     useEffect(() => {
         const fetchFeatured = async () => {
             try {
@@ -94,7 +91,6 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
         fetchFeatured();
     }, [loggedInUser, collectionOwner]);
 
-    // Apply filters and sorting to cards
     useEffect(() => {
         let filtered = [...allCards];
 
@@ -104,9 +100,9 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
             );
         }
 
-        if (rarity) {
+        if (rarityFilter) {
             filtered = filtered.filter(
-                (card) => card.rarity.trim().toLowerCase() === rarity.trim().toLowerCase()
+                (card) => card.rarity.trim().toLowerCase() === rarityFilter.trim().toLowerCase()
             );
         }
 
@@ -133,7 +129,6 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
             });
         }
 
-        // Apply the featured-only filter if enabled
         if (showFeaturedOnly) {
             filtered = filtered.filter((card) =>
                 featuredCards.some((fc) => fc._id === card._id)
@@ -141,7 +136,7 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
         }
 
         setFilteredCards(filtered);
-    }, [allCards, search, rarity, sort, order, showFeaturedOnly, featuredCards]);
+    }, [allCards, search, rarityFilter, sort, order, showFeaturedOnly, featuredCards]);
 
     const handleCardClick = (card) => {
         if (onSelectItem) {
@@ -154,7 +149,7 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
                 if (selectedItems.length < 4) {
                     updatedSelection = [...selectedItems, { itemId: card._id, itemType: 'card', card }];
                 } else {
-                    return; // Prevent selecting more than 4 cards
+                    return;
                 }
             }
             onSelectItem(updatedSelection);
@@ -172,7 +167,6 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
         }
     };
 
-    // Toggle a card's featured status and update the featured list
     const handleToggleFeatured = async (card) => {
         const isCurrentlyFeatured = featuredCards.some((fc) => fc._id === card._id);
         const newFeaturedCards = isCurrentlyFeatured
@@ -188,7 +182,6 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
         }
     };
 
-    // Handle double-click: toggle featured status and display overlay message
     const handleCardDoubleClick = async (card) => {
         if (!isOwner) return;
         const isCurrentlyFeatured = featuredCards.some((fc) => fc._id === card._id);
@@ -219,7 +212,6 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
         }
     };
 
-    // Distinguish between single and double click
     const handleClick = (card) => {
         if (clickTimerRef.current) return;
         clickTimerRef.current = setTimeout(() => {
@@ -236,7 +228,6 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
         handleCardDoubleClick(card);
     };
 
-    // New: Clear all featured cards button handler
     const handleClearFeatured = async () => {
         try {
             await updateFeaturedCards([]);
@@ -254,9 +245,10 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
                 <h1>{collectionTitle || `${collectionOwner || loggedInUser}'s Collection`}</h1>
             )}
 
-            {/* Add a brief paragraph explaining the catalogue */}
             <p className="catalogue-description">
-                Browse your entire collection here! Use the filters below to limit your searches by rarity, name or mint number. You can also add up to 4 cards to your profile page as "featured cards" by double clicking them. Double clicking a card again, or click the "Clear Featured Cards" button to remove all card(s) from the featured section.
+                Browse your entire collection here! Use the filters below to search by name, rarity, or mint number.
+                You can also add up to 4 cards to your profile page as "featured cards" by double clicking them.
+                Double clicking a card again, or clicking the "Clear Featured Cards" button, will remove them from the featured section.
             </p>
 
             {/* Filters */}
@@ -267,28 +259,15 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
-                <select value={rarity} onChange={(e) => setRarity(e.target.value)}>
+                <select value={rarityFilter} onChange={(e) => setRarity(e.target.value)}>
                     <option value="">All Rarities</option>
                     {rarities
                         .filter((r) => r.name !== 'All')
-                        .map((r) => {
-                            const lower = r.name.toLowerCase();
-                            return (
-                                <option
-                                    key={r.name}
-                                    value={r.name.toLowerCase()}
-                                    style={{
-                                        color: rarityColors[r.name.toLowerCase()],
-                                        ...(r.name.toLowerCase() === 'unique'
-                                            ? { textShadow: '1px 1px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white' }
-                                            : {})
-                                    }}
-                                >
-                                    {r.name}
-                                </option>
-
-                            );
-                        })}
+                        .map((r) => (
+                            <option key={r.name} value={r.name.toLowerCase()}>
+                                {r.name}
+                            </option>
+                        ))}
                 </select>
                 <select value={sort} onChange={(e) => setSort(e.target.value)}>
                     <option value="">Sort By</option>
@@ -317,27 +296,15 @@ const CollectionPage = ({ mode, onSelectItem, selectedItems = [], hideHeader = f
                 </div>
             </div>
 
-            {mode && (
-                <div className="pack-selection">
-                    <label>Offer Packs:</label>
-                    <input
-                        type="number"
-                        value={packQuantity}
-                        onChange={(e) => {
-                            const quantity = Math.max(0, Math.min(parseInt(e.target.value || 0, 10), 10));
-                            setPackQuantity(quantity);
-                            if (onSelectItem) {
-                                onSelectItem([
-                                    ...selectedItems.filter((item) => item.itemType !== 'pack'),
-                                    { itemId: 'pack', itemType: 'pack', quantity },
-                                ]);
-                            }
-                        }}
-                        min="0"
-                        max="10"
-                    />
-                </div>
-            )}
+            {/* Card Rarity Key - Horizontal */}
+            <div className="card-rarity-key-horizontal">
+                {cardRarities.map((r) => (
+                    <div key={r.rarity} className="rarity-item-horizontal">
+                        <span className="color-box" style={{ backgroundColor: r.color }} />
+                        <span className="rarity-text">{r.rarity}</span>
+                    </div>
+                ))}
+            </div>
 
             {/* Cards */}
             <div className="cards-container">

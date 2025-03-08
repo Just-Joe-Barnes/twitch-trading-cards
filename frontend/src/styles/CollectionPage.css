@@ -43,54 +43,13 @@ body {
             border-radius: 2px;
         }
 
-/* Instructions Section */
-.instructions {
-    background: var(--surface-dark);
-    border: 1px solid var(--border-dark);
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
-    color: var(--text-primary);
+/* Catalogue description paragraph styling */
+.catalogue-description {
     text-align: center;
-    font-size: 1rem;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    color: var(--text-primary);
 }
-
-/* Cards Grid */
-.cards-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1.5rem;
-    padding: 2rem;
-    background: var(--surface-darker);
-    border-radius: 16px;
-    border: 1px solid var(--border-dark);
-    margin-bottom: 2rem;
-    position: relative;
-}
-
-    .cards-container::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        border-radius: 16px;
-        box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.3);
-        pointer-events: none;
-    }
-
-/* Card Styling (used by BaseCard) */
-.card {
-    background: var(--surface-dark);
-    border-radius: 12px;
-    padding: 1.5rem;
-    border: 1px solid var(--border-dark);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-    .card:hover {
-        transform: translateY(-4px);
-        border-color: var(--brand-primary);
-        box-shadow: 0 4px 24px rgba(219, 136, 219, 0.1);
-    }
 
 /* Filters Section */
 .filters {
@@ -158,15 +117,64 @@ body {
         color: rgba(255, 255, 255, 0.6);
     }
 
-/* Featured Filter Toggle */
-.featured-filter-toggle {
+/* Featured controls container styling */
+.featured-controls {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: var(--text-primary);
-    font-family: 'Poppins', sans-serif;
-    font-size: 0.9rem;
+    gap: 10px;
 }
+
+/* Clear Featured Cards button styling */
+.clear-featured-button {
+    padding: 8px 16px;
+    background-color: var(--brand-primary);
+    color: var(--background-dark);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .clear-featured-button:hover {
+        background-color: var(--brand-secondary);
+    }
+
+/* Cards Grid */
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+    background: var(--surface-darker);
+    border-radius: 16px;
+    border: 1px solid var(--border-dark);
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+    .cards-container::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 16px;
+        box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.3);
+        pointer-events: none;
+    }
+
+/* Card Styling (used by BaseCard) */
+.card {
+    background: var(--surface-dark);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-dark);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+    .card:hover {
+        transform: translateY(-4px);
+        border-color: var(--brand-primary);
+        box-shadow: 0 4px 24px rgba(219, 136, 219, 0.1);
+    }
 
 /* Selection Indicator for Selected Cards */
 .card-item.selected {
@@ -228,6 +236,32 @@ body {
     animation: fadeInOut 2.5s ease-in-out forwards;
 }
 
+/* Horizontal Card Rarity Key */
+.card-rarity-key-horizontal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.rarity-item-horizontal {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+    .rarity-item-horizontal .color-box {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+
+    .rarity-item-horizontal .rarity-text {
+        font-size: 0.9rem;
+        color: var(--text-primary);
+    }
+
 /* Responsive Styles */
 @media (max-width: 768px) {
     .cards-container {
@@ -259,59 +293,3 @@ body {
         padding: 1.25rem;
     }
 }
-
-/* Featured controls container styling */
-.featured-controls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-/* Clear Featured Cards button styling */
-.clear-featured-button {
-    padding: 8px 16px;
-    background-color: var(--brand-primary); /* Use your brand primary color */
-    color: var(--background-dark); /* Contrasting color */
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-    .clear-featured-button:hover {
-        background-color: var(--brand-secondary); /* Use your brand secondary color */
-    }
-
-/* Catalogue description paragraph styling */
-.catalogue-description {
-    text-align: center;
-    font-size: 1.1rem;
-    margin-bottom: 20px;
-    color: var(--text-primary);
-}
-
-/* Horizontal Card Rarity Key */
-.card-rarity-key-horizontal {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    margin: 1rem 0;
-}
-
-.rarity-item-horizontal {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-    .rarity-item-horizontal .color-box {
-        width: 20px;
-        height: 20px;
-        border-radius: 4px;
-    }
-
-    .rarity-item-horizontal .rarity-text {
-        font-size: 0.9rem;
-        color: var(--text-primary);
-    }
