@@ -1,3 +1,4 @@
+// controllers/tradeController.js
 const mongoose = require('mongoose');
 const Trade = require('../models/tradeModel');
 const User = require('../models/userModel');
@@ -5,64 +6,83 @@ const User = require('../models/userModel');
 // Create a new trade
 const createTrade = async (req, res) => {
     console.log('Trade creation endpoint hit!');
-    const { senderId, recipient, offeredItems, requestedItems, offeredPacks, requestedPacks } = req.body;
+
+    // Instead of trusting senderId from body, always use token-based ID
+    const senderId = req.userId;
+    const { recipient, offeredItems, requestedItems, offeredPacks, requestedPacks } = req.body;
     console.log('Trade data received:', req.body);
 
     try {
-        // Check sender
+        // 1) Check the sender from token
         const sender = await User.findById(senderId);
         if (!sender) {
             console.log("Sender not found:", senderId);
             return res.status(404).json({ popupMessage: "Sender not found" });
         }
 
-        // Check recipient (username or ObjectId)
+        // 2) Check the recipient
         let recipientUser;
         if (mongoose.Types.ObjectId.isValid(recipient)) {
+            // If the client gave a userId
             recipientUser = await User.findById(recipient);
         } else {
+            // If the client gave a username
             recipientUser = await User.findOne({ username: recipient });
         }
-
         if (!recipientUser) {
             console.log("Recipient not found:", recipient);
             return res.status(404).json({ popupMessage: "Recipient not found" });
         }
 
-        // Validate pack availability:
-        if (sender.packs < offeredPacks) {
-            console.log(`Sender ${sender.username} does not have enough packs. Has: ${sender.packs}, Offered: ${offeredPacks}`);
+        // 3) Validate pack availability
+        if (offeredPacks > sender.packs) {
             return res.status(400).json({
-                popupMessage: `Trade failed: Sender only has ${sender.packs} pack(s), but tried to offer ${offeredPacks}.`
+                popupMessage: `Trade failed: You only have ${sender.packs} pack(s), but tried to offer ${offeredPacks}.`
+            });
+        }
+        if (requestedPacks > recipientUser.packs) {
+            return res.status(400).json({
+                popupMessage: `Trade failed: Recipient only has ${recipientUser.packs} pack(s), but you requested ${requestedPacks}.`
             });
         }
 
-        if (recipientUser.packs < requestedPacks) {
-            console.log(`Recipient ${recipientUser.username} does not have enough packs. Has: ${recipientUser.packs}, Requested: ${requestedPacks}`);
-            return res.status(400).json({
-                popupMessage: `Trade failed: Recipient only has ${recipientUser.packs} pack(s), but ${requestedPacks} were requested.`
-            });
-        }
-
-        // Fetch offered card details from the sender's cards array
+        // 4) Check the user actually owns offeredItems
+        // Use your "cards" array to confirm the user owns each card ID in offeredItems
         const offeredCardsDetails = sender.cards.filter(card =>
             offeredItems.includes(card._id.toString())
         );
+        // If any item in offeredItems does NOT match the user’s cards, we can reject
+        if (offeredItems.length !== offeredCardsDetails.length) {
+            return res.status(400).json({
+                popupMessage: "You are attempting to trade card(s) you do not own."
+            });
+        }
 
-        // Fetch requested card details from the recipient's cards array
+        // 5) Optionally check that the recipient truly owns each requestedItem
+        // If your trade system requires it. You already do partial checks for
+        // "No matching cards found," but let's do a thorough check:
         const requestedCardsDetails = recipientUser.cards.filter(card =>
             requestedItems.includes(card._id.toString())
         );
-
-        console.log('Offered Cards:', offeredCardsDetails);
-        console.log('Requested Cards:', requestedCardsDetails);
-
-        // Ensure we have at least some valid trade data
-        if (offeredCardsDetails.length === 0 && requestedCardsDetails.length === 0 && offeredPacks === 0 && requestedPacks === 0) {
-            return res.status(400).json({ popupMessage: "No matching cards found in users' collections and no packs offered." });
+        if (requestedItems.length !== requestedCardsDetails.length) {
+            return res.status(400).json({
+                popupMessage: "You requested card(s) the recipient does not own."
+            });
         }
 
-        // Save the trade with card IDs and pack numbers
+        // 6) If there's truly nothing being traded, reject
+        if (
+            offeredCardsDetails.length === 0 &&
+            requestedCardsDetails.length === 0 &&
+            offeredPacks === 0 &&
+            requestedPacks === 0
+        ) {
+            return res.status(400).json({
+                popupMessage: "No valid trade data. Neither side is offering anything."
+            });
+        }
+
+        // 7) Save the trade
         const trade = new Trade({
             sender: sender._id,
             recipient: recipientUser._id,
@@ -87,7 +107,6 @@ const getPendingTrades = async (req, res) => {
     const { userId } = req.params;
 
     try {
-        // Fetch pending trades
         const pendingTrades = await Trade.find({
             $or: [{ sender: userId }, { recipient: userId }],
             status: 'pending'
@@ -95,15 +114,13 @@ const getPendingTrades = async (req, res) => {
             .populate('sender', 'username cards')
             .populate('recipient', 'username cards');
 
-        // Enrich trades with card details while guarding against null sender/recipient
         const enrichedTrades = pendingTrades.map(trade => {
-            const senderData = trade.sender ? trade.sender : { cards: [] };
-            const recipientData = trade.recipient ? trade.recipient : { cards: [] };
+            const senderData = trade.sender || { cards: [] };
+            const recipientData = trade.recipient || { cards: [] };
 
             const offeredCards = (senderData.cards || []).filter(card =>
                 trade.offeredItems.some(itemId => itemId.equals(card._id))
             );
-
             const requestedCards = (recipientData.cards || []).filter(card =>
                 trade.requestedItems.some(itemId => itemId.equals(card._id))
             );
@@ -115,7 +132,7 @@ const getPendingTrades = async (req, res) => {
             };
         });
 
-        console.log("[Backend] Pending trades fetched with populated items:", enrichedTrades);
+        console.log("[Backend] Pending trades fetched:", enrichedTrades);
         res.status(200).json(enrichedTrades);
     } catch (err) {
         console.error("[Backend] Error fetching pending trades:", err);
@@ -123,10 +140,9 @@ const getPendingTrades = async (req, res) => {
     }
 };
 
-
 // Get trades for a user (incoming and outgoing)
 const getTradesForUser = async (req, res) => {
-    const userId = req.params.userId;
+    const { userId } = req.params;
 
     try {
         const trades = await Trade.find({
@@ -135,16 +151,13 @@ const getTradesForUser = async (req, res) => {
             .populate('sender', 'username cards')
             .populate('recipient', 'username cards');
 
-        // Enrich trades with full card details, safely handling missing sender/recipient
         const enrichedTrades = trades.map(trade => {
-            // If sender or recipient is missing, default to an object with an empty cards array
-            const senderData = trade.sender ? trade.sender : { cards: [] };
-            const recipientData = trade.recipient ? trade.recipient : { cards: [] };
+            const senderData = trade.sender || { cards: [] };
+            const recipientData = trade.recipient || { cards: [] };
 
             const offeredCards = (senderData.cards || []).filter(card =>
                 trade.offeredItems.some(itemId => itemId.equals(card._id))
             );
-
             const requestedCards = (recipientData.cards || []).filter(card =>
                 trade.requestedItems.some(itemId => itemId.equals(card._id))
             );
@@ -174,7 +187,6 @@ const updateTradeStatus = async (req, res) => {
     session.startTransaction();
 
     try {
-        // Find the trade with the session
         const trade = await Trade.findById(tradeId).session(session);
         if (!trade) {
             console.log("[Trade Status Update] Trade not found");
@@ -183,12 +195,13 @@ const updateTradeStatus = async (req, res) => {
             return res.status(404).json({ message: "Trade not found" });
         }
 
-        // Authorization Check
-        const isRecipient = trade.recipient.toString() === req.user.id;
-        const isSender = trade.sender.toString() === req.user.id;
+        // Use req.userId consistently
+        const isRecipient = trade.recipient.toString() === req.userId;
+        const isSender = trade.sender.toString() === req.userId;
 
-        if ((['accepted', 'rejected'].includes(status) && !isRecipient) ||
-            (status === 'cancelled' && !isSender)) {
+        // Only the recipient can accept or reject, only the sender can cancel
+        if ((['accepted', 'rejected'].includes(status) && !isRecipient)
+            || (status === 'cancelled' && !isSender)) {
             console.log("[Trade Status Update] Unauthorized action");
             await session.abortTransaction();
             session.endSession();
@@ -202,45 +215,37 @@ const updateTradeStatus = async (req, res) => {
             return res.status(400).json({ message: "Invalid status" });
         }
 
-        // Process acceptance inside transaction
+        // If accepted, do the actual card/pack exchange
         if (status === 'accepted') {
             console.log("[Trade Status Update] Processing trade acceptance...");
 
-            // Find sender and recipient with session
             const sender = await User.findById(trade.sender).session(session);
             const recipient = await User.findById(trade.recipient).session(session);
 
             if (!sender || !recipient) {
-                console.log("[Trade Status Update] Sender or Recipient not found");
                 await session.abortTransaction();
                 session.endSession();
                 return res.status(404).json({ message: "Sender or Recipient not found" });
             }
 
-            // --- Transfer Packs ---
-            console.log(`Before pack transfer: Sender Packs: ${sender.packs}, Recipient Packs: ${recipient.packs}`);
-
+            // 1) Transfer packs
             if (sender.packs < trade.offeredPacks) {
-                console.log("[Trade Status Update] Sender does not have enough packs");
                 await session.abortTransaction();
                 session.endSession();
                 return res.status(400).json({ message: "Sender does not have enough packs" });
             }
             if (recipient.packs < trade.requestedPacks) {
-                console.log("[Trade Status Update] Recipient does not have enough packs");
                 await session.abortTransaction();
                 session.endSession();
                 return res.status(400).json({ message: "Recipient does not have enough packs" });
             }
-
             sender.packs = sender.packs - trade.offeredPacks + trade.requestedPacks;
             recipient.packs = recipient.packs - trade.requestedPacks + trade.offeredPacks;
-            console.log(`After pack transfer: Sender Packs: ${sender.packs}, Recipient Packs: ${recipient.packs}`);
 
-            // --- Transfer Card Items ---
-            // Transfer offeredItems: Remove from sender and add to recipient
-            trade.offeredItems.forEach((itemId) => {
-                const index = sender.cards.findIndex(card => card._id.toString() === itemId.toString());
+            // 2) Transfer cards
+            // Offered -> remove from sender, add to recipient
+            trade.offeredItems.forEach(itemId => {
+                const index = sender.cards.findIndex(c => c._id.toString() === itemId.toString());
                 if (index !== -1) {
                     const card = sender.cards.splice(index, 1)[0];
                     recipient.cards.push(card);
@@ -248,10 +253,9 @@ const updateTradeStatus = async (req, res) => {
                     console.warn(`Offered card with ID ${itemId} not found in sender's collection.`);
                 }
             });
-
-            // Transfer requestedItems: Remove from recipient and add to sender
-            trade.requestedItems.forEach((itemId) => {
-                const index = recipient.cards.findIndex(card => card._id.toString() === itemId.toString());
+            // Requested -> remove from recipient, add to sender
+            trade.requestedItems.forEach(itemId => {
+                const index = recipient.cards.findIndex(c => c._id.toString() === itemId.toString());
                 if (index !== -1) {
                     const card = recipient.cards.splice(index, 1)[0];
                     sender.cards.push(card);
@@ -260,12 +264,12 @@ const updateTradeStatus = async (req, res) => {
                 }
             });
 
-            // Save both users within the session
+            // Save both users within the transaction
             await sender.save({ session });
             await recipient.save({ session });
         }
 
-        // Update the trade status (applies to accepted, rejected, or cancelled)
+        // For any status change (accepted, rejected, or cancelled), update the trade
         trade.status = status;
         await trade.save({ session });
 
@@ -275,7 +279,7 @@ const updateTradeStatus = async (req, res) => {
         console.log(`[Trade Status Update] Trade ${status} successfully`);
         res.status(200).json({ message: `Trade ${status} successfully`, trade });
     } catch (error) {
-        console.error("[Trade Status Update] Error updating trade status:", error);
+        console.error("[Trade Status Update] Error:", error);
         await session.abortTransaction();
         session.endSession();
         res.status(500).json({ message: "Failed to update trade status", error: error.message });
