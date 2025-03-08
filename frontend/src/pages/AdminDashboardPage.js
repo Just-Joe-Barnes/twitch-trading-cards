@@ -1,7 +1,9 @@
+// src/pages/AdminDashboardPage.js
 import React, { useEffect, useState } from 'react';
 import { fetchWithAuth } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import { useNavigate } from 'react-router-dom';
+import LoadingSpinner from '../components/LoadingSpinner'; // Import the spinner component
 import '../styles/AdminDashboardPage.css';
 
 const AdminDashboardPage = ({ user }) => {
@@ -11,7 +13,8 @@ const AdminDashboardPage = ({ user }) => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    const [loading, setLoading] = useState(false);
+    // Set loading to true initially so the spinner shows while data is being fetched.
+    const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
 
     const [openedCards, setOpenedCards] = useState([]);
@@ -31,7 +34,7 @@ const AdminDashboardPage = ({ user }) => {
         { rarity: 'Divine', color: 'white' },
     ];
 
-    // On mount, verify admin and fetch users
+    // On mount, verify admin and fetch users.
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -52,17 +55,17 @@ const AdminDashboardPage = ({ user }) => {
         fetchData();
     }, [user, navigate]);
 
-    // Compute filtered users based on the search query
+    // Compute filtered users based on the search query.
     const filteredUsers = usersWithPacks.filter(u =>
         u.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Select user
+    // Select user.
     const toggleUserSelection = (u) => {
         setSelectedUser((prev) => (prev?._id === u._id ? null : u));
     };
 
-    // Open pack for user
+    // Open pack for user.
     const openPackForUser = async () => {
         if (!selectedUser) return;
         setLoading(true);
@@ -76,9 +79,9 @@ const AdminDashboardPage = ({ user }) => {
             const { newCards } = res;
             console.log('New cards:', newCards);
             setOpenedCards(newCards);
-            // Initially all false
+            // Initially set all as not revealed.
             setRevealedCards(Array(newCards.length).fill(false));
-            // Decrement user’s pack count
+            // Decrement the selected user's pack count.
             setUsersWithPacks((prev) =>
                 prev.map((u) => (u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u))
             );
@@ -90,7 +93,7 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // Video ends -> reveal cards sequentially
+    // When video ends, reveal cards sequentially.
     const handleVideoEnd = () => {
         console.log('Video ended. Starting sequential reveal...');
         openedCards.forEach((_, i) => {
@@ -101,12 +104,12 @@ const AdminDashboardPage = ({ user }) => {
                     console.log(`Card ${i} revealed`);
                     return updated;
                 });
-            }, i * 1000); // 1s delay per card
+            }, i * 1000);
         });
         setIsOpeningAnimation(false);
     };
 
-    // Fallback: if after 4s none are revealed, reveal them all
+    // Fallback: if after 4s none are revealed, reveal them all.
     useEffect(() => {
         if (openedCards.length > 0 && !revealedCards.some(Boolean)) {
             const timer = setTimeout(() => {
@@ -118,13 +121,16 @@ const AdminDashboardPage = ({ user }) => {
         }
     }, [openedCards, revealedCards]);
 
-    // Reset pack state
+    // Reset pack state.
     const handleResetPack = () => {
         console.log('Resetting pack state');
         setOpenedCards([]);
         setRevealedCards([]);
         setIsOpeningAnimation(false);
     };
+
+    // Global loading spinner: if loading is true, render the spinner.
+    if (loading) return <LoadingSpinner />;
 
     return (
         <div className="dashboard-container">
@@ -147,7 +153,6 @@ const AdminDashboardPage = ({ user }) => {
                 {/* Users with Packs */}
                 <div className="users-with-packs">
                     <h2>Users with Packs</h2>
-                    {/* New search bar */}
                     <div className="users-search">
                         <input
                             type="text"
@@ -157,7 +162,6 @@ const AdminDashboardPage = ({ user }) => {
                             className="users-search-input"
                         />
                     </div>
-                    {loading && <p>Loading users...</p>}
                     <table className="users-table">
                         <thead>
                             <tr>
