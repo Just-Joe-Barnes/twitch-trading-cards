@@ -1,11 +1,10 @@
-// src/components/LoadingSpinner.jsx
 import React from 'react';
 import '../styles/LoadingSpinner.css';
 
 const LoadingSpinner = () => {
     return (
         <div className="spinner-overlay">
-            <div className="spinner"></div>
+            <img src="/animations/loadingspinner.gif" alt="Loading..." className="spinner-image" />
         </div>
     );
 };
