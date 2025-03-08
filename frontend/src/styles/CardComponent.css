@@ -53,7 +53,7 @@
 }
 
 .card-container.epic .card-border {
-    border-color: #e68115;
+    border-color: #FFA726;
 }
 
 .card-container.legendary .card-border {
@@ -151,22 +151,22 @@
 
 /**************************************
  * Glare for Lower Rarities (Basic → Uncommon)
+ * Now matches the border color with alpha
  **************************************/
-/* Each rarity sets a custom glare color: */
 .card-container.basic {
-    --glare-color: rgba(200,200,200,0.3);
+    --glare-color: rgba(141,141,141,0.3); /* #8D8D8D at 0.3 alpha */
 }
 
 .card-container.common {
-    --glare-color: rgba(50,230,180,0.3);
+    --glare-color: rgba(100,181,246,0.3); /* #64B5F6 at 0.3 alpha */
 }
 
 .card-container.standard {
-    --glare-color: rgba(60,140,255,0.3);
+    --glare-color: rgba(102,187,106,0.3); /* #66BB6A at 0.3 alpha */
 }
 
 .card-container.uncommon {
-    --glare-color: rgba(180,90,250,0.7);
+    --glare-color: rgba(25,118,210,0.3); /* #1976D2 at 0.3 alpha */
 }
 
 .card-glare {
@@ -289,6 +289,11 @@
 
     .card-container.legendary:hover .card-artwork img {
         animation: legendaryGlow 2s infinite alternate;
+    }
+
+    /* Red glow on hover for entire Legendary card */
+    .card-container.legendary:hover {
+        box-shadow: 0 0 30px 10px rgba(255, 0, 0, 0.8);
     }
 
 @keyframes legendaryGlow {
