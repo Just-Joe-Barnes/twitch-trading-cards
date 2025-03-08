@@ -46,7 +46,7 @@ const CollectionPage = ({
 
     const clickTimerRef = useRef(null);
 
-    // Fetch the logged-in user
+    // 1) Fetch the logged-in user
     useEffect(() => {
         const fetchProfile = async () => {
             try {
@@ -59,7 +59,7 @@ const CollectionPage = ({
         fetchProfile();
     }, []);
 
-    // Fetch the collection for either the page owner or the logged-in user
+    // 2) Fetch the collection for either page owner or logged-in user
     useEffect(() => {
         const fetchCollection = async () => {
             try {
@@ -78,15 +78,13 @@ const CollectionPage = ({
                 setLoading(false);
             }
         };
-
         fetchCollection();
     }, [collectionOwner, loggedInUser]);
 
-    // Fetch featured cards if the user is the owner
+    // 3) Fetch existing featured cards if this is your own collection
     useEffect(() => {
         const fetchFeatured = async () => {
             try {
-                // Only fetch if it's your own collection or no specific user is selected
                 if (loggedInUser && (!collectionOwner || loggedInUser === collectionOwner)) {
                     const response = await fetchFeaturedCards();
                     setFeaturedCards(response.featuredCards || []);
@@ -95,22 +93,21 @@ const CollectionPage = ({
                 console.error('Error fetching featured cards:', error);
             }
         };
-
         fetchFeatured();
     }, [loggedInUser, collectionOwner]);
 
-    // Filter & sort cards whenever relevant state changes
+    // 4) Filter & sort
     useEffect(() => {
         let filtered = [...allCards];
 
-        // Search filter
+        // Search
         if (search) {
             filtered = filtered.filter((card) =>
                 card.name.toLowerCase().includes(search.toLowerCase())
             );
         }
 
-        // Rarity filter
+        // Rarity
         if (rarityFilter) {
             filtered = filtered.filter(
                 (card) => card.rarity.trim().toLowerCase() === rarityFilter.trim().toLowerCase()
@@ -151,29 +148,26 @@ const CollectionPage = ({
         setFilteredCards(filtered);
     }, [allCards, search, rarityFilter, sort, order, showFeaturedOnly, featuredCards]);
 
-    // Single-click -> select card for your 4 slots on the deck builder (if used)
+    // Single-click -> select a card
     const handleCardClick = (card) => {
-        if (onSelectItem) {
-            const alreadySelected = selectedItems.find((item) => item.itemId === card._id);
-            let updatedSelection = [];
+        if (!onSelectItem) return;
 
-            if (alreadySelected) {
-                updatedSelection = selectedItems.filter((item) => item.itemId !== card._id);
+        const alreadySelected = selectedItems.find((item) => item.itemId === card._id);
+        let updatedSelection = [];
+
+        if (alreadySelected) {
+            updatedSelection = selectedItems.filter((item) => item.itemId !== card._id);
+        } else {
+            if (selectedItems.length < 4) {
+                updatedSelection = [...selectedItems, { itemId: card._id, itemType: 'card', card }];
             } else {
-                if (selectedItems.length < 4) {
-                    updatedSelection = [
-                        ...selectedItems,
-                        { itemId: card._id, itemType: 'card', card },
-                    ];
-                } else {
-                    return;
-                }
+                return;
             }
-            onSelectItem(updatedSelection);
         }
+        onSelectItem(updatedSelection);
     };
 
-    // Update pack quantity (if used in your deck builder)
+    // Pack quantity (if used)
     const handlePackQuantityChange = (e) => {
         const quantity = Math.max(0, Math.min(parseInt(e.target.value || 0, 10), 10));
         setPackQuantity(quantity);
@@ -185,53 +179,61 @@ const CollectionPage = ({
         }
     };
 
-    // Actually adds or removes the card from the featured list on the server
+    // Toggle featured on the server
     const handleToggleFeatured = async (card) => {
+        // 1) Determine new list of featured cards
         const isCurrentlyFeatured = featuredCards.some((fc) => fc._id === card._id);
-        const newFeaturedCards = isCurrentlyFeatured
-            ? featuredCards.filter((fc) => fc._id !== card._id)
-            : [...featuredCards, card];
+        let newFeatured;
+        if (isCurrentlyFeatured) {
+            newFeatured = featuredCards.filter((fc) => fc._id !== card._id);
+        } else {
+            newFeatured = [...featuredCards, card];
+        }
+
+        // 2) But the server wants an array of card IDs, not subdocs
+        const newFeaturedIds = newFeatured.map((c) => c._id);
 
         try {
-            // Update the server
-            await updateFeaturedCards(newFeaturedCards);
-            // Update local state
-            setFeaturedCards(newFeaturedCards);
+            // 3) Update the server with the ID array
+            await updateFeaturedCards(newFeaturedIds);
+
+            // 4) Re-fetch the official featured cards from the server 
+            //    so we get the actual subdocs as stored
+            const response = await fetchFeaturedCards();
+            setFeaturedCards(response.featuredCards || []);
         } catch (error) {
             console.error('Error updating featured cards:', error);
-            throw error;
         }
     };
 
-    // Double-click -> toggle featured (if you're the owner)
+    // Double-click -> add/remove from featured
     const handleCardDoubleClick = async (card) => {
         if (!isOwner) return;
 
-        // Check if user already has 4 featured cards before adding a new one
+        // If adding but already at 4, reject
         const isCurrentlyFeatured = featuredCards.some((fc) => fc._id === card._id);
         if (!isCurrentlyFeatured && featuredCards.length >= 4) {
             console.warn('Max 4 featured cards allowed!');
             return;
         }
 
-        // Attempt to toggle on server
         try {
             await handleToggleFeatured(card);
         } catch (error) {
             console.error(error);
         }
 
-        // Then do a short “pop” animation
+        // "Pop" animation
         const cardElement = document.getElementById(`card-${card._id}`);
         if (cardElement) {
             cardElement.classList.add('double-clicked');
             setTimeout(() => {
                 cardElement.classList.remove('double-clicked');
-            }, 1000); // 1 second pop
+            }, 1000);
         }
     };
 
-    // Distinguish single vs double-click
+    // Single/double click logic
     const handleClick = (card) => {
         if (clickTimerRef.current) return;
         clickTimerRef.current = setTimeout(() => {
@@ -247,17 +249,21 @@ const CollectionPage = ({
         handleCardDoubleClick(card);
     };
 
-    // Button to remove all featured cards
+    // Clear all featured
     const handleClearFeatured = async () => {
         try {
+            // 1) Send empty array of IDs to the server
             await updateFeaturedCards([]);
-            setFeaturedCards([]);
+
+            // 2) Re-fetch to confirm it’s cleared
+            const response = await fetchFeaturedCards();
+            setFeaturedCards(response.featuredCards || []);
         } catch (error) {
             console.error('Error clearing featured cards:', error);
         }
     };
 
-    // This user can only feature cards if it's their collection
+    // Only the user can feature in their own collection
     const isOwner = !collectionOwner || loggedInUser === collectionOwner;
 
     return (
@@ -334,7 +340,7 @@ const CollectionPage = ({
                     <p>Loading...</p>
                 ) : filteredCards.length > 0 ? (
                     filteredCards.map((card) => {
-                        // Check if this card is featured
+                        // Check if this card is in the featured array
                         const isFeatured = featuredCards.some((fc) => fc._id === card._id);
 
                         return (
@@ -349,11 +355,9 @@ const CollectionPage = ({
                                 onDoubleClick={() => handleDoubleClick(card)}
                                 style={{ position: 'relative' }}
                             >
-                                {/* If featured, show a badge in the top-left corner */}
+                                {/* If featured, show the badge */}
                                 {isFeatured && (
-                                    <div className="featured-badge">
-                                        Featured
-                                    </div>
+                                    <div className="featured-badge">Featured</div>
                                 )}
 
                                 <BaseCard
