@@ -1,6 +1,8 @@
+// src/pages/PendingTrades.js
 import React, { useEffect, useState, useRef } from 'react';
 import { fetchUserProfile, fetchPendingTrades, acceptTrade, rejectTrade, cancelTrade } from '../utils/api';
 import BaseCard from '../components/BaseCard';
+import LoadingSpinner from '../components/LoadingSpinner'; // Import the spinner
 import '../styles/PendingTrades.css';
 import '../styles/CardComponent.css'; // Ensure BaseCard styles are applied
 
@@ -87,6 +89,11 @@ const PendingTrades = () => {
 
     if (error) return <div className="error-message">{error}</div>;
 
+    if (!loggedInUser) {
+        // If still loading user data, display the global spinner.
+        return <LoadingSpinner />;
+    }
+
     return (
         <div className="pending-trades-container">
             <h1 className="page-title">Pending Trades</h1>
@@ -127,21 +134,32 @@ const PendingTrades = () => {
                             <div className="trade-header">
                                 <div className="trade-header-info">
                                     {isOutgoing ? 'Outgoing Trade' : 'Incoming Trade'}{' '}
-                                    <span>with {isOutgoing ? trade.recipient.username : trade.sender.username}</span>
+                                    <span>
+                                        with {isOutgoing ? trade.recipient.username : trade.sender.username}
+                                    </span>
                                 </div>
                                 {isExpanded && (
                                     <div className="trade-buttons-inline" onClick={(e) => e.stopPropagation()}>
                                         {!isOutgoing ? (
                                             <>
-                                                <button className="accept-button" onClick={(e) => handleTradeAction(trade._id, 'accept', e)}>
+                                                <button
+                                                    className="accept-button"
+                                                    onClick={(e) => handleTradeAction(trade._id, 'accept', e)}
+                                                >
                                                     Accept
                                                 </button>
-                                                <button className="reject-button" onClick={(e) => handleTradeAction(trade._id, 'reject', e)}>
+                                                <button
+                                                    className="reject-button"
+                                                    onClick={(e) => handleTradeAction(trade._id, 'reject', e)}
+                                                >
                                                     Reject
                                                 </button>
                                             </>
                                         ) : (
-                                            <button className="cancel-button" onClick={(e) => handleTradeAction(trade._id, 'cancel', e)}>
+                                            <button
+                                                className="cancel-button"
+                                                onClick={(e) => handleTradeAction(trade._id, 'cancel', e)}
+                                            >
                                                 Cancel Trade
                                             </button>
                                         )}

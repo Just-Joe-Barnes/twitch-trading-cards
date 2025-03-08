@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchCards } from '../utils/api';
 import BaseCard from '../components/BaseCard';
+import LoadingSpinner from '../components/LoadingSpinner'; // Import spinner component
 import '../styles/CataloguePage.css';
 
 const rarityData = [
@@ -75,7 +76,7 @@ const CataloguePage = () => {
         return 0;
     });
 
-    if (loading) return <div className="catalogue-page">Loading cards...</div>;
+    if (loading) return <LoadingSpinner />;
     if (error) return <div className="catalogue-page">{error}</div>;
 
     return (
@@ -101,7 +102,7 @@ const CataloguePage = () => {
                 {/* Rarity Selector */}
                 <div className="rarity-selector">
                     {rarityData.map((r) => {
-                        // If "Divine" is white, text should be black for contrast
+                        // If "Divine" is white, set text color to black for contrast.
                         const textColor = r.name === 'Divine' ? '#000' : '#fff';
 
                         return (
@@ -112,10 +113,8 @@ const CataloguePage = () => {
                                 style={{
                                     backgroundColor: r.color,
                                     color: textColor,
-                                    // Smaller padding
-                                    padding: '8px 12px',
-                                    // Gray border
-                                    border: '2px solid #888',
+                                    padding: '8px 12px', // smaller buttons
+                                    border: '2px solid #888', // gray border
                                 }}
                             >
                                 {r.name}
@@ -138,7 +137,6 @@ const CataloguePage = () => {
                 </div>
             </div>
 
-            {/* Cards Grid */}
             <div className="catalogue-grid">
                 {sortedCards.length > 0 ? (
                     sortedCards.map((card) => (
@@ -147,7 +145,6 @@ const CataloguePage = () => {
                                 name={card.name}
                                 image={card.imageUrl}
                                 description={card.flavorText}
-                                // Use selected rarity for the card style
                                 rarity={selectedRarity}
                                 mintNumber={card.mintNumber}
                             />

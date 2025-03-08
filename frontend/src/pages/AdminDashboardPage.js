@@ -1,7 +1,9 @@
+// src/pages/AdminDashboardPage.js
 import React, { useEffect, useState } from 'react';
 import { fetchWithAuth } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import { useNavigate } from 'react-router-dom';
+import LoadingSpinner from '../components/LoadingSpinner'; // Import the spinner
 import '../styles/AdminDashboardPage.css';
 
 const AdminDashboardPage = ({ user }) => {
@@ -10,10 +12,8 @@ const AdminDashboardPage = ({ user }) => {
     const [usersWithPacks, setUsersWithPacks] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
-
     const [loading, setLoading] = useState(false);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
-
     const [openedCards, setOpenedCards] = useState([]);
     const [revealedCards, setRevealedCards] = useState([]);
 
@@ -51,6 +51,11 @@ const AdminDashboardPage = ({ user }) => {
         };
         fetchData();
     }, [user, navigate]);
+
+    // Global loading spinner for admin dashboard
+    if (loading) {
+        return <LoadingSpinner />;
+    }
 
     // Compute filtered users based on the search query
     const filteredUsers = usersWithPacks.filter(u =>
@@ -147,7 +152,6 @@ const AdminDashboardPage = ({ user }) => {
                 {/* Users with Packs */}
                 <div className="users-with-packs">
                     <h2>Users with Packs</h2>
-                    {/* New search bar */}
                     <div className="users-search">
                         <input
                             type="text"
@@ -157,7 +161,7 @@ const AdminDashboardPage = ({ user }) => {
                             className="users-search-input"
                         />
                     </div>
-                    {loading && <p>Loading users...</p>}
+                    {loading && <LoadingSpinner />}
                     <table className="users-table">
                         <thead>
                             <tr>

@@ -5,8 +5,9 @@ import BaseCard from '../components/BaseCard';
 import {
     fetchUserProfile,
     fetchUserProfileByUsername,
-    fetchUserCollection
+    fetchUserCollection,
 } from '../utils/api';
+import LoadingSpinner from '../components/LoadingSpinner'; // Import the spinner component
 import '../styles/ProfilePage.css';
 
 const ProfilePage = () => {
@@ -17,8 +18,6 @@ const ProfilePage = () => {
     const navigate = useNavigate();
     const { username: routeUsername } = useParams();
 
-    // Fetch profile data and collection data on mount.
-    // If a username is provided in the URL, we fetch that user's profile.
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
@@ -31,15 +30,14 @@ const ProfilePage = () => {
                     profile = await fetchUserProfile();
                 }
                 setUsername(profile.username || 'User');
-                // Set featured cards from the profile response.
                 let tempFeatured = profile.featuredCards || [];
                 if (profile._id) {
                     const collectionData = await fetchUserCollection(profile._id);
                     setCollectionCount(collectionData.cards ? collectionData.cards.length : 0);
                     if (collectionData.cards) {
                         // Filter out any featured card that is no longer in the collection.
-                        tempFeatured = tempFeatured.filter(card =>
-                            collectionData.cards.some(c => c._id.toString() === card._id.toString())
+                        tempFeatured = tempFeatured.filter((card) =>
+                            collectionData.cards.some((c) => c._id.toString() === card._id.toString())
                         );
                     }
                 }
@@ -53,19 +51,20 @@ const ProfilePage = () => {
         fetchProfileData();
     }, [routeUsername]);
 
-    // Handle navigation to the user's collection page.
     const handleViewCollection = () => {
         navigate(`/collection/${username}`);
     };
 
+    if (loading) {
+        return <LoadingSpinner />;
+    }
+
     return (
         <div className="profile-page">
-            {/* Title at the top */}
             <div className="title-container">
                 <h1>{username}'s Profile</h1>
             </div>
 
-            {/* Profile Overview Section */}
             <div className="profile-overview">
                 <h2>Profile Overview</h2>
                 <div className="stats">
@@ -80,12 +79,9 @@ const ProfilePage = () => {
                 </div>
             </div>
 
-            {/* Featured Cards Section */}
             <div className="featured-cards-container">
                 <h2>Featured Cards</h2>
-                {loading ? (
-                    <p>Loading...</p>
-                ) : featuredCards.length > 0 ? (
+                {featuredCards.length > 0 ? (
                     <div className="featured-cards">
                         {featuredCards.map((card) => (
                             <BaseCard
@@ -104,7 +100,6 @@ const ProfilePage = () => {
                 )}
             </div>
 
-            {/* View Collection Button */}
             <div className="view-collection-button-container">
                 <button className="view-collection-button" onClick={handleViewCollection}>
                     View {username}'s Full Collection
