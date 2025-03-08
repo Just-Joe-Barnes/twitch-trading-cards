@@ -1,7 +1,9 @@
-﻿import React, { useState, useEffect } from "react";
+﻿// src/pages/TradingPage.js
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { fetchTrades, createTrade, searchUsers, fetchWithAuth } from "../utils/api";
 import BaseCard from "../components/BaseCard";
+import LoadingSpinner from "../components/LoadingSpinner"; // Import the spinner component
 import "../styles/TradingPage.css";
 import { rarities } from "../constants/rarities";
 
@@ -28,14 +30,19 @@ const TradingPage = ({ userId }) => {
     const [rightSort, setRightSort] = useState("mintNumber");
     const [rightSortDir, setRightSortDir] = useState("asc");
 
-    // Fetch logged-in user data
+    // Fetch logged-in user data on mount
     useEffect(() => {
         fetchWithAuth("/api/users/me")
             .then((data) => {
                 setLoggedInUser(data);
             })
-            .catch(console.error);
+            .catch((err) => console.error("Error fetching user data:", err));
     }, []);
+
+    // If loggedInUser is not loaded yet, show the global spinner.
+    if (!loggedInUser) {
+        return <LoadingSpinner />;
+    }
 
     // Fetch user search suggestions
     useEffect(() => {
@@ -216,8 +223,8 @@ const TradingPage = ({ userId }) => {
                                                     <BaseCard
                                                         name={card.name}
                                                         image={card.imageUrl}
-                                                        description={card.flavorText}
                                                         rarity={card.rarity}
+                                                        description={card.flavorText}
                                                         mintNumber={card.mintNumber}
                                                         maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
                                                     />
@@ -250,8 +257,8 @@ const TradingPage = ({ userId }) => {
                                                     <BaseCard
                                                         name={card.name}
                                                         image={card.imageUrl}
-                                                        description={card.flavorText}
                                                         rarity={card.rarity}
+                                                        description={card.flavorText}
                                                         mintNumber={card.mintNumber}
                                                         maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
                                                     />
