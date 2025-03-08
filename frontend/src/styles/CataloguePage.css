@@ -69,14 +69,14 @@
 }
 
 .rarity-button {
-    /* The background color is set inline with style={{ backgroundColor: ... }} in CataloguePage.js */
-    color: #fff;
-    border: none;
+    /* The backgroundColor, color, border are now inline in the style prop. */
     padding: 14px 24px;
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
     font-size: 1rem;
+    /* color: #fff;  // replaced by inline style if needed */
+    /* border: 2px solid #fff; // also replaced by inline style */
 }
 
     .rarity-button:hover {

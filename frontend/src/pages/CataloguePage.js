@@ -4,7 +4,7 @@ import { fetchCards } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import '../styles/CataloguePage.css';
 
-// Same rarities as in CollectionPage, but now with color codes
+// Same rarities as in CollectionPage, but with color codes
 const rarityData = [
     { name: 'Basic', color: '#8D8D8D' },
     { name: 'Common', color: '#64B5F6' },
@@ -19,7 +19,7 @@ const rarityData = [
 ];
 
 const CataloguePage = () => {
-    // Local state for cards, loading status, and errors
+    // Local state for cards, loading, error
     const [cards, setCards] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -27,10 +27,13 @@ const CataloguePage = () => {
     // Filter and sort states
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedRarity, setSelectedRarity] = useState('Basic');
-    // Only "name" remains as a valid sort option
-    const [sortOption, setSortOption] = useState('name');
 
-    // 1) Fetch all cards from the API
+    // For sorting: user picks the "sort by" field (we only have 'name' left, but let's keep the structure),
+    // plus ascending or descending.
+    const [sortOption, setSortOption] = useState('name');
+    const [sortOrder, setSortOrder] = useState('asc');
+
+    // 1) Fetch all cards from API
     const fetchCatalogue = async () => {
         try {
             const response = await fetchCards({});
@@ -47,7 +50,7 @@ const CataloguePage = () => {
         fetchCatalogue();
     }, []);
 
-    // 2) Update search query as user types
+    // 2) Update search query
     const handleSearchChange = (e) => {
         setSearchQuery(e.target.value);
     };
@@ -62,15 +65,24 @@ const CataloguePage = () => {
         setSortOption(e.target.value);
     };
 
-    // 5) Filter cards by search query only
+    // 5) Update ascending or descending
+    const handleSortOrderChange = (e) => {
+        setSortOrder(e.target.value);
+    };
+
+    // 6) Filter cards by search query only
     const filteredCards = cards.filter((card) =>
         card.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // 6) Sort the filtered cards based on the chosen option
+    // 7) Sort the filtered cards
     const sortedCards = [...filteredCards].sort((a, b) => {
+        // Currently we only have "name" as a field, 
+        // but let's keep the structure so you could add more fields later.
         if (sortOption === 'name') {
-            return a.name.localeCompare(b.name);
+            return sortOrder === 'asc'
+                ? a.name.localeCompare(b.name)
+                : b.name.localeCompare(a.name);
         }
         return 0;
     });
@@ -82,7 +94,9 @@ const CataloguePage = () => {
         <div className="catalogue-page">
             <h1>Card Catalogue</h1>
             <p className="catalogue-description">
-                Explore our complete collection of trading cards. Use the search box to find cards by name, and click on the rarity buttons below to preview each card in a different style.
+                Explore our complete collection of trading cards. Use the search box to
+                find cards by name, and click on the rarity buttons below to preview each
+                card in a different style.
             </p>
 
             <div className="filters-container">
@@ -98,29 +112,43 @@ const CataloguePage = () => {
 
                 {/* Rarity Selector */}
                 <div className="rarity-selector">
-                    {rarityData.map((r) => (
-                        <button
-                            key={r.name}
-                            // The button color matches the rarity color
-                            style={{ backgroundColor: r.color }}
-                            className={`rarity-button ${selectedRarity === r.name ? 'active' : ''}`}
-                            onClick={() => handleRarityChange(r.name)}
-                        >
-                            {r.name}
-                        </button>
-                    ))}
+                    {rarityData.map((r) => {
+                        // If "Divine" is white, text should be black for contrast
+                        const textColor = r.name === 'Divine' ? '#000' : '#fff';
+
+                        return (
+                            <button
+                                key={r.name}
+                                onClick={() => handleRarityChange(r.name)}
+                                className={`rarity-button ${selectedRarity === r.name ? 'active' : ''}`}
+                                style={{
+                                    backgroundColor: r.color,
+                                    color: textColor,
+                                    border: '2px solid #fff' // add a little border
+                                }}
+                            >
+                                {r.name}
+                            </button>
+                        );
+                    })}
                 </div>
 
-                {/* Sort Dropdown (no "Rarity" option) */}
+                {/* Sort Section: choose field & order */}
                 <div className="sort-box">
-                    <label htmlFor="sort">Sort by:</label>
-                    <select id="sort" value={sortOption} onChange={handleSortChange}>
+                    <label htmlFor="sortField">Sort by:</label>
+                    <select id="sortField" value={sortOption} onChange={handleSortChange}>
                         <option value="name">Name</option>
-                        {/* Removed <option value="rarity">Rarity</option> */}
+                        {/* If you add more fields in the future, they can go here */}
+                    </select>
+
+                    <select id="sortOrder" value={sortOrder} onChange={handleSortOrderChange}>
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
                     </select>
                 </div>
             </div>
 
+            {/* Cards Grid */}
             <div className="catalogue-grid">
                 {sortedCards.length > 0 ? (
                     sortedCards.map((card) => (
@@ -129,7 +157,7 @@ const CataloguePage = () => {
                                 name={card.name}
                                 image={card.imageUrl}
                                 description={card.flavorText}
-                                // We pass the "selectedRarity" so that the card uses that styling
+                                // We pass the "selectedRarity" so the card uses that styling
                                 rarity={selectedRarity}
                                 mintNumber={card.mintNumber}
                             />
