@@ -214,6 +214,7 @@ body {
     padding: 4px 8px;
     border-radius: 4px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    z-index: 10; /* Ensures the badge is on top of everything */
 }
 
 /* Pop / Highlight animation on double-click */
