@@ -4,7 +4,6 @@ import { fetchCards } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import '../styles/CataloguePage.css';
 
-// Same rarities as in CollectionPage, but with color codes
 const rarityData = [
     { name: 'Basic', color: '#8D8D8D' },
     { name: 'Common', color: '#64B5F6' },
@@ -19,21 +18,17 @@ const rarityData = [
 ];
 
 const CataloguePage = () => {
-    // Local state for cards, loading, error
     const [cards, setCards] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    // Filter and sort states
+    // Search, rarity, and sorting states
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedRarity, setSelectedRarity] = useState('Basic');
-
-    // For sorting: user picks the "sort by" field (we only have 'name' left, but let's keep the structure),
-    // plus ascending or descending.
     const [sortOption, setSortOption] = useState('name');
     const [sortOrder, setSortOrder] = useState('asc');
 
-    // 1) Fetch all cards from API
+    // Fetch all cards
     const fetchCatalogue = async () => {
         try {
             const response = await fetchCards({});
@@ -50,35 +45,28 @@ const CataloguePage = () => {
         fetchCatalogue();
     }, []);
 
-    // 2) Update search query
     const handleSearchChange = (e) => {
         setSearchQuery(e.target.value);
     };
 
-    // 3) Update selected rarity (for styling, not filtering)
     const handleRarityChange = (rarityName) => {
         setSelectedRarity(rarityName);
     };
 
-    // 4) Update the sort option
     const handleSortChange = (e) => {
         setSortOption(e.target.value);
     };
 
-    // 5) Update ascending or descending
     const handleSortOrderChange = (e) => {
         setSortOrder(e.target.value);
     };
 
-    // 6) Filter cards by search query only
+    // Filter then sort
     const filteredCards = cards.filter((card) =>
         card.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // 7) Sort the filtered cards
     const sortedCards = [...filteredCards].sort((a, b) => {
-        // Currently we only have "name" as a field, 
-        // but let's keep the structure so you could add more fields later.
         if (sortOption === 'name') {
             return sortOrder === 'asc'
                 ? a.name.localeCompare(b.name)
@@ -124,7 +112,10 @@ const CataloguePage = () => {
                                 style={{
                                     backgroundColor: r.color,
                                     color: textColor,
-                                    border: '2px solid #fff' // add a little border
+                                    // Smaller padding
+                                    padding: '8px 12px',
+                                    // Gray border
+                                    border: '2px solid #888',
                                 }}
                             >
                                 {r.name}
@@ -133,12 +124,11 @@ const CataloguePage = () => {
                     })}
                 </div>
 
-                {/* Sort Section: choose field & order */}
+                {/* Sort Section */}
                 <div className="sort-box">
                     <label htmlFor="sortField">Sort by:</label>
                     <select id="sortField" value={sortOption} onChange={handleSortChange}>
                         <option value="name">Name</option>
-                        {/* If you add more fields in the future, they can go here */}
                     </select>
 
                     <select id="sortOrder" value={sortOrder} onChange={handleSortOrderChange}>
@@ -157,7 +147,7 @@ const CataloguePage = () => {
                                 name={card.name}
                                 image={card.imageUrl}
                                 description={card.flavorText}
-                                // We pass the "selectedRarity" so the card uses that styling
+                                // Use selected rarity for the card style
                                 rarity={selectedRarity}
                                 mintNumber={card.mintNumber}
                             />
