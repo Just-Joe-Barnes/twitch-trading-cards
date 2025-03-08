@@ -150,8 +150,25 @@
 }
 
 /**************************************
- * Glare for Lower Rarities
+ * Glare for Lower Rarities (Basic → Uncommon)
  **************************************/
+/* Each rarity sets a custom glare color: */
+.card-container.basic {
+    --glare-color: rgba(200,200,200,0.3);
+}
+
+.card-container.common {
+    --glare-color: rgba(50,230,180,0.3);
+}
+
+.card-container.standard {
+    --glare-color: rgba(60,140,255,0.3);
+}
+
+.card-container.uncommon {
+    --glare-color: rgba(180,90,250,0.7);
+}
+
 .card-glare {
     position: absolute;
     top: 50%;
