@@ -201,10 +201,25 @@ body {
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
 
+/* "Featured" badge in top-left corner of featured cards */
+.featured-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background-color: var(--brand-primary);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
 /* Pop / Highlight animation on double-click */
 .double-clicked {
     animation: highlightPop 1s ease;
-    z-index: 2; /* So it appears above other cards while animating */
+    z-index: 2;
 }
 
 @keyframes highlightPop {

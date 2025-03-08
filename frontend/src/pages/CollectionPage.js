@@ -46,6 +46,7 @@ const CollectionPage = ({
 
     const clickTimerRef = useRef(null);
 
+    // Fetch the logged-in user
     useEffect(() => {
         const fetchProfile = async () => {
             try {
@@ -58,6 +59,7 @@ const CollectionPage = ({
         fetchProfile();
     }, []);
 
+    // Fetch the collection for either the page owner or the logged-in user
     useEffect(() => {
         const fetchCollection = async () => {
             try {
@@ -80,9 +82,11 @@ const CollectionPage = ({
         fetchCollection();
     }, [collectionOwner, loggedInUser]);
 
+    // Fetch featured cards if the user is the owner
     useEffect(() => {
         const fetchFeatured = async () => {
             try {
+                // Only fetch if it's your own collection or no specific user is selected
                 if (loggedInUser && (!collectionOwner || loggedInUser === collectionOwner)) {
                     const response = await fetchFeaturedCards();
                     setFeaturedCards(response.featuredCards || []);
@@ -95,6 +99,7 @@ const CollectionPage = ({
         fetchFeatured();
     }, [loggedInUser, collectionOwner]);
 
+    // Filter & sort cards whenever relevant state changes
     useEffect(() => {
         let filtered = [...allCards];
 
@@ -146,6 +151,7 @@ const CollectionPage = ({
         setFilteredCards(filtered);
     }, [allCards, search, rarityFilter, sort, order, showFeaturedOnly, featuredCards]);
 
+    // Single-click -> select card for your 4 slots on the deck builder (if used)
     const handleCardClick = (card) => {
         if (onSelectItem) {
             const alreadySelected = selectedItems.find((item) => item.itemId === card._id);
@@ -167,6 +173,7 @@ const CollectionPage = ({
         }
     };
 
+    // Update pack quantity (if used in your deck builder)
     const handlePackQuantityChange = (e) => {
         const quantity = Math.max(0, Math.min(parseInt(e.target.value || 0, 10), 10));
         setPackQuantity(quantity);
@@ -178,6 +185,7 @@ const CollectionPage = ({
         }
     };
 
+    // Actually adds or removes the card from the featured list on the server
     const handleToggleFeatured = async (card) => {
         const isCurrentlyFeatured = featuredCards.some((fc) => fc._id === card._id);
         const newFeaturedCards = isCurrentlyFeatured
@@ -185,7 +193,9 @@ const CollectionPage = ({
             : [...featuredCards, card];
 
         try {
+            // Update the server
             await updateFeaturedCards(newFeaturedCards);
+            // Update local state
             setFeaturedCards(newFeaturedCards);
         } catch (error) {
             console.error('Error updating featured cards:', error);
@@ -193,32 +203,35 @@ const CollectionPage = ({
         }
     };
 
+    // Double-click -> toggle featured (if you're the owner)
     const handleCardDoubleClick = async (card) => {
         if (!isOwner) return;
-        // If user already has 4 featured cards, block adding a new one
+
+        // Check if user already has 4 featured cards before adding a new one
         const isCurrentlyFeatured = featuredCards.some((fc) => fc._id === card._id);
         if (!isCurrentlyFeatured && featuredCards.length >= 4) {
-            // You could show a toast or quick highlight to indicate "no more featured allowed."
+            console.warn('Max 4 featured cards allowed!');
             return;
         }
 
-        // Toggle featured
+        // Attempt to toggle on server
         try {
             await handleToggleFeatured(card);
         } catch (error) {
             console.error(error);
         }
 
-        // Add a short highlight animation on the card
+        // Then do a short “pop” animation
         const cardElement = document.getElementById(`card-${card._id}`);
         if (cardElement) {
             cardElement.classList.add('double-clicked');
             setTimeout(() => {
                 cardElement.classList.remove('double-clicked');
-            }, 1000); // 1 second “pop” animation
+            }, 1000); // 1 second pop
         }
     };
 
+    // Distinguish single vs double-click
     const handleClick = (card) => {
         if (clickTimerRef.current) return;
         clickTimerRef.current = setTimeout(() => {
@@ -226,7 +239,6 @@ const CollectionPage = ({
             clickTimerRef.current = null;
         }, 250);
     };
-
     const handleDoubleClick = (card) => {
         if (clickTimerRef.current) {
             clearTimeout(clickTimerRef.current);
@@ -235,6 +247,7 @@ const CollectionPage = ({
         handleCardDoubleClick(card);
     };
 
+    // Button to remove all featured cards
     const handleClearFeatured = async () => {
         try {
             await updateFeaturedCards([]);
@@ -244,6 +257,7 @@ const CollectionPage = ({
         }
     };
 
+    // This user can only feature cards if it's their collection
     const isOwner = !collectionOwner || loggedInUser === collectionOwner;
 
     return (
@@ -256,7 +270,7 @@ const CollectionPage = ({
                 Browse your entire collection here! Use the filters below to search by name, rarity,
                 or mint number. You can also add up to 4 cards to your profile page as "featured
                 cards" by double clicking them. Double clicking a card again, or clicking the "Clear
-                Featured Cards" button, will remove them from the featured section.
+                Featured Cards" button, will remove it from the featured section.
             </p>
 
             {/* Filters */}
@@ -304,7 +318,7 @@ const CollectionPage = ({
                 </div>
             </div>
 
-            {/* Card Rarity Key - Horizontal */}
+            {/* Rarity Key - Horizontal */}
             <div className="card-rarity-key-horizontal">
                 {cardRarities.map((r) => (
                     <div key={r.rarity} className="rarity-item-horizontal">
@@ -319,32 +333,44 @@ const CollectionPage = ({
                 {loading ? (
                     <p>Loading...</p>
                 ) : filteredCards.length > 0 ? (
-                    filteredCards.map((card) => (
-                        <div
-                            key={card._id}
-                            id={`card-${card._id}`}
-                            className={`card-item ${selectedItems.some((item) => item.itemId === card._id)
-                                    ? 'selected'
-                                    : ''
-                                }`}
-                            onClick={() => handleClick(card)}
-                            onDoubleClick={() => handleDoubleClick(card)}
-                            style={{ position: 'relative' }}
-                        >
-                            <BaseCard
-                                name={card.name}
-                                image={card.imageUrl}
-                                rarity={card.rarity}
-                                description={card.flavorText}
-                                mintNumber={card.mintNumber}
-                                maxMint={
-                                    rarities.find(
-                                        (r) => r.name.toLowerCase() === card.rarity.toLowerCase()
-                                    )?.totalCopies || '???'
-                                }
-                            />
-                        </div>
-                    ))
+                    filteredCards.map((card) => {
+                        // Check if this card is featured
+                        const isFeatured = featuredCards.some((fc) => fc._id === card._id);
+
+                        return (
+                            <div
+                                key={card._id}
+                                id={`card-${card._id}`}
+                                className={`card-item ${selectedItems.some((item) => item.itemId === card._id)
+                                        ? 'selected'
+                                        : ''
+                                    }`}
+                                onClick={() => handleClick(card)}
+                                onDoubleClick={() => handleDoubleClick(card)}
+                                style={{ position: 'relative' }}
+                            >
+                                {/* If featured, show a badge in the top-left corner */}
+                                {isFeatured && (
+                                    <div className="featured-badge">
+                                        Featured
+                                    </div>
+                                )}
+
+                                <BaseCard
+                                    name={card.name}
+                                    image={card.imageUrl}
+                                    rarity={card.rarity}
+                                    description={card.flavorText}
+                                    mintNumber={card.mintNumber}
+                                    maxMint={
+                                        rarities.find(
+                                            (r) => r.name.toLowerCase() === card.rarity.toLowerCase()
+                                        )?.totalCopies || '???'
+                                    }
+                                />
+                            </div>
+                        );
+                    })
                 ) : (
                     <p>No cards found.</p>
                 )}
