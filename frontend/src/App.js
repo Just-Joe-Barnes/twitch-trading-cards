@@ -100,10 +100,10 @@ const App = () => {
                 <Route path="/debug-trade" element={<DebugTradePage />} />
                 {/* Catalogue route */}
                 <Route path="/catalogue" element={<CataloguePage />} />
-                {/* New Market Routes */}
-                <Route path="/market" element={<MarketPage />} />
-                <Route path="/market/create" element={<CreateListingPage />} />
-                <Route path="/market/listing/:id" element={<MarketListingDetails />} />
+                {/* Protected Market routes */}
+                <Route path="/market" element={user ? <MarketPage /> : <Navigate to="/login" />} />
+                <Route path="/market/create" element={user ? <CreateListingPage /> : <Navigate to="/login" />} />
+                <Route path="/market/listing/:id" element={user ? <MarketListingDetails /> : <Navigate to="/login" />} />
                 <Route path="/" element={<Navigate to="/dashboard" />} />
                 <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
