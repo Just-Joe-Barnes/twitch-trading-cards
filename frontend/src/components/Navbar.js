@@ -58,10 +58,7 @@ const Navbar = ({ isAdmin }) => {
         <nav className="navbar">
             <div className="navbar-logo">
                 {/* Replace the text with your logo image */}
-                <img
-                    src="/images/NedsDecksLogo.png"
-                    alt="Ned's Decks"
-                />
+                <img src="/images/NedsDecksLogo.png" alt="Ned's Decks" />
             </div>
 
             <div className="navbar-search">
@@ -124,17 +121,28 @@ const Navbar = ({ isAdmin }) => {
                         Trading
                     </NavLink>
                 </li>
+                {/* Only show admin-specific links */}
                 {isAdmin && (
-                    <li>
-                        <NavLink
-                            to="/admin-dashboard"
-                            className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-                        >
-                            Admin Dashboard
-                        </NavLink>
-                    </li>
+                    <>
+                        <li>
+                            <NavLink
+                                to="/admin-dashboard"
+                                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                            >
+                                Admin Dashboard
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink
+                                to="/market"
+                                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                            >
+                                Market
+                            </NavLink>
+                        </li>
+                    </>
                 )}
-                {/* New Catalogue page link */}
+                {/* Catalogue link is public */}
                 <li>
                     <NavLink
                         to="/catalogue"
