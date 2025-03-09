@@ -101,9 +101,9 @@ const App = () => {
                 {/* Catalogue route */}
                 <Route path="/catalogue" element={<CataloguePage />} />
                 {/* Protected Market routes */}
-                <Route path="/market" element={user ? <MarketPage /> : <Navigate to="/login" />} />
-                <Route path="/market/create" element={user ? <CreateListingPage /> : <Navigate to="/login" />} />
-                <Route path="/market/listing/:id" element={user ? <MarketListingDetails /> : <Navigate to="/login" />} />
+                <Route path="/market" element={user?.isAdmin ? <MarketPage /> : <Navigate to="/login" />} />
+                <Route path="/market/create" element={user?.isAdmin ? <CreateListingPage /> : <Navigate to="/login" />} />
+                <Route path="/market/listing/:id" element={user?.isAdmin ? <MarketListingDetails /> : <Navigate to="/login" />} />
                 <Route path="/" element={<Navigate to="/dashboard" />} />
                 <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
