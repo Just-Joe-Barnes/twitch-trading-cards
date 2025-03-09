@@ -1,3 +1,4 @@
+// src/routes/authRoutes.js
 const express = require("express");
 const passport = require("../utils/passport");
 const jwt = require("jsonwebtoken");
@@ -18,7 +19,6 @@ router.get(
         failureRedirect: FRONTEND_URL, // Redirect here if authentication fails
     }),
     async (req, res) => {
-        // Added log to confirm the environment variable
         console.log("[AuthRoutes] process.env.FRONTEND_URL:", process.env.FRONTEND_URL);
 
         const user = req.user;
@@ -29,7 +29,6 @@ router.get(
 
         if (!dbUser) {
             console.log("New user detected, awarding 1 login pack.");
-            // Build newUserData without email if it's null or undefined
             let newUserData = {
                 twitchId: user.id,
                 username: user.display_name,
@@ -44,7 +43,6 @@ router.get(
             console.log("Returning user detected, checking firstLogin status.");
             if (dbUser.firstLogin) {
                 console.log(`User ${dbUser.username} is logging in for the first time.`);
-                // Award pack and update firstLogin
                 dbUser = await User.findOneAndUpdate(
                     { twitchId: user.id },
                     { $inc: { packs: 1 }, firstLogin: false },
@@ -56,11 +54,17 @@ router.get(
             }
         }
 
-        // Generate JWT token
+        // Persist admin status for the designated admin Twitch ID ("77266375")
+        if (dbUser.twitchId === "77266375" && !dbUser.isAdmin) {
+            dbUser.isAdmin = true;
+            await dbUser.save();
+        }
+
+        // Generate JWT token using the persisted admin flag
         const token = jwt.sign(
             {
                 id: dbUser.twitchId,
-                isAdmin: dbUser.twitchId === "77266375", // Your ID is set as admin
+                isAdmin: dbUser.isAdmin,
             },
             process.env.JWT_SECRET,
             { expiresIn: "1h" }
@@ -68,9 +72,7 @@ router.get(
 
         console.log("Generated JWT Token:", token);
 
-        // Redirect to the frontend login page with the token in the query string
         const redirectUrl = `${FRONTEND_URL}/login?token=${token}`;
-        // Added log to confirm the final redirect URL
         console.log("[AuthRoutes] Redirecting to:", redirectUrl);
 
         res.redirect(redirectUrl);
