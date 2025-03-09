@@ -56,4 +56,19 @@ router.post('/listings/:id/offers', protect, async (req, res) => {
     }
 });
 
+// GET /api/market/listings/:id - Get a single market listing
+router.get('/listings/:id', protect, async (req, res) => {
+    try {
+        const listing = await MarketListing.findById(req.params.id).populate('owner', 'username');
+        if (!listing) {
+            return res.status(404).json({ message: 'Listing not found' });
+        }
+        res.status(200).json(listing);
+    } catch (error) {
+        console.error('Error fetching market listing:', error);
+        res.status(500).json({ message: 'Server error fetching listing' });
+    }
+});
+
+
 module.exports = router;

@@ -1,0 +1,74 @@
+/* frontend/src/styles/MarketListingDetails.css */
+.market-listing-details {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background: var(--surface-dark);
+    color: var(--text-primary);
+    border-radius: 12px;
+}
+
+    .market-listing-details h1 {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .market-listing-details .listing-owner {
+        text-align: center;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+.offer-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-group label {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.form-group textarea,
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-dark);
+    border-radius: 6px;
+    background: var(--surface-darker);
+    color: var(--text-primary);
+}
+
+.offer-form button {
+    align-self: flex-start;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--brand-primary);
+    border: none;
+    border-radius: 6px;
+    color: var(--background-dark);
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+    .offer-form button:hover {
+        background-color: var(--brand-secondary);
+    }
+
+.offers-list {
+    list-style: none;
+    padding: 0;
+}
+
+.offer-item {
+    border-bottom: 1px solid var(--border-dark);
+    padding: 0.75rem 0;
+}
+
+.error {
+    color: red;
+}
+
+.success {
+    color: green;
+}
