@@ -5,7 +5,6 @@ const MarketListing = require('../models/MarketListing');
 const { protect } = require('../middleware/authMiddleware');
 
 // POST /api/market/listings - Create a new market listing.
-// Only allow listing a card if it comes from the user's own collection.
 router.post('/listings', protect, async (req, res) => {
     try {
         const { card } = req.body;
@@ -44,16 +43,12 @@ router.post('/listings/:id/offers', protect, async (req, res) => {
         if (!listing) {
             return res.status(404).json({ message: 'Listing not found' });
         }
-        // Add the offer to the listing.
         listing.offers.push({
             offerer: req.user._id,
             message,
             offeredPrice,
         });
         await listing.save();
-
-        // (Optional: Create a notification for the listing owner here.)
-
         res.status(200).json({ message: 'Offer submitted successfully' });
     } catch (error) {
         console.error('Error making offer:', error);

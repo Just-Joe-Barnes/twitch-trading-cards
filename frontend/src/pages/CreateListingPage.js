@@ -1,6 +1,6 @@
 // src/pages/CreateListingPage.js
 import React, { useState, useEffect } from 'react';
-import { fetchUserCollection, fetchUserProfile } from '../utils/api';
+import { fetchUserCollection, fetchUserProfile, API_BASE_URL } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import BaseCard from '../components/BaseCard';
 import { useNavigate } from 'react-router-dom';
@@ -18,7 +18,7 @@ const CreateListingPage = () => {
             try {
                 // Fetch the full user profile to obtain the _id.
                 const profile = await fetchUserProfile();
-                // Use the user's _id (not username) for the collection endpoint.
+                // Use the user's _id for the collection endpoint.
                 const data = await fetchUserCollection(profile._id);
                 setCollection(data.cards || []);
             } catch (error) {
@@ -37,7 +37,7 @@ const CreateListingPage = () => {
     const handleListCard = async () => {
         if (!selectedCard) return;
         try {
-            const res = await fetch('/api/market/listings', {
+            const res = await fetch(`${API_BASE_URL}/api/market/listings`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
