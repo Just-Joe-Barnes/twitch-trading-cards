@@ -14,7 +14,7 @@ const userRoutes = require('./src/routes/userRoutes');
 const twitchRoutes = require('./src/routes/twitchRoutes');
 const cardRoutes = require('./src/routes/cardRoutes');
 const tradeRoutes = require('./src/routes/tradeRoutes');
-const marketRoutes = require('./routes/MarketRoutes');
+const marketRoutes = require('./src/routes/MarketRoutes');
 
 const app = express();
 
