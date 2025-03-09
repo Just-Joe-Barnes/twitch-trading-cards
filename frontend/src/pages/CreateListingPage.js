@@ -1,6 +1,6 @@
 // src/pages/CreateListingPage.js
 import React, { useState, useEffect } from 'react';
-import { fetchUserCollection } from '../utils/api';
+import { fetchUserCollection, fetchUserProfile } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import BaseCard from '../components/BaseCard';
 import { useNavigate } from 'react-router-dom';
@@ -12,13 +12,14 @@ const CreateListingPage = () => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    // Fetch user collection on mount.
+    // Fetch user profile and collection on mount.
     useEffect(() => {
         const fetchCollection = async () => {
             try {
-                // Assume you store token so you know your own collection.
-                // You may need to adjust this if your API requires user id.
-                const data = await fetchUserCollection();
+                // Fetch the full user profile to obtain the _id.
+                const profile = await fetchUserProfile();
+                // Use the user's _id (not username) for the collection endpoint.
+                const data = await fetchUserCollection(profile._id);
                 setCollection(data.cards || []);
             } catch (error) {
                 console.error("Error fetching collection:", error);
