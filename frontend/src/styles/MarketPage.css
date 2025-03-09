@@ -1,0 +1,113 @@
+/* MarketPage.css */
+
+:root {
+    --brand-primary: #db88db;
+    --brand-secondary: #88cddb;
+    --background-dark: #0a0a0a;
+    --surface-dark: #1a1a1a;
+    --surface-darker: #141414;
+    --text-primary: rgba(255, 255, 255, 0.95);
+    --border-dark: rgba(255, 255, 255, 0.12);
+}
+
+.market-page {
+    padding: 2rem 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    background: var(--surface-darker);
+    color: var(--text-primary);
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+    .market-page h1 {
+        text-align: center;
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+
+.market-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+    .market-controls input[type="text"],
+    .market-controls select {
+        padding: 0.75rem 1.5rem;
+        border: 1px solid var(--border-dark);
+        border-radius: 8px;
+        background: var(--surface-dark);
+        color: var(--text-primary);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        width: 240px;
+    }
+
+        .market-controls input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+.create-listing-button {
+    padding: 0.75rem 1.5rem;
+    background-color: var(--brand-primary);
+    color: var(--background-dark);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 1rem;
+}
+
+    .create-listing-button:hover {
+        background-color: var(--brand-secondary);
+    }
+
+.listings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.listing-card {
+    background: var(--surface-dark);
+    border: 1px solid var(--border-dark);
+    border-radius: 12px;
+    padding: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+}
+
+    .listing-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--brand-primary);
+        box-shadow: 0 4px 24px rgba(219, 136, 219, 0.1);
+    }
+
+.listing-owner {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    text-align: center;
+    color: var(--text-primary);
+}
+
+.view-listing-button {
+    display: block;
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background-color: var(--brand-primary);
+    color: var(--background-dark);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+    .view-listing-button:hover {
+        background-color: var(--brand-secondary);
+    }
