@@ -79,7 +79,34 @@ router.get(
     }
 );
 
-// Route to check user authentication status
+// Route to check user authentication status and return full user profile
+router.post("/validate", async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    console.log("[AUTH VALIDATE] Token received:", token);
+
+    if (!token) {
+        console.log("[AUTH VALIDATE] No token provided");
+        return res.status(401).json({ message: "No token provided" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log("[AUTH VALIDATE] Token decoded:", decoded);
+        // Fetch the full user profile from the database
+        const user = await User.findOne({ twitchId: decoded.id }).select('-password');
+        if (!user) {
+            console.log("[AUTH VALIDATE] User not found for Twitch ID:", decoded.id);
+            return res.status(401).json({ message: "User not found" });
+        }
+        console.log("[AUTH VALIDATE] User validated:", user.username);
+        res.status(200).json(user);
+    } catch (err) {
+        console.log("[AUTH VALIDATE] Token validation failed:", err.message);
+        return res.status(401).json({ message: "Invalid token" });
+    }
+});
+
+// Route to check user authentication status (using passport)
 router.get("/user", (req, res) => {
     if (req.isAuthenticated()) {
         console.log("User is authenticated:", req.user);
@@ -98,27 +125,6 @@ router.get("/logout", (req, res) => {
         }
         console.log("User logged out successfully");
         res.redirect(FRONTEND_URL);
-    });
-});
-
-// Validate JWT token route
-router.post("/validate", (req, res) => {
-    const token = req.headers.authorization?.split(" ")[1];
-    console.log("[AUTH VALIDATE] Token received:", token);
-
-    if (!token) {
-        console.log("[AUTH VALIDATE] No token provided");
-        return res.status(401).json({ message: "No token provided" });
-    }
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            console.log("[AUTH VALIDATE] Invalid token:", token);
-            return res.status(401).json({ message: "Invalid token" });
-        }
-
-        console.log("[AUTH VALIDATE] Token valid for user ID:", decoded.id);
-        res.status(200).json({ userId: decoded.id, isAdmin: decoded.isAdmin });
     });
 });
 
