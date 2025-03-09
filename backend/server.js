@@ -14,6 +14,7 @@ const userRoutes = require('./src/routes/userRoutes');
 const twitchRoutes = require('./src/routes/twitchRoutes');
 const cardRoutes = require('./src/routes/cardRoutes');
 const tradeRoutes = require('./src/routes/tradeRoutes');
+const marketRoutes = require('./routes/MarketRoutes');
 
 const app = express();
 
@@ -69,6 +70,7 @@ app.use('/api/cards', cardRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/twitch', twitchRoutes);
 app.use('/api/trades', tradeRoutes);
+app.use('/api/market', marketRoutes);
 
 // Default 404 handler (for any unmatched routes)
 app.use((req, res) => {

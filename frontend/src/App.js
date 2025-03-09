@@ -12,6 +12,10 @@ import PendingTrades from './pages/PendingTrades';
 import DebugTradePage from './pages/DebugTradePage';
 import CataloguePage from './pages/CataloguePage'; // New Catalogue page import
 import LoadingSpinner from './components/LoadingSpinner'; // Import the spinner component
+import MarketPage from './pages/MarketPage';             // New Market Page
+import CreateListingPage from './pages/CreateListingPage';   // New Create Listing Page
+import MarketListingDetails from './pages/MarketListingDetails'; // New Listing Details Page
+import 'normalize.css';
 import 'normalize.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -96,6 +100,10 @@ const App = () => {
                 <Route path="/debug-trade" element={<DebugTradePage />} />
                 {/* Catalogue route */}
                 <Route path="/catalogue" element={<CataloguePage />} />
+                {/* New Market Routes */}
+                <Route path="/market" element={<MarketPage />} />
+                <Route path="/market/create" element={<CreateListingPage />} />
+                <Route path="/market/listing/:id" element={<MarketListingDetails />} />
                 <Route path="/" element={<Navigate to="/dashboard" />} />
                 <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
