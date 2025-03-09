@@ -10,17 +10,14 @@ import ProfilePage from './pages/ProfilePage';
 import TradingPage from './pages/TradingPage';
 import PendingTrades from './pages/PendingTrades';
 import DebugTradePage from './pages/DebugTradePage';
-import CataloguePage from './pages/CataloguePage'; // New Catalogue page import
-import LoadingSpinner from './components/LoadingSpinner'; // Import the spinner component
-import MarketPage from './pages/MarketPage';             // New Market Page
-import CreateListingPage from './pages/CreateListingPage';   // New Create Listing Page
-import MarketListingDetails from './pages/MarketListingDetails'; // New Listing Details Page
-import 'normalize.css';
+import CataloguePage from './pages/CataloguePage';
+import LoadingSpinner from './components/LoadingSpinner';
+import MarketPage from './pages/MarketPage';
+import CreateListingPage from './pages/CreateListingPage';
+import MarketListingDetails from './pages/MarketListingDetails';
 import 'normalize.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
-console.log("API_BASE_URL in production:", API_BASE_URL);
 
 const App = () => {
     const [user, setUser] = useState(null);
@@ -43,17 +40,26 @@ const App = () => {
                 return;
             }
             try {
-                const response = await fetch(`${API_BASE_URL}/api/auth/validate`, {
+                // First, validate the token (returns minimal data)
+                const validateResponse = await fetch(`${API_BASE_URL}/api/auth/validate`, {
                     method: 'POST',
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                if (!response.ok) {
-                    throw new Error(`Token validation failed with status ${response.status}`);
+                if (!validateResponse.ok) {
+                    throw new Error(`Token validation failed with status ${validateResponse.status}`);
                 }
-                const data = await response.json();
-                setUser(data);
+                // Then, fetch the full user profile
+                const profileResponse = await fetch(`${API_BASE_URL}/api/users/me`, {
+                    method: 'GET',
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (!profileResponse.ok) {
+                    throw new Error(`Profile fetch failed with status ${profileResponse.status}`);
+                }
+                const profileData = await profileResponse.json();
+                setUser(profileData);
             } catch (error) {
-                console.error('[App.js] Token validation error:', error.message);
+                console.error('[App.js] Error fetching user data:', error.message);
                 localStorage.removeItem('token');
                 setUser(null);
             } finally {
@@ -66,7 +72,6 @@ const App = () => {
     }, []);
 
     if (loading) {
-        // Render the global loading spinner instead of plain text
         return <LoadingSpinner />;
     }
 
@@ -98,9 +103,8 @@ const App = () => {
                     element={user ? <PendingTrades userId={user._id} /> : <Navigate to="/login" />}
                 />
                 <Route path="/debug-trade" element={<DebugTradePage />} />
-                {/* Catalogue route */}
                 <Route path="/catalogue" element={<CataloguePage />} />
-                {/* Protected Market routes */}
+                {/* Protected Market routes – admin only */}
                 <Route path="/market" element={user?.isAdmin ? <MarketPage /> : <Navigate to="/login" />} />
                 <Route path="/market/create" element={user?.isAdmin ? <CreateListingPage /> : <Navigate to="/login" />} />
                 <Route path="/market/listing/:id" element={user?.isAdmin ? <MarketListingDetails /> : <Navigate to="/login" />} />
