@@ -99,13 +99,14 @@ router.delete('/listings/:id', protect, async (req, res) => {
         if (listing.owner.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: 'You do not have permission to cancel this listing.' });
         }
-        // Optionally, you can add logic here to return the card to the user's collection.
-        await listing.remove();
+        // Delete the listing using deleteOne()
+        await listing.deleteOne();
         res.status(200).json({ message: 'Listing cancelled and deleted successfully.' });
     } catch (error) {
         console.error('Error deleting listing:', error);
         res.status(500).json({ message: 'Server error deleting listing' });
     }
 });
+
 
 module.exports = router;
