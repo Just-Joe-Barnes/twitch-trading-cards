@@ -6,7 +6,6 @@ import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/MarketListingDetails.css';
 
-// Example rarities array (adjust if needed)
 const rarities = [
     { name: 'Basic' },
     { name: 'Common' },
@@ -43,7 +42,7 @@ const MarketListingDetails = () => {
     // Selected cards for the offer
     const [selectedOfferedCards, setSelectedOfferedCards] = useState([]);
 
-    // 1) Fetch listing details
+    // 1) Fetch the market listing details
     useEffect(() => {
         const fetchListing = async () => {
             try {
@@ -95,9 +94,9 @@ const MarketListingDetails = () => {
         setFilteredCollection(filtered);
     }, [userCollection, search, rarityFilter]);
 
-    // Toggle selection of a card in the user's collection
+    // Toggle selection of a card
     const toggleCardSelection = (card) => {
-        const alreadySelected = selectedOfferedCards.find(c => c._id === card._id);
+        const alreadySelected = selectedOfferedCards.find((c) => c._id === card._id);
         if (alreadySelected) {
             setSelectedOfferedCards(
                 selectedOfferedCards.filter((c) => c._id !== card._id)
@@ -107,7 +106,7 @@ const MarketListingDetails = () => {
         }
     };
 
-    // Submit an offer
+    // Submit the offer
     const handleOfferSubmit = async (e) => {
         e.preventDefault();
         setOfferError('');
@@ -123,7 +122,7 @@ const MarketListingDetails = () => {
             const res = await fetchWithAuth(`/api/market/listings/${id}/offers`, {
                 method: 'POST',
                 body: JSON.stringify({
-                    message: offerMessage,
+                    message: offerMessage, // Not required
                     offeredCards: selectedOfferedCards.map((card) => card._id),
                     offeredPacks: packsNumber,
                 }),
@@ -153,7 +152,6 @@ const MarketListingDetails = () => {
         <div className="market-listing-details">
             <h1>{listing.card.name}</h1>
 
-            {/* Center the main listing card */}
             <div className="listing-card-container">
                 <BaseCard
                     name={listing.card.name}
@@ -170,17 +168,16 @@ const MarketListingDetails = () => {
             <h2>Make an Offer</h2>
             <form onSubmit={handleOfferSubmit} className="offer-form">
                 <div className="form-group">
-                    <label htmlFor="offerMessage">Message:</label>
+                    <label htmlFor="offerMessage">Message (optional):</label>
                     <textarea
                         id="offerMessage"
                         value={offerMessage}
                         onChange={(e) => setOfferMessage(e.target.value)}
                         placeholder="Enter your message..."
-                        required
                     />
                 </div>
 
-                {/* Cards filter section */}
+                {/* Filters for the user collection */}
                 <div className="filters">
                     <input
                         type="text"
@@ -201,9 +198,10 @@ const MarketListingDetails = () => {
                     </select>
                 </div>
 
+                {/* User collection grid */}
                 <div className="form-group">
                     <label>Offer Cards:</label>
-                    <p>Select cards from your collection (max height with scrollbar):</p>
+                    <p>Select cards from your collection:</p>
                     <div className="user-collection-grid">
                         {filteredCollection.map((card) => {
                             const isSelected = selectedOfferedCards.some((c) => c._id === card._id);
@@ -224,6 +222,28 @@ const MarketListingDetails = () => {
                             );
                         })}
                     </div>
+                </div>
+
+                {/* Panel for displaying selected cards */}
+                <div className="selected-cards-panel">
+                    <h3>Selected Cards for Offer</h3>
+                    {selectedOfferedCards.length > 0 ? (
+                        <div className="selected-cards-grid">
+                            {selectedOfferedCards.map((card) => (
+                                <div key={card._id} className="card-wrapper">
+                                    <BaseCard
+                                        name={card.name}
+                                        image={card.imageUrl}
+                                        rarity={card.rarity}
+                                        description={card.flavorText}
+                                        mintNumber={card.mintNumber}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p>No cards selected yet.</p>
+                    )}
                 </div>
 
                 <div className="form-group">
@@ -250,12 +270,9 @@ const MarketListingDetails = () => {
                     {listing.offers.map((offer) => (
                         <li key={offer._id} className="offer-item">
                             <p><strong>Offer by:</strong> {offer.offerer}</p>
-                            <p><strong>Message:</strong> {offer.message}</p>
+                            <p><strong>Message:</strong> {offer.message || 'No message'}</p>
                             {offer.offeredCards && offer.offeredCards.length > 0 && (
-                                <p>
-                                    <strong>Offered Cards:</strong>{' '}
-                                    {offer.offeredCards.join(', ')}
-                                </p>
+                                <p><strong>Offered Cards:</strong> {offer.offeredCards.join(', ')}</p>
                             )}
                             <p><strong>Packs Offered:</strong> {offer.offeredPacks}</p>
                             <p><em>{new Date(offer.createdAt).toLocaleString()}</em></p>

@@ -11,7 +11,7 @@
 }
 
 .market-listing-details {
-    max-width: 1200px;
+    max-width: 1400px; /* Widen the container */
     margin: 2rem auto;
     padding: 2rem;
     background: var(--surface-dark);
@@ -24,7 +24,6 @@
         margin-bottom: 1rem;
     }
 
-/* Center the main listing card in a flex container */
 .listing-card-container {
     display: flex;
     justify-content: center;
@@ -43,7 +42,6 @@
     margin: 1.5rem 0;
 }
 
-/* Offer form styling */
 .offer-form {
     display: flex;
     flex-direction: column;
@@ -97,6 +95,13 @@
             background-color: var(--brand-secondary);
         }
 
+/* Collection filter bar */
+.filters {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
 .error {
     color: #ff6666;
     font-weight: bold;
@@ -107,23 +112,16 @@
     font-weight: bold;
 }
 
-/* Collection Filters */
-.filters {
-    display: flex;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-}
-
-/* User Collection Grid for Selecting Offered Cards */
+/* User Collection Grid */
 .user-collection-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr); /* Exactly 4 columns */
     gap: 1.25rem;
     margin-top: 0.5rem;
-    /* Double the height and allow scrolling */
+    /* Scrollable area, 800px tall */
     max-height: 800px;
     overflow-y: auto;
-    padding-right: 0.5rem; /* space for scrollbar */
+    padding-right: 0.5rem;
 }
 
     .user-collection-grid .card-wrapper {
@@ -144,7 +142,29 @@
             border: 2px solid var(--brand-primary);
         }
 
-/* Offers list styling */
+/* Panel for selected cards */
+.selected-cards-panel {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--surface-darker);
+    border-radius: 8px;
+}
+
+    .selected-cards-panel h3 {
+        margin: 0 0 0.5rem;
+    }
+
+.selected-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 columns for selected cards as well */
+    gap: 1.25rem;
+    margin-top: 0.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+/* Offers list */
 .offers-list {
     list-style: none;
     padding: 0;
