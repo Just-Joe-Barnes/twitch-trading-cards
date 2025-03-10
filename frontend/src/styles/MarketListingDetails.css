@@ -11,7 +11,7 @@
 }
 
 .market-listing-details {
-    max-width: 1400px; /* Updated max width */
+    max-width: 1400px;
     margin: 2rem auto;
     padding: 2rem;
     background: var(--surface-dark);
@@ -46,7 +46,7 @@
 .offer-form {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem; /* Increased space between form groups */
+    gap: 1.5rem;
 }
 
     .offer-form .form-group {
@@ -106,7 +106,7 @@
     font-weight: bold;
 }
 
-/* Collection filter bar */
+/* Collection filter bar (placed below "Offer Cards" heading) */
 .filters {
     display: flex;
     gap: 0.75rem;
@@ -116,7 +116,7 @@
 /* User Collection Grid */
 .user-collection-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 columns exactly */
+    grid-template-columns: repeat(4, 1fr); /* Exactly 4 columns */
     gap: 1.25rem;
     margin-top: 1rem;
     max-height: 800px;
@@ -156,10 +156,10 @@
 
 .selected-cards-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr); /* 4 columns for selected cards */
     gap: 1.25rem;
     margin-top: 1rem;
-    max-height: 800px; /* Increased height for selected cards */
+    max-height: 800px; /* Increased height for selected cards panel */
     overflow-y: auto;
     padding-right: 0.5rem;
 }
@@ -175,3 +175,23 @@
     border-bottom: 1px solid var(--border-dark);
     padding: 0.75rem 0;
 }
+
+/* Owner actions */
+.owner-actions {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+    .owner-actions .cancel-button {
+        padding: 0.75rem 1.5rem;
+        background-color: var(--brand-primary);
+        border: none;
+        border-radius: 6px;
+        color: var(--background-dark);
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        .owner-actions .cancel-button:hover {
+            background-color: var(--brand-secondary);
+        }

@@ -1,6 +1,6 @@
 // frontend/src/pages/MarketListingDetails.js
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { fetchWithAuth, fetchUserProfile, fetchUserCollection } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -21,6 +21,8 @@ const rarities = [
 
 const MarketListingDetails = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
+
     const [listing, setListing] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -33,6 +35,7 @@ const MarketListingDetails = () => {
     // Logged-in user's data
     const [userPacks, setUserPacks] = useState(0);
     const [userCollection, setUserCollection] = useState([]);
+    const [currentUser, setCurrentUser] = useState(null);
 
     // Collection filters
     const [search, setSearch] = useState('');
@@ -62,6 +65,7 @@ const MarketListingDetails = () => {
         const fetchUserData = async () => {
             try {
                 const profile = await fetchUserProfile();
+                setCurrentUser(profile);
                 setUserPacks(profile.packs || 0);
                 const collectionData = await fetchUserCollection(profile._id);
                 setUserCollection(collectionData.cards || []);
@@ -88,17 +92,16 @@ const MarketListingDetails = () => {
         setFilteredCollection(filtered);
     }, [userCollection, search, rarityFilter]);
 
-    // Toggle selection for offered cards
     const toggleCardSelection = (card) => {
-        const alreadySelected = selectedOfferedCards.find((c) => c._id === card._id);
+        const alreadySelected = selectedOfferedCards.find(c => c._id === card._id);
         if (alreadySelected) {
-            setSelectedOfferedCards(selectedOfferedCards.filter((c) => c._id !== card._id));
+            setSelectedOfferedCards(selectedOfferedCards.filter(c => c._id !== card._id));
         } else {
             setSelectedOfferedCards([...selectedOfferedCards, card]);
         }
     };
 
-    // Submit the offer
+    // Submit the offer (only if user is not the owner)
     const handleOfferSubmit = async (e) => {
         e.preventDefault();
         setOfferError('');
@@ -113,7 +116,7 @@ const MarketListingDetails = () => {
                 method: 'POST',
                 body: JSON.stringify({
                     message: offerMessage,
-                    offeredCards: selectedOfferedCards.map((card) => card._id),
+                    offeredCards: selectedOfferedCards.map(card => card._id),
                     offeredPacks: packsNumber,
                 }),
             });
@@ -133,8 +136,30 @@ const MarketListingDetails = () => {
         }
     };
 
+    // Cancel listing (only for owner)
+    const handleCancelListing = async () => {
+        try {
+            const res = await fetchWithAuth(`/api/market/listings/${id}`, {
+                method: 'DELETE',
+            });
+            if (res.message) {
+                navigate('/market');
+            }
+        } catch (error) {
+            console.error('Error cancelling listing:', error);
+        }
+    };
+
     if (loading) return <LoadingSpinner />;
     if (!listing) return <div>Listing not found.</div>;
+
+    // Determine if current user is the listing owner.
+    const isOwner =
+        currentUser &&
+        listing.owner &&
+        (listing.owner._id
+            ? listing.owner._id.toString() === currentUser._id.toString()
+            : listing.owner.toString() === currentUser._id.toString());
 
     return (
         <div className="market-listing-details">
@@ -149,100 +174,109 @@ const MarketListingDetails = () => {
                 />
             </div>
             <p className="listing-owner">Listed by: {listing.owner.username}</p>
-            <hr />
 
-            <h2>Make an Offer</h2>
-            <form onSubmit={handleOfferSubmit} className="offer-form">
-                <div className="form-group message-group">
-                    <label htmlFor="offerMessage">Message (optional):</label>
-                    <textarea
-                        id="offerMessage"
-                        value={offerMessage}
-                        onChange={(e) => setOfferMessage(e.target.value)}
-                        placeholder="Enter your message..."
-                    />
+            {isOwner ? (
+                <div className="owner-actions">
+                    <button className="cancel-button" onClick={handleCancelListing}>
+                        Cancel Listing
+                    </button>
                 </div>
+            ) : (
+                <>
+                    <hr />
+                    <h2>Make an Offer</h2>
+                    <form onSubmit={handleOfferSubmit} className="offer-form">
+                        <div className="form-group message-group">
+                            <label htmlFor="offerMessage">Message (optional):</label>
+                            <textarea
+                                id="offerMessage"
+                                value={offerMessage}
+                                onChange={(e) => setOfferMessage(e.target.value)}
+                                placeholder="Enter your message..."
+                            />
+                        </div>
+                        <div className="form-group packs-group">
+                            <label htmlFor="offeredPacks">Offered Packs (You have {userPacks}):</label>
+                            <input
+                                id="offeredPacks"
+                                type="number"
+                                value={offeredPacks}
+                                onChange={(e) => setOfferedPacks(e.target.value)}
+                                placeholder="0"
+                            />
+                        </div>
 
-                <div className="form-group packs-group">
-                    <label htmlFor="offeredPacks">Offered Packs (You have {userPacks}):</label>
-                    <input
-                        id="offeredPacks"
-                        type="number"
-                        value={offeredPacks}
-                        onChange={(e) => setOfferedPacks(e.target.value)}
-                        placeholder="0"
-                    />
-                </div>
-
-                <div className="offer-cards-section">
-                    <h3>Offer Cards</h3>
-                    <div className="collection-filters">
-                        <input
-                            type="text"
-                            placeholder="Search your collection..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
-                        <select
-                            value={rarityFilter}
-                            onChange={(e) => setRarityFilter(e.target.value)}
-                        >
-                            <option value="">All Rarities</option>
-                            {rarities.map((r) => (
-                                <option key={r.name} value={r.name}>
-                                    {r.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="user-collection-grid">
-                        {filteredCollection.map((card) => {
-                            const isSelected = selectedOfferedCards.some((c) => c._id === card._id);
-                            return (
-                                <div
-                                    key={card._id}
-                                    className={`card-wrapper ${isSelected ? 'selected' : ''}`}
-                                    onClick={() => toggleCardSelection(card)}
+                        <div className="offer-cards-section">
+                            <h3>Offer Cards</h3>
+                            {/* Collection filters placed below the subheading */}
+                            <div className="filters">
+                                <input
+                                    type="text"
+                                    placeholder="Search your collection..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                />
+                                <select
+                                    value={rarityFilter}
+                                    onChange={(e) => setRarityFilter(e.target.value)}
                                 >
-                                    <BaseCard
-                                        name={card.name}
-                                        image={card.imageUrl}
-                                        rarity={card.rarity}
-                                        description={card.flavorText}
-                                        mintNumber={card.mintNumber}
-                                    />
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
+                                    <option value="">All Rarities</option>
+                                    {rarities.map((r) => (
+                                        <option key={r.name} value={r.name}>
+                                            {r.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="user-collection-grid">
+                                {filteredCollection.map((card) => {
+                                    const isSelected = selectedOfferedCards.some(c => c._id === card._id);
+                                    return (
+                                        <div
+                                            key={card._id}
+                                            className={`card-wrapper ${isSelected ? 'selected' : ''}`}
+                                            onClick={() => toggleCardSelection(card)}
+                                        >
+                                            <BaseCard
+                                                name={card.name}
+                                                image={card.imageUrl}
+                                                rarity={card.rarity}
+                                                description={card.flavorText}
+                                                mintNumber={card.mintNumber}
+                                            />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
 
-                <div className="selected-cards-panel">
-                    <h3>Selected Cards for Offer</h3>
-                    <div className="selected-cards-grid">
-                        {selectedOfferedCards.length > 0 ? (
-                            selectedOfferedCards.map((card) => (
-                                <div key={card._id} className="card-wrapper">
-                                    <BaseCard
-                                        name={card.name}
-                                        image={card.imageUrl}
-                                        rarity={card.rarity}
-                                        description={card.flavorText}
-                                        mintNumber={card.mintNumber}
-                                    />
-                                </div>
-                            ))
-                        ) : (
-                            <p>No cards selected yet.</p>
-                        )}
-                    </div>
-                </div>
+                        <div className="selected-cards-panel">
+                            <h3>Selected Cards for Offer</h3>
+                            <div className="selected-cards-grid">
+                                {selectedOfferedCards.length > 0 ? (
+                                    selectedOfferedCards.map((card) => (
+                                        <div key={card._id} className="card-wrapper">
+                                            <BaseCard
+                                                name={card.name}
+                                                image={card.imageUrl}
+                                                rarity={card.rarity}
+                                                description={card.flavorText}
+                                                mintNumber={card.mintNumber}
+                                            />
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p>No cards selected yet.</p>
+                                )}
+                            </div>
+                        </div>
 
-                <button type="submit">Submit Offer</button>
-            </form>
-
-            {offerError && <p className="error">{offerError}</p>}
-            {offerSuccess && <p className="success">{offerSuccess}</p>}
+                        <button type="submit">Submit Offer</button>
+                    </form>
+                    {offerError && <p className="error">{offerError}</p>}
+                    {offerSuccess && <p className="success">{offerSuccess}</p>}
+                </>
+            )}
 
             <hr />
             <h2>Existing Offers</h2>
@@ -250,15 +284,24 @@ const MarketListingDetails = () => {
                 <ul className="offers-list">
                     {listing.offers.map((offer) => (
                         <li key={offer._id} className="offer-item">
-                            <p><strong>Offer by:</strong> {offer.offerer}</p>
-                            <p><strong>Message:</strong> {offer.message || 'No message'}</p>
+                            <p>
+                                <strong>Offer by:</strong> {offer.offerer.username || offer.offerer}
+                            </p>
+                            <p>
+                                <strong>Message:</strong> {offer.message || 'No message'}
+                            </p>
                             {offer.offeredCards && offer.offeredCards.length > 0 && (
                                 <p>
-                                    <strong>Offered Cards:</strong> {offer.offeredCards.join(', ')}
+                                    <strong>Offered Cards:</strong>{' '}
+                                    {offer.offeredCards.map(card => card.name).join(', ')}
                                 </p>
                             )}
-                            <p><strong>Packs Offered:</strong> {offer.offeredPacks}</p>
-                            <p><em>{new Date(offer.createdAt).toLocaleString()}</em></p>
+                            <p>
+                                <strong>Packs Offered:</strong> {offer.offeredPacks}
+                            </p>
+                            <p>
+                                <em>{new Date(offer.createdAt).toLocaleString()}</em>
+                            </p>
                         </li>
                     ))}
                 </ul>
