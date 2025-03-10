@@ -10,9 +10,8 @@
     --border-dark: rgba(255, 255, 255, 0.12);
 }
 
-/* Container for the entire listing page */
 .market-listing-details {
-    max-width: 1200px; /* Wider container */
+    max-width: 1200px;
     margin: 2rem auto;
     padding: 2rem;
     background: var(--surface-dark);
@@ -54,16 +53,17 @@
     .offer-form .form-group {
         display: flex;
         flex-direction: column;
+        gap: 0.5rem;
     }
 
     .offer-form label {
         font-weight: bold;
-        margin-bottom: 0.5rem;
     }
 
     .offer-form textarea,
-    .offer-form input[type="number"] {
-        width: 100%;
+    .offer-form input[type="number"],
+    .filters input[type="text"],
+    .filters select {
         padding: 0.75rem;
         border: 1px solid var(--border-dark);
         border-radius: 6px;
@@ -71,10 +71,13 @@
         color: var(--text-primary);
         font-size: 1rem;
         transition: border 0.3s ease;
+        width: 100%;
     }
 
         .offer-form textarea:focus,
-        .offer-form input[type="number"]:focus {
+        .offer-form input[type="number"]:focus,
+        .filters input[type="text"]:focus,
+        .filters select:focus {
             outline: none;
             border-color: var(--brand-secondary);
         }
@@ -104,32 +107,31 @@
     font-weight: bold;
 }
 
+/* Collection Filters */
+.filters {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
 /* User Collection Grid for Selecting Offered Cards */
 .user-collection-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 1.25rem; /* Increase gap to help prevent overlap */
-    margin-top: 1.5rem;
-    /* Limit height and allow scrolling */
-    max-height: 400px;
+    grid-template-columns: repeat(4, 1fr); /* Exactly 4 columns */
+    gap: 1.25rem;
+    margin-top: 0.5rem;
+    /* Double the height and allow scrolling */
+    max-height: 800px;
     overflow-y: auto;
-    padding-right: 0.5rem; /* Add space for scrollbar */
+    padding-right: 0.5rem; /* space for scrollbar */
 }
-
-    /* If you want to shrink the cards slightly, uncomment this scale transform */
-    /*
-.user-collection-grid .card-wrapper {
-  transform: scale(0.9);
-  transform-origin: top left;
-}
-*/
 
     .user-collection-grid .card-wrapper {
         cursor: pointer;
         border: 1px solid var(--border-dark);
         border-radius: 8px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
         background: var(--surface-dark);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
         .user-collection-grid .card-wrapper:hover {
