@@ -42,7 +42,7 @@ const MarketListingDetails = () => {
     // Selected cards for the offer
     const [selectedOfferedCards, setSelectedOfferedCards] = useState([]);
 
-    // 1) Fetch the market listing details
+    // 1) Fetch market listing details
     useEffect(() => {
         const fetchListing = async () => {
             try {
@@ -57,13 +57,12 @@ const MarketListingDetails = () => {
         fetchListing();
     }, [id]);
 
-    // 2) Fetch user profile & user collection
+    // 2) Fetch logged-in user's profile & collection
     useEffect(() => {
         const fetchUserData = async () => {
             try {
                 const profile = await fetchUserProfile();
                 setUserPacks(profile.packs || 0);
-
                 const collectionData = await fetchUserCollection(profile._id);
                 setUserCollection(collectionData.cards || []);
             } catch (error) {
@@ -73,34 +72,27 @@ const MarketListingDetails = () => {
         fetchUserData();
     }, []);
 
-    // 3) Filter the user's collection
+    // 3) Filter the user's collection based on search & rarity
     useEffect(() => {
         let filtered = [...userCollection];
-
-        // Name search
         if (search) {
             filtered = filtered.filter((card) =>
                 card.name.toLowerCase().includes(search.toLowerCase())
             );
         }
-
-        // Rarity filter
         if (rarityFilter) {
             filtered = filtered.filter(
                 (card) => card.rarity.toLowerCase() === rarityFilter.toLowerCase()
             );
         }
-
         setFilteredCollection(filtered);
     }, [userCollection, search, rarityFilter]);
 
-    // Toggle selection of a card
+    // Toggle selection for offered cards
     const toggleCardSelection = (card) => {
         const alreadySelected = selectedOfferedCards.find((c) => c._id === card._id);
         if (alreadySelected) {
-            setSelectedOfferedCards(
-                selectedOfferedCards.filter((c) => c._id !== card._id)
-            );
+            setSelectedOfferedCards(selectedOfferedCards.filter((c) => c._id !== card._id));
         } else {
             setSelectedOfferedCards([...selectedOfferedCards, card]);
         }
@@ -111,18 +103,16 @@ const MarketListingDetails = () => {
         e.preventDefault();
         setOfferError('');
         setOfferSuccess('');
-
         const packsNumber = Number(offeredPacks) || 0;
         if (packsNumber > userPacks) {
             setOfferError(`You only have ${userPacks} packs available.`);
             return;
         }
-
         try {
             const res = await fetchWithAuth(`/api/market/listings/${id}/offers`, {
                 method: 'POST',
                 body: JSON.stringify({
-                    message: offerMessage, // Not required
+                    message: offerMessage,
                     offeredCards: selectedOfferedCards.map((card) => card._id),
                     offeredPacks: packsNumber,
                 }),
@@ -132,8 +122,6 @@ const MarketListingDetails = () => {
                 setOfferMessage('');
                 setOfferedPacks('');
                 setSelectedOfferedCards([]);
-
-                // Refresh listing to show updated offers
                 const updated = await fetchWithAuth(`/api/market/listings/${id}`);
                 setListing(updated);
             } else {
@@ -151,7 +139,6 @@ const MarketListingDetails = () => {
     return (
         <div className="market-listing-details">
             <h1>{listing.card.name}</h1>
-
             <div className="listing-card-container">
                 <BaseCard
                     name={listing.card.name}
@@ -161,13 +148,12 @@ const MarketListingDetails = () => {
                     mintNumber={listing.card.mintNumber}
                 />
             </div>
-
             <p className="listing-owner">Listed by: {listing.owner.username}</p>
             <hr />
 
             <h2>Make an Offer</h2>
             <form onSubmit={handleOfferSubmit} className="offer-form">
-                <div className="form-group">
+                <div className="form-group message-group">
                     <label htmlFor="offerMessage">Message (optional):</label>
                     <textarea
                         id="offerMessage"
@@ -177,31 +163,38 @@ const MarketListingDetails = () => {
                     />
                 </div>
 
-                {/* Filters for the user collection */}
-                <div className="filters">
+                <div className="form-group packs-group">
+                    <label htmlFor="offeredPacks">Offered Packs (You have {userPacks}):</label>
                     <input
-                        type="text"
-                        placeholder="Search your collection..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        id="offeredPacks"
+                        type="number"
+                        value={offeredPacks}
+                        onChange={(e) => setOfferedPacks(e.target.value)}
+                        placeholder="0"
                     />
-                    <select
-                        value={rarityFilter}
-                        onChange={(e) => setRarityFilter(e.target.value)}
-                    >
-                        <option value="">All Rarities</option>
-                        {rarities.map((r) => (
-                            <option key={r.name} value={r.name}>
-                                {r.name}
-                            </option>
-                        ))}
-                    </select>
                 </div>
 
-                {/* User collection grid */}
-                <div className="form-group">
-                    <label>Offer Cards:</label>
-                    <p>Select cards from your collection:</p>
+                <div className="offer-cards-section">
+                    <h3>Offer Cards</h3>
+                    <div className="collection-filters">
+                        <input
+                            type="text"
+                            placeholder="Search your collection..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                        <select
+                            value={rarityFilter}
+                            onChange={(e) => setRarityFilter(e.target.value)}
+                        >
+                            <option value="">All Rarities</option>
+                            {rarities.map((r) => (
+                                <option key={r.name} value={r.name}>
+                                    {r.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                     <div className="user-collection-grid">
                         {filteredCollection.map((card) => {
                             const isSelected = selectedOfferedCards.some((c) => c._id === card._id);
@@ -224,12 +217,11 @@ const MarketListingDetails = () => {
                     </div>
                 </div>
 
-                {/* Panel for displaying selected cards */}
                 <div className="selected-cards-panel">
                     <h3>Selected Cards for Offer</h3>
-                    {selectedOfferedCards.length > 0 ? (
-                        <div className="selected-cards-grid">
-                            {selectedOfferedCards.map((card) => (
+                    <div className="selected-cards-grid">
+                        {selectedOfferedCards.length > 0 ? (
+                            selectedOfferedCards.map((card) => (
                                 <div key={card._id} className="card-wrapper">
                                     <BaseCard
                                         name={card.name}
@@ -239,22 +231,11 @@ const MarketListingDetails = () => {
                                         mintNumber={card.mintNumber}
                                     />
                                 </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <p>No cards selected yet.</p>
-                    )}
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="offeredPacks">Offered Packs (You have {userPacks}):</label>
-                    <input
-                        id="offeredPacks"
-                        type="number"
-                        value={offeredPacks}
-                        onChange={(e) => setOfferedPacks(e.target.value)}
-                        placeholder="0"
-                    />
+                            ))
+                        ) : (
+                            <p>No cards selected yet.</p>
+                        )}
+                    </div>
                 </div>
 
                 <button type="submit">Submit Offer</button>
@@ -272,7 +253,9 @@ const MarketListingDetails = () => {
                             <p><strong>Offer by:</strong> {offer.offerer}</p>
                             <p><strong>Message:</strong> {offer.message || 'No message'}</p>
                             {offer.offeredCards && offer.offeredCards.length > 0 && (
-                                <p><strong>Offered Cards:</strong> {offer.offeredCards.join(', ')}</p>
+                                <p>
+                                    <strong>Offered Cards:</strong> {offer.offeredCards.join(', ')}
+                                </p>
                             )}
                             <p><strong>Packs Offered:</strong> {offer.offeredPacks}</p>
                             <p><em>{new Date(offer.createdAt).toLocaleString()}</em></p>
