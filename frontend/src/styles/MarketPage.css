@@ -94,6 +94,13 @@
     color: var(--text-primary);
 }
 
+.offers-count {
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+    text-align: center;
+    color: var(--brand-secondary);
+}
+
 .view-listing-button {
     display: block;
     width: 100%;
