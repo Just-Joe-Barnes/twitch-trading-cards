@@ -1,4 +1,4 @@
-// src/pages/MarketPage.js
+// frontend/src/pages/MarketPage.js
 import React, { useState, useEffect } from 'react';
 import { fetchWithAuth } from '../utils/api';
 import BaseCard from '../components/BaseCard';
@@ -61,6 +61,10 @@ const MarketPage = () => {
     return (
         <div className="market-page">
             <h1>Market</h1>
+            <p className="market-description">
+                Welcome to the market! Here you can list your cards for trade offers and view offers from other users.
+                Browse listings, filter by card name or rarity, and make an offer on the ones you like.
+            </p>
             <div className="market-controls">
                 <input
                     type="text"
@@ -85,23 +89,28 @@ const MarketPage = () => {
                     <option value="desc">Descending</option>
                 </select>
             </div>
-            <Link to="/market/create">
-                <button className="create-listing-button">Create New Listing</button>
-            </Link>
+            <div className="create-listing-container">
+                <Link to="/market/create">
+                    <button className="create-listing-button">Create New Listing</button>
+                </Link>
+            </div>
             <div className="listings-grid">
                 {sortedListings.length > 0 ? (
                     sortedListings.map((listing) => (
                         <div key={listing._id} className="listing-card">
-                            <BaseCard
-                                name={listing.card.name}
-                                image={listing.card.imageUrl}
-                                rarity={listing.card.rarity}
-                                description={listing.card.flavorText}
-                                mintNumber={listing.card.mintNumber}
-                            />
+                            <div className="listing-card-content">
+                                <BaseCard
+                                    name={listing.card.name}
+                                    image={listing.card.imageUrl}
+                                    rarity={listing.card.rarity}
+                                    description={listing.card.flavorText}
+                                    mintNumber={listing.card.mintNumber}
+                                />
+                            </div>
                             <p className="listing-owner">Listed by: {listing.owner.username}</p>
+                            <p className="offers-count">Offers: {listing.offers ? listing.offers.length : 0}</p>
                             <Link to={`/market/listing/${listing._id}`}>
-                                <button className="view-listing-button">View & Make Offer</button>
+                                <button className="view-listing-button">View &amp; Make Offer</button>
                             </Link>
                         </div>
                     ))
