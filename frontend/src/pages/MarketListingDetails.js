@@ -1,7 +1,7 @@
 // frontend/src/pages/MarketListingDetails.js
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { fetchWithAuth } from '../utils/api';
+import { fetchWithAuth, fetchUserProfile, fetchUserCollection } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/MarketListingDetails.css';
@@ -11,11 +11,16 @@ const MarketListingDetails = () => {
     const [listing, setListing] = useState(null);
     const [loading, setLoading] = useState(true);
     const [offerMessage, setOfferMessage] = useState('');
-    const [offeredCardsInput, setOfferedCardsInput] = useState(''); // comma-separated card IDs
     const [offeredPacks, setOfferedPacks] = useState('');
     const [offerError, setOfferError] = useState('');
     const [offerSuccess, setOfferSuccess] = useState('');
 
+    // For selecting offered cards from user's collection
+    const [userCollection, setUserCollection] = useState([]);
+    const [selectedOfferedCards, setSelectedOfferedCards] = useState([]);
+    const [userPacks, setUserPacks] = useState(0);
+
+    // Fetch listing details
     useEffect(() => {
         const fetchListing = async () => {
             try {
@@ -30,30 +35,60 @@ const MarketListingDetails = () => {
         fetchListing();
     }, [id]);
 
+    // Fetch logged-in user's profile and collection
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const profile = await fetchUserProfile();
+                // Assuming profile.packs holds the current available packs
+                setUserPacks(profile.packs);
+                const collectionData = await fetchUserCollection(profile._id);
+                setUserCollection(collectionData.cards || []);
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+        };
+        fetchUserData();
+    }, []);
+
+    // Toggle selection for offered cards
+    const toggleCardSelection = (card) => {
+        const alreadySelected = selectedOfferedCards.find(c => c._id === card._id);
+        if (alreadySelected) {
+            setSelectedOfferedCards(selectedOfferedCards.filter(c => c._id !== card._id));
+        } else {
+            setSelectedOfferedCards([...selectedOfferedCards, card]);
+        }
+    };
+
+    // Handle offer submission
     const handleOfferSubmit = async (e) => {
         e.preventDefault();
         setOfferError('');
         setOfferSuccess('');
-        // Parse offeredCards input (comma-separated)
-        const offeredCards = offeredCardsInput
-            .split(',')
-            .map(s => s.trim())
-            .filter(s => s.length > 0);
+
+        const packsNumber = Number(offeredPacks) || 0;
+        // Check if user is offering more packs than available
+        if (packsNumber > userPacks) {
+            setOfferError(`You only have ${userPacks} packs available.`);
+            return;
+        }
+
         try {
             const res = await fetchWithAuth(`/api/market/listings/${id}/offers`, {
                 method: 'POST',
                 body: JSON.stringify({
                     message: offerMessage,
-                    offeredCards,
-                    offeredPacks: Number(offeredPacks) || 0,
+                    offeredCards: selectedOfferedCards.map(card => card._id),
+                    offeredPacks: packsNumber,
                 }),
             });
             if (res.message === 'Offer submitted successfully') {
                 setOfferSuccess('Offer submitted successfully!');
                 setOfferMessage('');
-                setOfferedCardsInput('');
+                setSelectedOfferedCards([]);
                 setOfferedPacks('');
-                // Refresh listing to show updated offers
+                // Refresh the listing to show updated offers
                 const updated = await fetchWithAuth(`/api/market/listings/${id}`);
                 setListing(updated);
             } else {
@@ -79,7 +114,9 @@ const MarketListingDetails = () => {
                 mintNumber={listing.card.mintNumber}
             />
             <p className="listing-owner">Listed by: {listing.owner.username}</p>
+
             <hr />
+
             <h2>Make an Offer</h2>
             <form onSubmit={handleOfferSubmit} className="offer-form">
                 <div className="form-group">
@@ -92,16 +129,32 @@ const MarketListingDetails = () => {
                         required
                     />
                 </div>
+
                 <div className="form-group">
-                    <label htmlFor="offeredCards">Offered Card IDs (comma-separated):</label>
-                    <input
-                        id="offeredCards"
-                        type="text"
-                        value={offeredCardsInput}
-                        onChange={(e) => setOfferedCardsInput(e.target.value)}
-                        placeholder="e.g., 60f7c2...,60f7c2..."
-                    />
+                    <label>Offer Cards:</label>
+                    <p>Select cards from your collection:</p>
+                    <div className="user-collection-grid">
+                        {userCollection.map((card) => {
+                            const isSelected = selectedOfferedCards.some(c => c._id === card._id);
+                            return (
+                                <div
+                                    key={card._id}
+                                    className={`card-wrapper ${isSelected ? 'selected' : ''}`}
+                                    onClick={() => toggleCardSelection(card)}
+                                >
+                                    <BaseCard
+                                        name={card.name}
+                                        image={card.imageUrl}
+                                        rarity={card.rarity}
+                                        description={card.flavorText}
+                                        mintNumber={card.mintNumber}
+                                    />
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
+
                 <div className="form-group">
                     <label htmlFor="offeredPacks">Offered Packs:</label>
                     <input
@@ -109,14 +162,16 @@ const MarketListingDetails = () => {
                         type="number"
                         value={offeredPacks}
                         onChange={(e) => setOfferedPacks(e.target.value)}
-                        placeholder="0"
+                        placeholder={`You have ${userPacks} packs`}
                     />
                 </div>
                 <button type="submit">Submit Offer</button>
             </form>
             {offerError && <p className="error">{offerError}</p>}
             {offerSuccess && <p className="success">{offerSuccess}</p>}
+
             <hr />
+
             <h2>Existing Offers</h2>
             {listing.offers && listing.offers.length > 0 ? (
                 <ul className="offers-list">
