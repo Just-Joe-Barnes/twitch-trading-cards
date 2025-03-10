@@ -4,13 +4,14 @@ const mongoose = require('mongoose');
 const offerSchema = new mongoose.Schema({
     offerer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     message: { type: String },
-    offeredPrice: { type: Number }, // Optional field if you want to track a price
+    offeredCards: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Card' }], // New: offered card IDs
+    offeredPacks: { type: Number, default: 0 }, // New: number of packs offered
     createdAt: { type: Date, default: Date.now }
 });
 
 const marketListingSchema = new mongoose.Schema({
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    // We store the card details in the listing to "freeze" its details at listing time.
+    // Card details stored at listing creation
     card: {
         name: { type: String, required: true },
         imageUrl: { type: String, required: true },

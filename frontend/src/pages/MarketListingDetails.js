@@ -4,14 +4,15 @@ import { useParams } from 'react-router-dom';
 import { fetchWithAuth } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
-import '../styles/MarketListingDetails.css'; // Create this file if you need custom styles
+import '../styles/MarketListingDetails.css';
 
 const MarketListingDetails = () => {
     const { id } = useParams();
     const [listing, setListing] = useState(null);
     const [loading, setLoading] = useState(true);
     const [offerMessage, setOfferMessage] = useState('');
-    const [offeredPrice, setOfferedPrice] = useState('');
+    const [offeredCardsInput, setOfferedCardsInput] = useState(''); // comma-separated card IDs
+    const [offeredPacks, setOfferedPacks] = useState('');
     const [offerError, setOfferError] = useState('');
     const [offerSuccess, setOfferSuccess] = useState('');
 
@@ -33,19 +34,26 @@ const MarketListingDetails = () => {
         e.preventDefault();
         setOfferError('');
         setOfferSuccess('');
+        // Parse offeredCards input (comma-separated)
+        const offeredCards = offeredCardsInput
+            .split(',')
+            .map(s => s.trim())
+            .filter(s => s.length > 0);
         try {
             const res = await fetchWithAuth(`/api/market/listings/${id}/offers`, {
                 method: 'POST',
                 body: JSON.stringify({
                     message: offerMessage,
-                    offeredPrice: Number(offeredPrice),
+                    offeredCards,
+                    offeredPacks: Number(offeredPacks) || 0,
                 }),
             });
             if (res.message === 'Offer submitted successfully') {
                 setOfferSuccess('Offer submitted successfully!');
                 setOfferMessage('');
-                setOfferedPrice('');
-                // Optionally refresh the listing to show updated offers:
+                setOfferedCardsInput('');
+                setOfferedPacks('');
+                // Refresh listing to show updated offers
                 const updated = await fetchWithAuth(`/api/market/listings/${id}`);
                 setListing(updated);
             } else {
@@ -71,9 +79,7 @@ const MarketListingDetails = () => {
                 mintNumber={listing.card.mintNumber}
             />
             <p className="listing-owner">Listed by: {listing.owner.username}</p>
-
             <hr />
-
             <h2>Make an Offer</h2>
             <form onSubmit={handleOfferSubmit} className="offer-form">
                 <div className="form-group">
@@ -87,22 +93,30 @@ const MarketListingDetails = () => {
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="offeredPrice">Offered Price (optional):</label>
+                    <label htmlFor="offeredCards">Offered Card IDs (comma-separated):</label>
                     <input
-                        id="offeredPrice"
+                        id="offeredCards"
+                        type="text"
+                        value={offeredCardsInput}
+                        onChange={(e) => setOfferedCardsInput(e.target.value)}
+                        placeholder="e.g., 60f7c2...,60f7c2..."
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="offeredPacks">Offered Packs:</label>
+                    <input
+                        id="offeredPacks"
                         type="number"
-                        value={offeredPrice}
-                        onChange={(e) => setOfferedPrice(e.target.value)}
-                        placeholder="Enter offered price"
+                        value={offeredPacks}
+                        onChange={(e) => setOfferedPacks(e.target.value)}
+                        placeholder="0"
                     />
                 </div>
                 <button type="submit">Submit Offer</button>
             </form>
             {offerError && <p className="error">{offerError}</p>}
             {offerSuccess && <p className="success">{offerSuccess}</p>}
-
             <hr />
-
             <h2>Existing Offers</h2>
             {listing.offers && listing.offers.length > 0 ? (
                 <ul className="offers-list">
@@ -110,9 +124,10 @@ const MarketListingDetails = () => {
                         <li key={offer._id} className="offer-item">
                             <p><strong>Offer by:</strong> {offer.offerer}</p>
                             <p><strong>Message:</strong> {offer.message}</p>
-                            {offer.offeredPrice !== undefined && (
-                                <p><strong>Price:</strong> {offer.offeredPrice}</p>
+                            {offer.offeredCards && offer.offeredCards.length > 0 && (
+                                <p><strong>Offered Cards:</strong> {offer.offeredCards.join(', ')}</p>
                             )}
+                            <p><strong>Packs Offered:</strong> {offer.offeredPacks}</p>
                             <p><em>{new Date(offer.createdAt).toLocaleString()}</em></p>
                         </li>
                     ))}
