@@ -11,7 +11,8 @@
 }
 
 .market-listing-details {
-    max-width: 900px;
+    /* Increase the container width to reduce overlap and allow more space */
+    max-width: 1200px;
     margin: 2rem auto;
     padding: 2rem;
     background: var(--surface-dark);
@@ -19,23 +20,33 @@
     color: var(--text-primary);
 }
 
+    /* Center the page title */
     .market-listing-details h1 {
         text-align: center;
         margin-bottom: 1rem;
     }
 
-    .market-listing-details .listing-owner {
-        text-align: center;
-        font-size: 1rem;
-        margin-bottom: 1.5rem;
-    }
+/* A flex container to center the listing card horizontally */
+.listing-card-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
 
-    .market-listing-details hr {
-        border: none;
-        border-top: 1px solid var(--border-dark);
-        margin: 1.5rem 0;
-    }
+/* The listing owner text is also centered */
+.market-listing-details .listing-owner {
+    text-align: center;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
 
+.market-listing-details hr {
+    border: none;
+    border-top: 1px solid var(--border-dark);
+    margin: 1.5rem 0;
+}
+
+/* Offer form styling */
 .offer-form {
     display: flex;
     flex-direction: column;
@@ -97,10 +108,11 @@
 
 /* User Collection Grid for Selecting Offered Cards */
 .user-collection-grid {
+    /* More columns and spacing to reduce overlap */
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
 }
 
     .user-collection-grid .card-wrapper {
@@ -119,3 +131,15 @@
         .user-collection-grid .card-wrapper.selected {
             border: 2px solid var(--brand-primary);
         }
+
+/* Offers list styling */
+.offers-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 1rem;
+}
+
+.offer-item {
+    border-bottom: 1px solid var(--border-dark);
+    padding: 0.75rem 0;
+}
