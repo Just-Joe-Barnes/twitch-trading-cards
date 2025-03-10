@@ -10,9 +10,9 @@
     --border-dark: rgba(255, 255, 255, 0.12);
 }
 
+/* Container for the entire listing page */
 .market-listing-details {
-    /* Increase the container width to reduce overlap and allow more space */
-    max-width: 1200px;
+    max-width: 1200px; /* Wider container */
     margin: 2rem auto;
     padding: 2rem;
     background: var(--surface-dark);
@@ -20,20 +20,18 @@
     color: var(--text-primary);
 }
 
-    /* Center the page title */
     .market-listing-details h1 {
         text-align: center;
         margin-bottom: 1rem;
     }
 
-/* A flex container to center the listing card horizontally */
+/* Center the main listing card in a flex container */
 .listing-card-container {
     display: flex;
     justify-content: center;
     margin-bottom: 1.5rem;
 }
 
-/* The listing owner text is also centered */
 .market-listing-details .listing-owner {
     text-align: center;
     font-size: 1rem;
@@ -108,18 +106,30 @@
 
 /* User Collection Grid for Selecting Offered Cards */
 .user-collection-grid {
-    /* More columns and spacing to reduce overlap */
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1.25rem; /* Increase gap to help prevent overlap */
     margin-top: 1.5rem;
+    /* Limit height and allow scrolling */
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 0.5rem; /* Add space for scrollbar */
 }
+
+    /* If you want to shrink the cards slightly, uncomment this scale transform */
+    /*
+.user-collection-grid .card-wrapper {
+  transform: scale(0.9);
+  transform-origin: top left;
+}
+*/
 
     .user-collection-grid .card-wrapper {
         cursor: pointer;
         border: 1px solid var(--border-dark);
         border-radius: 8px;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: var(--surface-dark);
     }
 
         .user-collection-grid .card-wrapper:hover {
