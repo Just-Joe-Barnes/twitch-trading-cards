@@ -23,15 +23,22 @@ const verifyTwitchRequest = (req, res, next) => {
         console.error('Raw body is missing!');
         return res.status(400).send('Bad Request');
     }
-    const message = `${req.headers['twitch-eventsub-message-id']}${req.headers['twitch-eventsub-message-timestamp']}${req.rawBody}`;
+
+    console.log('Received raw body:', JSON.stringify(req.rawBody));
+
+    // Signature verification logic remains
+    const message = req.headers['twitch-eventsub-message-id'] + req.headers['twitch-eventsub-message-timestamp'] + req.rawBody;
     const signature = crypto.createHmac('sha256', TWITCH_SECRET).update(message).digest('hex');
     const expectedSignature = `sha256=${signature}`;
+
     if (req.headers['twitch-eventsub-message-signature'] !== expectedSignature) {
         console.error('Signature mismatch! Event rejected.');
         return res.status(403).send('Forbidden');
     }
+
     next();
 };
+
 
 // Function to handle Twitch events
 const handleTwitchEvent = async (event) => {

@@ -1,0 +1,21 @@
+{
+  "subscription": {
+    "type": "channel.subscribe",
+    "id": "test-id",
+    "status": "enabled",
+    "condition": { "broadcaster_user_id": "77266375" },
+    "transport": {
+      "method": "webhook",
+      "callback": "https://neds-decks.onrender.com/api/twitch/webhook"
+    },
+    "created_at": "2025-01-12T01:23:45Z"
+  },
+  "event": {
+    "user_id": "123456",
+    "user_name": "TestUser",
+    "broadcaster_user_id": "77266375",
+    "broadcaster_user_name": "TestBroadcaster",
+    "tier": "1000",
+    "is_gift": false
+  }
+}
