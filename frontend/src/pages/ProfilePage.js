@@ -8,7 +8,9 @@ import {
     fetchUserCollection,
 } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner'; // Import the spinner component
+import '../styles/App.css';
 import '../styles/ProfilePage.css';
+
 
 const ProfilePage = () => {
     const [featuredCards, setFeaturedCards] = useState([]);

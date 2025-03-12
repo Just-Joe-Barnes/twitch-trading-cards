@@ -15,6 +15,7 @@ body {
     font-family: 'Poppins', sans-serif;
     background: var(--background-dark);
     color: var(--text-primary);
+    box-sizing: border-box;
 }
 
 /* Profile page container with extra top padding to clear the navbar */

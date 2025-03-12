@@ -1,11 +1,10 @@
 const crypto = require('crypto');
 
-// Your actual values
-const TWITCH_SECRET = 'MyTwitchSecretIsSafe'; // Replace with your actual TWITCH_SECRET
-const messageId = '12345'; // Replace with the Twitch EventSub message ID
-const messageTimestamp = '2025-01-12T01:23:45Z'; // Replace with the timestamp from your logs
+const TWITCH_SECRET = 'YourTwitchSecretHere'; // Replace with actual secret
+const messageId = '12345';
+const messageTimestamp = '2025-01-12T01:23:45Z';
 
-// Build the raw JSON body as an object
+// Use exact JSON structure for the event body
 const rawBodyObject = {
     subscription: {
         type: "channel.subscribe",
@@ -25,13 +24,11 @@ const rawBodyObject = {
     }
 };
 
-// Convert the object to a canonical JSON string (no extra whitespace)
+// Convert object to a properly formatted JSON string (removes any formatting inconsistencies)
 const rawBody = JSON.stringify(rawBodyObject);
 
-// Concatenate the message parts exactly as expected by Twitch
-const message = `${messageId}${messageTimestamp}${rawBody}`;
-
-// Generate the HMAC SHA256 signature
+// Concatenate for signature
+const message = messageId + messageTimestamp + rawBody;
 const signature = crypto.createHmac('sha256', TWITCH_SECRET).update(message).digest('hex');
 
 console.log('Expected Signature:', `sha256=${signature}`);
