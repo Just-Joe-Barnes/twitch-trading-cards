@@ -21,7 +21,7 @@ body {
 /* Profile page container with extra top padding to clear the navbar */
 .profile-page {
     padding: 6rem 1.5rem 2rem;
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
