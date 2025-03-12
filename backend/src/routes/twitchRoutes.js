@@ -48,12 +48,11 @@ const verifyTwitchRequest = (req, res, next) => {
     next();
 };
 
-
-
 // Function to handle Twitch events
 const handleTwitchEvent = async (event) => {
     console.log('Handling Twitch event:', event.type);
     const { user_id, user_name, type, reward, total, recipient_id } = event;
+
     try {
         switch (type) {
             case 'channel.subscribe':
@@ -67,18 +66,25 @@ const handleTwitchEvent = async (event) => {
 
             case 'channel.subscription.gift':
                 console.log('Processing channel.subscription.gift event:', event);
-                // Use recipient_id if available; otherwise fallback to user_id.
-                const targetId = recipient_id ? recipient_id : user_id;
+
+                // Always award the packs to the **gifter** (user_id)
                 const giftedCount = total || 1;
-                if (!targetId) {
-                    console.error("No valid Twitch ID found for gifted subscription event", event);
+                if (!user_id) {
+                    console.error("❌ No valid Twitch ID found for gifted subscription event", event);
                     break;
                 }
-                await User.findOneAndUpdate(
-                    { twitchId: targetId },
+
+                const updatedGifter = await User.findOneAndUpdate(
+                    { twitchId: user_id },
                     { $inc: { packs: giftedCount } },
                     { upsert: true, new: true }
                 );
+
+                if (updatedGifter) {
+                    console.log(`🎁 ${giftedCount} pack(s) awarded to **Gifter** (${user_id}). New pack count: ${updatedGifter.packs}`);
+                } else {
+                    console.error(`❌ Failed to update gifter with Twitch ID ${user_id}`);
+                }
                 break;
 
             case 'channel.channel_points_custom_reward_redemption.add':
@@ -92,23 +98,25 @@ const handleTwitchEvent = async (event) => {
                     if (existingUser) {
                         existingUser.packs += 1;
                         await existingUser.save();
+                        console.log(`✅ 1 pack added to ${user_name} (Total Packs: ${existingUser.packs})`);
                     } else {
-                        console.error(`User not found for Twitch ID ${user_id} (${user_name}). Redemption ignored.`);
+                        console.error(`❌ User not found for Twitch ID ${user_id} (${user_name}). Redemption ignored.`);
                     }
                 } else {
-                    console.log(`Unhandled reward title: ${reward?.title}`);
+                    console.log(`⚠️ Unhandled reward title: ${reward?.title}`);
                 }
                 break;
 
             default:
-                console.log(`Unhandled event type: ${type}`);
+                console.log(`⚠️ Unhandled event type: ${type}`);
         }
     } catch (error) {
-        console.error(`Error handling event ${type} for ${user_name}:`, error.message);
+        console.error(`❌ Error handling event ${type} for ${user_name}:`, error.message);
         throw error;
     }
 };
 
+// Webhook Endpoint
 router.post('/webhook', verifyTwitchRequest, async (req, res) => {
     const messageType = req.headers['twitch-eventsub-message-type'];
     const event = req.body.event;
@@ -117,6 +125,7 @@ router.post('/webhook', verifyTwitchRequest, async (req, res) => {
     if (messageType === 'webhook_callback_verification') {
         return res.status(200).send(req.body.challenge);
     }
+
     if (messageType === 'notification') {
         try {
             await handleTwitchEvent({ ...event, type: eventType });
@@ -125,9 +134,11 @@ router.post('/webhook', verifyTwitchRequest, async (req, res) => {
             return res.status(500).send('Server Error');
         }
     }
+
     res.status(400).send('Bad Request');
 });
 
+// Refresh Twitch Access Token
 router.post('/refresh-token', async (req, res) => {
     try {
         const response = await axios.post('https://id.twitch.tv/oauth2/token', null, {
