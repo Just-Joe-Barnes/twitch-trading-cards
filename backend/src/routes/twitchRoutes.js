@@ -1,4 +1,4 @@
-// src/routes/twitchRoutes.js
+﻿// src/routes/twitchRoutes.js
 const express = require('express');
 const crypto = require('crypto');
 const axios = require('axios');
@@ -20,24 +20,34 @@ if (!TWITCH_SECRET) {
 // Middleware to validate Twitch EventSub requests
 const verifyTwitchRequest = (req, res, next) => {
     if (!req.rawBody) {
-        console.error('Raw body is missing!');
+        console.error('🚨 Raw body is missing!');
         return res.status(400).send('Bad Request');
     }
 
-    console.log('Received raw body:', JSON.stringify(req.rawBody));
+    console.log('✅ Received raw body:', JSON.stringify(req.rawBody));
 
-    // Signature verification logic remains
-    const message = req.headers['twitch-eventsub-message-id'] + req.headers['twitch-eventsub-message-timestamp'] + req.rawBody;
-    const signature = crypto.createHmac('sha256', TWITCH_SECRET).update(message).digest('hex');
-    const expectedSignature = `sha256=${signature}`;
+    const message = req.headers['twitch-eventsub-message-id'] +
+        req.headers['twitch-eventsub-message-timestamp'] +
+        req.rawBody;
+
+    const computedSignature = crypto.createHmac('sha256', TWITCH_SECRET)
+        .update(message)
+        .digest('hex');
+
+    const expectedSignature = `sha256=${computedSignature}`;
+
+    console.log('🔍 Computed Signature:', expectedSignature);
+    console.log('🔍 Received Signature:', req.headers['twitch-eventsub-message-signature']);
 
     if (req.headers['twitch-eventsub-message-signature'] !== expectedSignature) {
-        console.error('Signature mismatch! Event rejected.');
+        console.error('❌ Signature mismatch! Event rejected.');
         return res.status(403).send('Forbidden');
     }
 
+    console.log('✅ Signature verification passed.');
     next();
 };
+
 
 
 // Function to handle Twitch events
