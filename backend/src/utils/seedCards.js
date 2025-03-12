@@ -20,7 +20,7 @@ const seedDatabase = async () => {
         {
             name: 'Glintstone Guardian',
             imageUrl: '/images/cards/glintstoneguardian.jpg',
-            flavorText: 'The only thing between you and the academy',  // <-- Added comma here
+            flavorText: 'The only thing between you and the academy.',  // <-- Added comma here
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,
@@ -53,7 +53,7 @@ const seedDatabase = async () => {
         {
             name: 'The Golden Nose',
             imageUrl: '/images/cards/thegoldennose.jpg',
-            flavorText: 'In the darkest of shadows, the nose still shines',
+            flavorText: 'In the darkest of shadows, the nose still shines.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,
@@ -108,7 +108,7 @@ const seedDatabase = async () => {
         {
             name: 'The Gentlemens Choice',
             imageUrl: '/images/cards/thegentlemenschoice.jpg',
-            flavorText: 'Smooth, sleek, sly.',
+            flavorText: 'The obvious choice for the sneakiest of heisters.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,
@@ -196,7 +196,7 @@ const seedDatabase = async () => {
         {
             name: 'Pre-Game Boogie',
             imageUrl: '/images/cards/pregameboogie.jpg',
-            flavorText: 'Before throwing themselves into the horde of bugs, the team get together to throw back some beers and have a little boogie',
+            flavorText: 'Before throwing themselves into the horde of bugs, the team get together to throw back some beers and have a little boogie.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,
@@ -229,7 +229,7 @@ const seedDatabase = async () => {
         {
             name: 'Roundest Zoo',
             imageUrl: '/images/cards/roundestzoo.jpg',
-            flavorText: 'A new take on a modern zoo, with all the corners cut, literally',
+            flavorText: 'A new take on a modern zoo, with all the corners cut, literally.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,
@@ -273,7 +273,7 @@ const seedDatabase = async () => {
         {
             name: 'Siamese Soup',
             imageUrl: '/images/cards/siamesesoup.jpg',
-            flavorText: 'The most beloved member of the flamboyance',
+            flavorText: 'The most beloved member of the flamboyance.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,

@@ -300,7 +300,7 @@ const CollectionPage = ({
                             checked={showFeaturedOnly}
                             onChange={(e) => setShowFeaturedOnly(e.target.checked)}
                         />
-                        Show Featured Only
+                          Show Featured Only
                     </label>
                     {isOwner && (
                         <button className="clear-featured-button" onClick={handleClearFeatured}>
