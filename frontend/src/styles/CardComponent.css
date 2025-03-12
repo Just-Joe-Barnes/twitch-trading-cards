@@ -115,6 +115,7 @@
     border-radius: 10px;
     background: transparent !important; /* Key fix: no more #3a2525 */
     transition: none;
+    margin-top: auto;
 }
 
 /* Additional styling for .card-description */
