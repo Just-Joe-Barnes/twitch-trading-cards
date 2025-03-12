@@ -269,6 +269,17 @@ const seedDatabase = async () => {
                 remainingCopies: rarity.totalCopies,
                 availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
             })),
+        },
+        {
+            name: 'Siamese Soup',
+            imageUrl: '/images/cards/siamesesoup.jpg',
+            flavorText: 'The most beloved member of the flamboyance',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
         }
     ];
 
