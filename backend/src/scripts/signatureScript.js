@@ -1,13 +1,13 @@
 const crypto = require('crypto');
 
-const TWITCH_SECRET = 'YourTwitchSecretHere'; // Replace with actual secret
+const TWITCH_SECRET = 'qzr7pbnubo6eipfcadmipl6lllfw1b'; // Replace with actual secret
 const messageId = '12345';
 const messageTimestamp = '2025-01-12T01:23:45Z';
 
-// Use exact JSON structure for the event body
+// Use exact JSON structure for the gifted subscription event body
 const rawBodyObject = {
     subscription: {
-        type: "channel.subscribe",
+        type: "channel.subscription.gift",
         id: "test-id",
         status: "enabled",
         condition: { broadcaster_user_id: "77266375" },
@@ -20,14 +20,15 @@ const rawBodyObject = {
         broadcaster_user_id: "77266375",
         broadcaster_user_name: "TestBroadcaster",
         tier: "1000",
-        is_gift: false
+        is_gift: true,
+        total: 5
     }
 };
 
-// Convert object to a properly formatted JSON string (removes any formatting inconsistencies)
+// Convert object to a properly formatted JSON string (ensures consistent formatting)
 const rawBody = JSON.stringify(rawBodyObject);
 
-// Concatenate for signature
+// Concatenate message components for signature computation
 const message = messageId + messageTimestamp + rawBody;
 const signature = crypto.createHmac('sha256', TWITCH_SECRET).update(message).digest('hex');
 
