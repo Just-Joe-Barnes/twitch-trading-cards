@@ -18,7 +18,7 @@ const AdminDashboardPage = ({ user }) => {
     const [openedCards, setOpenedCards] = useState([]);
     const [revealedCards, setRevealedCards] = useState([]);
 
-    // Ref for fallback timer.
+    // Ref for fallback timer (if needed)
     const fallbackTimerRef = useRef(null);
 
     const cardRarities = [
@@ -88,27 +88,35 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // When video ends, clear the fallback timer and start sequential reveal.
+    // Recursive function to reveal cards one by one.
+    const revealCardSequentially = (index) => {
+        if (index >= openedCards.length) {
+            setIsOpeningAnimation(false);
+            return;
+        }
+        setTimeout(() => {
+            setRevealedCards((prev) => {
+                const updated = [...prev];
+                updated[index] = true;
+                console.log(`Card ${index} revealed`);
+                return updated;
+            });
+            revealCardSequentially(index + 1);
+        }, 1000);
+    };
+
+    // When video ends, clear fallback and start sequential reveal.
     const handleVideoEnd = () => {
         if (fallbackTimerRef.current) {
             clearTimeout(fallbackTimerRef.current);
             fallbackTimerRef.current = null;
         }
         console.log('Video ended. Starting sequential reveal...');
-        openedCards.forEach((_, i) => {
-            setTimeout(() => {
-                setRevealedCards((prev) => {
-                    const updated = [...prev];
-                    updated[i] = true;
-                    console.log(`Card ${i} revealed`);
-                    return updated;
-                });
-            }, i * 1000);
-        });
-        setIsOpeningAnimation(false);
+        revealCardSequentially(0);
     };
 
-    // Fallback: if after 4 seconds no card is revealed, reveal them all.
+    // Optional fallback in case sequential reveal never starts.
+    // (You can adjust or remove this if the recursive reveal works reliably.)
     useEffect(() => {
         if (openedCards.length > 0 && !revealedCards.some(Boolean)) {
             fallbackTimerRef.current = setTimeout(() => {
