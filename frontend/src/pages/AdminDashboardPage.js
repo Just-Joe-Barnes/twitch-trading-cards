@@ -129,8 +129,8 @@ const AdminDashboardPage = ({ user }) => {
         setIsOpeningAnimation(false);
     };
 
-    // Global loading spinner: if loading is true, render the spinner.
-    if (loading) return <LoadingSpinner />;
+    // Global loading spinner: only show spinner if loading is true and no cards have been opened yet.
+    if (loading && openedCards.length === 0) return <LoadingSpinner />;
 
     return (
         <div className="dashboard-container">
