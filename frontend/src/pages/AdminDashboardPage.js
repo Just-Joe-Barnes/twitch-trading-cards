@@ -1,9 +1,9 @@
 // src/pages/AdminDashboardPage.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { fetchWithAuth } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import { useNavigate } from 'react-router-dom';
-import LoadingSpinner from '../components/LoadingSpinner'; // Import the spinner component
+import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/AdminDashboardPage.css';
 
 const AdminDashboardPage = ({ user }) => {
@@ -13,14 +13,14 @@ const AdminDashboardPage = ({ user }) => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Set loading to true initially so the spinner shows while data is being fetched.
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
-
     const [openedCards, setOpenedCards] = useState([]);
     const [revealedCards, setRevealedCards] = useState([]);
 
-    // Simple rarities (unchanged)
+    // Ref for fallback timer.
+    const fallbackTimerRef = useRef(null);
+
     const cardRarities = [
         { rarity: 'Basic', color: '#8D8D8D' },
         { rarity: 'Common', color: '#64B5F6' },
@@ -34,7 +34,6 @@ const AdminDashboardPage = ({ user }) => {
         { rarity: 'Divine', color: 'white' },
     ];
 
-    // On mount, verify admin and fetch users.
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -55,17 +54,14 @@ const AdminDashboardPage = ({ user }) => {
         fetchData();
     }, [user, navigate]);
 
-    // Compute filtered users based on the search query.
     const filteredUsers = usersWithPacks.filter(u =>
         u.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Select user.
     const toggleUserSelection = (u) => {
         setSelectedUser((prev) => (prev?._id === u._id ? null : u));
     };
 
-    // Open pack for user.
     const openPackForUser = async () => {
         if (!selectedUser) return;
         setLoading(true);
@@ -79,7 +75,6 @@ const AdminDashboardPage = ({ user }) => {
             const { newCards } = res;
             console.log('New cards:', newCards);
             setOpenedCards(newCards);
-            // Initially set all as not revealed.
             setRevealedCards(Array(newCards.length).fill(false));
             // Decrement the selected user's pack count.
             setUsersWithPacks((prev) =>
@@ -93,8 +88,12 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // When video ends, reveal cards sequentially.
+    // When video ends, clear the fallback timer and start sequential reveal.
     const handleVideoEnd = () => {
+        if (fallbackTimerRef.current) {
+            clearTimeout(fallbackTimerRef.current);
+            fallbackTimerRef.current = null;
+        }
         console.log('Video ended. Starting sequential reveal...');
         openedCards.forEach((_, i) => {
             setTimeout(() => {
@@ -109,19 +108,18 @@ const AdminDashboardPage = ({ user }) => {
         setIsOpeningAnimation(false);
     };
 
-    // Fallback: if after 4s none are revealed, reveal them all.
+    // Fallback: if after 4 seconds no card is revealed, reveal them all.
     useEffect(() => {
         if (openedCards.length > 0 && !revealedCards.some(Boolean)) {
-            const timer = setTimeout(() => {
+            fallbackTimerRef.current = setTimeout(() => {
                 console.log('Fallback: revealing all cards after 4s');
                 setRevealedCards(Array(openedCards.length).fill(true));
                 setIsOpeningAnimation(false);
             }, 4000);
-            return () => clearTimeout(timer);
+            return () => clearTimeout(fallbackTimerRef.current);
         }
     }, [openedCards, revealedCards]);
 
-    // Reset pack state.
     const handleResetPack = () => {
         console.log('Resetting pack state');
         setOpenedCards([]);
@@ -129,7 +127,7 @@ const AdminDashboardPage = ({ user }) => {
         setIsOpeningAnimation(false);
     };
 
-    // Global loading spinner: only show spinner if loading is true and no cards have been opened yet.
+    // Only show global spinner when loading and no cards have been opened yet.
     if (loading && openedCards.length === 0) return <LoadingSpinner />;
 
     return (
