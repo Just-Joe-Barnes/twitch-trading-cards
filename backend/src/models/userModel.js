@@ -6,6 +6,7 @@ const cardSchema = new mongoose.Schema({
     mintNumber: Number,
     imageUrl: String,
     flavorText: String,
+    acquiredAt: { type: Date, default: Date.now } // NEW: Track when the card was acquired
 });
 
 const userSchema = new mongoose.Schema({

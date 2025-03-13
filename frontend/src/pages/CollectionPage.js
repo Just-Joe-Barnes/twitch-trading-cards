@@ -134,10 +134,15 @@ const CollectionPage = ({
                         (r) => r.name.toLowerCase() === b.rarity.toLowerCase()
                     );
                     return order === 'asc' ? rarityA - rarityB : rarityB - rarityA;
+                } else if (sort === 'acquiredAt') { // NEW: sort by acquisition date
+                    return order === 'asc'
+                        ? new Date(a.acquiredAt) - new Date(b.acquiredAt)
+                        : new Date(b.acquiredAt) - new Date(a.acquiredAt);
                 }
                 return 0;
             });
         }
+
 
         // Show Featured Only
         if (showFeaturedOnly) {
@@ -288,6 +293,7 @@ const CollectionPage = ({
                     <option value="name">Name</option>
                     <option value="mintNumber">Mint Number</option>
                     <option value="rarity">Rarity</option>
+                    <option value="acquiredAt">Acquisition Date</option> {/* NEW */}
                 </select>
                 <select value={order} onChange={(e) => setOrder(e.target.value)}>
                     <option value="asc">Ascending</option>
