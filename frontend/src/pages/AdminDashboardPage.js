@@ -17,8 +17,9 @@ const AdminDashboardPage = ({ user }) => {
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
     const [openedCards, setOpenedCards] = useState([]);
     const [revealedCards, setRevealedCards] = useState([]);
+    // New flag: whether sequential reveal has started
+    const [sequentialRevealStarted, setSequentialRevealStarted] = useState(false);
 
-    // Ref for fallback timer (if needed)
     const fallbackTimerRef = useRef(null);
 
     const cardRarities = [
@@ -66,6 +67,8 @@ const AdminDashboardPage = ({ user }) => {
         if (!selectedUser) return;
         setLoading(true);
         setIsOpeningAnimation(true);
+        // Reset sequential flag and card states
+        setSequentialRevealStarted(false);
         setOpenedCards([]);
         setRevealedCards([]);
         try {
@@ -112,13 +115,18 @@ const AdminDashboardPage = ({ user }) => {
             fallbackTimerRef.current = null;
         }
         console.log('Video ended. Starting sequential reveal...');
+        // Set flag so fallback effect won’t override the reveal
+        setSequentialRevealStarted(true);
         revealCardSequentially(0);
     };
 
-    // Optional fallback in case sequential reveal never starts.
-    // (You can adjust or remove this if the recursive reveal works reliably.)
+    // Fallback: if after 4 seconds no card is revealed and sequential reveal hasn't started, reveal them all.
     useEffect(() => {
-        if (openedCards.length > 0 && !revealedCards.some(Boolean)) {
+        if (
+            openedCards.length > 0 &&
+            !revealedCards.some(Boolean) &&
+            !sequentialRevealStarted
+        ) {
             fallbackTimerRef.current = setTimeout(() => {
                 console.log('Fallback: revealing all cards after 4s');
                 setRevealedCards(Array(openedCards.length).fill(true));
@@ -126,7 +134,7 @@ const AdminDashboardPage = ({ user }) => {
             }, 4000);
             return () => clearTimeout(fallbackTimerRef.current);
         }
-    }, [openedCards, revealedCards]);
+    }, [openedCards, revealedCards, sequentialRevealStarted]);
 
     const handleResetPack = () => {
         console.log('Resetting pack state');
