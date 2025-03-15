@@ -16,7 +16,7 @@ const AdminDashboardPage = ({ user }) => {
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
     const [openedCards, setOpenedCards] = useState([]);
-    const [flippedCards, setFlippedCards] = useState([]); // new flipped state for each card
+    const [flippedCards, setFlippedCards] = useState([]); // true means the card is face down
 
     const cardRarities = [
         { rarity: 'Basic', color: '#8D8D8D' },
@@ -31,7 +31,6 @@ const AdminDashboardPage = ({ user }) => {
         { rarity: 'Divine', color: 'white' },
     ];
 
-    // Helper: get rarity color based on card rarity (case-insensitive)
     const getRarityColor = (rarity) => {
         const found = cardRarities.find(r => r.rarity.toLowerCase() === rarity.toLowerCase());
         return found ? found.color : '#fff';
@@ -69,7 +68,6 @@ const AdminDashboardPage = ({ user }) => {
         if (!selectedUser) return;
         setLoading(true);
         setIsOpeningAnimation(true);
-        // Reset card states
         setOpenedCards([]);
         setFlippedCards([]);
         try {
@@ -79,8 +77,8 @@ const AdminDashboardPage = ({ user }) => {
             const { newCards } = res;
             console.log('New cards:', newCards);
             setOpenedCards(newCards);
-            // Initially, none of the cards are flipped (face down)
-            setFlippedCards(Array(newCards.length).fill(false));
+            // Initialize all cards as flipped (face down)
+            setFlippedCards(Array(newCards.length).fill(true));
             // Decrement the selected user's pack count.
             setUsersWithPacks(prev =>
                 prev.map(u => (u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u))
@@ -90,12 +88,13 @@ const AdminDashboardPage = ({ user }) => {
             setIsOpeningAnimation(false);
         } finally {
             setLoading(false);
-            // Hide the opening animation overlay once loading is done.
+            // Remove the overlay once loading is finished.
             setIsOpeningAnimation(false);
         }
     };
 
-    // Toggle the flipped state for card at index i
+    // Toggle flip state for card at index i.
+    // When flipped (true) the back is visible; when false, the front is visible.
     const toggleFlip = (i) => {
         setFlippedCards(prev => {
             const updated = [...prev];
@@ -104,7 +103,6 @@ const AdminDashboardPage = ({ user }) => {
         });
     };
 
-    // For this new design, when the pack-opening video ends, we simply hide the overlay.
     const handleVideoEnd = () => {
         console.log('Video ended. Displaying face-down cards.');
         setIsOpeningAnimation(false);
@@ -117,7 +115,6 @@ const AdminDashboardPage = ({ user }) => {
         setIsOpeningAnimation(false);
     };
 
-    // Show spinner only if still loading and no pack is opened yet.
     if (loading && openedCards.length === 0) return <LoadingSpinner />;
 
     return (
@@ -136,7 +133,6 @@ const AdminDashboardPage = ({ user }) => {
                     />
                 </div>
             )}
-
             <div className="grid-container">
                 {/* Users with Packs */}
                 <div className="users-with-packs">
