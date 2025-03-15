@@ -9,27 +9,25 @@ import '../styles/AdminDashboardPage.css';
 const AdminDashboardPage = ({ user }) => {
     const navigate = useNavigate();
 
-    // User and pack data
+    // Data for users and packs
     const [usersWithPacks, setUsersWithPacks] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Loading and animation state
+    // Loading & animation state
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
 
-    // Card state arrays:
-    // openedCards: array of card objects from pack.
-    // visibleCards: for fade-in; false initially, then true when faded in.
-    // faceDownCards: true means card is showing its back (face down), false means showing front.
+    // Cards from opened pack
     const [openedCards, setOpenedCards] = useState([]);
+    // Controls sequential fade-in: false = hidden, true = visible.
     const [visibleCards, setVisibleCards] = useState([]);
+    // Controls face-down state: true = card shows back, false = card shows front.
     const [faceDownCards, setFaceDownCards] = useState([]);
 
-    // Ref for sequential fade-in
+    // Ref to control sequential reveal index.
     const revealIndexRef = useRef(0);
 
-    // Rarity mapping for hover glow
     const cardRarities = [
         { rarity: 'Basic', color: '#8D8D8D' },
         { rarity: 'Common', color: '#64B5F6' },
@@ -48,7 +46,6 @@ const AdminDashboardPage = ({ user }) => {
         return found ? found.color : '#fff';
     };
 
-    // Fetch user data
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -77,8 +74,8 @@ const AdminDashboardPage = ({ user }) => {
         setSelectedUser(prev => (prev?._id === u._id ? null : u));
     };
 
-    // Open pack for selected user.
-    // All cards start as hidden and face down.
+    // Open a pack for the selected user.
+    // All cards load with their back showing (face down) and hidden until they fade in sequentially.
     const openPackForUser = async () => {
         if (!selectedUser) return;
         setLoading(true);
@@ -94,9 +91,9 @@ const AdminDashboardPage = ({ user }) => {
             console.log('New cards:', newCards);
             setOpenedCards(newCards);
             setVisibleCards(Array(newCards.length).fill(false));
-            setFaceDownCards(Array(newCards.length).fill(true)); // all show back initially
+            setFaceDownCards(Array(newCards.length).fill(true)); // start face down
             revealIndexRef.current = 0;
-            // Decrement pack count for user
+            // Decrement the selected user's pack count.
             setUsersWithPacks(prev =>
                 prev.map(u =>
                     u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
@@ -107,11 +104,11 @@ const AdminDashboardPage = ({ user }) => {
             setIsOpeningAnimation(false);
         } finally {
             setLoading(false);
-            // Keep the overlay until video ends.
+            // Keep the animation overlay until the video ends.
         }
     };
 
-    // Sequentially fade in cards one by one
+    // Reveal cards sequentially (fade in one by one).
     const revealCardsSequentially = (index = 0) => {
         if (index < openedCards.length) {
             setTimeout(() => {
@@ -121,7 +118,7 @@ const AdminDashboardPage = ({ user }) => {
                     return updated;
                 });
                 revealCardsSequentially(index + 1);
-            }, 1000);
+            }, 1000); // 1 second delay per card; adjust as needed.
         }
     };
 
@@ -132,7 +129,7 @@ const AdminDashboardPage = ({ user }) => {
         revealCardsSequentially();
     };
 
-    // Toggle a card's face-down state on click (flip to reveal front)
+    // Toggle flip state: when clicked, toggle face down (back) vs. face up (front)
     const handleFlipCard = (i) => {
         setFaceDownCards(prev => {
             const updated = [...prev];
@@ -169,7 +166,6 @@ const AdminDashboardPage = ({ user }) => {
                     />
                 </div>
             )}
-
             <div className="grid-container">
                 {/* Users with Packs Section */}
                 <div className="users-with-packs">
