@@ -44,63 +44,6 @@
             border-radius: 2px;
         }
 
-/* Flip Card Styles for Admin Dashboard */
-.flip-card {
-    background-color: transparent;
-    /* No forced width/height; let BaseCard or container decide. */
-    perspective: 1000px;
-    margin: 10px;
-    cursor: pointer;
-    transition: box-shadow 0.3s ease;
-}
-
-    /* Hover glow based on --rarity-color */
-    .flip-card:hover {
-        box-shadow: 0 0 15px 5px var(--rarity-color);
-    }
-
-.flip-card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.8s;
-    transform-style: preserve-3d;
-}
-
-.flip-card.flipped .flip-card-inner {
-    transform: rotateY(180deg);
-}
-
-.flip-card-front,
-.flip-card-back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    border-radius: var(--border-radius);
-}
-
-.flip-card-back {
-    transform: rotateY(180deg);
-    background-color: #333; /* fallback background color */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-    .flip-card-back img {
-        /* Scale to fit the container's size. */
-        max-width: 100%;
-        height: auto;
-        display: block;
-    }
-
-/* Override text alignment for the front side's content. */
-.opened-cards .flip-card-front .card-container .card-border {
-    align-items: flex-start;
-    text-align: left;
-}
-
 /* Grid layout */
 .grid-container {
     display: grid;
@@ -361,3 +304,4 @@
         border-color: var(--brand-primary);
         box-shadow: 0 0 0 3px rgba(219, 136, 219, 0.2);
     }
+  
