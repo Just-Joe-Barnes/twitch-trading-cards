@@ -9,26 +9,26 @@ import '../styles/AdminDashboardPage.css';
 const AdminDashboardPage = ({ user }) => {
     const navigate = useNavigate();
 
-    // User and pack data
+    // User & pack data
     const [usersWithPacks, setUsersWithPacks] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Loading and animation states
+    // Loading & animation state
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
 
     // Cards from the opened pack
     const [openedCards, setOpenedCards] = useState([]);
-    // visibleCards: controls fade-in; false = hidden, true = visible.
+    // visibleCards controls the fade-in effect; each element is false until that card is revealed.
     const [visibleCards, setVisibleCards] = useState([]);
-    // faceDownCards: true = show card back (face down), false = show front.
+    // faceDownCards controls whether the card shows its back (true = face down) or front (false = face up)
     const [faceDownCards, setFaceDownCards] = useState([]);
 
-    // Ref to track sequential reveal index
+    // Ref to track the sequential reveal index
     const revealIndexRef = useRef(0);
 
-    // Rarity mapping for hover glow
+    // Rarity mapping for hover glow on face-down cards
     const cardRarities = [
         { rarity: 'Basic', color: '#8D8D8D' },
         { rarity: 'Common', color: '#64B5F6' },
@@ -41,6 +41,7 @@ const AdminDashboardPage = ({ user }) => {
         { rarity: 'Unique', color: 'black' },
         { rarity: 'Divine', color: 'white' },
     ];
+
     const getRarityColor = (rarity) => {
         const found = cardRarities.find(
             (r) => r.rarity.toLowerCase() === rarity.toLowerCase()
@@ -78,7 +79,7 @@ const AdminDashboardPage = ({ user }) => {
     };
 
     // Open a pack for the selected user.
-    // After opening, all cards are loaded with their back showing (face down) and hidden.
+    // All cards load as face down (back showing) and hidden.
     const openPackForUser = async () => {
         if (!selectedUser) return;
         setLoading(true);
@@ -94,10 +95,11 @@ const AdminDashboardPage = ({ user }) => {
             const { newCards } = res;
             console.log('New cards:', newCards);
             setOpenedCards(newCards);
-            setVisibleCards(Array(newCards.length).fill(false)); // all hidden initially
-            setFaceDownCards(Array(newCards.length).fill(true));  // all show back
+            // Initialize all cards as hidden and face down.
+            setVisibleCards(Array(newCards.length).fill(false));
+            setFaceDownCards(Array(newCards.length).fill(true));
             revealIndexRef.current = 0;
-            // Decrement pack count for selected user
+            // Decrement the selected user's pack count.
             setUsersWithPacks((prev) =>
                 prev.map((u) =>
                     u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
@@ -108,7 +110,7 @@ const AdminDashboardPage = ({ user }) => {
             setIsOpeningAnimation(false);
         } finally {
             setLoading(false);
-            // Keep the animation overlay until video ends.
+            // Leave the animation overlay until the video ends.
         }
     };
 
@@ -122,7 +124,7 @@ const AdminDashboardPage = ({ user }) => {
                     return updated;
                 });
                 revealCardsSequentially(index + 1);
-            }, 1000); // 1 second delay per card; adjust if needed.
+            }, 1000); // 1 second delay per card; adjust as needed.
         }
     };
 
@@ -133,8 +135,7 @@ const AdminDashboardPage = ({ user }) => {
         revealCardsSequentially();
     };
 
-    // Toggle the face-down state for a card when clicked.
-    // If a card is face down, clicking flips it (reveals front); if face up, clicking flips it back.
+    // Toggle a card's face-down state on click (flip to reveal front, or flip back)
     const handleFlipCard = (i) => {
         setFaceDownCards((prev) => {
             const updated = [...prev];
@@ -172,7 +173,7 @@ const AdminDashboardPage = ({ user }) => {
                 </div>
             )}
             <div className="grid-container">
-                {/* Users with Packs */}
+                {/* Users with Packs Section */}
                 <div className="users-with-packs">
                     <h2>Users with Packs</h2>
                     <div className="users-search">
@@ -223,7 +224,7 @@ const AdminDashboardPage = ({ user }) => {
                     )}
                 </div>
 
-                {/* Card Rarity Key */}
+                {/* Card Rarity Key Section */}
                 <div className="card-rarity-key">
                     <h2>Card Rarity Key</h2>
                     <div className="rarity-list">
@@ -246,8 +247,7 @@ const AdminDashboardPage = ({ user }) => {
                         {openedCards.map((card, i) => (
                             <div
                                 key={i}
-                                className={`card-wrapper ${visibleCards[i] ? 'visible' : 'hidden'} ${faceDownCards[i] ? 'face-down' : 'face-up'
-                                    }`}
+                                className={`card-wrapper ${visibleCards[i] ? 'visible' : 'hidden'} ${faceDownCards[i] ? 'face-down' : 'face-up'}`}
                                 style={{ '--rarity-color': getRarityColor(card.rarity) }}
                                 onClick={() => handleFlipCard(i)}
                             >

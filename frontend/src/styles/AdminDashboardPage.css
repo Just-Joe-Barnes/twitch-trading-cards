@@ -229,7 +229,7 @@
     justify-content: center;
 }
 
-/* Card Wrapper controls fade-in and spacing */
+/* Card Wrapper: we use the size provided by the BaseCard (front) */
 .card-wrapper {
     position: relative;
     display: inline-block;
@@ -249,10 +249,7 @@
         transform: translateY(0);
     }
 
-    /* Face-down vs. face-up states:
-   - When face-down, hide the front and show the back.
-   - When face-up, show the front and hide the back.
-*/
+    /* Face-down vs. face-up states */
     .card-wrapper.face-down .card-front {
         opacity: 0;
         pointer-events: none;
@@ -271,12 +268,12 @@
         pointer-events: none;
     }
 
-    /* Hover glow on face-down cards */
+    /* Hover glow on face-down cards only */
     .card-wrapper.face-down:hover {
         box-shadow: 0 0 15px 5px var(--rarity-color);
     }
 
-/* Position front and back so they overlap exactly */
+/* Position front and back to overlap exactly */
 .card-front,
 .card-back {
     position: absolute;
@@ -287,13 +284,13 @@
     transition: opacity 0.3s ease;
 }
 
-/* Do not alter front styling (BaseCard controls that) */
+/* Do not change front styling; BaseCard maintains its design */
 .opened-cards .card-front .card-container .card-border {
     text-align: left;
     align-items: flex-start;
 }
 
-/* The back image should exactly cover the front's area */
+/* The back image should cover the same area as the front */
 .card-back {
     display: flex;
     align-items: center;
