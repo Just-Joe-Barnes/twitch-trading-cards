@@ -225,35 +225,51 @@
 .cards-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 1.5rem; /* Extra spacing between cards */
     justify-content: center;
 }
 
-/* Use the flip-card for each card; visibility controlled by "hidden" or "visible" class */
-.flip-card.hidden {
+/* FLIP CARD Container: fixed 300x450 for alignment */
+.flip-card {
+    width: 300px;
+    height: 450px;
+    position: relative;
+    perspective: 1000px;
+    cursor: pointer;
     opacity: 0;
     transform: translateY(20px);
-    pointer-events: none;
+    transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-.flip-card.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
+    /* Fade-in classes */
+    .flip-card.fade-in {
+        opacity: 1;
+        transform: translateY(0);
+    }
 
-/* Flip Card Inner & Flipping */
+    .flip-card.fade-out {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    /* Hover glow for face-down cards only */
+    .flip-card.flipped:hover {
+        box-shadow: 0 0 15px 5px var(--rarity-color);
+    }
+
 .flip-card-inner {
-    position: relative;
     width: 100%;
     height: 100%;
     transition: transform 0.8s;
     transform-style: preserve-3d;
+    position: relative;
 }
 
 .flip-card.flipped .flip-card-inner {
     transform: rotateY(180deg);
 }
 
+/* FRONT & BACK */
 .flip-card-front,
 .flip-card-back {
     position: absolute;
@@ -263,6 +279,7 @@
     border-radius: var(--border-radius);
 }
 
+/* BACK */
 .flip-card-back {
     transform: rotateY(180deg);
     display: flex;
@@ -271,16 +288,16 @@
 }
 
     .flip-card-back img {
-        width: 300px; /* Set to match your BaseCard dimensions */
-        height: 450px; /* Set to match your BaseCard dimensions */
+        width: 300px; /* match container */
+        height: 450px; /* match container */
         object-fit: cover;
-        display: block;
+        border-radius: var(--border-radius);
     }
 
-/* Ensure front side text is left aligned (inherits from CardComponent.css) */
+/* Ensure text on front is left aligned */
 .opened-cards .flip-card-front .card-container .card-border {
-    align-items: flex-start;
     text-align: left;
+    align-items: flex-start;
 }
 
 /* Pack Opening Overlay */
