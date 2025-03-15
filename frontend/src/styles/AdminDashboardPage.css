@@ -52,7 +52,12 @@
     perspective: 1000px;
     margin: 10px;
     cursor: pointer;
+    transition: box-shadow 0.3s ease;
 }
+
+    .flip-card:hover {
+        box-shadow: 0 0 15px 5px var(--rarity-color);
+    }
 
 .flip-card-inner {
     position: relative;
@@ -87,16 +92,16 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
+        display: block;
     }
 
 /* Override text alignment for opened cards so text is left aligned */
-.opened-cards .card-container .card-border {
+.opened-cards .flip-card-front .card-container .card-border {
     align-items: flex-start;
     text-align: left;
 }
 
-/* Existing styles from your file remain unchanged... */
-
+/* (Rest of your existing CSS below remains unchanged) */
 
 /* Grid layout */
 .grid-container {

@@ -16,7 +16,7 @@ const AdminDashboardPage = ({ user }) => {
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
     const [openedCards, setOpenedCards] = useState([]);
-    const [flippedCards, setFlippedCards] = useState([]); // true means the card is face down
+    const [flippedCards, setFlippedCards] = useState([]); // true means card is face down
 
     const cardRarities = [
         { rarity: 'Basic', color: '#8D8D8D' },
@@ -31,6 +31,7 @@ const AdminDashboardPage = ({ user }) => {
         { rarity: 'Divine', color: 'white' },
     ];
 
+    // Return the color associated with the card's rarity.
     const getRarityColor = (rarity) => {
         const found = cardRarities.find(r => r.rarity.toLowerCase() === rarity.toLowerCase());
         return found ? found.color : '#fff';
@@ -88,13 +89,12 @@ const AdminDashboardPage = ({ user }) => {
             setIsOpeningAnimation(false);
         } finally {
             setLoading(false);
-            // Remove the overlay once loading is finished.
-            setIsOpeningAnimation(false);
+            // Ensure the animation overlay remains visible until video ends.
+            // (Don't force setIsOpeningAnimation(false) here.)
         }
     };
 
-    // Toggle flip state for card at index i.
-    // When flipped (true) the back is visible; when false, the front is visible.
+    // Toggle the flip state for card at index i.
     const toggleFlip = (i) => {
         setFlippedCards(prev => {
             const updated = [...prev];
@@ -104,7 +104,7 @@ const AdminDashboardPage = ({ user }) => {
     };
 
     const handleVideoEnd = () => {
-        console.log('Video ended. Displaying face-down cards.');
+        console.log('Pack opening video ended.');
         setIsOpeningAnimation(false);
     };
 
@@ -115,7 +115,8 @@ const AdminDashboardPage = ({ user }) => {
         setIsOpeningAnimation(false);
     };
 
-    if (loading && openedCards.length === 0) return <LoadingSpinner />;
+    // Show spinner if loading and no cards are loaded (unless we're in animation mode).
+    if (loading && openedCards.length === 0 && !isOpeningAnimation) return <LoadingSpinner />;
 
     return (
         <div className="dashboard-container">
@@ -133,6 +134,7 @@ const AdminDashboardPage = ({ user }) => {
                     />
                 </div>
             )}
+
             <div className="grid-container">
                 {/* Users with Packs */}
                 <div className="users-with-packs">
@@ -207,6 +209,7 @@ const AdminDashboardPage = ({ user }) => {
                                 key={i}
                                 className={`flip-card ${flippedCards[i] ? 'flipped' : ''}`}
                                 onClick={() => toggleFlip(i)}
+                                style={{ '--rarity-color': getRarityColor(card.rarity) }}
                             >
                                 <div className="flip-card-inner">
                                     <div className="flip-card-front">
@@ -219,7 +222,6 @@ const AdminDashboardPage = ({ user }) => {
                                         />
                                     </div>
                                     <div className="flip-card-back">
-                                        {/* Placeholder for card back */}
                                         <img src="/images/card-back-placeholder.png" alt="Card Back" />
                                     </div>
                                 </div>
