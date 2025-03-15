@@ -225,23 +225,21 @@
 .cards-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.5rem; /* Extra spacing between cards */
+    gap: 1.5rem;
     justify-content: center;
 }
 
-/* FLIP CARD Container: fixed 300x450 for alignment */
+/* FLIP CARD - no forced dimension. The front sets the size (BaseCard). */
 .flip-card {
-    width: 300px;
-    height: 450px;
     position: relative;
-    perspective: 1000px;
+    display: inline-block;
     cursor: pointer;
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-    /* Fade-in classes */
+    /* Fade in vs. fade out */
     .flip-card.fade-in {
         opacity: 1;
         transform: translateY(0);
@@ -252,7 +250,7 @@
         transform: translateY(20px);
     }
 
-    /* Hover glow for face-down cards only */
+    /* Only face-down (flipped) cards glow on hover. */
     .flip-card.flipped:hover {
         box-shadow: 0 0 15px 5px var(--rarity-color);
     }
@@ -262,24 +260,26 @@
     height: 100%;
     transition: transform 0.8s;
     transform-style: preserve-3d;
-    position: relative;
 }
 
+/* If flipped = true, rotate to show the back */
 .flip-card.flipped .flip-card-inner {
     transform: rotateY(180deg);
 }
 
-/* FRONT & BACK */
+/* FRONT & BACK sides */
 .flip-card-front,
 .flip-card-back {
     position: absolute;
-    width: 100%;
-    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     backface-visibility: hidden;
     border-radius: var(--border-radius);
 }
 
-/* BACK */
+/* BACK side is rotated 180 */
 .flip-card-back {
     transform: rotateY(180deg);
     display: flex;
@@ -288,13 +288,14 @@
 }
 
     .flip-card-back img {
-        width: 300px; /* match container */
-        height: 450px; /* match container */
+        width: 100%;
+        height: 100%;
         object-fit: cover;
         border-radius: var(--border-radius);
     }
 
-/* Ensure text on front is left aligned */
+/* Ensure text on the front is left aligned. 
+   (BaseCard + CardComponent.css handle the actual sizing) */
 .opened-cards .flip-card-front .card-container .card-border {
     text-align: left;
     align-items: flex-start;

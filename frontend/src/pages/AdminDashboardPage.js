@@ -20,15 +20,15 @@ const AdminDashboardPage = ({ user }) => {
 
     // Card states
     const [openedCards, setOpenedCards] = useState([]);
-    // flippedCards: true = face-down, false = face-up
+    // flippedCards: true = face-down (show back), false = face-up (front)
     const [flippedCards, setFlippedCards] = useState([]);
-    // visibleCards: controls the fade-in. false = hidden, true = visible
+    // visibleCards: controls fade-in; false = hidden, true = visible
     const [visibleCards, setVisibleCards] = useState([]);
 
-    // Index ref to reveal cards one at a time
+    // For sequential fade-in
     const revealIndexRef = useRef(0);
 
-    // Rarity → Glow color
+    // Rarity → glow color mapping
     const cardRarities = [
         { rarity: 'Basic', color: '#8D8D8D' },
         { rarity: 'Common', color: '#64B5F6' },
@@ -46,7 +46,7 @@ const AdminDashboardPage = ({ user }) => {
         return found ? found.color : '#fff';
     };
 
-    // On mount, verify admin and fetch users
+    // Fetch admin data
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -72,7 +72,6 @@ const AdminDashboardPage = ({ user }) => {
         u.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Select user row
     const toggleUserSelection = (u) => {
         setSelectedUser(prev => (prev?._id === u._id ? null : u));
     };
@@ -94,8 +93,8 @@ const AdminDashboardPage = ({ user }) => {
 
             // All cards start face-down and hidden
             setOpenedCards(newCards);
-            setFlippedCards(Array(newCards.length).fill(true));  // face-down
-            setVisibleCards(Array(newCards.length).fill(false)); // hidden
+            setFlippedCards(Array(newCards.length).fill(true));
+            setVisibleCards(Array(newCards.length).fill(false));
             revealIndexRef.current = 0;
 
             // Decrement user's pack count
@@ -109,11 +108,10 @@ const AdminDashboardPage = ({ user }) => {
             setIsOpeningAnimation(false);
         } finally {
             setLoading(false);
-            // Keep overlay until animation ends
         }
     };
 
-    // Reveal each card (fade-in) one at a time
+    // Fade in cards one at a time
     const fadeInCardsSequentially = (index = 0) => {
         if (index < openedCards.length) {
             setTimeout(() => {
@@ -123,18 +121,18 @@ const AdminDashboardPage = ({ user }) => {
                     return updated;
                 });
                 fadeInCardsSequentially(index + 1);
-            }, 600); // adjust the delay as desired
+            }, 600); // adjust delay as needed
         }
     };
 
-    // On video end, hide overlay & start sequential fade-in
+    // Pack-opening video end
     const handleVideoEnd = () => {
-        console.log('Pack opening animation ended. Fading in cards...');
+        console.log('Animation ended. Fading in cards...');
         setIsOpeningAnimation(false);
         fadeInCardsSequentially();
     };
 
-    // Flip a card on click
+    // Flip card on click
     const toggleFlip = (i) => {
         setFlippedCards(prev => {
             const updated = [...prev];
@@ -143,7 +141,6 @@ const AdminDashboardPage = ({ user }) => {
         });
     };
 
-    // Reset
     const handleResetPack = () => {
         console.log('Resetting pack state');
         setOpenedCards([]);
@@ -152,7 +149,7 @@ const AdminDashboardPage = ({ user }) => {
         setIsOpeningAnimation(false);
     };
 
-    // Show spinner if still loading, no opened cards, and no animation
+    // Show spinner if loading, no opened cards, and not in animation
     if (loading && openedCards.length === 0 && !isOpeningAnimation) {
         return <LoadingSpinner />;
     }
@@ -176,7 +173,7 @@ const AdminDashboardPage = ({ user }) => {
             )}
 
             <div className="grid-container">
-                {/* Users with Packs */}
+                {/* Example: Users with Packs Section */}
                 <div className="users-with-packs">
                     <h2>Users with Packs</h2>
                     <div className="users-search">
@@ -212,7 +209,7 @@ const AdminDashboardPage = ({ user }) => {
                     </table>
                 </div>
 
-                {/* Open Pack Section */}
+                {/* Example: Open Pack Section */}
                 <div className="selected-user-section">
                     {selectedUser && (
                         <>
@@ -247,7 +244,6 @@ const AdminDashboardPage = ({ user }) => {
                         {openedCards.map((card, i) => (
                             <div
                                 key={i}
-                                // Classes for fade-in & flipping
                                 className={`flip-card ${visibleCards[i] ? 'fade-in' : 'fade-out'} ${flippedCards[i] ? 'flipped' : ''}`}
                                 onClick={() => toggleFlip(i)}
                                 style={{ '--rarity-color': getRarityColor(card.rarity) }}
@@ -255,6 +251,7 @@ const AdminDashboardPage = ({ user }) => {
                                 <div className="flip-card-inner">
                                     {/* FRONT */}
                                     <div className="flip-card-front">
+                                        {/* The front styling is entirely controlled by BaseCard + CardComponent.css */}
                                         <BaseCard
                                             name={card.name}
                                             image={card.imageUrl}
@@ -263,6 +260,7 @@ const AdminDashboardPage = ({ user }) => {
                                             mintNumber={card.mintNumber}
                                         />
                                     </div>
+
                                     {/* BACK */}
                                     <div className="flip-card-back">
                                         <img
