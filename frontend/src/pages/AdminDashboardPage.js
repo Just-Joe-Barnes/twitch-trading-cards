@@ -16,11 +16,10 @@ const AdminDashboardPage = ({ user }) => {
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
     const [openedCards, setOpenedCards] = useState([]);
-    const [revealedCards, setRevealedCards] = useState([]);
-    // New flag: whether sequential reveal has started
-    const [sequentialRevealStarted, setSequentialRevealStarted] = useState(false);
-
-    const fallbackTimerRef = useRef(null);
+    // "flippedCards" state: true means the card is face down; false means the front is revealed.
+    const [flippedCards, setFlippedCards] = useState([]);
+    // A ref to track the sequential reveal index.
+    const revealIndexRef = useRef(0);
 
     const cardRarities = [
         { rarity: 'Basic', color: '#8D8D8D' },
@@ -34,6 +33,12 @@ const AdminDashboardPage = ({ user }) => {
         { rarity: 'Unique', color: 'black' },
         { rarity: 'Divine', color: 'white' },
     ];
+
+    // Returns the glow color for the given rarity.
+    const getRarityColor = (rarity) => {
+        const found = cardRarities.find(r => r.rarity.toLowerCase() === rarity.toLowerCase());
+        return found ? found.color : '#fff';
+    };
 
     useEffect(() => {
         if (!user?.isAdmin) {
@@ -60,17 +65,17 @@ const AdminDashboardPage = ({ user }) => {
     );
 
     const toggleUserSelection = (u) => {
-        setSelectedUser((prev) => (prev?._id === u._id ? null : u));
+        setSelectedUser(prev => (prev?._id === u._id ? null : u));
     };
 
+    // Open a pack for the selected user.
+    // When a pack is opened, all cards are loaded face down.
     const openPackForUser = async () => {
         if (!selectedUser) return;
         setLoading(true);
         setIsOpeningAnimation(true);
-        // Reset sequential flag and card states
-        setSequentialRevealStarted(false);
         setOpenedCards([]);
-        setRevealedCards([]);
+        setFlippedCards([]);
         try {
             const res = await fetchWithAuth(`/api/packs/admin/openPacksForUser/${selectedUser._id}`, {
                 method: 'POST',
@@ -78,76 +83,63 @@ const AdminDashboardPage = ({ user }) => {
             const { newCards } = res;
             console.log('New cards:', newCards);
             setOpenedCards(newCards);
-            setRevealedCards(Array(newCards.length).fill(false));
+            // Initialize all cards as face down (flipped = true)
+            setFlippedCards(Array(newCards.length).fill(true));
+            // Reset the sequential reveal index.
+            revealIndexRef.current = 0;
             // Decrement the selected user's pack count.
-            setUsersWithPacks((prev) =>
-                prev.map((u) => (u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u))
+            setUsersWithPacks(prev =>
+                prev.map(u =>
+                    u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
+                )
             );
         } catch (err) {
             console.error('Error opening pack:', err);
             setIsOpeningAnimation(false);
         } finally {
             setLoading(false);
+            // Keep the overlay visible until the video ends.
         }
     };
 
-    // Recursive function to reveal cards one by one.
-    const revealCardSequentially = (index) => {
-        if (index >= openedCards.length) {
-            setIsOpeningAnimation(false);
-            return;
+    // Sequentially reveal cards one by one.
+    const revealCardsSequentially = () => {
+        if (revealIndexRef.current < openedCards.length) {
+            setTimeout(() => {
+                setFlippedCards(prev => {
+                    const updated = [...prev];
+                    // Set current index to false (reveal front)
+                    updated[revealIndexRef.current] = false;
+                    return updated;
+                });
+                revealIndexRef.current += 1;
+                revealCardsSequentially();
+            }, 1000);
         }
-        setTimeout(() => {
-            setRevealedCards((prev) => {
-                const updated = [...prev];
-                updated[index] = true;
-                console.log(`Card ${index} revealed`);
-                return updated;
-            });
-            revealCardSequentially(index + 1);
-        }, 1000);
     };
 
-    // When video ends, clear fallback and start sequential reveal.
+    // Called when the pack-opening video ends.
     const handleVideoEnd = () => {
-        if (fallbackTimerRef.current) {
-            clearTimeout(fallbackTimerRef.current);
-            fallbackTimerRef.current = null;
-        }
-        console.log('Video ended. Starting sequential reveal...');
-        // Set flag so fallback effect won’t override the reveal
-        setSequentialRevealStarted(true);
-        revealCardSequentially(0);
+        console.log('Pack opening video ended. Starting sequential reveal...');
+        setIsOpeningAnimation(false);
+        revealCardsSequentially();
     };
-
-    // Fallback: if after 4 seconds no card is revealed and sequential reveal hasn't started, reveal them all.
-    useEffect(() => {
-        if (
-            openedCards.length > 0 &&
-            !revealedCards.some(Boolean) &&
-            !sequentialRevealStarted
-        ) {
-            fallbackTimerRef.current = setTimeout(() => {
-                console.log('Fallback: revealing all cards after 4s');
-                setRevealedCards(Array(openedCards.length).fill(true));
-                setIsOpeningAnimation(false);
-            }, 4000);
-            return () => clearTimeout(fallbackTimerRef.current);
-        }
-    }, [openedCards, revealedCards, sequentialRevealStarted]);
 
     const handleResetPack = () => {
         console.log('Resetting pack state');
         setOpenedCards([]);
-        setRevealedCards([]);
+        setFlippedCards([]);
         setIsOpeningAnimation(false);
     };
 
-    // Only show global spinner when loading and no cards have been opened yet.
-    if (loading && openedCards.length === 0) return <LoadingSpinner />;
+    // Show spinner only if loading and no cards have been opened, and animation is not active.
+    if (loading && openedCards.length === 0 && !isOpeningAnimation) {
+        return <LoadingSpinner />;
+    }
 
     return (
         <div className="dashboard-container">
+            {/* Pack Opening Animation Overlay */}
             {isOpeningAnimation && (
                 <div className="pack-opening-overlay">
                     <video
@@ -156,7 +148,7 @@ const AdminDashboardPage = ({ user }) => {
                         autoPlay
                         playsInline
                         controls={false}
-                        onEnded={() => setTimeout(handleVideoEnd, 500)}
+                        onEnded={handleVideoEnd}
                         onLoadedData={() => console.log('Video loaded')}
                         onError={(e) => console.error('Video error:', e)}
                     />
@@ -164,7 +156,7 @@ const AdminDashboardPage = ({ user }) => {
             )}
 
             <div className="grid-container">
-                {/* Users with Packs */}
+                {/* Users with Packs Section */}
                 <div className="users-with-packs">
                     <h2>Users with Packs</h2>
                     <div className="users-search">
@@ -185,7 +177,7 @@ const AdminDashboardPage = ({ user }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredUsers.map((u) => (
+                            {filteredUsers.map(u => (
                                 <tr
                                     key={u._id}
                                     className={selectedUser?._id === u._id ? 'selected' : ''}
@@ -215,11 +207,11 @@ const AdminDashboardPage = ({ user }) => {
                     )}
                 </div>
 
-                {/* Card Rarity Key */}
+                {/* Card Rarity Key Section */}
                 <div className="card-rarity-key">
                     <h2>Card Rarity Key</h2>
                     <div className="rarity-list">
-                        {cardRarities.map((r) => (
+                        {cardRarities.map(r => (
                             <div key={r.rarity} className="rarity-item">
                                 <span className="color-box" style={{ backgroundColor: r.color }} />
                                 <span className="rarity-text">{r.rarity}</span>
@@ -228,22 +220,39 @@ const AdminDashboardPage = ({ user }) => {
                     </div>
                 </div>
 
-                {/* Opened Cards */}
+                {/* Opened Cards Section */}
                 <div className="opened-cards">
                     <h2>Opened Cards</h2>
                     <div className="cards-container">
                         {openedCards.map((card, i) => (
                             <div
                                 key={i}
-                                className={`card-wrapper ${revealedCards[i] ? 'visible' : 'hidden'}`}
+                                className={`flip-card ${flippedCards[i] ? 'flipped' : ''}`}
+                                onClick={() =>
+                                    setFlippedCards(prev => {
+                                        const updated = [...prev];
+                                        updated[i] = !updated[i];
+                                        return updated;
+                                    })
+                                }
+                                style={{ '--rarity-color': getRarityColor(card.rarity) }}
                             >
-                                <BaseCard
-                                    name={card.name}
-                                    image={card.imageUrl}
-                                    description={card.flavorText}
-                                    rarity={card.rarity}
-                                    mintNumber={card.mintNumber}
-                                />
+                                <div className="flip-card-inner">
+                                    <div className="flip-card-front">
+                                        <BaseCard
+                                            name={card.name}
+                                            image={card.imageUrl}
+                                            description={card.flavorText}
+                                            rarity={card.rarity}
+                                            mintNumber={card.mintNumber}
+                                        />
+                                    </div>
+                                    <div className="flip-card-back">
+                                        {/* Card back image.
+                        Ensure the image file is sized to 300x450px to match the BaseCard dimensions */}
+                                        <img src="/images/card-back-placeholder.png" alt="Card Back" />
+                                    </div>
+                                </div>
                             </div>
                         ))}
                     </div>
