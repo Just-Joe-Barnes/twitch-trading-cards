@@ -225,83 +225,28 @@
 .cards-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.5rem;
+    gap: 1rem;
     justify-content: center;
 }
 
-/* Card Wrapper: we use the size provided by the BaseCard (front) */
-.card-wrapper {
-    position: relative;
-    display: inline-block;
-    transition: opacity 0.6s ease, transform 0.6s ease;
-    cursor: pointer;
+.opened-cards .card-wrapper {
+    border: none !important;
 }
 
-    /* Fade-in effect */
+/* Card wrapper transitions */
+.card-wrapper {
+    transition: opacity 0.6s ease, transform 0.6s ease !important;
+}
+
     .card-wrapper.hidden {
-        opacity: 0;
-        transform: translateY(20px);
+        opacity: 0 !important;
+        transform: translateY(20px) !important;
         pointer-events: none;
     }
 
     .card-wrapper.visible {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    /* Face-down vs. face-up states */
-    .card-wrapper.face-down .card-front {
-        opacity: 0;
-        pointer-events: none;
-    }
-
-    .card-wrapper.face-down .card-back {
-        opacity: 1;
-    }
-
-    .card-wrapper.face-up .card-front {
-        opacity: 1;
-    }
-
-    .card-wrapper.face-up .card-back {
-        opacity: 0;
-        pointer-events: none;
-    }
-
-    /* Hover glow on face-down cards only */
-    .card-wrapper.face-down:hover {
-        box-shadow: 0 0 15px 5px var(--rarity-color);
-    }
-
-/* Position front and back to overlap exactly */
-.card-front,
-.card-back {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    transition: opacity 0.3s ease;
-}
-
-/* Do not change front styling; BaseCard maintains its design */
-.opened-cards .card-front .card-container .card-border {
-    text-align: left;
-    align-items: flex-start;
-}
-
-/* The back image should cover the same area as the front */
-.card-back {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-    .card-back img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: var(--border-radius);
+        opacity: 1 !important;
+        transform: translateY(0) !important;
     }
 
 /* Pack Opening Overlay */
