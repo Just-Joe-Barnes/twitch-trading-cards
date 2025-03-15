@@ -229,7 +229,7 @@
     justify-content: center;
 }
 
-/* Card Wrapper: no forced width/height so that it adopts BaseCard dimensions */
+/* Card Wrapper controls fade-in and spacing */
 .card-wrapper {
     position: relative;
     display: inline-block;
@@ -249,9 +249,9 @@
         transform: translateY(0);
     }
 
-    /* Face-down vs. face-up:
-   When face-down, hide the front and show the back;
-   When face-up, show the front and hide the back.
+    /* Face-down vs. face-up states:
+   - When face-down, hide the front and show the back.
+   - When face-up, show the front and hide the back.
 */
     .card-wrapper.face-down .card-front {
         opacity: 0;
@@ -276,7 +276,7 @@
         box-shadow: 0 0 15px 5px var(--rarity-color);
     }
 
-/* Ensure front and back overlap exactly */
+/* Position front and back so they overlap exactly */
 .card-front,
 .card-back {
     position: absolute;
@@ -287,13 +287,13 @@
     transition: opacity 0.3s ease;
 }
 
-/* Do not change the front styling (BaseCard handles its dimensions) */
+/* Do not alter front styling (BaseCard controls that) */
 .opened-cards .card-front .card-container .card-border {
     text-align: left;
     align-items: flex-start;
 }
 
-/* The back image should exactly match the front's container size */
+/* The back image should exactly cover the front's area */
 .card-back {
     display: flex;
     align-items: center;

@@ -9,25 +9,26 @@ import '../styles/AdminDashboardPage.css';
 const AdminDashboardPage = ({ user }) => {
     const navigate = useNavigate();
 
-    // Data for users and packs
+    // User and pack data
     const [usersWithPacks, setUsersWithPacks] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Loading & animation state
+    // Loading and animation states
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
 
-    // Cards from opened pack
+    // Cards from the opened pack
     const [openedCards, setOpenedCards] = useState([]);
-    // Controls sequential fade-in: false = hidden, true = visible.
+    // visibleCards: controls fade-in; false = hidden, true = visible.
     const [visibleCards, setVisibleCards] = useState([]);
-    // Controls face-down state: true = card shows back, false = card shows front.
+    // faceDownCards: true = show card back (face down), false = show front.
     const [faceDownCards, setFaceDownCards] = useState([]);
 
-    // Ref to control sequential reveal index.
+    // Ref to track sequential reveal index
     const revealIndexRef = useRef(0);
 
+    // Rarity mapping for hover glow
     const cardRarities = [
         { rarity: 'Basic', color: '#8D8D8D' },
         { rarity: 'Common', color: '#64B5F6' },
@@ -40,12 +41,14 @@ const AdminDashboardPage = ({ user }) => {
         { rarity: 'Unique', color: 'black' },
         { rarity: 'Divine', color: 'white' },
     ];
-
     const getRarityColor = (rarity) => {
-        const found = cardRarities.find(r => r.rarity.toLowerCase() === rarity.toLowerCase());
+        const found = cardRarities.find(
+            (r) => r.rarity.toLowerCase() === rarity.toLowerCase()
+        );
         return found ? found.color : '#fff';
     };
 
+    // Fetch users with packs on mount
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -66,16 +69,16 @@ const AdminDashboardPage = ({ user }) => {
         fetchData();
     }, [user, navigate]);
 
-    const filteredUsers = usersWithPacks.filter(u =>
+    const filteredUsers = usersWithPacks.filter((u) =>
         u.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const toggleUserSelection = (u) => {
-        setSelectedUser(prev => (prev?._id === u._id ? null : u));
+        setSelectedUser((prev) => (prev?._id === u._id ? null : u));
     };
 
     // Open a pack for the selected user.
-    // All cards load with their back showing (face down) and hidden until they fade in sequentially.
+    // After opening, all cards are loaded with their back showing (face down) and hidden.
     const openPackForUser = async () => {
         if (!selectedUser) return;
         setLoading(true);
@@ -84,18 +87,19 @@ const AdminDashboardPage = ({ user }) => {
         setVisibleCards([]);
         setFaceDownCards([]);
         try {
-            const res = await fetchWithAuth(`/api/packs/admin/openPacksForUser/${selectedUser._id}`, {
-                method: 'POST',
-            });
+            const res = await fetchWithAuth(
+                `/api/packs/admin/openPacksForUser/${selectedUser._id}`,
+                { method: 'POST' }
+            );
             const { newCards } = res;
             console.log('New cards:', newCards);
             setOpenedCards(newCards);
-            setVisibleCards(Array(newCards.length).fill(false));
-            setFaceDownCards(Array(newCards.length).fill(true)); // start face down
+            setVisibleCards(Array(newCards.length).fill(false)); // all hidden initially
+            setFaceDownCards(Array(newCards.length).fill(true));  // all show back
             revealIndexRef.current = 0;
-            // Decrement the selected user's pack count.
-            setUsersWithPacks(prev =>
-                prev.map(u =>
+            // Decrement pack count for selected user
+            setUsersWithPacks((prev) =>
+                prev.map((u) =>
                     u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
                 )
             );
@@ -104,34 +108,35 @@ const AdminDashboardPage = ({ user }) => {
             setIsOpeningAnimation(false);
         } finally {
             setLoading(false);
-            // Keep the animation overlay until the video ends.
+            // Keep the animation overlay until video ends.
         }
     };
 
-    // Reveal cards sequentially (fade in one by one).
+    // Reveal cards sequentially (fade them in one by one)
     const revealCardsSequentially = (index = 0) => {
         if (index < openedCards.length) {
             setTimeout(() => {
-                setVisibleCards(prev => {
+                setVisibleCards((prev) => {
                     const updated = [...prev];
                     updated[index] = true;
                     return updated;
                 });
                 revealCardsSequentially(index + 1);
-            }, 1000); // 1 second delay per card; adjust as needed.
+            }, 1000); // 1 second delay per card; adjust if needed.
         }
     };
 
-    // When the pack-opening video ends, hide the overlay and start fade-in.
+    // When the pack-opening video ends, hide the overlay and start the sequential fade-in.
     const handleVideoEnd = () => {
         console.log('Pack opening animation ended. Starting sequential fade-in...');
         setIsOpeningAnimation(false);
         revealCardsSequentially();
     };
 
-    // Toggle flip state: when clicked, toggle face down (back) vs. face up (front)
+    // Toggle the face-down state for a card when clicked.
+    // If a card is face down, clicking flips it (reveals front); if face up, clicking flips it back.
     const handleFlipCard = (i) => {
-        setFaceDownCards(prev => {
+        setFaceDownCards((prev) => {
             const updated = [...prev];
             updated[i] = !updated[i];
             return updated;
@@ -167,7 +172,7 @@ const AdminDashboardPage = ({ user }) => {
                 </div>
             )}
             <div className="grid-container">
-                {/* Users with Packs Section */}
+                {/* Users with Packs */}
                 <div className="users-with-packs">
                     <h2>Users with Packs</h2>
                     <div className="users-search">
@@ -188,7 +193,7 @@ const AdminDashboardPage = ({ user }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredUsers.map(u => (
+                            {filteredUsers.map((u) => (
                                 <tr
                                     key={u._id}
                                     className={selectedUser?._id === u._id ? 'selected' : ''}
@@ -218,13 +223,16 @@ const AdminDashboardPage = ({ user }) => {
                     )}
                 </div>
 
-                {/* Card Rarity Key Section */}
+                {/* Card Rarity Key */}
                 <div className="card-rarity-key">
                     <h2>Card Rarity Key</h2>
                     <div className="rarity-list">
-                        {cardRarities.map(r => (
+                        {cardRarities.map((r) => (
                             <div key={r.rarity} className="rarity-item">
-                                <span className="color-box" style={{ backgroundColor: r.color }} />
+                                <span
+                                    className="color-box"
+                                    style={{ backgroundColor: r.color }}
+                                />
                                 <span className="rarity-text">{r.rarity}</span>
                             </div>
                         ))}
@@ -238,7 +246,8 @@ const AdminDashboardPage = ({ user }) => {
                         {openedCards.map((card, i) => (
                             <div
                                 key={i}
-                                className={`card-wrapper ${visibleCards[i] ? 'visible' : 'hidden'} ${faceDownCards[i] ? 'face-down' : 'face-up'}`}
+                                className={`card-wrapper ${visibleCards[i] ? 'visible' : 'hidden'} ${faceDownCards[i] ? 'face-down' : 'face-up'
+                                    }`}
                                 style={{ '--rarity-color': getRarityColor(card.rarity) }}
                                 onClick={() => handleFlipCard(i)}
                             >
@@ -252,7 +261,10 @@ const AdminDashboardPage = ({ user }) => {
                                     />
                                 </div>
                                 <div className="card-back">
-                                    <img src="/images/card-back-placeholder.png" alt="Card Back" />
+                                    <img
+                                        src="/images/card-back-placeholder.png"
+                                        alt="Card Back"
+                                    />
                                 </div>
                             </div>
                         ))}
