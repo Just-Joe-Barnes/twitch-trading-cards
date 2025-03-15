@@ -16,7 +16,7 @@ const AdminDashboardPage = ({ user }) => {
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
     const [openedCards, setOpenedCards] = useState([]);
-    const [flippedCards, setFlippedCards] = useState([]); // true means card is face down
+    const [flippedCards, setFlippedCards] = useState([]); // true means the card is face down
 
     const cardRarities = [
         { rarity: 'Basic', color: '#8D8D8D' },
@@ -31,18 +31,21 @@ const AdminDashboardPage = ({ user }) => {
         { rarity: 'Divine', color: 'white' },
     ];
 
-    // Return the color associated with the card's rarity.
+    // Return the color associated with a given rarity (fallback to white if not found)
     const getRarityColor = (rarity) => {
         const found = cardRarities.find(r => r.rarity.toLowerCase() === rarity.toLowerCase());
         return found ? found.color : '#fff';
     };
 
     useEffect(() => {
+        // Redirect non-admins
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
             navigate('/login');
             return;
         }
+
+        // Fetch users with packs
         const fetchData = async () => {
             setLoading(true);
             try {
@@ -57,14 +60,17 @@ const AdminDashboardPage = ({ user }) => {
         fetchData();
     }, [user, navigate]);
 
+    // Filter user list by search
     const filteredUsers = usersWithPacks.filter(u =>
         u.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    // Select or deselect a user row
     const toggleUserSelection = (u) => {
         setSelectedUser(prev => (prev?._id === u._id ? null : u));
     };
 
+    // Open a pack for the selected user
     const openPackForUser = async () => {
         if (!selectedUser) return;
         setLoading(true);
@@ -77,10 +83,13 @@ const AdminDashboardPage = ({ user }) => {
             });
             const { newCards } = res;
             console.log('New cards:', newCards);
+
+            // Store new cards
             setOpenedCards(newCards);
-            // Initialize all cards as flipped (face down)
+            // Initialize all cards as face down (flipped = true)
             setFlippedCards(Array(newCards.length).fill(true));
-            // Decrement the selected user's pack count.
+
+            // Decrement the selected user's pack count
             setUsersWithPacks(prev =>
                 prev.map(u => (u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u))
             );
@@ -89,12 +98,11 @@ const AdminDashboardPage = ({ user }) => {
             setIsOpeningAnimation(false);
         } finally {
             setLoading(false);
-            // Ensure the animation overlay remains visible until video ends.
-            // (Don't force setIsOpeningAnimation(false) here.)
+            // We keep the overlay until the video ends
         }
     };
 
-    // Toggle the flip state for card at index i.
+    // Flip a card when clicked
     const toggleFlip = (i) => {
         setFlippedCards(prev => {
             const updated = [...prev];
@@ -103,11 +111,13 @@ const AdminDashboardPage = ({ user }) => {
         });
     };
 
+    // Called when the pack-opening video ends
     const handleVideoEnd = () => {
         console.log('Pack opening video ended.');
         setIsOpeningAnimation(false);
     };
 
+    // Reset the pack state
     const handleResetPack = () => {
         console.log('Resetting pack state');
         setOpenedCards([]);
@@ -115,11 +125,14 @@ const AdminDashboardPage = ({ user }) => {
         setIsOpeningAnimation(false);
     };
 
-    // Show spinner if loading and no cards are loaded (unless we're in animation mode).
-    if (loading && openedCards.length === 0 && !isOpeningAnimation) return <LoadingSpinner />;
+    // Show spinner if loading and no cards are loaded, and we're not in animation
+    if (loading && openedCards.length === 0 && !isOpeningAnimation) {
+        return <LoadingSpinner />;
+    }
 
     return (
         <div className="dashboard-container">
+            {/* Pack Opening Video Overlay */}
             {isOpeningAnimation && (
                 <div className="pack-opening-overlay">
                     <video
@@ -200,7 +213,7 @@ const AdminDashboardPage = ({ user }) => {
                     </div>
                 </div>
 
-                {/* Opened Cards Section (Flippable Cards) */}
+                {/* Opened Cards (Flip to Reveal) */}
                 <div className="opened-cards">
                     <h2>Opened Cards</h2>
                     <div className="cards-container">
@@ -222,6 +235,7 @@ const AdminDashboardPage = ({ user }) => {
                                         />
                                     </div>
                                     <div className="flip-card-back">
+                                        {/* Card back image */}
                                         <img src="/images/card-back-placeholder.png" alt="Card Back" />
                                     </div>
                                 </div>

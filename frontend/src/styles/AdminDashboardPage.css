@@ -47,14 +47,14 @@
 /* Flip Card Styles for Admin Dashboard */
 .flip-card {
     background-color: transparent;
-    width: 300px; /* Match BaseCard width */
-    height: 450px; /* Match BaseCard height */
+    /* No forced width/height; let BaseCard or container decide. */
     perspective: 1000px;
     margin: 10px;
     cursor: pointer;
     transition: box-shadow 0.3s ease;
 }
 
+    /* Hover glow based on --rarity-color */
     .flip-card:hover {
         box-shadow: 0 0 15px 5px var(--rarity-color);
     }
@@ -89,19 +89,17 @@
 }
 
     .flip-card-back img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+        /* Scale to fit the container's size. */
+        max-width: 100%;
+        height: auto;
         display: block;
     }
 
-/* Override text alignment for opened cards so text is left aligned */
+/* Override text alignment for the front side's content. */
 .opened-cards .flip-card-front .card-container .card-border {
     align-items: flex-start;
     text-align: left;
 }
-
-/* (Rest of your existing CSS below remains unchanged) */
 
 /* Grid layout */
 .grid-container {
