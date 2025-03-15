@@ -9,26 +9,27 @@ import '../styles/AdminDashboardPage.css';
 const AdminDashboardPage = ({ user }) => {
     const navigate = useNavigate();
 
-    // Admin & pack data
+    // User and pack data
     const [usersWithPacks, setUsersWithPacks] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Loading & animation states
+    // Loading and animation state
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
 
-    // Card states
+    // Card state arrays:
+    // openedCards: array of card objects from pack.
+    // visibleCards: for fade-in; false initially, then true when faded in.
+    // faceDownCards: true means card is showing its back (face down), false means showing front.
     const [openedCards, setOpenedCards] = useState([]);
-    // revealedCards: controls sequential fade-in; false = hidden, true = visible.
-    const [revealedCards, setRevealedCards] = useState([]);
-    // faceDownCards: true = card shows its back (face down), false = card front is visible.
+    const [visibleCards, setVisibleCards] = useState([]);
     const [faceDownCards, setFaceDownCards] = useState([]);
 
-    // For sequential reveal timing
-    const fallbackTimerRef = useRef(null);
-    const [sequentialRevealStarted, setSequentialRevealStarted] = useState(false);
+    // Ref for sequential fade-in
+    const revealIndexRef = useRef(0);
 
+    // Rarity mapping for hover glow
     const cardRarities = [
         { rarity: 'Basic', color: '#8D8D8D' },
         { rarity: 'Common', color: '#64B5F6' },
@@ -42,12 +43,12 @@ const AdminDashboardPage = ({ user }) => {
         { rarity: 'Divine', color: 'white' },
     ];
 
-    // Returns the glow color for the card's rarity.
     const getRarityColor = (rarity) => {
         const found = cardRarities.find(r => r.rarity.toLowerCase() === rarity.toLowerCase());
         return found ? found.color : '#fff';
     };
 
+    // Fetch user data
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -76,17 +77,15 @@ const AdminDashboardPage = ({ user }) => {
         setSelectedUser(prev => (prev?._id === u._id ? null : u));
     };
 
-    // Open a pack for the selected user.
-    // When a pack is opened, all cards are loaded with their back showing (face down)
-    // and hidden until they fade in sequentially.
+    // Open pack for selected user.
+    // All cards start as hidden and face down.
     const openPackForUser = async () => {
         if (!selectedUser) return;
         setLoading(true);
         setIsOpeningAnimation(true);
         setOpenedCards([]);
-        setRevealedCards([]);
+        setVisibleCards([]);
         setFaceDownCards([]);
-        setSequentialRevealStarted(false);
         try {
             const res = await fetchWithAuth(`/api/packs/admin/openPacksForUser/${selectedUser._id}`, {
                 method: 'POST',
@@ -94,44 +93,46 @@ const AdminDashboardPage = ({ user }) => {
             const { newCards } = res;
             console.log('New cards:', newCards);
             setOpenedCards(newCards);
-            setRevealedCards(Array(newCards.length).fill(false));
-            setFaceDownCards(Array(newCards.length).fill(true));
+            setVisibleCards(Array(newCards.length).fill(false));
+            setFaceDownCards(Array(newCards.length).fill(true)); // all show back initially
+            revealIndexRef.current = 0;
+            // Decrement pack count for user
+            setUsersWithPacks(prev =>
+                prev.map(u =>
+                    u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
+                )
+            );
         } catch (err) {
             console.error('Error opening pack:', err);
             setIsOpeningAnimation(false);
         } finally {
             setLoading(false);
-            // Keep the animation overlay until the video ends.
+            // Keep the overlay until video ends.
         }
     };
 
-    // Sequentially fade in each card (set revealedCards[i] to true) one at a time.
-    const revealCardSequentially = (index = 0) => {
+    // Sequentially fade in cards one by one
+    const revealCardsSequentially = (index = 0) => {
         if (index < openedCards.length) {
             setTimeout(() => {
-                setRevealedCards(prev => {
+                setVisibleCards(prev => {
                     const updated = [...prev];
                     updated[index] = true;
                     return updated;
                 });
-                revealCardSequentially(index + 1);
-            }, 1000); // 1 second delay per card; adjust if needed
+                revealCardsSequentially(index + 1);
+            }, 1000);
         }
     };
 
-    // When the pack-opening video ends, start the sequential fade-in.
+    // When the pack-opening video ends, hide the overlay and start fade-in.
     const handleVideoEnd = () => {
-        if (fallbackTimerRef.current) {
-            clearTimeout(fallbackTimerRef.current);
-            fallbackTimerRef.current = null;
-        }
-        console.log('Video ended. Starting sequential fade-in...');
-        setSequentialRevealStarted(true);
-        revealCardSequentially();
+        console.log('Pack opening animation ended. Starting sequential fade-in...');
         setIsOpeningAnimation(false);
+        revealCardsSequentially();
     };
 
-    // Flip a card on click: toggle its faceDown state.
+    // Toggle a card's face-down state on click (flip to reveal front)
     const handleFlipCard = (i) => {
         setFaceDownCards(prev => {
             const updated = [...prev];
@@ -143,7 +144,7 @@ const AdminDashboardPage = ({ user }) => {
     const handleResetPack = () => {
         console.log('Resetting pack state');
         setOpenedCards([]);
-        setRevealedCards([]);
+        setVisibleCards([]);
         setFaceDownCards([]);
         setIsOpeningAnimation(false);
     };
@@ -162,12 +163,13 @@ const AdminDashboardPage = ({ user }) => {
                         autoPlay
                         playsInline
                         controls={false}
-                        onEnded={() => setTimeout(handleVideoEnd, 500)}
+                        onEnded={handleVideoEnd}
                         onLoadedData={() => console.log('Video loaded')}
                         onError={(e) => console.error('Video error:', e)}
                     />
                 </div>
             )}
+
             <div className="grid-container">
                 {/* Users with Packs Section */}
                 <div className="users-with-packs">
@@ -240,7 +242,7 @@ const AdminDashboardPage = ({ user }) => {
                         {openedCards.map((card, i) => (
                             <div
                                 key={i}
-                                className={`card-wrapper ${revealedCards[i] ? 'visible' : 'hidden'} ${faceDownCards[i] ? 'face-down' : 'face-up'}`}
+                                className={`card-wrapper ${visibleCards[i] ? 'visible' : 'hidden'} ${faceDownCards[i] ? 'face-down' : 'face-up'}`}
                                 style={{ '--rarity-color': getRarityColor(card.rarity) }}
                                 onClick={() => handleFlipCard(i)}
                             >
