@@ -311,4 +311,39 @@
     width: 100vw;
     height: 100vh;
     object-fit: cover;
-    animation: fadeInOut 0.
+    animation: fadeInOut 0.5s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.users-search {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: center;
+}
+
+.users-search-input {
+    width: 90%;
+    max-width: 300px;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--border-radius);
+    background: var(--surface-dark);
+    color: var(--text-primary);
+    font-family: 'Poppins', sans-serif;
+    transition: var(--transition);
+}
+
+    .users-search-input:focus {
+        outline: none;
+        border-color: var(--brand-primary);
+        box-shadow: 0 0 0 3px rgba(219, 136, 219, 0.2);
+    }
