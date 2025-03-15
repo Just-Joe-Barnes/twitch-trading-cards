@@ -229,77 +229,81 @@
     justify-content: center;
 }
 
-/* FLIP CARD - no forced dimension. The front sets the size (BaseCard). */
-.flip-card {
+/* Card Wrapper: controls fade-in/out and spacing */
+.card-wrapper {
     position: relative;
-    display: inline-block;
-    cursor: pointer;
-    opacity: 0;
-    transform: translateY(20px);
     transition: opacity 0.6s ease, transform 0.6s ease;
+    cursor: pointer;
+    /* Maintain spacing from the gap in .cards-container */
 }
 
-    /* Fade in vs. fade out */
-    .flip-card.fade-in {
+    .card-wrapper.hidden {
+        opacity: 0;
+        transform: translateY(20px);
+        pointer-events: none;
+    }
+
+    .card-wrapper.visible {
         opacity: 1;
         transform: translateY(0);
     }
 
-    .flip-card.fade-out {
+    /* Face-down vs. face-up states.
+   When face-down, show the back; when face-up, show the front.
+*/
+    .card-wrapper.face-down .card-front {
         opacity: 0;
-        transform: translateY(20px);
+        pointer-events: none;
     }
 
-    /* Only face-down (flipped) cards glow on hover. */
-    .flip-card.flipped:hover {
+    .card-wrapper.face-down .card-back {
+        opacity: 1;
+    }
+
+    .card-wrapper.face-up .card-front {
+        opacity: 1;
+    }
+
+    .card-wrapper.face-up .card-back {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* Hover glow on face-down cards only */
+    .card-wrapper.face-down:hover {
         box-shadow: 0 0 15px 5px var(--rarity-color);
     }
 
-.flip-card-inner {
-    width: 100%;
-    height: 100%;
-    transition: transform 0.8s;
-    transform-style: preserve-3d;
-}
-
-/* If flipped = true, rotate to show the back */
-.flip-card.flipped .flip-card-inner {
-    transform: rotateY(180deg);
-}
-
-/* FRONT & BACK sides */
-.flip-card-front,
-.flip-card-back {
+/* Position the front and back so they overlap exactly */
+.card-front,
+.card-back {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    backface-visibility: hidden;
-    border-radius: var(--border-radius);
+    transition: opacity 0.3s ease;
 }
 
-/* BACK side is rotated 180 */
-.flip-card-back {
-    transform: rotateY(180deg);
+/* The front uses BaseCard styling (do not modify here) */
+.opened-cards .card-front .card-container .card-border {
+    text-align: left;
+    align-items: flex-start;
+}
+
+/* The back image: scale to fill the container */
+.card-back {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-    .flip-card-back img {
+    .card-back img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         border-radius: var(--border-radius);
     }
-
-/* Ensure text on the front is left aligned. 
-   (BaseCard + CardComponent.css handle the actual sizing) */
-.opened-cards .flip-card-front .card-container .card-border {
-    text-align: left;
-    align-items: flex-start;
-}
 
 /* Pack Opening Overlay */
 .pack-opening-overlay {

@@ -20,15 +20,15 @@ const AdminDashboardPage = ({ user }) => {
 
     // Card states
     const [openedCards, setOpenedCards] = useState([]);
-    // flippedCards: true = face-down (show back), false = face-up (front)
-    const [flippedCards, setFlippedCards] = useState([]);
-    // visibleCards: controls fade-in; false = hidden, true = visible
-    const [visibleCards, setVisibleCards] = useState([]);
+    // revealedCards: controls sequential fade-in; false = hidden, true = visible.
+    const [revealedCards, setRevealedCards] = useState([]);
+    // faceDownCards: true = card shows its back (face down), false = card front is visible.
+    const [faceDownCards, setFaceDownCards] = useState([]);
 
-    // For sequential fade-in
-    const revealIndexRef = useRef(0);
+    // For sequential reveal timing
+    const fallbackTimerRef = useRef(null);
+    const [sequentialRevealStarted, setSequentialRevealStarted] = useState(false);
 
-    // Rarity → glow color mapping
     const cardRarities = [
         { rarity: 'Basic', color: '#8D8D8D' },
         { rarity: 'Common', color: '#64B5F6' },
@@ -41,12 +41,13 @@ const AdminDashboardPage = ({ user }) => {
         { rarity: 'Unique', color: 'black' },
         { rarity: 'Divine', color: 'white' },
     ];
+
+    // Returns the glow color for the card's rarity.
     const getRarityColor = (rarity) => {
         const found = cardRarities.find(r => r.rarity.toLowerCase() === rarity.toLowerCase());
         return found ? found.color : '#fff';
     };
 
-    // Fetch admin data
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -67,7 +68,6 @@ const AdminDashboardPage = ({ user }) => {
         fetchData();
     }, [user, navigate]);
 
-    // Filter users by search query
     const filteredUsers = usersWithPacks.filter(u =>
         u.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -76,65 +76,64 @@ const AdminDashboardPage = ({ user }) => {
         setSelectedUser(prev => (prev?._id === u._id ? null : u));
     };
 
-    // Open pack for selected user
+    // Open a pack for the selected user.
+    // When a pack is opened, all cards are loaded with their back showing (face down)
+    // and hidden until they fade in sequentially.
     const openPackForUser = async () => {
         if (!selectedUser) return;
         setLoading(true);
         setIsOpeningAnimation(true);
         setOpenedCards([]);
-        setFlippedCards([]);
-        setVisibleCards([]);
+        setRevealedCards([]);
+        setFaceDownCards([]);
+        setSequentialRevealStarted(false);
         try {
             const res = await fetchWithAuth(`/api/packs/admin/openPacksForUser/${selectedUser._id}`, {
                 method: 'POST',
             });
             const { newCards } = res;
             console.log('New cards:', newCards);
-
-            // All cards start face-down and hidden
             setOpenedCards(newCards);
-            setFlippedCards(Array(newCards.length).fill(true));
-            setVisibleCards(Array(newCards.length).fill(false));
-            revealIndexRef.current = 0;
-
-            // Decrement user's pack count
-            setUsersWithPacks(prev =>
-                prev.map(u =>
-                    u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
-                )
-            );
+            setRevealedCards(Array(newCards.length).fill(false));
+            setFaceDownCards(Array(newCards.length).fill(true));
         } catch (err) {
             console.error('Error opening pack:', err);
             setIsOpeningAnimation(false);
         } finally {
             setLoading(false);
+            // Keep the animation overlay until the video ends.
         }
     };
 
-    // Fade in cards one at a time
-    const fadeInCardsSequentially = (index = 0) => {
+    // Sequentially fade in each card (set revealedCards[i] to true) one at a time.
+    const revealCardSequentially = (index = 0) => {
         if (index < openedCards.length) {
             setTimeout(() => {
-                setVisibleCards(prev => {
+                setRevealedCards(prev => {
                     const updated = [...prev];
                     updated[index] = true;
                     return updated;
                 });
-                fadeInCardsSequentially(index + 1);
-            }, 600); // adjust delay as needed
+                revealCardSequentially(index + 1);
+            }, 1000); // 1 second delay per card; adjust if needed
         }
     };
 
-    // Pack-opening video end
+    // When the pack-opening video ends, start the sequential fade-in.
     const handleVideoEnd = () => {
-        console.log('Animation ended. Fading in cards...');
+        if (fallbackTimerRef.current) {
+            clearTimeout(fallbackTimerRef.current);
+            fallbackTimerRef.current = null;
+        }
+        console.log('Video ended. Starting sequential fade-in...');
+        setSequentialRevealStarted(true);
+        revealCardSequentially();
         setIsOpeningAnimation(false);
-        fadeInCardsSequentially();
     };
 
-    // Flip card on click
-    const toggleFlip = (i) => {
-        setFlippedCards(prev => {
+    // Flip a card on click: toggle its faceDown state.
+    const handleFlipCard = (i) => {
+        setFaceDownCards(prev => {
             const updated = [...prev];
             updated[i] = !updated[i];
             return updated;
@@ -144,19 +143,17 @@ const AdminDashboardPage = ({ user }) => {
     const handleResetPack = () => {
         console.log('Resetting pack state');
         setOpenedCards([]);
-        setFlippedCards([]);
-        setVisibleCards([]);
+        setRevealedCards([]);
+        setFaceDownCards([]);
         setIsOpeningAnimation(false);
     };
 
-    // Show spinner if loading, no opened cards, and not in animation
     if (loading && openedCards.length === 0 && !isOpeningAnimation) {
         return <LoadingSpinner />;
     }
 
     return (
         <div className="dashboard-container">
-            {/* Overlay for pack-opening animation */}
             {isOpeningAnimation && (
                 <div className="pack-opening-overlay">
                     <video
@@ -165,15 +162,14 @@ const AdminDashboardPage = ({ user }) => {
                         autoPlay
                         playsInline
                         controls={false}
-                        onEnded={handleVideoEnd}
+                        onEnded={() => setTimeout(handleVideoEnd, 500)}
                         onLoadedData={() => console.log('Video loaded')}
                         onError={(e) => console.error('Video error:', e)}
                     />
                 </div>
             )}
-
             <div className="grid-container">
-                {/* Example: Users with Packs Section */}
+                {/* Users with Packs Section */}
                 <div className="users-with-packs">
                     <h2>Users with Packs</h2>
                     <div className="users-search">
@@ -209,7 +205,7 @@ const AdminDashboardPage = ({ user }) => {
                     </table>
                 </div>
 
-                {/* Example: Open Pack Section */}
+                {/* Open Pack Section */}
                 <div className="selected-user-section">
                     {selectedUser && (
                         <>
@@ -224,7 +220,7 @@ const AdminDashboardPage = ({ user }) => {
                     )}
                 </div>
 
-                {/* Card Rarity Key */}
+                {/* Card Rarity Key Section */}
                 <div className="card-rarity-key">
                     <h2>Card Rarity Key</h2>
                     <div className="rarity-list">
@@ -244,30 +240,21 @@ const AdminDashboardPage = ({ user }) => {
                         {openedCards.map((card, i) => (
                             <div
                                 key={i}
-                                className={`flip-card ${visibleCards[i] ? 'fade-in' : 'fade-out'} ${flippedCards[i] ? 'flipped' : ''}`}
-                                onClick={() => toggleFlip(i)}
+                                className={`card-wrapper ${revealedCards[i] ? 'visible' : 'hidden'} ${faceDownCards[i] ? 'face-down' : 'face-up'}`}
                                 style={{ '--rarity-color': getRarityColor(card.rarity) }}
+                                onClick={() => handleFlipCard(i)}
                             >
-                                <div className="flip-card-inner">
-                                    {/* FRONT */}
-                                    <div className="flip-card-front">
-                                        {/* The front styling is entirely controlled by BaseCard + CardComponent.css */}
-                                        <BaseCard
-                                            name={card.name}
-                                            image={card.imageUrl}
-                                            description={card.flavorText}
-                                            rarity={card.rarity}
-                                            mintNumber={card.mintNumber}
-                                        />
-                                    </div>
-
-                                    {/* BACK */}
-                                    <div className="flip-card-back">
-                                        <img
-                                            src="/images/card-back-placeholder.png"
-                                            alt="Card Back"
-                                        />
-                                    </div>
+                                <div className="card-front">
+                                    <BaseCard
+                                        name={card.name}
+                                        image={card.imageUrl}
+                                        description={card.flavorText}
+                                        rarity={card.rarity}
+                                        mintNumber={card.mintNumber}
+                                    />
+                                </div>
+                                <div className="card-back">
+                                    <img src="/images/card-back-placeholder.png" alt="Card Back" />
                                 </div>
                             </div>
                         ))}
