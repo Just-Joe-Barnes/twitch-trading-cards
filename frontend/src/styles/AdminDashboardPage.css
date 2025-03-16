@@ -229,14 +229,13 @@
     justify-content: center;
 }
 
-/* Card Wrapper: fade-in + flip states */
+/* card-wrapper: fade-in + 3D flip states */
 .card-wrapper {
     transition: opacity 0.6s ease, transform 0.6s ease !important;
     position: relative;
     cursor: pointer;
 }
 
-    /* Fade-in logic */
     .card-wrapper.hidden {
         opacity: 0 !important;
         transform: translateY(20px) !important;
@@ -257,29 +256,36 @@
     transform: rotateY(180deg);
 }
 
-/* Rarity glow on hover only if face down */
+/* Rarity glow on hover only for face-down */
 .card-wrapper.face-down:hover {
     box-shadow: 0 0 15px 5px var(--rarity-color);
 }
 
-/* Card Content: forcibly 300x450 so front/back align precisely */
+/* 
+   .card-content: forced to 300x450 so 
+   front & back line up perfectly 
+*/
 .card-content {
     width: 300px;
     height: 450px;
     position: relative;
-    perspective: 1000px; /* for 3D flip */
+    perspective: 1000px;
 }
 
-/* card-inner flips from center */
+/* The 3D flipping container */
 .card-inner {
     width: 100%;
     height: 100%;
     transform-style: preserve-3d;
     transition: transform 0.6s ease;
     transform-origin: center center;
+    /* For face-up, we let overflow be visible 
+     so the front edges won't be clipped if there's a 3D effect. 
+     We'll override it below specifically for face-up. */
+    overflow: hidden;
 }
 
-/* back & front absolutely fill the card-content */
+/* The card back & front both fill .card-content */
 .card-back,
 .card-front {
     position: absolute;
@@ -291,7 +297,7 @@
     border-radius: var(--border-radius);
 }
 
-/* The back is visible at rotateY(0) in face-down mode */
+/* The back is at rotateY(0) in face-down mode */
 .card-back {
     transform: rotateY(0deg);
     z-index: 2;
@@ -304,7 +310,7 @@
         border-radius: var(--border-radius);
     }
 
-/* The front is behind at rotateY(180) when face-down */
+/* The front is behind at rotateY(180) in face-down mode */
 .card-front {
     transform: rotateY(180deg);
     display: flex;
@@ -314,7 +320,36 @@
     z-index: 1;
 }
 
-/* Pack Opening Overlay */
+/* 
+   OVERRIDES:
+   1) Remove margin from the BaseCard's container 
+      only on this page, only when face up.
+   2) Let .card-inner overflow be visible 
+      so front edges aren't clipped 
+      if there's a 3D effect on hover.
+*/
+
+/* 
+   We assume your BaseCard uses .card-container or something 
+   with margin. We'll target it specifically in face-up mode. 
+   Adjust if needed based on your actual class naming from 
+   CardComponents.css 
+*/
+.card-wrapper.face-up .card-front .card-container {
+    margin: 0 !important;
+}
+
+/* 
+   Let the .card-inner overflow be visible 
+   only when face-up, so the front won't get clipped.
+*/
+.card-wrapper.face-up .card-inner {
+    overflow: visible !important;
+}
+
+/* 
+   Pack-opening overlay styling, unchanged ...
+*/
 .pack-opening-overlay {
     position: fixed;
     top: 0;
@@ -344,28 +379,3 @@
         opacity: 1;
     }
 }
-
-/* Users Search Bar */
-.users-search {
-    margin-bottom: 1rem;
-    display: flex;
-    justify-content: center;
-}
-
-.users-search-input {
-    width: 90%;
-    max-width: 300px;
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--border-dark);
-    border-radius: var(--border-radius);
-    background: var(--surface-dark);
-    color: var(--text-primary);
-    font-family: 'Poppins', sans-serif;
-    transition: var(--transition);
-}
-
-    .users-search-input:focus {
-        outline: none;
-        border-color: var(--brand-primary);
-        box-shadow: 0 0 0 3px rgba(219, 136, 219, 0.2);
-    }
