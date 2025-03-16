@@ -4,13 +4,11 @@
     height: 450px;
     perspective: 1000px;
     position: relative;
-    margin: 0 auto;
     overflow: hidden;
     cursor: pointer;
     transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-    /* Fade-in / fade-out */
     .card.hidden {
         opacity: 0;
         transform: translateY(20px);
@@ -40,7 +38,7 @@
     transform: rotateY(180deg);
 }
 
-/* Card faces (front and back) */
+/* Both faces fill the container */
 .card-face {
     position: absolute;
     width: 100%;
@@ -61,4 +59,11 @@
 /* Rarity glow when hovering a face-down card */
 .face-down:hover {
     box-shadow: 0 0 15px 5px var(--rarity-color);
+}
+
+/* --- Override: Force BaseCard to fill the flip face --- */
+.card-face.card-front .card-container {
+    margin: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
 }
