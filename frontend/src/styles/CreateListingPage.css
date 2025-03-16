@@ -12,7 +12,7 @@
 
 /* Page Container */
 .create-listing-page {
-    padding: 6rem 2rem;
+    padding: 4rem 2rem;
     background: var(--background-dark);
     min-height: 100vh;
     color: var(--text-primary);
@@ -21,17 +21,43 @@
     text-align: center;
 }
 
+/* Headers & Info */
 .page-title {
-    font-size: 2rem;
+    font-size: 2.5rem;
     margin-bottom: 1rem;
 }
 
 .info-text {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     margin-bottom: 2rem;
     color: rgba(255, 255, 255, 0.8);
-    line-height: 1.6;
+    line-height: 1.5;
 }
+
+/* Filters Section */
+.create-listing-filters {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+    .create-listing-filters input[type="text"],
+    .create-listing-filters select {
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border-dark);
+        border-radius: 8px;
+        background: var(--surface-dark);
+        color: var(--text-primary);
+        font-size: 1rem;
+        transition: var(--transition);
+        width: 240px;
+    }
+
+        .create-listing-filters input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
 
 /* Collection Container */
 .collection-container {
@@ -42,30 +68,22 @@
     margin-bottom: 2rem;
 }
 
-    .collection-container h2 {
-        margin-bottom: 1rem;
-        font-size: 1.5rem;
-    }
-
-.no-cards-message {
-    font-size: 1rem;
-    color: var(--text-primary);
-    opacity: 0.8;
+.collection-heading {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
 }
 
-/* Collection Grid */
+/* Collection Grid: 4 cards per row; fixed height for 2 rows; vertical scrolling */
 .collection-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
-    justify-items: center;
-    max-height: 450px;
+    max-height: 480px; /* Adjust based on card height plus gap */
     overflow-y: auto;
     padding: 1rem;
-    margin: 0 auto;
 }
 
-/* Individual Card Items */
+/* Card Items in Grid */
 .card-item {
     cursor: pointer;
     transition: var(--transition);
@@ -90,30 +108,24 @@
     padding: 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    margin-bottom: 2rem;
+    text-align: center;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-    .listing-preview-container h2 {
-        margin-bottom: 1rem;
-        font-size: 1.5rem;
-    }
+.preview-heading {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+}
 
 .preview-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-/* No Preview Message */
-.no-preview-message {
-    color: var(--text-primary);
-    opacity: 0.8;
-    font-size: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 /* Submit Button */
 .list-card-button {
-    margin-top: 1rem;
     padding: 0.75rem 1.5rem;
     font-size: 1rem;
     background: var(--brand-primary);
@@ -123,7 +135,7 @@
     cursor: pointer;
     transition: var(--transition);
     width: 100%;
-    max-width: 240px;
+    max-width: 250px;
 }
 
     .list-card-button:hover {
@@ -134,3 +146,10 @@
         background: #555;
         cursor: not-allowed;
     }
+
+/* No Preview Message */
+.no-preview-message {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 1rem;
+}
