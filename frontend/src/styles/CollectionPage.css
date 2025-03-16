@@ -8,7 +8,7 @@
     --border-dark: rgba(255, 255, 255, 0.12);
 }
 
-/* Reset body and global font */
+/* Global Reset & Body */
 body {
     margin: 0;
     padding: 0;
@@ -16,7 +16,7 @@ body {
     background: var(--background-dark);
 }
 
-/* Top-level container: use flex column to center children */
+/* Collection Page Container */
 .collection-page {
     display: flex;
     flex-direction: column;
@@ -56,16 +56,17 @@ body {
     color: var(--text-primary);
 }
 
-/* Filters Section */
+/* Filters Section - Force inline layout */
 .filters {
     display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
     justify-content: center;
     align-items: center;
     gap: 1.25rem;
     margin-bottom: 3rem;
-    /* Optional: limit width so filters don’t span too wide */
-    max-width: 800px;
     width: 100%;
+    max-width: 800px; /* Limits the width so that they stay inline */
 }
 
     .filters input[type="text"],
@@ -126,14 +127,13 @@ body {
         color: rgba(255, 255, 255, 0.6);
     }
 
-/* Featured controls (if used) */
+/* Featured Controls */
 .featured-controls {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-/* Clear Featured Cards button */
 .clear-featured-button {
     padding: 8px 16px;
     background-color: var(--brand-primary);
@@ -148,10 +148,10 @@ body {
         background-color: var(--brand-secondary);
     }
 
-/* Cards Grid Container */
+/* Cards Grid Container - Force exactly 4 columns per row */
 .cards-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(4, 1fr); /* Exactly 4 columns */
     gap: 1.5rem;
     background: var(--surface-darker);
     border-radius: 16px;
@@ -171,7 +171,7 @@ body {
         pointer-events: none;
     }
 
-/* Card Styling (BaseCard usage) */
+/* Card Styling (used by BaseCard) */
 .card {
     background: var(--surface-dark);
     border-radius: 12px;
@@ -186,7 +186,7 @@ body {
         box-shadow: 0 4px 24px rgba(219, 136, 219, 0.1);
     }
 
-/* Selection indicator for selected cards */
+/* Selection Indicator for Selected Cards */
 .card-item.selected {
     border: 2px solid var(--brand-primary) !important;
     position: relative;
@@ -211,7 +211,7 @@ body {
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
 
-/* "Featured" badge */
+/* "Featured" Badge */
 .featured-badge {
     position: absolute;
     top: 8px;
@@ -227,7 +227,7 @@ body {
     z-index: 10;
 }
 
-/* Double-click highlight animation */
+/* Double-click Highlight Animation */
 .double-clicked {
     animation: highlightPop 1s ease;
     z-index: 2;
