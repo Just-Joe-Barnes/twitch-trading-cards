@@ -12,13 +12,17 @@
 
 /* Page Container */
 .create-listing-page {
+    /* Center all children horizontally */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: 4rem 2rem;
     background: var(--background-dark);
     min-height: 100vh;
     color: var(--text-primary);
     max-width: 1200px;
-    margin: 0 auto; /* Centers the overall page */
-    text-align: center;
+    margin: 0 auto; /* Centers the entire page container in the viewport */
+    text-align: center; /* For heading & text alignment */
 }
 
 /* Headers & Info */
@@ -61,28 +65,29 @@
 
 /* Collection Container */
 .collection-container {
-    width: 60vw; /* Fixed width of 60% of viewport */
+    display: block; /* Let it behave as a block in flex context */
+    width: 60vw; /* Fixed width, ensures horizontal centering in parent */
     background: var(--surface-dark);
     padding: 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-    margin: 0 auto 2rem; /* Centers the container horizontally */
+    margin-bottom: 2rem; /* Spacing below container */
 }
 
+/* Heading inside collection container */
 .collection-heading {
     font-size: 1.75rem;
     margin-bottom: 1rem;
 }
 
-/* Collection Grid: 4 cards per row; fixed height (approx. 2 rows) */
+/* Collection Grid: exactly 4 columns, fixed height for ~2 rows */
 .collection-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
-    max-height: 480px; /* Adjust height for roughly 2 rows */
+    max-height: 480px; /* Adjust as needed */
     overflow-y: auto;
     padding: 1rem;
-    margin: 0 auto; /* Center the grid within its container */
 }
 
 /* Card Items in Grid */
@@ -92,6 +97,7 @@
     padding: 0.5rem;
     border-radius: var(--border-radius);
     border: 2px solid transparent;
+    /* Because parent is 4 columns, each item is automatically "centered" in its cell */
 }
 
     .card-item:hover {
@@ -106,12 +112,13 @@
 
 /* Listing Preview Container */
 .listing-preview-container {
-    width: 60vw; /* Fixed width of 60vw */
-    margin: 0 auto 2rem; /* Center horizontally and add bottom margin */
+    display: block; /* Behaves as a block within the flex parent */
+    width: 60vw; /* Same fixed width as collection container */
     background: var(--surface-dark);
     padding: 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    margin-bottom: 2rem;
     text-align: center;
 }
 
@@ -120,9 +127,12 @@
     margin-bottom: 1rem;
 }
 
-/* Center the listing preview card within its container */
+/* The card + button container in the preview */
 .preview-card {
-    margin: 0 auto 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center the BaseCard & button horizontally */
 }
 
 /* List Card Button */
@@ -137,8 +147,7 @@
     transition: var(--transition);
     width: 100%;
     max-width: 250px;
-    margin: 0 auto; /* Center the button */
-    display: block;
+    margin-top: 1rem; /* Spacing above the button */
 }
 
     .list-card-button:hover {
