@@ -334,6 +334,11 @@
     overflow: visible !important;
 }
 
+.card-wrapper.face-up {
+    border: none !important;
+    box-shadow: none !important; /* Ensures no extra glow when face-up */
+}
+
 /* 
    Pack-opening overlay, unchanged...
 */
