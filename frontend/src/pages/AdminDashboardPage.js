@@ -13,13 +13,13 @@ const AdminDashboardPage = ({ user }) => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Page no longer uses a spinner, but we keep loading state for internal logic
+    // The page no longer shows a spinner, so "loading" only toggles logic internally
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
 
     // Cards from an opened pack
     const [openedCards, setOpenedCards] = useState([]);
-    // revealedCards: controls fade-in; false = hidden, true = visible
+    // revealedCards: controls fade-in per card
     const [revealedCards, setRevealedCards] = useState([]);
     // faceDownCards: true => back is shown, false => front is shown
     const [faceDownCards, setFaceDownCards] = useState([]);
@@ -29,7 +29,7 @@ const AdminDashboardPage = ({ user }) => {
     const [sequentialRevealStarted, setSequentialRevealStarted] = useState(false);
     const fallbackTimerRef = useRef(null);
 
-    // Rarity => color mapping
+    // Rarity => hover glow color
     const cardRarities = [
         { rarity: 'Basic', color: '#8D8D8D' },
         { rarity: 'Common', color: '#64B5F6' },
@@ -80,7 +80,7 @@ const AdminDashboardPage = ({ user }) => {
     };
 
     // Open pack for user
-    // All cards start hidden and faceDown
+    // All cards start hidden (revealedCards=false) and faceDown
     const openPackForUser = async () => {
         if (!selectedUser) return;
         setLoading(true);
@@ -97,8 +97,8 @@ const AdminDashboardPage = ({ user }) => {
             const { newCards } = res;
             console.log('New cards:', newCards);
             setOpenedCards(newCards);
-            setRevealedCards(Array(newCards.length).fill(false));  // for fade-in
-            setFaceDownCards(Array(newCards.length).fill(true));   // show back
+            setRevealedCards(Array(newCards.length).fill(false)); // for fade-in
+            setFaceDownCards(Array(newCards.length).fill(true));  // show back
             revealIndexRef.current = 0;
             // Decrement user's pack count
             setUsersWithPacks((prev) =>
@@ -137,13 +137,12 @@ const AdminDashboardPage = ({ user }) => {
             clearTimeout(fallbackTimerRef.current);
             fallbackTimerRef.current = null;
         }
-        console.log('Video ended. Removing overlay & starting reveal...');
-        setIsOpeningAnimation(false);
+        console.log('Video ended. Starting sequential reveal...');
         setSequentialRevealStarted(true);
         revealCardSequentially(0);
     };
 
-    // Fallback if 4s pass with no reveal
+    // Fallback if no reveal starts after 4s
     useEffect(() => {
         if (
             openedCards.length > 0 &&
@@ -173,9 +172,11 @@ const AdminDashboardPage = ({ user }) => {
         setOpenedCards([]);
         setRevealedCards([]);
         setFaceDownCards([]);
+        setIsOpeningAnimation(false);
     };
 
-    // We do NOT show a spinner on this page, so no "if (loading)" check
+    // We do NOT show a spinner on this page at all, so no "if (loading)" check
+    // The user requested removing the loading spinner logic from only this page.
 
     return (
         <div className="dashboard-container">
@@ -187,7 +188,7 @@ const AdminDashboardPage = ({ user }) => {
                         autoPlay
                         playsInline
                         controls={false}
-                        onEnded={handleVideoEnd}
+                        onEnded={() => setTimeout(handleVideoEnd, 500)}
                         onLoadedData={() => console.log('Video loaded')}
                         onError={(e) => console.error('Video error:', e)}
                     />
@@ -275,7 +276,8 @@ const AdminDashboardPage = ({ user }) => {
                             >
                                 <div className="card-content">
                                     <div className="card-inner">
-                                        {/* The back is at rotateY(0) for faceDown, front at 180 */}
+                                        {/* The back is visible at rotateY(0) in face-down, 
+                        front is rotateY(180). We want the back on top by default. */}
                                         <div className="card-back">
                                             <img
                                                 src="/images/card-back-placeholder.png"
