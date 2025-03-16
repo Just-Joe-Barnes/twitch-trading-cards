@@ -15,13 +15,15 @@ const FlippingCard = ({ card, isFaceDown, isRevealed, rarityColor, onFlip }) => 
                     <img src="/images/card-back-placeholder.png" alt="Card Back" />
                 </div>
                 <div className="card-face card-front">
-                    <BaseCard
-                        name={card.name}
-                        image={card.imageUrl}
-                        description={card.flavorText}
-                        rarity={card.rarity}
-                        mintNumber={card.mintNumber}
-                    />
+                    <div className="basecard-wrapper">
+                        <BaseCard
+                            name={card.name}
+                            image={card.imageUrl}
+                            description={card.flavorText}
+                            rarity={card.rarity}
+                            mintNumber={card.mintNumber}
+                        />
+                    </div>
                 </div>
             </div>
         </div>
