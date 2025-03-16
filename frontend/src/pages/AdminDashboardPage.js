@@ -1,8 +1,8 @@
 ﻿// src/pages/AdminDashboardPage.js
 import React, { useEffect, useState, useRef } from 'react';
 import { fetchWithAuth } from '../utils/api';
-import BaseCard from '../components/BaseCard';
 import { useNavigate } from 'react-router-dom';
+import FlipCard from '../components/FlipCard';
 import '../styles/AdminDashboardPage.css';
 
 const AdminDashboardPage = ({ user }) => {
@@ -13,17 +13,13 @@ const AdminDashboardPage = ({ user }) => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Loading & animation states (spinner removed from the UI)
+    // Loading & animation states (spinner removed)
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
 
-    // Cards from an opened pack
+    // Cards from an opened pack and sequential reveal state
     const [openedCards, setOpenedCards] = useState([]);
     const [revealedCards, setRevealedCards] = useState([]);
-    // New state: track if each card is flipped (true means show back)
-    const [flippedCards, setFlippedCards] = useState([]);
-
-    // Flag for sequential reveal start
     const [sequentialRevealStarted, setSequentialRevealStarted] = useState(false);
     const fallbackTimerRef = useRef(null);
 
@@ -72,11 +68,9 @@ const AdminDashboardPage = ({ user }) => {
         if (!selectedUser) return;
         setLoading(true);
         setIsOpeningAnimation(true);
-        // Reset sequential flag and card states
         setSequentialRevealStarted(false);
         setOpenedCards([]);
         setRevealedCards([]);
-        setFlippedCards([]);
         try {
             const res = await fetchWithAuth(
                 `/api/packs/admin/openPacksForUser/${selectedUser._id}`,
@@ -86,8 +80,6 @@ const AdminDashboardPage = ({ user }) => {
             console.log('New cards:', newCards);
             setOpenedCards(newCards);
             setRevealedCards(Array(newCards.length).fill(false));
-            setFlippedCards(Array(newCards.length).fill(false)); // all cards start unflipped (show front)
-            // Decrement the selected user's pack count
             setUsersWithPacks((prev) =>
                 prev.map((u) =>
                     u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
@@ -101,7 +93,7 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // Reveal cards sequentially (one per second)
+    // Reveal cards sequentially (1 second delay per card)
     const revealCardSequentially = (index) => {
         if (index >= openedCards.length) {
             setIsOpeningAnimation(false);
@@ -118,7 +110,7 @@ const AdminDashboardPage = ({ user }) => {
         }, 1000);
     };
 
-    // Remove delay: when video ends, immediately start sequential reveal
+    // When the pack-opening video ends, remove overlay immediately and start reveal.
     const handleVideoEnd = () => {
         if (fallbackTimerRef.current) {
             clearTimeout(fallbackTimerRef.current);
@@ -129,7 +121,7 @@ const AdminDashboardPage = ({ user }) => {
         revealCardSequentially(0);
     };
 
-    // Fallback: if no card is revealed after 4 seconds, reveal them all.
+    // Fallback to reveal all cards after 4 seconds if reveal hasn't started.
     useEffect(() => {
         if (
             openedCards.length > 0 &&
@@ -145,24 +137,16 @@ const AdminDashboardPage = ({ user }) => {
         }
     }, [openedCards, revealedCards, sequentialRevealStarted]);
 
-    // Toggle flip state of a card upon click.
-    const handleFlipCard = (index) => {
-        setFlippedCards((prev) => {
-            const updated = [...prev];
-            updated[index] = !updated[index];
-            return updated;
-        });
-    };
-
     const handleResetPack = () => {
         console.log('Resetting pack state');
         setOpenedCards([]);
         setRevealedCards([]);
-        setFlippedCards([]);
         setIsOpeningAnimation(false);
     };
 
-    // Note: We have removed the loading spinner entirely from this page.
+    // We have removed the loading spinner from this page.
+    // (If loading and no cards have been opened, nothing is rendered.)
+    if (loading && openedCards.length === 0) return null;
 
     return (
         <div className="dashboard-container">
@@ -174,7 +158,7 @@ const AdminDashboardPage = ({ user }) => {
                         autoPlay
                         playsInline
                         controls={false}
-                        onEnded={handleVideoEnd}  // Immediately trigger reveal; no extra delay.
+                        onEnded={handleVideoEnd} // No extra delay; trigger immediately.
                         onLoadedData={() => console.log('Video loaded')}
                         onError={(e) => console.error('Video error:', e)}
                     />
@@ -257,30 +241,8 @@ const AdminDashboardPage = ({ user }) => {
                             <div
                                 key={i}
                                 className={`card-wrapper ${revealedCards[i] ? 'visible' : 'hidden'}`}
-                                onClick={() => handleFlipCard(i)}
-                                style={{ cursor: 'pointer' }}
                             >
-                                {flippedCards[i] ? (
-                                    // When flipped, show the card back image.
-                                    <img
-                                        src="/images/card-back-placeholder.png"
-                                        alt="Card Back"
-                                        style={{
-                                            width: '300px',
-                                            height: '450px',
-                                            objectFit: 'cover',
-                                        }}
-                                    />
-                                ) : (
-                                    // Otherwise, show the BaseCard front.
-                                    <BaseCard
-                                        name={card.name}
-                                        image={card.imageUrl}
-                                        description={card.flavorText}
-                                        rarity={card.rarity}
-                                        mintNumber={card.mintNumber}
-                                    />
-                                )}
+                                <FlipCard card={card} />
                             </div>
                         ))}
                     </div>
