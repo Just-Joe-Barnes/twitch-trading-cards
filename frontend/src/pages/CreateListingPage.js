@@ -6,12 +6,30 @@ import BaseCard from '../components/BaseCard';
 import { useNavigate } from 'react-router-dom';
 import "../styles/CreateListingPage.css";
 
+/*
+  CreateListingPage:
+  - Fetches the logged-in user's collection.
+  - Provides filtering and sorting options:
+      • Search by card name.
+      • Filter by rarity.
+      • Sort by name, mint number, rarity, or acquisition date.
+  - Displays the collection in a fixed grid:
+      • 4 cards per row.
+      • Fixed container height (showing about 2 rows; vertical scrolling if more).
+  - The collection container appears above a listing preview container.
+  - An instructional paragraph explains the page.
+  - When a card is selected, it is highlighted and a listing preview appears.
+  - The user can then click the "List This Card" button to submit the listing.
+*/
+
 const CreateListingPage = () => {
     const [collection, setCollection] = useState([]);
     const [filteredCollection, setFilteredCollection] = useState([]);
     const [selectedCard, setSelectedCard] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Filter/sort states
     const [search, setSearch] = useState('');
     const [rarityFilter, setRarityFilter] = useState('');
     const [sortOption, setSortOption] = useState('name');
@@ -19,7 +37,7 @@ const CreateListingPage = () => {
 
     const navigate = useNavigate();
 
-    // Fetch user profile and collection on mount.
+    // Fetch user profile and collection on mount
     useEffect(() => {
         const fetchCollection = async () => {
             try {
@@ -36,11 +54,11 @@ const CreateListingPage = () => {
         fetchCollection();
     }, []);
 
-    // Update filtered collection whenever collection or filters change.
+    // Update filtered collection whenever filters or collection change
     useEffect(() => {
         let filtered = [...collection];
 
-        // Search filter (by name)
+        // Search filter by name
         if (search) {
             filtered = filtered.filter(card =>
                 card.name.toLowerCase().includes(search.toLowerCase())
@@ -54,7 +72,7 @@ const CreateListingPage = () => {
             );
         }
 
-        // Sorting
+        // Sorting logic
         filtered.sort((a, b) => {
             if (sortOption === 'mintNumber') {
                 const aNum = parseInt(a.mintNumber, 10);
@@ -65,13 +83,13 @@ const CreateListingPage = () => {
                     ? a.name.localeCompare(b.name)
                     : b.name.localeCompare(a.name);
             } else if (sortOption === 'rarity') {
-                // Assume a fixed ordering by rarity if needed (or use index from a rarities array)
-                const rarities = ['basic', 'common', 'standard', 'uncommon', 'rare', 'epic', 'legendary', 'mythic', 'unique', 'divine'];
-                const aIndex = rarities.indexOf(a.rarity.toLowerCase());
-                const bIndex = rarities.indexOf(b.rarity.toLowerCase());
+                // Using a fixed ordering array for rarities
+                const rarityOrder = ['basic', 'common', 'standard', 'uncommon', 'rare', 'epic', 'legendary', 'mythic', 'unique', 'divine'];
+                const aIndex = rarityOrder.indexOf(a.rarity.toLowerCase());
+                const bIndex = rarityOrder.indexOf(b.rarity.toLowerCase());
                 return sortOrder === 'asc' ? aIndex - bIndex : bIndex - aIndex;
             } else if (sortOption === 'acquiredAt') {
-                // Assuming acquiredAt is a valid date string
+                // Assuming each card has an acquiredAt property (ISO date string)
                 return sortOrder === 'asc'
                     ? new Date(a.acquiredAt) - new Date(b.acquiredAt)
                     : new Date(b.acquiredAt) - new Date(a.acquiredAt);
@@ -82,10 +100,12 @@ const CreateListingPage = () => {
         setFilteredCollection(filtered);
     }, [collection, search, rarityFilter, sortOption, sortOrder]);
 
+    // Handle card selection
     const handleCardSelect = (card) => {
         setSelectedCard(card);
     };
 
+    // Submit the selected card as a new listing
     const handleListCard = async () => {
         if (!selectedCard) return;
         setIsSubmitting(true);
@@ -98,6 +118,7 @@ const CreateListingPage = () => {
                 },
                 body: JSON.stringify({ card: selectedCard }),
             });
+
             if (res.ok) {
                 alert('Card listed on the market successfully!');
                 navigate('/market');
@@ -119,13 +140,11 @@ const CreateListingPage = () => {
         <div className="create-listing-page">
             <h1 className="page-title">Create a Market Listing</h1>
             <p className="info-text">
-                This page allows you to list a card from your collection on the market.
-                Use the filters below to narrow down your collection. Click on a card to select it,
-                then preview your listing and submit.
+                Use this page to list a card from your collection on the market. First, use the filters below to search and sort your collection. Then, select a card to preview your listing, and finally click "List This Card" to post your listing.
             </p>
 
-            {/* Filters Section */}
-            <div className="create-listing-filters">
+            {/* Filters & Sorting Controls */}
+            <div className="listing-filters">
                 <input
                     type="text"
                     placeholder="Search by card name..."
@@ -183,7 +202,7 @@ const CreateListingPage = () => {
                 )}
             </div>
 
-            {/* Listing Preview Section */}
+            {/* Listing Preview */}
             <div className="listing-preview-container">
                 <h2 className="preview-heading">Listing Preview</h2>
                 {selectedCard ? (

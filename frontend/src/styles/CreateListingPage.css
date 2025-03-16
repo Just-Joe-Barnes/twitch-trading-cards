@@ -34,8 +34,8 @@
     line-height: 1.5;
 }
 
-/* Filters Section */
-.create-listing-filters {
+/* Filters & Sorting */
+.listing-filters {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -43,8 +43,8 @@
     margin-bottom: 2rem;
 }
 
-    .create-listing-filters input[type="text"],
-    .create-listing-filters select {
+    .listing-filters input[type="text"],
+    .listing-filters select {
         padding: 0.75rem 1rem;
         border: 1px solid var(--border-dark);
         border-radius: 8px;
@@ -55,7 +55,7 @@
         width: 240px;
     }
 
-        .create-listing-filters input[type="text"]::placeholder {
+        .listing-filters input[type="text"]::placeholder {
             color: rgba(255, 255, 255, 0.6);
         }
 
@@ -66,7 +66,7 @@
     padding: 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-    margin-bottom: 2rem;
+    margin: 0 auto 2rem;
 }
 
 .collection-heading {
@@ -74,16 +74,15 @@
     margin-bottom: 1rem;
 }
 
-/* Collection Grid: 4 cards per row; fixed height for 2 rows; vertical scrolling */
+/* Collection Grid: exactly 4 columns per row, fixed height (approx. 2 rows) */
 .collection-grid {
-
-    margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
-    max-height: 480px; /* Adjust based on card height plus gap */
+    max-height: 480px; /* Adjust as needed for 2 rows */
     overflow-y: auto;
     padding: 1rem;
+    margin: 0 auto;
 }
 
 /* Card Items in Grid */
@@ -108,8 +107,7 @@
 /* Listing Preview Container */
 .listing-preview-container {
     width: 60vw;
-    margin: 0 auto;
-    /* Retain other styling properties */
+    margin: 0 auto 2rem;
     background: var(--surface-dark);
     padding: 1.5rem;
     border-radius: var(--border-radius);
@@ -126,7 +124,7 @@
     margin-bottom: 1.5rem;
 }
 
-/* Submit Button */
+/* List Card Button */
 .list-card-button {
     padding: 0.75rem 1.5rem;
     font-size: 1rem;
