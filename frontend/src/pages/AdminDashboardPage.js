@@ -12,7 +12,6 @@ const AdminDashboardPage = ({ user }) => {
     const [usersWithPacks, setUsersWithPacks] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
-
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
     const [openedCards, setOpenedCards] = useState([]);
@@ -37,7 +36,6 @@ const AdminDashboardPage = ({ user }) => {
 
     useEffect(() => {
         if (!user?.isAdmin) {
-            console.warn('Access denied: Admins only.');
             navigate('/login');
             return;
         }
@@ -114,11 +112,7 @@ const AdminDashboardPage = ({ user }) => {
     };
 
     useEffect(() => {
-        if (
-            openedCards.length > 0 &&
-            !revealedCards.some(Boolean) &&
-            !sequentialRevealStarted
-        ) {
+        if (openedCards.length > 0 && !revealedCards.some(Boolean) && !sequentialRevealStarted) {
             fallbackTimerRef.current = setTimeout(() => {
                 setRevealedCards(Array(openedCards.length).fill(true));
                 setIsOpeningAnimation(false);
@@ -241,7 +235,10 @@ const AdminDashboardPage = ({ user }) => {
                                     style={{ '--rarity-color': getRarityColor(card.rarity) }}
                                 >
                                     <div className="card-back">
-                                        <img src="/images/card-back-placeholder.png" alt="Card Back" />
+                                        <img
+                                            src={process.env.PUBLIC_URL + "/images/card-back-placeholder.png"}
+                                            alt="Card Back"
+                                        />
                                     </div>
                                     <div className="card-front">
                                         <BaseCard
