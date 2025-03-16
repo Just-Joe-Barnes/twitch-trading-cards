@@ -1,9 +1,9 @@
 ﻿// src/pages/AdminDashboardPage.js
 import React, { useEffect, useState, useRef } from 'react';
 import { fetchWithAuth } from '../utils/api';
+import BaseCard from '../components/BaseCard';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/LoadingSpinner';
-import FlippableCard from '../components/FlippableCard';
 import '../styles/AdminDashboardPage.css';
 
 const AdminDashboardPage = ({ user }) => {
@@ -17,6 +17,7 @@ const AdminDashboardPage = ({ user }) => {
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
     const [openedCards, setOpenedCards] = useState([]);
     const [revealedCards, setRevealedCards] = useState([]);
+    // New flag: whether sequential reveal has started
     const [sequentialRevealStarted, setSequentialRevealStarted] = useState(false);
 
     const fallbackTimerRef = useRef(null);
@@ -114,6 +115,7 @@ const AdminDashboardPage = ({ user }) => {
             fallbackTimerRef.current = null;
         }
         console.log('Video ended. Starting sequential reveal...');
+        // Set flag so fallback effect won’t override the reveal
         setSequentialRevealStarted(true);
         revealCardSequentially(0);
     };
@@ -154,7 +156,7 @@ const AdminDashboardPage = ({ user }) => {
                         autoPlay
                         playsInline
                         controls={false}
-                        onEnded={handleVideoEnd}
+                        onEnded={() => setTimeout(handleVideoEnd, 500)}
                         onLoadedData={() => console.log('Video loaded')}
                         onError={(e) => console.error('Video error:', e)}
                     />
@@ -235,7 +237,13 @@ const AdminDashboardPage = ({ user }) => {
                                 key={i}
                                 className={`card-wrapper ${revealedCards[i] ? 'visible' : 'hidden'}`}
                             >
-                                <FlippableCard card={card} revealed={revealedCards[i]} />
+                                <BaseCard
+                                    name={card.name}
+                                    image={card.imageUrl}
+                                    description={card.flavorText}
+                                    rarity={card.rarity}
+                                    mintNumber={card.mintNumber}
+                                />
                             </div>
                         ))}
                     </div>
