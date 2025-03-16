@@ -10,15 +10,18 @@
     --transition: all 0.3s ease;
 }
 
+/* Page Container */
 .create-listing-container {
-    padding: 6rem 1.5rem 2rem;
+    padding: 6rem 2rem;
     background: var(--background-dark);
     min-height: 100vh;
     color: var(--text-primary);
     text-align: center;
+    max-width: 900px;
+    margin: 0 auto;
 }
 
-    .create-listing-container h2 {
+    .create-listing-container h1 {
         font-size: 2rem;
         margin-bottom: 1rem;
     }
@@ -31,13 +34,14 @@
 
 /* Collection Grid */
 .collection-grid {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 1rem;
     justify-content: center;
     margin-bottom: 2rem;
 }
 
+/* Individual Card */
 .card-item {
     cursor: pointer;
     transition: var(--transition);
@@ -63,12 +67,19 @@
     background: var(--surface-dark);
     border-radius: var(--border-radius);
     text-align: center;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-    .listing-preview h3 {
+    .listing-preview h2 {
         font-size: 1.5rem;
         margin-bottom: 1rem;
     }
+
+.preview-card {
+    margin-bottom: 1rem;
+}
 
 /* Submit Button */
 .submit-button {
