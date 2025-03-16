@@ -7,40 +7,40 @@ import '../styles/AdminDashboardPage.css';
 
 /*
   AdminDashboardPage:
-  - Lists users with unopened packs.
-  - Allows admin to open a pack for a selected user (pack-opening animation).
-  - Reveals cards sequentially, each starting face down.
-  - Hover glow only for face-down cards (using rarity color).
-  - One-way flip on click (face down -> face up, locked).
-  - If face up, remove border color from the container + allow overflow 
-    so edges/corners aren’t clipped when hovered in 3D.
+  - Lists users with unopened packs
+  - Plays pack-opening animation
+  - Cards appear face down (300x450 forced for the back)
+  - The front can exceed 300x450 in face-up mode; we allow overflow on the wrapper
+  - One-way flip: once face-up, further clicks do nothing
+  - Glow on face-down hover only
+  - No spinner or extra delay after the animation
 */
 
 const AdminDashboardPage = ({ user }) => {
     const navigate = useNavigate();
 
-    // Basic user state
+    // Basic user list states
     const [usersWithPacks, setUsersWithPacks] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Internal loading logic (no spinner displayed)
+    // Internal loading (no spinner displayed)
     const [loading, setLoading] = useState(true);
-    // Controls the pack-opening overlay
+    // Pack-opening overlay
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
 
-    // Cards + reveal states
+    // Cards & reveal states
     const [openedCards, setOpenedCards] = useState([]);
-    // revealedCards: fade-in => false = hidden, true = visible
+    // revealedCards => fade-in: false=hidden, true=visible
     const [revealedCards, setRevealedCards] = useState([]);
-    // faceDownCards: true => back shown, false => front shown
+    // faceDownCards => false=face up, true=face down
     const [faceDownCards, setFaceDownCards] = useState([]);
 
     // For sequential reveal
     const [sequentialRevealStarted, setSequentialRevealStarted] = useState(false);
     const fallbackTimerRef = useRef(null);
 
-    // Rarity color map
+    // Rarity => color map for glow
     const cardRarities = {
         Basic: '#8D8D8D',
         Common: '#64B5F6',
@@ -53,10 +53,9 @@ const AdminDashboardPage = ({ user }) => {
         Unique: 'black',
         Divine: 'white',
     };
-
     const getRarityColor = (rarity) => cardRarities[rarity] || '#fff';
 
-    // On mount, verify admin + fetch user data
+    // On mount, verify admin & fetch user data
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -77,18 +76,18 @@ const AdminDashboardPage = ({ user }) => {
         fetchData();
     }, [user, navigate]);
 
-    // Filter user list by search query
+    // Filter user list by search
     const filteredUsers = usersWithPacks.filter((u) =>
         u.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Toggle user selection from the table
     const toggleUserSelection = (u) => {
         setSelectedUser((prev) => (prev?._id === u._id ? null : u));
     };
 
     // Open a pack for the selected user
-    // All cards start face down + hidden
+    // - All cards start face down
+    // - revealedCards => false
     const openPackForUser = async () => {
         if (!selectedUser) return;
         setLoading(true);
@@ -109,7 +108,8 @@ const AdminDashboardPage = ({ user }) => {
             setOpenedCards(newCards);
             setRevealedCards(Array(newCards.length).fill(false)); // fade-in
             setFaceDownCards(Array(newCards.length).fill(true));  // face-down
-            // Decrement user’s pack count
+
+            // Decrement the user's pack count
             setUsersWithPacks((prev) =>
                 prev.map((u) =>
                     u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
@@ -123,7 +123,7 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // Reveal cards one by one
+    // Reveal cards sequentially
     const revealCardSequentially = (index) => {
         if (index >= openedCards.length) {
             setIsOpeningAnimation(false);
@@ -140,7 +140,7 @@ const AdminDashboardPage = ({ user }) => {
         }, 1000);
     };
 
-    // Immediately remove overlay + start reveal on video end
+    // Immediately remove overlay & start reveal
     const handleVideoEnd = () => {
         console.log('Video ended. Starting sequential reveal...');
         setIsOpeningAnimation(false);
@@ -164,17 +164,17 @@ const AdminDashboardPage = ({ user }) => {
         }
     }, [openedCards, revealedCards, sequentialRevealStarted]);
 
-    // One-way flip: if card is face down, flip it. Then further clicks do nothing
+    // One-way flip on click
     const handleFlipCard = (i) => {
         if (!faceDownCards[i]) return; // already face up
         setFaceDownCards((prev) => {
             const updated = [...prev];
-            updated[i] = false; // face up now
+            updated[i] = false; // face up
             return updated;
         });
     };
 
-    // Reset all
+    // Reset pack state
     const handleResetPack = () => {
         console.log('Resetting pack state');
         setOpenedCards([]);
@@ -235,7 +235,7 @@ const AdminDashboardPage = ({ user }) => {
                     </table>
                 </div>
 
-                {/* Open Pack Section */}
+                {/* Pack Opening Section */}
                 <div className="selected-user-section">
                     {selectedUser && (
                         <>
@@ -263,7 +263,7 @@ const AdminDashboardPage = ({ user }) => {
                     </div>
                 </div>
 
-                {/* Opened Cards Section */}
+                {/* Opened Cards */}
                 <div className="opened-cards">
                     <h2>Opened Cards</h2>
                     <div className="cards-container">
@@ -282,14 +282,12 @@ const AdminDashboardPage = ({ user }) => {
                                 >
                                     <div className="card-content">
                                         <div className="card-inner">
-                                            {/* Force 300x450 back, no border color on face-up */}
                                             <div className="card-back">
                                                 <img
                                                     src="/images/card-back-placeholder.png"
                                                     alt="Card Back"
                                                 />
                                             </div>
-                                            {/* The front (BaseCard) - margin removed + overflow allowed in face-up */}
                                             <div className="card-front">
                                                 <BaseCard
                                                     name={card.name}

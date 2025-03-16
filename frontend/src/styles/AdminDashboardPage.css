@@ -228,13 +228,16 @@
     flex-wrap: wrap;
     gap: 2rem;
     justify-content: center;
+    /* Overflow visible to allow front to exceed container if needed */
+    overflow: visible;
 }
 
-/* The main card wrapper with fade-in + flip states */
 .card-wrapper {
     transition: opacity 0.6s ease, transform 0.6s ease !important;
     position: relative;
     cursor: pointer;
+    /* Let the wrapper overflow too, so face-up card won't be clipped */
+    overflow: visible !important;
 }
 
     .card-wrapper.hidden {
@@ -248,7 +251,7 @@
         transform: translateY(0) !important;
     }
 
-/* Flip states: face-down => show back, face-up => show front */
+/* face-down => show back, face-up => show front */
 .face-down .card-inner {
     transform: rotateY(0deg);
 }
@@ -257,19 +260,20 @@
     transform: rotateY(180deg);
 }
 
-/* Hover glow only if face down */
+/* Rarity glow on hover only if face-down */
 .card-wrapper.face-down:hover {
     box-shadow: 0 0 15px 5px var(--rarity-color);
 }
 
-/* Card Content forced to 300x450, so front/back align exactly */
+/* card-content forced 300x450 */
 .card-content {
     width: 300px;
     height: 450px;
     position: relative;
     perspective: 1000px;
-    /* By default, no border color. If you had a border, remove it here. */
+    /* No border color */
     border: none !important;
+    overflow: visible !important; /* ensure the front can exceed container */
 }
 
 /* 3D flipping container */
@@ -279,10 +283,10 @@
     transform-style: preserve-3d;
     transition: transform 0.6s ease;
     transform-origin: center center;
-    overflow: hidden; /* default for face-down */
+    overflow: hidden; /* for face-down; we override for face-up below */
 }
 
-/* card-back, card-front fill the card-content area */
+/* card-back and card-front fill the container */
 .card-back,
 .card-front {
     position: absolute;
@@ -292,10 +296,10 @@
     height: 100%;
     backface-visibility: hidden;
     border-radius: var(--border-radius);
-    border: none !important; /* remove border color entirely */
+    border: none !important;
 }
 
-/* Force the back to 300x450 */
+/* The back is forced 300x450 exactly */
 .card-back {
     transform: rotateY(0deg);
     z-index: 2;
@@ -314,38 +318,24 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
     z-index: 1;
-    border: none !important;
 }
 
-/* 
-   Overwrite any margin on the front's .card-container 
-   from CardComponents only when face-up
-   + allow overflow so corners/edges aren't clipped.
-*/
+/* Remove margin from BaseCard's .card-container if it exists, face up only */
 .card-wrapper.face-up .card-front .card-container {
     margin: 0 !important;
 }
 
 /* 
-   Let the card-inner overflow be visible in face-up 
-   so no clipping if there's a 3D effect on the front
+   For face-up, let the card-inner overflow be visible so corners won't clip.
 */
 .card-wrapper.face-up .card-inner {
     overflow: visible !important;
 }
 
 /* 
-   If you want to remove border color entirely when face-up, 
-   you can also do this:
-*/
-.card-wrapper.face-up .card-content {
-    border: none !important;
-}
-
-/* 
-   Pack-opening overlay styling remains the same
+   Pack-opening overlay, unchanged...
 */
 .pack-opening-overlay {
     position: fixed;
