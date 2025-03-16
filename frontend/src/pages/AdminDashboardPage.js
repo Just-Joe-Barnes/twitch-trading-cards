@@ -114,10 +114,9 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // Reveal cards sequentially
+    // Reveal cards sequentially with a reduced delay (300ms)
     const revealCardSequentially = (index) => {
         if (index >= openedCards.length) {
-            setIsOpeningAnimation(false);
             return;
         }
         setTimeout(() => {
@@ -128,16 +127,17 @@ const AdminDashboardPage = ({ user }) => {
                 return updated;
             });
             revealCardSequentially(index + 1);
-        }, 1000);
+        }, 300);
     };
 
-    // On video end => start sequential reveal
+    // On video end => immediately remove overlay and start sequential reveal
     const handleVideoEnd = () => {
         if (fallbackTimerRef.current) {
             clearTimeout(fallbackTimerRef.current);
             fallbackTimerRef.current = null;
         }
         console.log('Video ended. Starting sequential reveal...');
+        setIsOpeningAnimation(false); // remove overlay immediately
         setSequentialRevealStarted(true);
         revealCardSequentially(0);
     };
@@ -187,7 +187,7 @@ const AdminDashboardPage = ({ user }) => {
                         autoPlay
                         playsInline
                         controls={false}
-                        onEnded={handleVideoEnd}  // Removed extra delay for immediate reveal
+                        onEnded={handleVideoEnd}  // Immediate overlay removal on video end
                         onLoadedData={() => console.log('Video loaded')}
                         onError={(e) => console.error('Video error:', e)}
                     />
@@ -268,8 +268,7 @@ const AdminDashboardPage = ({ user }) => {
                         {openedCards.map((card, i) => (
                             <div
                                 key={i}
-                                className={`card-wrapper ${revealedCards[i] ? 'visible' : 'hidden'} ${faceDownCards[i] ? 'face-down' : 'face-up'
-                                    }`}
+                                className={`card-wrapper ${revealedCards[i] ? 'visible' : 'hidden'} ${faceDownCards[i] ? 'face-down' : 'face-up'}`}
                                 style={{ '--rarity-color': getRarityColor(card.rarity) }}
                                 onClick={() => handleFlipCard(i)}
                             >
