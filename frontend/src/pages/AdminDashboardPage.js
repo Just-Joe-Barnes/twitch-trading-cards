@@ -3,7 +3,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { fetchWithAuth } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import { useNavigate } from 'react-router-dom';
-import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/AdminDashboardPage.css';
 
 const AdminDashboardPage = ({ user }) => {
@@ -13,13 +12,17 @@ const AdminDashboardPage = ({ user }) => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
+    // We'll still use loading internally, but we won't display any spinner on this page.
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
-    const [openedCards, setOpenedCards] = useState([]);
-    const [revealedCards, setRevealedCards] = useState([]);
-    // New flag: whether sequential reveal has started
-    const [sequentialRevealStarted, setSequentialRevealStarted] = useState(false);
 
+    // Cards from an opened pack
+    const [openedCards, setOpenedCards] = useState([]);
+    // revealedCards: controls sequential fade‑in (false = hidden, true = visible)
+    const [revealedCards, setRevealedCards] = useState([]);
+
+    // Sequential reveal flag and fallback timer
+    const [sequentialRevealStarted, setSequentialRevealStarted] = useState(false);
     const fallbackTimerRef = useRef(null);
 
     const cardRarities = [
@@ -35,6 +38,12 @@ const AdminDashboardPage = ({ user }) => {
         { rarity: 'Divine', color: 'white' },
     ];
 
+    const getRarityColor = (rarity) => {
+        const found = cardRarities.find((r) => r.rarity.toLowerCase() === rarity.toLowerCase());
+        return found ? found.color : '#fff';
+    };
+
+    // Fetch users with packs on mount
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -55,7 +64,7 @@ const AdminDashboardPage = ({ user }) => {
         fetchData();
     }, [user, navigate]);
 
-    const filteredUsers = usersWithPacks.filter(u =>
+    const filteredUsers = usersWithPacks.filter((u) =>
         u.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -67,19 +76,16 @@ const AdminDashboardPage = ({ user }) => {
         if (!selectedUser) return;
         setLoading(true);
         setIsOpeningAnimation(true);
-        // Reset sequential flag and card states
-        setSequentialRevealStarted(false);
         setOpenedCards([]);
         setRevealedCards([]);
+        setSequentialRevealStarted(false);
         try {
-            const res = await fetchWithAuth(`/api/packs/admin/openPacksForUser/${selectedUser._id}`, {
-                method: 'POST',
-            });
+            const res = await fetchWithAuth(`/api/packs/admin/openPacksForUser/${selectedUser._id}`, { method: 'POST' });
             const { newCards } = res;
             console.log('New cards:', newCards);
             setOpenedCards(newCards);
             setRevealedCards(Array(newCards.length).fill(false));
-            // Decrement the selected user's pack count.
+            // Decrement selected user's pack count
             setUsersWithPacks((prev) =>
                 prev.map((u) => (u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u))
             );
@@ -91,7 +97,7 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // Recursive function to reveal cards one by one.
+    // Reveal cards sequentially
     const revealCardSequentially = (index) => {
         if (index >= openedCards.length) {
             setIsOpeningAnimation(false);
@@ -108,25 +114,17 @@ const AdminDashboardPage = ({ user }) => {
         }, 1000);
     };
 
-    // When video ends, clear fallback and start sequential reveal.
+    // Remove overlay immediately when video ends and start reveal
     const handleVideoEnd = () => {
-        if (fallbackTimerRef.current) {
-            clearTimeout(fallbackTimerRef.current);
-            fallbackTimerRef.current = null;
-        }
         console.log('Video ended. Starting sequential reveal...');
-        // Set flag so fallback effect won’t override the reveal
+        setIsOpeningAnimation(false);
         setSequentialRevealStarted(true);
         revealCardSequentially(0);
     };
 
-    // Fallback: if after 4 seconds no card is revealed and sequential reveal hasn't started, reveal them all.
+    // Fallback reveal if no card is revealed after 4 seconds
     useEffect(() => {
-        if (
-            openedCards.length > 0 &&
-            !revealedCards.some(Boolean) &&
-            !sequentialRevealStarted
-        ) {
+        if (openedCards.length > 0 && !revealedCards.some(Boolean) && !sequentialRevealStarted) {
             fallbackTimerRef.current = setTimeout(() => {
                 console.log('Fallback: revealing all cards after 4s');
                 setRevealedCards(Array(openedCards.length).fill(true));
@@ -143,8 +141,7 @@ const AdminDashboardPage = ({ user }) => {
         setIsOpeningAnimation(false);
     };
 
-    // Only show global spinner when loading and no cards have been opened yet.
-    if (loading && openedCards.length === 0) return <LoadingSpinner />;
+    // Removed the spinner from display completely on this page
 
     return (
         <div className="dashboard-container">
@@ -156,9 +153,7 @@ const AdminDashboardPage = ({ user }) => {
                         autoPlay
                         playsInline
                         controls={false}
-                        onEnded={() => setTimeout(handleVideoEnd, 500)}
-                        onLoadedData={() => console.log('Video loaded')}
-                        onError={(e) => console.error('Video error:', e)}
+                        onEnded={handleVideoEnd}
                     />
                 </div>
             )}
@@ -228,7 +223,7 @@ const AdminDashboardPage = ({ user }) => {
                     </div>
                 </div>
 
-                {/* Opened Cards */}
+                {/* Opened Cards Section */}
                 <div className="opened-cards">
                     <h2>Opened Cards</h2>
                     <div className="cards-container">
