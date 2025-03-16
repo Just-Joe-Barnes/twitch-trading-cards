@@ -222,6 +222,8 @@
     gap: 2rem;
     padding: 1rem;
     justify-content: center;
+    justify-items: center; /* Added for horizontal centering */
+    align-items: start; /* Ensure proper vertical alignment */
 }
 
 .card-wrapper {
@@ -230,6 +232,7 @@
     height: 450px;
     width: 300px;
     margin: 0 auto;
+    position: relative; /* Ensure proper positioning */
 }
 
     .card-wrapper.hidden {
@@ -273,12 +276,14 @@
     align-items: center;
     justify-content: center;
     padding: 1rem;
+    position: relative; /* Add for proper glow positioning */
 }
 
     .card-back img {
         width: 100%;
         height: 100%;
-        object-fit: contain;
+        object-fit: cover; /* Changed from contain for better image fill */
+        border-radius: 16px;
     }
 
 .card-wrapper:hover .card-back::before {
