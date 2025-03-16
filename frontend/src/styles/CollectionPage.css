@@ -8,6 +8,7 @@
     --border-dark: rgba(255, 255, 255, 0.12);
 }
 
+/* Reset body and global font */
 body {
     margin: 0;
     padding: 0;
@@ -15,7 +16,11 @@ body {
     background: var(--background-dark);
 }
 
+/* Top-level container: use flex column to center children */
 .collection-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: 4rem 1.5rem 2rem;
     max-width: 1400px;
     margin: 0 auto;
@@ -27,7 +32,6 @@ body {
         font-size: 2.25rem;
         font-weight: 500;
         color: var(--text-primary);
-        /* Adjusted margin for more breathing room */
         margin: 2rem 0 2.5rem;
         position: relative;
     }
@@ -44,11 +48,10 @@ body {
             border-radius: 2px;
         }
 
-/* Catalogue description paragraph styling */
+/* Catalogue Description */
 .catalogue-description {
     text-align: center;
     font-size: 1.1rem;
-    /* Slightly more space below */
     margin-bottom: 2.5rem;
     color: var(--text-primary);
 }
@@ -57,9 +60,12 @@ body {
 .filters {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 1.25rem;
-    /* Increase the bottom margin further */
     margin-bottom: 3rem;
+    /* Optional: limit width so filters don’t span too wide */
+    max-width: 800px;
+    width: 100%;
 }
 
     .filters input[type="text"],
@@ -120,14 +126,14 @@ body {
         color: rgba(255, 255, 255, 0.6);
     }
 
-/* Featured controls container styling */
+/* Featured controls (if used) */
 .featured-controls {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-/* Clear Featured Cards button styling */
+/* Clear Featured Cards button */
 .clear-featured-button {
     padding: 8px 16px;
     background-color: var(--brand-primary);
@@ -142,7 +148,7 @@ body {
         background-color: var(--brand-secondary);
     }
 
-/* Cards Grid */
+/* Cards Grid Container */
 .cards-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -152,6 +158,8 @@ body {
     border: 1px solid var(--border-dark);
     margin-bottom: 2rem;
     position: relative;
+    width: 100%;
+    max-width: 1200px;
 }
 
     .cards-container::before {
@@ -163,7 +171,7 @@ body {
         pointer-events: none;
     }
 
-/* Card Styling (used by BaseCard) */
+/* Card Styling (BaseCard usage) */
 .card {
     background: var(--surface-dark);
     border-radius: 12px;
@@ -178,7 +186,7 @@ body {
         box-shadow: 0 4px 24px rgba(219, 136, 219, 0.1);
     }
 
-/* Selection Indicator for Selected Cards */
+/* Selection indicator for selected cards */
 .card-item.selected {
     border: 2px solid var(--brand-primary) !important;
     position: relative;
@@ -203,7 +211,7 @@ body {
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
 
-/* "Featured" badge in top-left corner of featured cards */
+/* "Featured" badge */
 .featured-badge {
     position: absolute;
     top: 8px;
@@ -216,10 +224,10 @@ body {
     padding: 4px 8px;
     border-radius: 4px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    z-index: 10; /* Ensures the badge is on top of everything */
+    z-index: 10;
 }
 
-/* Pop / Highlight animation on double-click */
+/* Double-click highlight animation */
 .double-clicked {
     animation: highlightPop 1s ease;
     z-index: 2;
@@ -252,13 +260,12 @@ body {
     }
 }
 
-/* Horizontal Card Rarity Key with background like cards grid */
+/* Horizontal Card Rarity Key */
 .card-rarity-key-horizontal {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 1rem;
-    /* Increased top/bottom margin */
     margin: 2.5rem 0;
     background: var(--surface-darker);
     padding: 1rem 2rem;
