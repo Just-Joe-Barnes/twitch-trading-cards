@@ -213,8 +213,9 @@
     padding: 1rem;
     border-radius: var(--border-radius);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-    /* Increase the min-height to accommodate taller cards */
-    min-height: 1000px; /* Adjust as needed */
+    /* Increase this so your 300×450 cards (plus 3D transforms) can fit. 
+     Adjust to your needs. */
+    min-height: 1000px;
 }
 
     .opened-cards h2 {
@@ -229,7 +230,7 @@
     flex-wrap: wrap;
     gap: 2rem;
     justify-content: center;
-    align-items: flex-start; /* Ensures cards align at the top and can expand downward */
+    align-items: flex-start; /* ensures cards start at the top */
 }
 
 /* Card wrapper: fade-in and flipping states */

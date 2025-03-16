@@ -1,28 +1,26 @@
 /* src/styles/FlippingCard.css */
 
-/* The main flipping card container is 300x450. */
 .card {
     width: 300px;
     height: 450px;
-    perspective: 1000px;
+    perspective: 1000px; /* needed for the flip */
     position: relative;
-    overflow: hidden;
+    overflow: visible; /* can be hidden or visible */
     cursor: pointer;
     transition: opacity 0.6s ease, transform 0.6s ease;
-    flex-shrink: 0; /* Prevent flex layouts from shrinking the card */
+    flex-shrink: 0; /* so flex layouts don’t shrink the card */
+    transform-style: preserve-3d; /* preserve 3D for nested transforms */
 }
 
-/* The flipping inner wrapper */
 .card-inner {
     width: 100%;
     height: 100%;
-    position: relative;
-    transition: transform 0.6s ease;
     transform-style: preserve-3d;
+    transition: transform 0.6s ease;
     transform-origin: center center;
 }
 
-/* Front & Back faces fill the 300x450 parent */
+/* The two faces fill the .card container */
 .card-face {
     position: absolute;
     width: 100%;
@@ -30,18 +28,16 @@
     backface-visibility: hidden;
 }
 
-    /* The front is rotated 180 in face-down mode */
+    .card-face.card-back {
+        z-index: 2; /* top side in face-down mode */
+    }
+
     .card-face.card-front {
         transform: rotateY(180deg);
         z-index: 1;
     }
 
-    /* The back is on top initially (face-down) */
-    .card-face.card-back {
-        z-index: 2;
-    }
-
-/* Face-down => show back, face-up => show front */
+/* Flip states */
 .face-down .card-inner {
     transform: rotateY(0deg);
 }
@@ -50,19 +46,17 @@
     transform: rotateY(180deg);
 }
 
-/* Rarity glow on hover if face-down */
+/* Rarity glow on hover only if face-down */
 .face-down:hover {
     box-shadow: 0 0 15px 5px var(--rarity-color);
 }
 
-/* --- IMPORTANT OVERRIDE --- */
-/* Force BaseCard’s .card-container to fill our 300x450 exactly, 
-   removing its internal margin and any extra transforms. */
+/* --- CRUCIAL OVERRIDE FOR BaseCard --- */
+/* Force the BaseCard's .card-container (from CardComponent.css) to fit 
+   our 300×450 parent, but do NOT override transform so we keep tilt. */
 .card-face.card-front .card-container {
     margin: 0 !important;
     width: 100% !important;
     height: 100% !important;
-    /* Optionally override transform to prevent nested 3D warping: */
-    transform: none !important;
-    perspective: none !important;
+    /* DO NOT override transform/perspective here, so the tilt effect remains */
 }
