@@ -13,7 +13,6 @@ const CreateListingPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate();
 
-    // Fetch user profile & collection on mount.
     useEffect(() => {
         const fetchCollection = async () => {
             try {
@@ -64,55 +63,62 @@ const CreateListingPage = () => {
     if (loading) return <LoadingSpinner />;
 
     return (
-        <div className="create-listing-container">
-            <h1>Create a Market Listing</h1>
-            <p>Select a card from your collection to list:</p>
+        <div className="create-listing-page">
+            <h1 className="page-title">Create a Market Listing</h1>
+            <p className="page-subtitle">Select a card from your collection to list:</p>
 
-            {/* Collection Grid */}
-            <div className="collection-grid">
-                {collection.length === 0 ? (
-                    <p>You have no available cards to list.</p>
-                ) : (
-                    collection.map((card) => (
-                        <div
-                            key={card._id}
-                            className={`card-item ${selectedCard?._id === card._id ? 'selected' : ''}`}
-                            onClick={() => handleCardSelect(card)}
-                        >
-                            <BaseCard
-                                name={card.name}
-                                image={card.imageUrl}
-                                description={card.flavorText}
-                                rarity={card.rarity}
-                                mintNumber={card.mintNumber}
-                            />
-                        </div>
-                    ))
-                )}
-            </div>
-
-            {/* Listing Preview */}
-            {selectedCard && (
-                <div className="listing-preview">
-                    <h2>Listing Preview</h2>
-                    <div className="preview-card">
-                        <BaseCard
-                            name={selectedCard.name}
-                            image={selectedCard.imageUrl}
-                            description={selectedCard.flavorText}
-                            rarity={selectedCard.rarity}
-                            mintNumber={selectedCard.mintNumber}
-                        />
+            <div className="create-listing-layout">
+                {/* Collection Section */}
+                <div className="collection-section">
+                    <h2>Your Collection</h2>
+                    <div className="collection-grid">
+                        {collection.length === 0 ? (
+                            <p>No available cards to list.</p>
+                        ) : (
+                            collection.map((card) => (
+                                <div
+                                    key={card._id}
+                                    className={`listing-card-item ${selectedCard?._id === card._id ? 'selected' : ''}`}
+                                    onClick={() => handleCardSelect(card)}
+                                >
+                                    <BaseCard
+                                        name={card.name}
+                                        image={card.imageUrl}
+                                        description={card.flavorText}
+                                        rarity={card.rarity}
+                                        mintNumber={card.mintNumber}
+                                    />
+                                </div>
+                            ))
+                        )}
                     </div>
-                    <button
-                        className="submit-button"
-                        onClick={handleListCard}
-                        disabled={isSubmitting}
-                    >
-                        {isSubmitting ? 'Submitting...' : 'List This Card'}
-                    </button>
                 </div>
-            )}
+
+                {/* Listing Preview Section */}
+                <div className="preview-section">
+                    <h2>Listing Preview</h2>
+                    {selectedCard ? (
+                        <div className="listing-preview-container">
+                            <BaseCard
+                                name={selectedCard.name}
+                                image={selectedCard.imageUrl}
+                                description={selectedCard.flavorText}
+                                rarity={selectedCard.rarity}
+                                mintNumber={selectedCard.mintNumber}
+                            />
+                            <button
+                                className="list-card-button"
+                                onClick={handleListCard}
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? 'Listing...' : 'List This Card'}
+                            </button>
+                        </div>
+                    ) : (
+                        <p>Select a card to preview.</p>
+                    )}
+                </div>
+            </div>
         </div>
     );
 };

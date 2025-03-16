@@ -1,35 +1,47 @@
-:root {
-    --brand-primary: #db88db;
-    --brand-secondary: #88cddb;
-    --background-dark: #0a0a0a;
-    --surface-dark: #1a1a1a;
-    --surface-darker: #141414;
-    --text-primary: rgba(255, 255, 255, 0.95);
-    --border-dark: rgba(255, 255, 255, 0.12);
-    --border-radius: 16px;
-    --transition: all 0.3s ease;
-}
-
-/* Page Container */
-.create-listing-container {
+/* Unique Styling for Create Listing Page */
+.create-listing-page {
     padding: 6rem 2rem;
     background: var(--background-dark);
     min-height: 100vh;
     color: var(--text-primary);
     text-align: center;
-    max-width: 900px;
+    max-width: 1100px;
     margin: 0 auto;
 }
 
-    .create-listing-container h1 {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-    }
+/* Page Headers */
+.page-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
 
-    .create-listing-container p {
-        font-size: 1.1rem;
-        margin-bottom: 2rem;
-        color: rgba(255, 255, 255, 0.8);
+.page-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Main Layout */
+.create-listing-layout {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+/* Collection Section */
+.collection-section {
+    flex: 2;
+    background: var(--surface-dark);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+    .collection-section h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
     }
 
 /* Collection Grid */
@@ -38,11 +50,13 @@
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 1rem;
     justify-content: center;
-    margin-bottom: 2rem;
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 1rem;
 }
 
 /* Individual Card */
-.card-item {
+.listing-card-item {
     cursor: pointer;
     transition: var(--transition);
     padding: 0.5rem;
@@ -50,40 +64,41 @@
     border: 2px solid transparent;
 }
 
-    .card-item:hover {
+    .listing-card-item:hover {
         transform: scale(1.05);
         border-color: var(--brand-secondary);
     }
 
-    .card-item.selected {
+    .listing-card-item.selected {
         border-color: var(--brand-primary);
         box-shadow: 0 0 15px var(--brand-primary);
     }
 
-/* Listing Preview */
-.listing-preview {
-    margin-top: 2rem;
-    padding: 1.5rem;
+/* Preview Section */
+.preview-section {
+    flex: 1;
     background: var(--surface-dark);
+    padding: 1.5rem;
     border-radius: var(--border-radius);
     text-align: center;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
 }
 
-    .listing-preview h2 {
+    .preview-section h2 {
         font-size: 1.5rem;
         margin-bottom: 1rem;
     }
 
-.preview-card {
-    margin-bottom: 1rem;
+/* Listing Preview Container */
+.listing-preview-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-/* Submit Button */
-.submit-button {
-    margin-top: 1.5rem;
+/* List Card Button */
+.list-card-button {
+    margin-top: 1rem;
     padding: 0.75rem 1.5rem;
     font-size: 1rem;
     background: var(--brand-primary);
@@ -92,20 +107,14 @@
     border-radius: var(--border-radius);
     cursor: pointer;
     transition: var(--transition);
+    width: 100%;
 }
 
-    .submit-button:hover {
+    .list-card-button:hover {
         background: var(--brand-secondary);
     }
 
-    .submit-button:disabled {
+    .list-card-button:disabled {
         background: #555;
         cursor: not-allowed;
     }
-
-/* Error Message */
-.error-message {
-    color: red;
-    margin-top: 1rem;
-    font-size: 1.1rem;
-}
