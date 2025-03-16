@@ -17,7 +17,7 @@
     min-height: 100vh;
     color: var(--text-primary);
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 0 auto; /* Centers the overall page */
     text-align: center;
 }
 
@@ -61,12 +61,12 @@
 
 /* Collection Container */
 .collection-container {
-    width: 60vw;
+    width: 60vw; /* Fixed width of 60% of viewport */
     background: var(--surface-dark);
     padding: 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-    margin: 0 auto 2rem;
+    margin: 0 auto 2rem; /* Centers the container horizontally */
 }
 
 .collection-heading {
@@ -74,15 +74,15 @@
     margin-bottom: 1rem;
 }
 
-/* Collection Grid: exactly 4 columns per row, fixed height (approx. 2 rows) */
+/* Collection Grid: 4 cards per row; fixed height (approx. 2 rows) */
 .collection-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
-    max-height: 480px; /* Adjust as needed for 2 rows */
+    max-height: 480px; /* Adjust height for roughly 2 rows */
     overflow-y: auto;
     padding: 1rem;
-    margin: 0 auto;
+    margin: 0 auto; /* Center the grid within its container */
 }
 
 /* Card Items in Grid */
@@ -106,8 +106,8 @@
 
 /* Listing Preview Container */
 .listing-preview-container {
-    width: 60vw;
-    margin: 0 auto 2rem;
+    width: 60vw; /* Fixed width of 60vw */
+    margin: 0 auto 2rem; /* Center horizontally and add bottom margin */
     background: var(--surface-dark);
     padding: 1.5rem;
     border-radius: var(--border-radius);
@@ -120,8 +120,9 @@
     margin-bottom: 1rem;
 }
 
+/* Center the listing preview card within its container */
 .preview-card {
-    margin-bottom: 1.5rem;
+    margin: 0 auto 1.5rem;
 }
 
 /* List Card Button */
@@ -136,6 +137,8 @@
     transition: var(--transition);
     width: 100%;
     max-width: 250px;
+    margin: 0 auto; /* Center the button */
+    display: block;
 }
 
     .list-card-button:hover {
