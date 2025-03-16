@@ -225,11 +225,14 @@
 .cards-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    /* Increase the gap to 2rem as requested */
+    gap: 2rem;
     justify-content: center;
 }
 
-/* Fade-in logic: .hidden => 0 opacity, .visible => full */
+/* 
+  The card wrapper handles fade in, flipping states, etc.
+*/
 .card-wrapper {
     transition: opacity 0.6s ease, transform 0.6s ease !important;
     position: relative;
@@ -247,7 +250,7 @@
         transform: translateY(0) !important;
     }
 
-/* face-down => show back, face-up => show front (via 3D flip) */
+/* face-down => show back, face-up => show front with 3D flip */
 .face-down .card-inner {
     transform: rotateY(0deg);
 }
@@ -256,20 +259,26 @@
     transform: rotateY(180deg);
 }
 
-/* Glow on face-down only */
+/* 
+  Remove the pink border on hover:
+  So we simply do NOT apply any box-shadow on hover for face-down
+*/
 .card-wrapper.face-down:hover {
-    box-shadow: 0 0 15px 5px var(--rarity-color);
+    /* (removed the old box-shadow line) */
 }
 
-/* The forced 300x450 container for front & back */
+/* 
+  .card-content forced to 350x525 if you want bigger
+  or keep 300x450. Let's do 350x525
+*/
 .card-content {
-    width: 300px;
-    height: 450px;
+    width: 350px;
+    height: 525px;
     perspective: 1000px;
     position: relative;
 }
 
-/* The flipping container with 3D transform from center */
+/* .card-inner flips around the center */
 .card-inner {
     width: 100%;
     height: 100%;
@@ -278,7 +287,7 @@
     transform-origin: center center;
 }
 
-/* front & back absolutely positioned in card-inner */
+/* front & back are absolutely positioned in .card-inner */
 .card-back,
 .card-front {
     position: absolute;
@@ -290,8 +299,7 @@
     border-radius: var(--border-radius);
 }
 
-/* The back is at rotateY(0) for face-down, 
-   front is behind it at rotateY(180) */
+/* The back is at rotateY(0) for faceDown, front is behind it at 180 */
 .card-back {
     transform: rotateY(0deg);
 }
@@ -303,13 +311,12 @@
         border-radius: var(--border-radius);
     }
 
-/* The front is rotated 180 so in face-down mode it's hidden behind */
+/* The front is rotateY(180) in face-down mode */
 .card-front {
     transform: rotateY(180deg);
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Make the BaseCard fill the container */
     overflow: hidden;
 }
 
