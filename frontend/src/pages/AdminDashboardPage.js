@@ -13,15 +13,15 @@ const AdminDashboardPage = ({ user }) => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // We no longer display a spinner, but keep "loading" for logic
+    // Page no longer uses a spinner, but we keep loading state for internal logic
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
 
     // Cards from an opened pack
     const [openedCards, setOpenedCards] = useState([]);
-    // revealedCards => fade-in effect
+    // revealedCards: controls fade-in; false = hidden, true = visible
     const [revealedCards, setRevealedCards] = useState([]);
-    // faceDownCards => true means back is visible
+    // faceDownCards: true => back is shown, false => front is shown
     const [faceDownCards, setFaceDownCards] = useState([]);
 
     // For sequential reveal
@@ -29,7 +29,7 @@ const AdminDashboardPage = ({ user }) => {
     const [sequentialRevealStarted, setSequentialRevealStarted] = useState(false);
     const fallbackTimerRef = useRef(null);
 
-    // Rarity => hover glow color
+    // Rarity => color mapping
     const cardRarities = [
         { rarity: 'Basic', color: '#8D8D8D' },
         { rarity: 'Common', color: '#64B5F6' },
@@ -43,11 +43,13 @@ const AdminDashboardPage = ({ user }) => {
         { rarity: 'Divine', color: 'white' },
     ];
     const getRarityColor = (rarity) => {
-        const found = cardRarities.find(r => r.rarity.toLowerCase() === rarity.toLowerCase());
+        const found = cardRarities.find(
+            (r) => r.rarity.toLowerCase() === rarity.toLowerCase()
+        );
         return found ? found.color : '#fff';
     };
 
-    // On mount: verify admin & fetch user data
+    // On mount, verify admin & fetch data
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -68,15 +70,17 @@ const AdminDashboardPage = ({ user }) => {
         fetchData();
     }, [user, navigate]);
 
-    const filteredUsers = usersWithPacks.filter(u =>
+    // Filter user list by search
+    const filteredUsers = usersWithPacks.filter((u) =>
         u.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const toggleUserSelection = (u) => {
-        setSelectedUser(prev => (prev?._id === u._id ? null : u));
+        setSelectedUser((prev) => (prev?._id === u._id ? null : u));
     };
 
-    // Open pack => all cards start hidden and face down
+    // Open pack for user
+    // All cards start hidden and faceDown
     const openPackForUser = async () => {
         if (!selectedUser) return;
         setLoading(true);
@@ -93,12 +97,12 @@ const AdminDashboardPage = ({ user }) => {
             const { newCards } = res;
             console.log('New cards:', newCards);
             setOpenedCards(newCards);
-            setRevealedCards(Array(newCards.length).fill(false));  // fade in
-            setFaceDownCards(Array(newCards.length).fill(true));   // back shown
+            setRevealedCards(Array(newCards.length).fill(false));  // for fade-in
+            setFaceDownCards(Array(newCards.length).fill(true));   // show back
             revealIndexRef.current = 0;
             // Decrement user's pack count
-            setUsersWithPacks(prev =>
-                prev.map(u =>
+            setUsersWithPacks((prev) =>
+                prev.map((u) =>
                     u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
                 )
             );
@@ -117,7 +121,7 @@ const AdminDashboardPage = ({ user }) => {
             return;
         }
         setTimeout(() => {
-            setRevealedCards(prev => {
+            setRevealedCards((prev) => {
                 const updated = [...prev];
                 updated[index] = true;
                 console.log(`Card ${index} revealed`);
@@ -127,15 +131,19 @@ const AdminDashboardPage = ({ user }) => {
         }, 1000);
     };
 
-    // On video end => remove overlay & start reveal
+    // On video end => start sequential reveal
     const handleVideoEnd = () => {
-        console.log('Pack opening animation ended. Starting sequential reveal...');
+        if (fallbackTimerRef.current) {
+            clearTimeout(fallbackTimerRef.current);
+            fallbackTimerRef.current = null;
+        }
+        console.log('Video ended. Removing overlay & starting reveal...');
         setIsOpeningAnimation(false);
         setSequentialRevealStarted(true);
         revealCardSequentially(0);
     };
 
-    // Fallback: if no card is revealed after 4s, reveal all
+    // Fallback if 4s pass with no reveal
     useEffect(() => {
         if (
             openedCards.length > 0 &&
@@ -153,7 +161,7 @@ const AdminDashboardPage = ({ user }) => {
 
     // Flip card on click => toggles faceDown => faceUp
     const handleFlipCard = (i) => {
-        setFaceDownCards(prev => {
+        setFaceDownCards((prev) => {
             const updated = [...prev];
             updated[i] = !updated[i];
             return updated;
@@ -166,6 +174,8 @@ const AdminDashboardPage = ({ user }) => {
         setRevealedCards([]);
         setFaceDownCards([]);
     };
+
+    // We do NOT show a spinner on this page, so no "if (loading)" check
 
     return (
         <div className="dashboard-container">
@@ -251,7 +261,7 @@ const AdminDashboardPage = ({ user }) => {
                     </div>
                 </div>
 
-                {/* Opened Cards Section */}
+                {/* Opened Cards */}
                 <div className="opened-cards">
                     <h2>Opened Cards</h2>
                     <div className="cards-container">
@@ -265,8 +275,7 @@ const AdminDashboardPage = ({ user }) => {
                             >
                                 <div className="card-content">
                                     <div className="card-inner">
-                                        {/* The back is forced to 300x450, centered. 
-                        The front is your BaseCard at its natural size. */}
+                                        {/* The back is at rotateY(0) for faceDown, front at 180 */}
                                         <div className="card-back">
                                             <img
                                                 src="/images/card-back-placeholder.png"
