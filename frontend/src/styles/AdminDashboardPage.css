@@ -238,8 +238,7 @@
     cursor: pointer;
     /* Let the wrapper overflow too, so face-up card won't be clipped */
     overflow: visible !important;
-    padding: 20px;
-    background-color: var(--surface-dark);
+    background-color: var(--surface-darker);
 }
 
     .card-wrapper.hidden {
