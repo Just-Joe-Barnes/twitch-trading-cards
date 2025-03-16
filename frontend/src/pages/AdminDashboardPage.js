@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { fetchWithAuth } from '../utils/api';
 import { useNavigate } from 'react-router-dom';
-import FlipCard from '../components/FlipCard';
+import FlippableBaseCard from '../components/FlippableBaseCard';
 import '../styles/AdminDashboardPage.css';
 
 const AdminDashboardPage = ({ user }) => {
@@ -13,11 +13,11 @@ const AdminDashboardPage = ({ user }) => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Loading & animation states (spinner removed)
+    // No spinners on this page
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
 
-    // Cards from an opened pack and sequential reveal state
+    // Cards
     const [openedCards, setOpenedCards] = useState([]);
     const [revealedCards, setRevealedCards] = useState([]);
     const [sequentialRevealStarted, setSequentialRevealStarted] = useState(false);
@@ -36,6 +36,7 @@ const AdminDashboardPage = ({ user }) => {
         { rarity: 'Divine', color: 'white' },
     ];
 
+    // On mount, verify admin & fetch
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -80,6 +81,7 @@ const AdminDashboardPage = ({ user }) => {
             console.log('New cards:', newCards);
             setOpenedCards(newCards);
             setRevealedCards(Array(newCards.length).fill(false));
+            // Decrement pack count
             setUsersWithPacks((prev) =>
                 prev.map((u) =>
                     u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
@@ -93,7 +95,7 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // Reveal cards sequentially (1 second delay per card)
+    // Reveal cards sequentially
     const revealCardSequentially = (index) => {
         if (index >= openedCards.length) {
             setIsOpeningAnimation(false);
@@ -110,7 +112,7 @@ const AdminDashboardPage = ({ user }) => {
         }, 1000);
     };
 
-    // When the pack-opening video ends, remove overlay immediately and start reveal.
+    // Remove black screen delay => call handleVideoEnd immediately
     const handleVideoEnd = () => {
         if (fallbackTimerRef.current) {
             clearTimeout(fallbackTimerRef.current);
@@ -121,7 +123,7 @@ const AdminDashboardPage = ({ user }) => {
         revealCardSequentially(0);
     };
 
-    // Fallback to reveal all cards after 4 seconds if reveal hasn't started.
+    // Fallback after 4s if no reveal started
     useEffect(() => {
         if (
             openedCards.length > 0 &&
@@ -144,8 +146,7 @@ const AdminDashboardPage = ({ user }) => {
         setIsOpeningAnimation(false);
     };
 
-    // We have removed the loading spinner from this page.
-    // (If loading and no cards have been opened, nothing is rendered.)
+    // If loading & no cards => show nothing
     if (loading && openedCards.length === 0) return null;
 
     return (
@@ -158,7 +159,7 @@ const AdminDashboardPage = ({ user }) => {
                         autoPlay
                         playsInline
                         controls={false}
-                        onEnded={handleVideoEnd} // No extra delay; trigger immediately.
+                        onEnded={handleVideoEnd}  // No extra delay
                         onLoadedData={() => console.log('Video loaded')}
                         onError={(e) => console.error('Video error:', e)}
                     />
@@ -242,7 +243,8 @@ const AdminDashboardPage = ({ user }) => {
                                 key={i}
                                 className={`card-wrapper ${revealedCards[i] ? 'visible' : 'hidden'}`}
                             >
-                                <FlipCard card={card} />
+                                {/* Each card starts face-down and can be clicked to flip */}
+                                <FlippableBaseCard card={card} />
                             </div>
                         ))}
                     </div>

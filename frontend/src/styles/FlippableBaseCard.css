@@ -1,0 +1,73 @@
+/* src/styles/FlippableBaseCard.css */
+
+/* The parent container: ensures we have 300x450 space for the flipping card */
+.flippable-container {
+    width: 300px;
+    height: 450px;
+    perspective: 1000px; /* allows 3D tilt & flip */
+    cursor: pointer;
+    position: relative;
+}
+
+/* The 3D wrapper that rotates front/back */
+.flippable-3d {
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s ease; /* smooth flip */
+}
+
+/* Face-down => show the back side (rotate .flippable-3d 180deg so the back is "facing up") */
+.face-down {
+    transform: rotateY(180deg);
+}
+
+.face-up {
+    transform: rotateY(0deg);
+}
+
+/* The front & back faces each fill the entire 300x450 area */
+.card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden; /* so the front doesn’t show through the back */
+    top: 0;
+    left: 0;
+}
+
+/* The front is at rotateY(0) in face-up state. We rotate it 180 so it's hidden in face-down state. */
+.card-front {
+    transform: rotateY(0deg);
+    z-index: 2; /* in face-up mode, the front is "on top" */
+}
+
+/* The back is rotated 180 by default. 
+   In face-down mode, it's effectively "facing" the user. */
+.card-back {
+    transform: rotateY(180deg);
+    z-index: 3; /* ensure it is above front in face-down mode */
+}
+
+/* Card back image forced to fill 300x450 */
+.card-back-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Optional glare overlay for the back side */
+.card-back-glare {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 150%;
+    height: 150%;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    background: radial-gradient(circle, rgba(255,255,255,0.3), rgba(255,255,255,0));
+}
