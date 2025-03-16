@@ -230,7 +230,7 @@
 }
 
 /* 
-  .card-wrapper: your fade-in logic & flipping states
+  The fade-in logic: .hidden => 0 opacity, .visible => full 
 */
 .card-wrapper {
     transition: opacity 0.6s ease, transform 0.6s ease !important;
@@ -238,7 +238,7 @@
     cursor: pointer;
 }
 
-    /* Fade-in vs hidden */
+    /* hidden vs visible for sequential reveal */
     .card-wrapper.hidden {
         opacity: 0 !important;
         transform: translateY(20px) !important;
@@ -250,7 +250,7 @@
         transform: translateY(0) !important;
     }
 
-/* Face-down vs face-up for flipping with 3D transform */
+/* face-down => show back, face-up => show front */
 .face-down .card-inner {
     transform: rotateY(0deg);
 }
@@ -259,14 +259,9 @@
     transform: rotateY(180deg);
 }
 
-/* Glow on face-down only */
-.card-wrapper.face-down:hover {
-    box-shadow: 0 0 15px 5px var(--rarity-color);
-}
-
 /* 
-  .card-content: forced 300x450 so front & back match in size
-  .card-inner: the 3D flipping container
+  .card-content is forced to 300x450 so front & back match 
+  .card-inner is the flipping container 
 */
 .card-content {
     width: 300px;
@@ -283,27 +278,34 @@
     transform-origin: center center;
 }
 
-/* card-front & card-back are absolutely positioned in .card-inner */
-.card-front,
-.card-back {
+/* Glow on face-down only */
+.card-wrapper.face-down:hover {
+    box-shadow: 0 0 15px 5px var(--rarity-color);
+}
+
+/* The front & back are absolutely positioned in .card-inner */
+.card-back,
+.card-front {
     position: absolute;
     width: 100%;
     height: 100%;
     top: 0;
     left: 0;
     backface-visibility: hidden;
+    border-radius: var(--border-radius);
 }
 
-/* The back is rotated 180 to be hidden when face-up */
-.card-back {
+/* We want to see the back at rotateY(0) in face-down, 
+   so the front is rotateY(180) behind it */
+.card-front {
     transform: rotateY(180deg);
 }
 
-    /* 
-  The BaseCard is in .card-front 
-  The back placeholder is in .card-back 
-  object-fit: cover ensures it fills 300x450
-*/
+/* The back is default facing user at rotateY(0) */
+.card-back {
+    transform: rotateY(0deg);
+}
+
     .card-back img {
         width: 100%;
         height: 100%;

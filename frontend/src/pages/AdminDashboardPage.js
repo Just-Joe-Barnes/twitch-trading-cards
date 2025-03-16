@@ -18,18 +18,18 @@ const AdminDashboardPage = ({ user }) => {
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
 
-    // Cards from the opened pack
+    // The cards from an opened pack
     const [openedCards, setOpenedCards] = useState([]);
-    // revealedCards: controls sequential fade-in; false = hidden, true = visible
+    // revealedCards: for fade-in effect; false = hidden, true = visible
     const [revealedCards, setRevealedCards] = useState([]);
-    // faceDownCards: true = show back, false = show front
+    // faceDownCards: true = back is shown, false = front is shown
     const [faceDownCards, setFaceDownCards] = useState([]);
 
     // For sequential reveal
     const revealIndexRef = useRef(0);
     const [sequentialRevealStarted, setSequentialRevealStarted] = useState(false);
 
-    // For fallback timer if no reveal starts
+    // Fallback timer if reveal doesn’t start
     const fallbackTimerRef = useRef(null);
 
     // Rarity color mapping
@@ -47,13 +47,11 @@ const AdminDashboardPage = ({ user }) => {
     ];
 
     const getRarityColor = (rarity) => {
-        const found = cardRarities.find(
-            (r) => r.rarity.toLowerCase() === rarity.toLowerCase()
-        );
+        const found = cardRarities.find(r => r.rarity.toLowerCase() === rarity.toLowerCase());
         return found ? found.color : '#fff';
     };
 
-    // On mount, verify admin and fetch data
+    // On mount, verify admin & fetch data
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -74,17 +72,17 @@ const AdminDashboardPage = ({ user }) => {
         fetchData();
     }, [user, navigate]);
 
-    // Filter user list by search
-    const filteredUsers = usersWithPacks.filter((u) =>
+    // Filter user list by search query
+    const filteredUsers = usersWithPacks.filter(u =>
         u.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const toggleUserSelection = (u) => {
-        setSelectedUser((prev) => (prev?._id === u._id ? null : u));
+        setSelectedUser(prev => (prev?._id === u._id ? null : u));
     };
 
-    // Open pack for the selected user
-    // All cards start hidden (revealedCards) and face down
+    // Open pack for selected user
+    // All cards start hidden (revealedCards= false) and faceDown (back showing)
     const openPackForUser = async () => {
         if (!selectedUser) return;
         setLoading(true);
@@ -94,19 +92,18 @@ const AdminDashboardPage = ({ user }) => {
         setFaceDownCards([]);
         setSequentialRevealStarted(false);
         try {
-            const res = await fetchWithAuth(
-                `/api/packs/admin/openPacksForUser/${selectedUser._id}`,
-                { method: 'POST' }
-            );
+            const res = await fetchWithAuth(`/api/packs/admin/openPacksForUser/${selectedUser._id}`, {
+                method: 'POST',
+            });
             const { newCards } = res;
             console.log('New cards:', newCards);
             setOpenedCards(newCards);
-            setRevealedCards(Array(newCards.length).fill(false)); // fade in
-            setFaceDownCards(Array(newCards.length).fill(true));  // show back
+            setRevealedCards(Array(newCards.length).fill(false));  // fade in
+            setFaceDownCards(Array(newCards.length).fill(true));   // back shown
             revealIndexRef.current = 0;
-            // Decrement user's pack count
-            setUsersWithPacks((prev) =>
-                prev.map((u) =>
+            // Decrement pack count
+            setUsersWithPacks(prev =>
+                prev.map(u =>
                     u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
                 )
             );
@@ -125,7 +122,7 @@ const AdminDashboardPage = ({ user }) => {
             return;
         }
         setTimeout(() => {
-            setRevealedCards((prev) => {
+            setRevealedCards(prev => {
                 const updated = [...prev];
                 updated[index] = true;
                 console.log(`Card ${index} revealed`);
@@ -162,9 +159,9 @@ const AdminDashboardPage = ({ user }) => {
         }
     }, [openedCards, revealedCards, sequentialRevealStarted]);
 
-    // Flip card on click: faceDown => faceUp, or vice versa
+    // Flip card on click: toggles faceDown => faceUp or vice versa
     const handleFlipCard = (i) => {
-        setFaceDownCards((prev) => {
+        setFaceDownCards(prev => {
             const updated = [...prev];
             updated[i] = !updated[i];
             return updated;
@@ -222,7 +219,7 @@ const AdminDashboardPage = ({ user }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredUsers.map((u) => (
+                            {filteredUsers.map(u => (
                                 <tr
                                     key={u._id}
                                     className={selectedUser?._id === u._id ? 'selected' : ''}
@@ -256,7 +253,7 @@ const AdminDashboardPage = ({ user }) => {
                 <div className="card-rarity-key">
                     <h2>Card Rarity Key</h2>
                     <div className="rarity-list">
-                        {cardRarities.map((r) => (
+                        {cardRarities.map(r => (
                             <div key={r.rarity} className="rarity-item">
                                 <span className="color-box" style={{ backgroundColor: r.color }} />
                                 <span className="rarity-text">{r.rarity}</span>
@@ -265,7 +262,7 @@ const AdminDashboardPage = ({ user }) => {
                     </div>
                 </div>
 
-                {/* Opened Cards */}
+                {/* Opened Cards Section */}
                 <div className="opened-cards">
                     <h2>Opened Cards</h2>
                     <div className="cards-container">
@@ -277,12 +274,15 @@ const AdminDashboardPage = ({ user }) => {
                                 style={{ '--rarity-color': getRarityColor(card.rarity) }}
                                 onClick={() => handleFlipCard(i)}
                             >
-                                {/* 
-                  .card-content is forced to 300x450 so the front & back 
-                  have a consistent size & flip from center 
-                */}
                                 <div className="card-content">
                                     <div className="card-inner">
+                                        {/* The back is at rotateY(0) if faceDown, front at rotateY(180) */}
+                                        <div className="card-back">
+                                            <img
+                                                src="/images/card-back-placeholder.png"
+                                                alt="Card Back"
+                                            />
+                                        </div>
                                         <div className="card-front">
                                             <BaseCard
                                                 name={card.name}
@@ -290,12 +290,6 @@ const AdminDashboardPage = ({ user }) => {
                                                 description={card.flavorText}
                                                 rarity={card.rarity}
                                                 mintNumber={card.mintNumber}
-                                            />
-                                        </div>
-                                        <div className="card-back">
-                                            <img
-                                                src="/images/card-back-placeholder.png"
-                                                alt="Card Back"
                                             />
                                         </div>
                                     </div>
