@@ -61,6 +61,7 @@
 
 /* Collection Container */
 .collection-container {
+    width: 60vw;
     background: var(--surface-dark);
     padding: 1.5rem;
     border-radius: var(--border-radius);
@@ -75,7 +76,7 @@
 
 /* Collection Grid: 4 cards per row; fixed height for 2 rows; vertical scrolling */
 .collection-grid {
-    width: 60vw;
+
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
