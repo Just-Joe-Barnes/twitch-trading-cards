@@ -52,7 +52,7 @@
     margin-top: 1rem;
 }
 
-/* Users with Packs */
+/* Users with Packs Section */
 .users-with-packs {
     grid-column: 1 / 2;
     background: var(--surface-dark);
@@ -101,7 +101,7 @@
         color: var(--text-primary);
     }
 
-/* Open Pack Section */
+/* Selected User -> Open Pack Section */
 .selected-user-section {
     grid-column: 2 / 3;
     background: var(--surface-dark);
@@ -142,7 +142,7 @@
             cursor: not-allowed;
         }
 
-/* Card Rarity Key */
+/* Card Rarity Key Section */
 .card-rarity-key {
     grid-column: 3 / 4;
     background: var(--surface-dark);
@@ -229,13 +229,14 @@
     justify-content: center;
 }
 
-/* Card Wrapper: handles fade-in and flipping */
+/* Card Wrapper: fade-in + flip states */
 .card-wrapper {
     transition: opacity 0.6s ease, transform 0.6s ease !important;
     position: relative;
     cursor: pointer;
 }
 
+    /* Fade-in logic */
     .card-wrapper.hidden {
         opacity: 0 !important;
         transform: translateY(20px) !important;
@@ -247,10 +248,7 @@
         transform: translateY(0) !important;
     }
 
-/* Flipping: 
-   - In face-down mode, .card-inner is not rotated so the back shows.
-   - In face-up mode, .card-inner rotates 180deg to show the front.
-*/
+/* face-down => show back, face-up => show front */
 .face-down .card-inner {
     transform: rotateY(0deg);
 }
@@ -259,21 +257,20 @@
     transform: rotateY(180deg);
 }
 
-/* Rarity glow on hover: applied only when card is face down */
+/* Rarity glow on hover only if face down */
 .card-wrapper.face-down:hover {
     box-shadow: 0 0 15px 5px var(--rarity-color);
 }
 
-/* Card Content: allows the front to render naturally while ensuring a minimum area */
+/* Card Content: forcibly 300x450 so front/back align precisely */
 .card-content {
+    width: 300px;
+    height: 450px;
     position: relative;
-    display: inline-block;
-    min-width: 300px;
-    min-height: 450px;
-    perspective: 1000px;
+    perspective: 1000px; /* for 3D flip */
 }
 
-/* Card Inner: the 3D flipping container */
+/* card-inner flips from center */
 .card-inner {
     width: 100%;
     height: 100%;
@@ -282,7 +279,7 @@
     transform-origin: center center;
 }
 
-/* Card Back & Front: should exactly overlap */
+/* back & front absolutely fill the card-content */
 .card-back,
 .card-front {
     position: absolute;
@@ -294,13 +291,9 @@
     border-radius: var(--border-radius);
 }
 
-/* Card Back: force size to exactly 300x450px and center it within card-content */
+/* The back is visible at rotateY(0) in face-down mode */
 .card-back {
-    width: 300px;
-    height: 450px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotateY(0deg);
+    transform: rotateY(0deg);
     z-index: 2;
 }
 
@@ -311,7 +304,7 @@
         border-radius: var(--border-radius);
     }
 
-/* Card Front: rendered by BaseCard (no forced size, so it remains as is) */
+/* The front is behind at rotateY(180) when face-down */
 .card-front {
     transform: rotateY(180deg);
     display: flex;
