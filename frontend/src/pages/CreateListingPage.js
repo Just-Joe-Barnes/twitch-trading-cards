@@ -1,129 +1,99 @@
 // src/pages/CreateListingPage.js
-import React, { useEffect, useState } from 'react';
-import { fetchWithAuth } from '../utils/api';
+import React, { useState, useEffect } from 'react';
+import { fetchUserCollection, fetchUserProfile, API_BASE_URL } from '../utils/api';
+import LoadingSpinner from '../components/LoadingSpinner';
 import BaseCard from '../components/BaseCard';
 import { useNavigate } from 'react-router-dom';
-import '../styles/CreateListingPage.css';
+import "../styles/CreateListingPage.css";
 
-/*
-  Create Listing Page:
-  - Fetches user's collection & displays cards in a grid format.
-  - Allows users to select a card to list.
-  - Shows a preview of the listing before confirming.
-  - Posts the listing to the market on submit.
-  - Improved UI for selection, preview, and submission.
-*/
-
-const CreateListingPage = ({ user }) => {
-    const navigate = useNavigate();
+const CreateListingPage = () => {
     const [collection, setCollection] = useState([]);
     const [selectedCard, setSelectedCard] = useState(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
-    // Fetch user's collection on mount
+    // Fetch user profile and collection on mount.
     useEffect(() => {
         const fetchCollection = async () => {
             try {
-                const data = await fetchWithAuth('/api/collection');
+                // Fetch the full user profile to obtain the _id.
+                const profile = await fetchUserProfile();
+                // Use the user's _id for the collection endpoint.
+                const data = await fetchUserCollection(profile._id);
                 setCollection(data.cards || []);
             } catch (error) {
-                console.error('Error fetching collection:', error);
-                setErrorMessage('Failed to load your collection.');
+                console.error("Error fetching collection:", error);
+            } finally {
+                setLoading(false);
             }
         };
         fetchCollection();
     }, []);
 
-    // Handles card selection
-    const handleSelectCard = (card) => {
+    const handleCardSelect = (card) => {
         setSelectedCard(card);
     };
 
-    // Submit the listing
-    const handleSubmitListing = async () => {
-        if (!selectedCard) {
-            setErrorMessage('Please select a card to list.');
-            return;
-        }
-
-        setIsSubmitting(true);
-        setErrorMessage('');
-
+    const handleListCard = async () => {
+        if (!selectedCard) return;
         try {
-            const res = await fetchWithAuth('/api/market/listings', {
+            const res = await fetch(`${API_BASE_URL}/api/market/listings`, {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
                 body: JSON.stringify({ card: selectedCard }),
             });
-
-            if (!res || !res._id) {
-                throw new Error('Invalid response from server.');
+            if (res.ok) {
+                alert('Card listed on the market successfully!');
+                navigate('/market');
+            } else {
+                const errorData = await res.json();
+                alert(`Error: ${errorData.message}`);
             }
-
-            navigate('/market');
         } catch (error) {
-            console.error('Error creating listing:', error);
-            setErrorMessage('Failed to create listing. Please try again.');
-        } finally {
-            setIsSubmitting(false);
+            console.error('Error listing card:', error);
+            alert('Error listing card');
         }
     };
 
+    if (loading) return <LoadingSpinner />;
+
     return (
-        <div className="create-listing-container">
-            <h2>Create a Market Listing</h2>
-            <p>Select a card from your collection to list.</p>
-
-            {/* Collection Grid */}
-            <div className="collection-grid">
-                {collection.length === 0 ? (
-                    <p>You have no available cards to list.</p>
-                ) : (
-                    collection.map((card) => (
-                        <div
-                            key={card._id}
-                            className={`card-item ${selectedCard?._id === card._id ? 'selected' : ''}`}
-                            onClick={() => handleSelectCard(card)}
-                        >
-                            <BaseCard
-                                name={card.name}
-                                image={card.imageUrl}
-                                description={card.flavorText}
-                                rarity={card.rarity}
-                                mintNumber={card.mintNumber}
-                            />
-                        </div>
-                    ))
-                )}
-            </div>
-
-            {/* Selected Card Preview */}
-            {selectedCard && (
-                <div className="listing-preview">
-                    <h3>Listing Preview</h3>
-                    <div className="preview-card">
+        <div className="create-listing-page">
+            <h1>Create New Listing</h1>
+            <p>Select a card from your collection to list on the market:</p>
+            <div className="cards-grid">
+                {collection.map((card) => (
+                    <div
+                        key={card._id}
+                        className={`card-wrapper ${selectedCard && selectedCard._id === card._id ? 'selected' : ''}`}
+                        onClick={() => handleCardSelect(card)}
+                    >
                         <BaseCard
-                            name={selectedCard.name}
-                            image={selectedCard.imageUrl}
-                            description={selectedCard.flavorText}
-                            rarity={selectedCard.rarity}
-                            mintNumber={selectedCard.mintNumber}
+                            name={card.name}
+                            image={card.imageUrl}
+                            rarity={card.rarity}
+                            description={card.flavorText}
+                            mintNumber={card.mintNumber}
                         />
                     </div>
+                ))}
+            </div>
+            {selectedCard && (
+                <div className="listing-preview">
+                    <h2>Listing Preview</h2>
+                    <BaseCard
+                        name={selectedCard.name}
+                        image={selectedCard.imageUrl}
+                        rarity={selectedCard.rarity}
+                        description={selectedCard.flavorText}
+                        mintNumber={selectedCard.mintNumber}
+                    />
+                    <button onClick={handleListCard}>List This Card</button>
                 </div>
             )}
-
-            {/* Submit Button */}
-            <button
-                className="submit-button"
-                onClick={handleSubmitListing}
-                disabled={isSubmitting || !selectedCard}
-            >
-                {isSubmitting ? 'Submitting...' : 'List This Card'}
-            </button>
-
-            {/* Error Message */}
-            {errorMessage && <p className="error-message">{errorMessage}</p>}
         </div>
     );
 };
