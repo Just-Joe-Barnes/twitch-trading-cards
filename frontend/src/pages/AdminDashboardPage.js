@@ -176,7 +176,6 @@ const AdminDashboardPage = ({ user }) => {
     };
 
     // We do NOT show a spinner on this page at all, so no "if (loading)" check
-    // The user requested removing the loading spinner logic from only this page.
 
     return (
         <div className="dashboard-container">
@@ -188,7 +187,7 @@ const AdminDashboardPage = ({ user }) => {
                         autoPlay
                         playsInline
                         controls={false}
-                        onEnded={() => setTimeout(handleVideoEnd, 500)}
+                        onEnded={handleVideoEnd}  // Removed extra delay for immediate reveal
                         onLoadedData={() => console.log('Video loaded')}
                         onError={(e) => console.error('Video error:', e)}
                     />
@@ -277,7 +276,7 @@ const AdminDashboardPage = ({ user }) => {
                                 <div className="card-content">
                                     <div className="card-inner">
                                         {/* The back is visible at rotateY(0) in face-down, 
-                        front is rotateY(180). We want the back on top by default. */}
+                                            front is rotateY(180). We want the back on top by default. */}
                                         <div className="card-back">
                                             <img
                                                 src="/images/card-back-placeholder.png"
