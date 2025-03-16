@@ -97,7 +97,7 @@
     }
 
     .users-table tr.selected {
-        background: var(--brand-primary);
+        background-color: var(--brand-primary);
         color: var(--text-primary);
     }
 
@@ -225,34 +225,37 @@
 .cards-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.5rem;
+    gap: 1rem;
     justify-content: center;
 }
 
-/* Card Wrapper: preserves spacing and dimensions set by BaseCard */
+.opened-cards .card-wrapper {
+    border: none !important;
+}
+
+/* 
+  The card-wrapper handles fade in 
+  plus face-down vs. face-up states 
+*/
 .card-wrapper {
+    transition: opacity 0.6s ease, transform 0.6s ease !important;
     position: relative;
-    display: inline-block;
-    transition: opacity 0.6s ease, transform 0.6s ease;
     cursor: pointer;
 }
 
-    /* Fade-in effect */
+    /* Fade in vs hidden */
     .card-wrapper.hidden {
-        opacity: 0;
-        transform: translateY(20px);
+        opacity: 0 !important;
+        transform: translateY(20px) !important;
         pointer-events: none;
     }
 
     .card-wrapper.visible {
-        opacity: 1;
-        transform: translateY(0);
+        opacity: 1 !important;
+        transform: translateY(0) !important;
     }
 
-    /* Face-down vs. face-up states:
-   - When face-down, show the back and hide the front.
-   - When face-up, show the front and hide the back.
-*/
+    /* Face-down vs face-up */
     .card-wrapper.face-down .card-front {
         opacity: 0;
         pointer-events: none;
@@ -271,17 +274,38 @@
         pointer-events: none;
     }
 
-    /* Hover glow on face-down cards */
+    /* Hover glow on face-down only */
     .card-wrapper.face-down:hover {
         box-shadow: 0 0 15px 5px var(--rarity-color);
     }
 
-/* Card Content: container for front and back, should fill the card wrapper */
+/* 
+  .card-content is a container for front & back 
+  so they can overlap exactly 
+*/
 .card-content {
     position: relative;
+    display: inline-block;
+    /* Debugging: border to see container size */
+    border: 1px solid red !important;
 }
 
-/* Position front and back to overlap exactly */
+/* 
+  Minimal sizing for debugging:
+  Ensures we see some dimension if BaseCard has no size
+*/
+.card-front-debug .card-container {
+    min-width: 200px;
+    min-height: 300px;
+    border: 1px dashed orange !important; /* Debugging front border */
+}
+
+/* Debugging back border */
+.card-back-debug {
+    border: 1px dashed lime !important;
+}
+
+/* Position front & back absolutely within card-content */
 .card-front,
 .card-back {
     position: absolute;
@@ -290,19 +314,7 @@
     right: 0;
     bottom: 0;
     transition: opacity 0.3s ease;
-}
-
-/* Ensure front text remains as set by BaseCard (do not modify) */
-.opened-cards .card-front .card-container .card-border {
-    text-align: left;
-    align-items: flex-start;
-}
-
-/* The card-back should fill the same area as the front */
-.card-back {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border-radius: var(--border-radius);
 }
 
     .card-back img {
