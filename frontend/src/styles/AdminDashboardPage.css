@@ -225,14 +225,11 @@
 .cards-container {
     display: flex;
     flex-wrap: wrap;
-    /* Increase the gap to 2rem as requested */
     gap: 2rem;
     justify-content: center;
 }
 
-/* 
-  The card wrapper handles fade in, flipping states, etc.
-*/
+/* Card Wrapper: handles fade-in and flipping */
 .card-wrapper {
     transition: opacity 0.6s ease, transform 0.6s ease !important;
     position: relative;
@@ -250,7 +247,11 @@
         transform: translateY(0) !important;
     }
 
-/* face-down => show back, face-up => show front with 3D flip */
+/* For the flip effect:
+   - .card-inner rotates to show front or back.
+   - When face-down, .card-inner is at rotateY(0deg) so the back is visible.
+   - When face-up, .card-inner rotates to 180deg so the front is visible.
+*/
 .face-down .card-inner {
     transform: rotateY(0deg);
 }
@@ -259,26 +260,23 @@
     transform: rotateY(180deg);
 }
 
-/* 
-  Remove the pink border on hover:
-  So we simply do NOT apply any box-shadow on hover for face-down
-*/
+/* Apply glow on hover when face down */
 .card-wrapper.face-down:hover {
-    /* (removed the old box-shadow line) */
+    box-shadow: 0 0 15px 5px var(--rarity-color);
 }
 
-/* 
-  .card-content forced to 350x525 if you want bigger
-  or keep 300x450. Let's do 350x525
+/* .card-content: Do NOT force the front size.
+   Let the front (BaseCard) render naturally.
+   We use min-width/min-height to ensure at least a 300x450 area.
 */
 .card-content {
-    width: 350px;
-    height: 525px;
-    perspective: 1000px;
     position: relative;
+    display: inline-block;
+    min-width: 300px;
+    min-height: 450px;
 }
 
-/* .card-inner flips around the center */
+/* .card-inner: the 3D flipping container */
 .card-inner {
     width: 100%;
     height: 100%;
@@ -287,21 +285,28 @@
     transform-origin: center center;
 }
 
-/* front & back are absolutely positioned in .card-inner */
-.card-back,
-.card-front {
+/* .card-front & .card-back: absolutely positioned to overlap exactly */
+.card-front,
+.card-back {
     position: absolute;
-    width: 100%;
-    height: 100%;
     top: 0;
     left: 0;
+    width: 100%;
+    height: 100%;
     backface-visibility: hidden;
     border-radius: var(--border-radius);
 }
 
-/* The back is at rotateY(0) for faceDown, front is behind it at 180 */
+/* Force the back to be 300x450px (regardless of the front's auto size)
+   and center it in the container */
 .card-back {
+    width: 300px;
+    height: 450px;
     transform: rotateY(0deg);
+    /* Center the back if .card-content is larger */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
     .card-back img {
@@ -311,7 +316,10 @@
         border-radius: var(--border-radius);
     }
 
-/* The front is rotateY(180) in face-down mode */
+/* The front remains as rendered by BaseCard.
+   It is positioned to fill the container (which is at least 300x450)
+   but we do not force its size.
+*/
 .card-front {
     transform: rotateY(180deg);
     display: flex;
