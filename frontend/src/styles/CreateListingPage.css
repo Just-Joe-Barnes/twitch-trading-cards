@@ -1,62 +1,72 @@
-/* Unique Styling for Create Listing Page */
+:root {
+    --brand-primary: #db88db;
+    --brand-secondary: #88cddb;
+    --background-dark: #0a0a0a;
+    --surface-dark: #1a1a1a;
+    --surface-darker: #141414;
+    --text-primary: rgba(255, 255, 255, 0.95);
+    --border-dark: rgba(255, 255, 255, 0.12);
+    --border-radius: 16px;
+    --transition: all 0.3s ease;
+}
+
+/* Page Container */
 .create-listing-page {
     padding: 6rem 2rem;
     background: var(--background-dark);
     min-height: 100vh;
     color: var(--text-primary);
-    text-align: center;
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto;
+    text-align: center;
 }
 
-/* Page Headers */
 .page-title {
-    font-size: 2.5rem;
+    font-size: 2rem;
     margin-bottom: 1rem;
 }
 
-.page-subtitle {
-    font-size: 1.2rem;
+.info-text {
+    font-size: 1.1rem;
     margin-bottom: 2rem;
     color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
 }
 
-/* Main Layout */
-.create-listing-layout {
-    display: flex;
-    justify-content: space-between;
-    gap: 2rem;
-    align-items: flex-start;
-}
-
-/* Collection Section */
-.collection-section {
-    flex: 2;
+/* Collection Container */
+.collection-container {
     background: var(--surface-dark);
     padding: 1.5rem;
     border-radius: var(--border-radius);
-    text-align: center;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    margin-bottom: 2rem;
 }
 
-    .collection-section h2 {
-        font-size: 1.5rem;
+    .collection-container h2 {
         margin-bottom: 1rem;
+        font-size: 1.5rem;
     }
+
+.no-cards-message {
+    font-size: 1rem;
+    color: var(--text-primary);
+    opacity: 0.8;
+}
 
 /* Collection Grid */
 .collection-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 1rem;
-    justify-content: center;
-    max-height: 500px;
+    justify-items: center;
+    max-height: 450px;
     overflow-y: auto;
     padding: 1rem;
+    margin: 0 auto;
 }
 
-/* Individual Card */
-.listing-card-item {
+/* Individual Card Items */
+.card-item {
     cursor: pointer;
     transition: var(--transition);
     padding: 0.5rem;
@@ -64,39 +74,44 @@
     border: 2px solid transparent;
 }
 
-    .listing-card-item:hover {
+    .card-item:hover {
         transform: scale(1.05);
         border-color: var(--brand-secondary);
     }
 
-    .listing-card-item.selected {
+    .card-item.selected {
         border-color: var(--brand-primary);
         box-shadow: 0 0 15px var(--brand-primary);
     }
 
-/* Preview Section */
-.preview-section {
-    flex: 1;
+/* Listing Preview Container */
+.listing-preview-container {
     background: var(--surface-dark);
     padding: 1.5rem;
     border-radius: var(--border-radius);
-    text-align: center;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
-    .preview-section h2 {
-        font-size: 1.5rem;
+    .listing-preview-container h2 {
         margin-bottom: 1rem;
+        font-size: 1.5rem;
     }
 
-/* Listing Preview Container */
-.listing-preview-container {
+.preview-card {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 1rem;
 }
 
-/* List Card Button */
+/* No Preview Message */
+.no-preview-message {
+    color: var(--text-primary);
+    opacity: 0.8;
+    font-size: 1rem;
+}
+
+/* Submit Button */
 .list-card-button {
     margin-top: 1rem;
     padding: 0.75rem 1.5rem;
@@ -108,6 +123,7 @@
     cursor: pointer;
     transition: var(--transition);
     width: 100%;
+    max-width: 240px;
 }
 
     .list-card-button:hover {
