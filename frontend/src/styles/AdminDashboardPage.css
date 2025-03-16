@@ -229,7 +229,7 @@
     justify-content: center;
 }
 
-/* Card Wrapper: handles fade-in and flipping */
+/* Card wrapper: fade-in and flipping states */
 .card-wrapper {
     transition: opacity 0.6s ease, transform 0.6s ease !important;
     position: relative;
@@ -247,11 +247,7 @@
         transform: translateY(0) !important;
     }
 
-/* For the flip effect:
-   - .card-inner rotates to show front or back.
-   - When face-down, .card-inner is at rotateY(0deg) so the back is visible.
-   - When face-up, .card-inner rotates to 180deg so the front is visible.
-*/
+/* face-down => show back, face-up => show front (3D flip) */
 .face-down .card-inner {
     transform: rotateY(0deg);
 }
@@ -260,23 +256,27 @@
     transform: rotateY(180deg);
 }
 
-/* Apply glow on hover when face down */
+/* Rarity-based glow on hover only if face-down */
 .card-wrapper.face-down:hover {
     box-shadow: 0 0 15px 5px var(--rarity-color);
 }
 
-/* .card-content: Do NOT force the front size.
-   Let the front (BaseCard) render naturally.
-   We use min-width/min-height to ensure at least a 300x450 area.
+/* 
+  .card-content: 
+    - no forced dimension, 
+    - the front (BaseCard) defines size 
+    - min 300x450 so there's enough room
 */
 .card-content {
     position: relative;
     display: inline-block;
     min-width: 300px;
     min-height: 450px;
+    /* perspective for 3D flip */
+    perspective: 1000px;
 }
 
-/* .card-inner: the 3D flipping container */
+/* .card-inner flips around the center */
 .card-inner {
     width: 100%;
     height: 100%;
@@ -285,28 +285,17 @@
     transform-origin: center center;
 }
 
-/* .card-front & .card-back: absolutely positioned to overlap exactly */
-.card-front,
+/* The back is forced to 300x450, absolutely centered over the front */
 .card-back {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    border-radius: var(--border-radius);
-}
-
-/* Force the back to be 300x450px (regardless of the front's auto size)
-   and center it in the container */
-.card-back {
-    width: 300px;
-    height: 450px;
-    transform: rotateY(0deg);
-    /* Center the back if .card-content is larger */
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    width: 300px;
+    height: 450px;
+    transform: translate(-50%, -50%) rotateY(0deg);
+    backface-visibility: hidden;
+    border-radius: var(--border-radius);
+    z-index: 2; /* ensure the back is "on top" in face-down mode */
 }
 
     .card-back img {
@@ -316,17 +305,28 @@
         border-radius: var(--border-radius);
     }
 
-/* The front remains as rendered by BaseCard.
-   It is positioned to fill the container (which is at least 300x450)
-   but we do not force its size.
-*/
+/* The front is behind at rotateY(180) in face-down mode */
 .card-front {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     transform: rotateY(180deg);
+    backface-visibility: hidden;
+    border-radius: var(--border-radius);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    z-index: 1; /* behind the back in face-down mode */
 }
+
+/* 
+  So in face-up mode, .card-inner => rotateY(180deg)
+  That effectively rotates the back out of view 
+  and rotates the front to 0deg facing user 
+*/
 
 /* Pack Opening Overlay */
 .pack-opening-overlay {
