@@ -1,4 +1,6 @@
 /* src/styles/FlippingCard.css */
+
+/* The main flipping card container is 300x450. */
 .card {
     width: 300px;
     height: 450px;
@@ -7,29 +9,39 @@
     overflow: hidden;
     cursor: pointer;
     transition: opacity 0.6s ease, transform 0.6s ease;
+    flex-shrink: 0; /* Prevent flex layouts from shrinking the card */
 }
 
-    .card.hidden {
-        opacity: 0;
-        transform: translateY(20px);
-        pointer-events: none;
-    }
-
-    .card.visible {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
+/* The flipping inner wrapper */
 .card-inner {
     width: 100%;
     height: 100%;
     position: relative;
     transition: transform 0.6s ease;
     transform-style: preserve-3d;
-    transform-origin: center;
+    transform-origin: center center;
 }
 
-/* Flipping states */
+/* Front & Back faces fill the 300x450 parent */
+.card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+}
+
+    /* The front is rotated 180 in face-down mode */
+    .card-face.card-front {
+        transform: rotateY(180deg);
+        z-index: 1;
+    }
+
+    /* The back is on top initially (face-down) */
+    .card-face.card-back {
+        z-index: 2;
+    }
+
+/* Face-down => show back, face-up => show front */
 .face-down .card-inner {
     transform: rotateY(0deg);
 }
@@ -38,32 +50,19 @@
     transform: rotateY(180deg);
 }
 
-/* Both faces fill the container */
-.card-face {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    border-radius: var(--border-radius);
-}
-
-    .card-face.card-back {
-        z-index: 2;
-    }
-
-    .card-face.card-front {
-        transform: rotateY(180deg);
-        z-index: 1;
-    }
-
-/* Rarity glow when hovering a face-down card */
+/* Rarity glow on hover if face-down */
 .face-down:hover {
     box-shadow: 0 0 15px 5px var(--rarity-color);
 }
 
-/* --- Override: Force BaseCard to fill the flip face --- */
+/* --- IMPORTANT OVERRIDE --- */
+/* Force BaseCard’s .card-container to fill our 300x450 exactly, 
+   removing its internal margin and any extra transforms. */
 .card-face.card-front .card-container {
     margin: 0 !important;
     width: 100% !important;
     height: 100% !important;
+    /* Optionally override transform to prevent nested 3D warping: */
+    transform: none !important;
+    perspective: none !important;
 }

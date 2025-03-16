@@ -213,6 +213,8 @@
     padding: 1rem;
     border-radius: var(--border-radius);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    /* Increase the min-height to accommodate taller cards */
+    min-height: 1000px; /* Adjust as needed */
 }
 
     .opened-cards h2 {
@@ -227,6 +229,7 @@
     flex-wrap: wrap;
     gap: 2rem;
     justify-content: center;
+    align-items: flex-start; /* Ensures cards align at the top and can expand downward */
 }
 
 /* Card wrapper: fade-in and flipping states */
