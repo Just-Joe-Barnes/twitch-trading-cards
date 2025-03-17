@@ -121,3 +121,7 @@ server.listen(PORT, '0.0.0.0', () => {
 
 // Export sendNotification for other modules
 module.exports = { server, io, sendNotification };
+
+// At the bottom, before the error handling middleware
+const testNotificationRoutes = require('./src/routes/testNotificationRoutes');
+app.use('/api', testNotificationRoutes);
