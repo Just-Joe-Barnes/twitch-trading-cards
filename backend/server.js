@@ -1,4 +1,6 @@
-﻿const express = require('express');
+﻿// server.js
+
+const express = require('express');
 const http = require('http'); // <-- Import http module
 const cors = require('cors');
 const session = require('express-session');
@@ -6,6 +8,7 @@ const mongoose = require('mongoose');
 const morgan = require('morgan');
 require('dotenv').config();
 
+// Import route modules
 const authRoutes = require('./src/routes/authRoutes');
 const packRoutes = require('./src/routes/packRoutes');
 const collectionRoutes = require('./src/routes/collectionRoutes');
@@ -14,8 +17,8 @@ const twitchRoutes = require('./src/routes/twitchRoutes');
 const cardRoutes = require('./src/routes/cardRoutes');
 const tradeRoutes = require('./src/routes/tradeRoutes');
 const marketRoutes = require('./src/routes/MarketRoutes');
-const notificationRoutes = require('./src/routes/notificationRoutes'); // ✅ Added missing import
-const testNotificationRoutes = require('./src/routes/testNotificationRoutes');
+const notificationRoutes = require('./src/routes/notificationRoutes');
+const testNotificationRoutes = require('./src/routes/testNotificationRoutes'); // Imported once here
 
 const app = express();
 
@@ -71,8 +74,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/twitch', twitchRoutes);
 app.use('/api/trades', tradeRoutes);
 app.use('/api/market', marketRoutes);
-app.use('/api/notifications', notificationRoutes); // ✅ Fixed duplicate /api mount
-app.use('/api', testNotificationRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api', testNotificationRoutes); // Mounted test route once
 
 // Default 404 handler (for any unmatched routes)
 app.use((req, res) => {
@@ -89,23 +92,21 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 
-// ✅ Fixed Socket.io Integration
+// Socket.io integration
 const socketIo = require('socket.io');
 const io = socketIo(server, {
     cors: { origin: process.env.CLIENT_URL || "http://localhost:3000" },
 });
 
-// When a client connects, store their socket using their user ID (this is one strategy)
 io.on('connection', (socket) => {
     console.log('A client connected:', socket.id);
 
-    // Optionally, expect the client to send their user ID for room joining:
+    // Listen for joining a room (using the user's ID)
     socket.on('join', (userId) => {
         socket.join(userId);
         console.log(`Socket ${socket.id} joined room: ${userId}`);
     });
 
-    // Handle disconnect
     socket.on('disconnect', () => {
         console.log('Client disconnected:', socket.id);
     });
@@ -116,14 +117,10 @@ const sendNotification = (userId, notification) => {
     io.to(userId).emit('newNotification', notification);
 };
 
-// Start server on the correct `server` instance
+// Start the server
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
 });
 
-// Export sendNotification for other modules
+// Export sendNotification for use in other modules
 module.exports = { server, io, sendNotification };
-
-// At the bottom, before the error handling middleware
-const testNotificationRoutes = require('./src/routes/testNotificationRoutes');
-app.use('/api', testNotificationRoutes);
