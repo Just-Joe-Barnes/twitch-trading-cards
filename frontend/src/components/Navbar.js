@@ -12,11 +12,12 @@ const Navbar = ({ isAdmin }) => {
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
     const [loggedInUser, setLoggedInUser] = useState({});
 
-    // Fetch logged-in user data including Twitch profile picture
+    // Fetch logged-in user data including profile picture
     useEffect(() => {
         const fetchUsername = async () => {
             try {
                 const profile = await fetchUserProfile();
+                console.log('Fetched profile:', profile); // Check the object structure in your console
                 setLoggedInUser(profile);
             } catch (error) {
                 console.error('Error fetching user profile:', error.message);
@@ -87,9 +88,9 @@ const Navbar = ({ isAdmin }) => {
                 )}
             </div>
 
-            {/* Notification Dropdown using Twitch profile picture */}
+            {/* Notification Dropdown using profile picture from the API */}
             <NotificationDropdown
-                profilePic={loggedInUser.twitchProfilePic || '/images/defaultProfile.png'}
+                profilePic={loggedInUser.profilePic || '/images/defaultProfile.png'}
                 userId={loggedInUser._id}
             />
 
