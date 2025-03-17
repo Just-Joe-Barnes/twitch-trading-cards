@@ -54,7 +54,7 @@ const CollectionPage = ({
     // For distinguishing single vs. double-click
     const clickTimerRef = useRef(null);
 
-    // 1) Fetch the logged-in user
+    // 1) Fetch logged-in user
     useEffect(() => {
         const fetchProfile = async () => {
             try {
@@ -160,7 +160,7 @@ const CollectionPage = ({
         setFilteredCards(filtered);
     }, [allCards, search, rarityFilter, sortOption, order, showFeaturedOnly, featuredCards]);
 
-    // Single-click -> select card for deck builder
+    // Single-click -> select card
     const handleCardClick = (card) => {
         if (onSelectItem) {
             const alreadySelected = selectedItems.find((item) => item.itemId === card._id);
@@ -282,10 +282,7 @@ const CollectionPage = ({
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
-                <select
-                    value={rarityFilter}
-                    onChange={(e) => setRarityFilter(e.target.value)}
-                >
+                <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
                     <option value="">All Rarities</option>
                     {rarities
                         .filter((r) => r.name !== 'All')
@@ -295,26 +292,20 @@ const CollectionPage = ({
                             </option>
                         ))}
                 </select>
-                <select
-                    value={sortOption}
-                    onChange={(e) => setSortOption(e.target.value)}
-                >
+                <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
                     <option value="">Sort By</option>
                     <option value="name">Name</option>
                     <option value="mintNumber">Mint Number</option>
                     <option value="rarity">Rarity</option>
                     <option value="acquiredAt">Acquisition Date</option>
                 </select>
-                <select
-                    value={order}
-                    onChange={(e) => setOrder(e.target.value)}
-                >
+                <select value={order} onChange={(e) => setOrder(e.target.value)}>
                     <option value="asc">Ascending</option>
                     <option value="desc">Descending</option>
                 </select>
             </div>
 
-            {/* Featured Controls - below filters, above rarity key */}
+            {/* Featured Controls */}
             <div className="cp-featured-controls">
                 <label className="cp-featured-toggle">
                     <input
@@ -325,16 +316,13 @@ const CollectionPage = ({
                     Show Featured Only
                 </label>
                 {isOwner && (
-                    <button
-                        className="cp-clear-featured-button"
-                        onClick={handleClearFeatured}
-                    >
+                    <button className="cp-clear-featured-button" onClick={handleClearFeatured}>
                         Clear Featured Cards
                     </button>
                 )}
             </div>
 
-            {/* Rarity Key - Horizontal */}
+            {/* Rarity Key */}
             <div className="cp-rarity-key">
                 {cardRarities.map((r) => (
                     <div key={r.rarity} className="cp-rarity-item">
