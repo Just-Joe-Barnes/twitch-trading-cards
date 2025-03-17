@@ -39,7 +39,7 @@ const CollectionPage = ({
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [rarityFilter, setRarityFilter] = useState('');
-    const [sortOption, setSortOption] = useState(''); // renamed variable
+    const [sortOption, setSortOption] = useState('');
     const [order, setOrder] = useState('asc');
     const [packQuantity, setPackQuantity] = useState(0);
     const [featuredCards, setFeaturedCards] = useState([]);
@@ -60,7 +60,7 @@ const CollectionPage = ({
         fetchProfile();
     }, []);
 
-    // 2) Fetch collection for page owner or logged-in user
+    // 2) Fetch the collection for page owner or logged-in user
     useEffect(() => {
         const fetchCollection = async () => {
             try {
@@ -82,7 +82,7 @@ const CollectionPage = ({
         fetchCollection();
     }, [collectionOwner, loggedInUser]);
 
-    // 3) Fetch existing featured cards if viewing own collection
+    // 3) Fetch existing featured cards (if viewing own collection)
     useEffect(() => {
         const fetchFeatured = async () => {
             try {
@@ -296,6 +296,10 @@ const CollectionPage = ({
                     <option value="asc">Ascending</option>
                     <option value="desc">Descending</option>
                 </select>
+            </div>
+
+            {/* Featured Controls - Below sorting options, above rarity key */}
+            <div className="collection-featured-controls">
                 <div className="featured-controls">
                     <label className="featured-filter-toggle">
                         <input

@@ -129,28 +129,36 @@ body {
         color: rgba(255, 255, 255, 0.6);
     }
 
-/* Featured Controls */
-.featured-controls {
+/* Collection Featured Controls (moved outside filters) */
+.collection-featured-controls {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    justify-content: center;
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 2rem;
 }
 
-.clear-featured-button {
-    padding: 8px 16px;
-    background-color: var(--brand-primary);
-    color: var(--background-dark);
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-    .clear-featured-button:hover {
-        background-color: var(--brand-secondary);
+    .collection-featured-controls .featured-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
-/* Cards Grid Container - Force 4 columns per row */
+    .collection-featured-controls .clear-featured-button {
+        padding: 8px 16px;
+        background-color: var(--brand-primary);
+        color: var(--background-dark);
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        .collection-featured-controls .clear-featured-button:hover {
+            background-color: var(--brand-secondary);
+        }
+
+/* Cards Grid Container - 4 columns per row */
 .cards-container {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -173,7 +181,7 @@ body {
         pointer-events: none;
     }
 
-/* Card Styling (BaseCard usage) */
+/* Card Styling (used by BaseCard) */
 .card {
     background: var(--surface-dark);
     border-radius: 12px;
@@ -188,7 +196,7 @@ body {
         box-shadow: 0 4px 24px rgba(219, 136, 219, 0.1);
     }
 
-/* Selection Indicator */
+/* Selection Indicator for Selected Cards */
 .card-item.selected {
     border: 2px solid var(--brand-primary) !important;
     position: relative;
