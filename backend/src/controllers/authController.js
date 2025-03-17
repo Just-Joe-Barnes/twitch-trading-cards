@@ -3,7 +3,8 @@ const User = require('../models/userModel');
 
 // Twitch login callback with redirect including token
 exports.twitchCallback = async (req, res) => {
-    const { twitchId, login, email } = req.user;
+    // Updated to include the profile image URL from Twitch
+    const { twitchId, login, email, profile_image_url } = req.user;
 
     try {
         // Find or create the user in the database
@@ -13,7 +14,12 @@ exports.twitchCallback = async (req, res) => {
                 twitchId,
                 username: login,
                 email,
+                twitchProfilePic: profile_image_url // Save the Twitch profile picture
             });
+        } else {
+            // Optionally update the profile picture on subsequent logins
+            user.twitchProfilePic = profile_image_url;
+            await user.save();
         }
 
         // Ensure isAdmin is properly set in the database

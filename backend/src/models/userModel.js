@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema({
     cards: [cardSchema], // User's card collection
     openedCards: [cardSchema], // Cards obtained from packs
     openedPacks: { type: Number, default: 0 },
+    twitchProfilePic: { type: String },
     featuredCards: [
         {
             name: { type: String, required: true },
