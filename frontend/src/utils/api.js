@@ -267,3 +267,23 @@ export const searchUsers = async (query) => {
         throw error;
     }
 };
+
+// Fetch all notifications for the logged-in user
+export const fetchNotifications = async () => {
+    return fetchWithAuth('/api/notifications', { method: 'GET' });
+};
+
+// Mark all notifications as read (called when the dropdown opens)
+export const markNotificationsAsRead = async () => {
+    return fetchWithAuth('/api/notifications/read', { method: 'PUT' });
+};
+
+// Delete a single notification by its ID
+export const deleteNotification = async (notificationId) => {
+    return fetchWithAuth(`/api/notifications/${notificationId}`, { method: 'DELETE' });
+};
+
+// Optionally, delete all notifications
+export const clearNotifications = async () => {
+    return fetchWithAuth('/api/notifications/clear', { method: 'DELETE' });
+};
