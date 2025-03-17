@@ -18,7 +18,6 @@ router.get('/', protect, async (req, res) => {
 // PUT to mark all notifications as read
 router.put('/read', protect, async (req, res) => {
     try {
-        // Update all notifications to be read
         await User.updateOne(
             { _id: req.user.id },
             { $set: { 'notifications.$[].isRead': true } }
@@ -27,6 +26,17 @@ router.put('/read', protect, async (req, res) => {
     } catch (error) {
         console.error('Error marking notifications as read:', error.message);
         res.status(500).json({ message: 'Error updating notifications' });
+    }
+});
+
+// DELETE all notifications (clear)
+router.delete('/clear', protect, async (req, res) => {
+    try {
+        await User.updateOne({ _id: req.user.id }, { $set: { notifications: [] } });
+        res.status(200).json({ message: 'All notifications cleared' });
+    } catch (error) {
+        console.error('Error clearing notifications:', error.message);
+        res.status(500).json({ message: 'Error clearing notifications' });
     }
 });
 
@@ -42,17 +52,6 @@ router.delete('/:notificationId', protect, async (req, res) => {
     } catch (error) {
         console.error('Error deleting notification:', error.message);
         res.status(500).json({ message: 'Error deleting notification' });
-    }
-});
-
-// Optional: DELETE all notifications
-router.delete('/clear', protect, async (req, res) => {
-    try {
-        await User.updateOne({ _id: req.user.id }, { $set: { notifications: [] } });
-        res.status(200).json({ message: 'All notifications cleared' });
-    } catch (error) {
-        console.error('Error clearing notifications:', error.message);
-        res.status(500).json({ message: 'Error clearing notifications' });
     }
 });
 
