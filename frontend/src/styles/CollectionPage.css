@@ -31,6 +31,7 @@ body {
 
     /* Page Title */
     .cp-page h1 {
+        text-align: center;
         font-size: 2.25rem;
         font-weight: 500;
         color: var(--text-primary);
@@ -128,7 +129,7 @@ body {
         color: rgba(255, 255, 255, 0.6);
     }
 
-/* Featured Controls (moved below filters) */
+/* Featured Controls Container */
 .cp-featured-controls {
     display: flex;
     justify-content: center;
@@ -193,14 +194,14 @@ body {
 /* Cards Grid Container */
 .cp-cards-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* Force 4 columns per row */
+    grid-template-columns: repeat(4, 1fr); /* 4 columns per row */
     gap: 1.5rem;
     background: var(--surface-darker);
     border-radius: 16px;
     border: 1px solid var(--border-dark);
     margin-bottom: 2rem;
-    width: 85vw;
-    max-width: 1300px;
+    width: 90vw;
+    max-width: 1600px; /* Increased max-width to 1600px */
     padding: 1rem;
     margin-left: auto;
     margin-right: auto;
@@ -217,14 +218,14 @@ body {
     transition: var(--transition);
     cursor: pointer;
     width: 100%;
-    max-width: 280px;
+    max-width: 320px; /* Increased max-width for card items */
     overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-    /* Remove hover transforms to avoid overflow issues */
+    /* Remove hover transform */
     .cp-card-item:hover {
         transform: none;
         border-color: var(--border-dark);
