@@ -1,6 +1,5 @@
-// server.js
-
-const express = require('express');
+﻿const express = require('express');
+const http = require('http'); // <-- Import http module
 const cors = require('cors');
 const session = require('express-session');
 const mongoose = require('mongoose');
@@ -15,12 +14,12 @@ const twitchRoutes = require('./src/routes/twitchRoutes');
 const cardRoutes = require('./src/routes/cardRoutes');
 const tradeRoutes = require('./src/routes/tradeRoutes');
 const marketRoutes = require('./src/routes/MarketRoutes');
+const notificationRoutes = require('./src/routes/notificationRoutes'); // ✅ Added missing import
 
 const app = express();
 
 // Use an environment variable (e.g., CLIENT_URL) with a fallback to localhost
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:3000", credentials: true }));
-
 
 // Middleware to handle raw body only for Twitch webhook
 const rawBodyMiddleware = (req, res, buf, encoding) => {
@@ -71,7 +70,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/twitch', twitchRoutes);
 app.use('/api/trades', tradeRoutes);
 app.use('/api/market', marketRoutes);
-app.use('/api', notificationRoutes);
+app.use('/api/notifications', notificationRoutes); // ✅ Fixed duplicate /api mount
 
 // Default 404 handler (for any unmatched routes)
 app.use((req, res) => {
@@ -84,22 +83,11 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: "Internal server error", error: err.message });
 });
 
-// Start server: bind to 0.0.0.0 so external traffic can connect
+// Create HTTP server (to attach Socket.io)
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
-});
+const server = http.createServer(app);
 
-// Optional: Increase timeouts if needed (uncomment to enable)
-server.headersTimeout = 120000; // 120 seconds
-server.keepAliveTimeout = 120000;
-
-// server.js (at the end, after app.listen)
-const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
-});
-
-// Socket.io integration
+// ✅ Fixed Socket.io Integration
 const socketIo = require('socket.io');
 const io = socketIo(server, {
     cors: { origin: process.env.CLIENT_URL || "http://localhost:3000" },
@@ -126,5 +114,10 @@ const sendNotification = (userId, notification) => {
     io.to(userId).emit('newNotification', notification);
 };
 
-// Export sendNotification if needed for other modules
-module.exports.sendNotification = sendNotification;
+// Start server on the correct `server` instance
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+});
+
+// Export sendNotification for other modules
+module.exports = { server, io, sendNotification };
