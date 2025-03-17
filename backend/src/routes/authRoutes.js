@@ -30,12 +30,16 @@ router.get(
                 username: user.display_name,
                 packs: 1,
                 firstLogin: false,
+                twitchProfilePic: user.profile_image_url // NEW: Save Twitch profile image URL
             };
             if (user.email) {
                 newUserData.email = user.email;
             }
             dbUser = await User.create(newUserData);
         } else {
+            // Update the profile picture for existing users
+            dbUser.twitchProfilePic = user.profile_image_url;
+            await dbUser.save();
             console.log("Returning user detected, checking firstLogin status.");
             if (dbUser.firstLogin) {
                 console.log(`User ${dbUser.username} is logging in for the first time.`);

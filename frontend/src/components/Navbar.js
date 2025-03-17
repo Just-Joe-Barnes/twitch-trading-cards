@@ -17,7 +17,7 @@ const Navbar = ({ isAdmin }) => {
         const fetchUsername = async () => {
             try {
                 const profile = await fetchUserProfile();
-                console.log('Fetched profile:', profile); // Check the object structure in your console
+                console.log('Fetched profile:', profile);
                 setLoggedInUser(profile);
             } catch (error) {
                 console.error('Error fetching user profile:', error.message);
@@ -88,9 +88,9 @@ const Navbar = ({ isAdmin }) => {
                 )}
             </div>
 
-            {/* Notification Dropdown using profile picture from the API */}
+            {/* Notification Dropdown using Twitch profile picture from the API */}
             <NotificationDropdown
-                profilePic={loggedInUser.profilePic || '/images/defaultProfile.png'}
+                profilePic={loggedInUser.twitchProfilePic || '/images/defaultProfile.png'}
                 userId={loggedInUser._id}
             />
 
