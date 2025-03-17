@@ -5,7 +5,7 @@ const User = require('../models/userModel');
 const { protect } = require('../middleware/authMiddleware');
 
 // GET all notifications for the logged-in user
-router.get('/notifications', protect, async (req, res) => {
+router.get('/', protect, async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('notifications');
         res.status(200).json(user.notifications);
@@ -16,7 +16,7 @@ router.get('/notifications', protect, async (req, res) => {
 });
 
 // PUT to mark all notifications as read
-router.put('/notifications/read', protect, async (req, res) => {
+router.put('/read', protect, async (req, res) => {
     try {
         // Update all notifications to be read
         await User.updateOne(
@@ -31,7 +31,7 @@ router.put('/notifications/read', protect, async (req, res) => {
 });
 
 // DELETE a single notification by ID
-router.delete('/notifications/:notificationId', protect, async (req, res) => {
+router.delete('/:notificationId', protect, async (req, res) => {
     try {
         const { notificationId } = req.params;
         await User.updateOne(
@@ -46,7 +46,7 @@ router.delete('/notifications/:notificationId', protect, async (req, res) => {
 });
 
 // Optional: DELETE all notifications
-router.delete('/notifications/clear', protect, async (req, res) => {
+router.delete('/clear', protect, async (req, res) => {
     try {
         await User.updateOne({ _id: req.user.id }, { $set: { notifications: [] } });
         res.status(200).json({ message: 'All notifications cleared' });
