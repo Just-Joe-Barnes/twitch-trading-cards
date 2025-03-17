@@ -6,28 +6,39 @@ const cardSchema = new mongoose.Schema({
     mintNumber: Number,
     imageUrl: String,
     flavorText: String,
-    acquiredAt: { type: Date, default: Date.now } // NEW: Track when the card was acquired
+    acquiredAt: { type: Date, default: Date.now } // Track when the card was acquired
+});
+
+// Notification schema
+const notificationSchema = new mongoose.Schema({
+    type: { type: String, required: true },
+    message: { type: String, required: true },
+    link: { type: String }, // Optional URL or route
+    isRead: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now },
+    extra: { type: Object, default: {} } // For any extra flags, e.g., priority
 });
 
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true, index: true },
-    email: { type: String, unique: true, sparse: true }, // Updated: use sparse unique index
+    email: { type: String, unique: true, sparse: true },
     twitchId: { type: String, unique: true },
     packs: { type: Number, default: 0 },
-    cards: [cardSchema], // Collection of cards owned by the user
+    cards: [cardSchema], // User's card collection
     openedCards: [cardSchema], // Cards obtained from packs
-    openedPacks: { type: Number, default: 0 }, // Number of packs the user has opened
+    openedPacks: { type: Number, default: 0 },
     featuredCards: [
         {
             name: { type: String, required: true },
             rarity: { type: String, required: true },
             mintNumber: { type: Number, required: true },
             imageUrl: { type: String, required: true },
-            flavorText: { type: String }, // Added flavorText field
+            flavorText: { type: String }
         },
-    ], // Featured cards displayed on the user's profile
-    firstLogin: { type: Boolean, default: false }, // First login status
-    isAdmin: { type: Boolean, default: false }, // Admin status field
+    ],
+    notifications: [notificationSchema], // NEW: Notifications for the user
+    firstLogin: { type: Boolean, default: false },
+    isAdmin: { type: Boolean, default: false }
 });
 
 const User = mongoose.model('User', userSchema);

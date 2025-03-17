@@ -48,7 +48,7 @@ const CollectionPage = ({
     const [featuredCards, setFeaturedCards] = useState([]);
     const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
 
-    // Optional: if using pack selection
+    // For optional pack quantity if needed
     const [packQuantity, setPackQuantity] = useState(0);
 
     // For distinguishing single vs. double-click
@@ -67,7 +67,7 @@ const CollectionPage = ({
         fetchProfile();
     }, []);
 
-    // 2) Fetch the collection for either the page owner or the logged-in user
+    // 2) Fetch collection (for page owner or logged-in user)
     useEffect(() => {
         const fetchCollection = async () => {
             try {
@@ -89,7 +89,7 @@ const CollectionPage = ({
         fetchCollection();
     }, [collectionOwner, loggedInUser]);
 
-    // 3) Fetch existing featured cards (if this is your own collection)
+    // 3) Fetch featured cards (if applicable)
     useEffect(() => {
         const fetchFeatured = async () => {
             try {
@@ -160,7 +160,7 @@ const CollectionPage = ({
         setFilteredCards(filtered);
     }, [allCards, search, rarityFilter, sortOption, order, showFeaturedOnly, featuredCards]);
 
-    // Single-click -> select card
+    // Single-click -> select card for deck builder
     const handleCardClick = (card) => {
         if (onSelectItem) {
             const alreadySelected = selectedItems.find((item) => item.itemId === card._id);

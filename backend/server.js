@@ -71,6 +71,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/twitch', twitchRoutes);
 app.use('/api/trades', tradeRoutes);
 app.use('/api/market', marketRoutes);
+app.use('/api', notificationRoutes);
 
 // Default 404 handler (for any unmatched routes)
 app.use((req, res) => {
@@ -92,3 +93,38 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 // Optional: Increase timeouts if needed (uncomment to enable)
 server.headersTimeout = 120000; // 120 seconds
 server.keepAliveTimeout = 120000;
+
+// server.js (at the end, after app.listen)
+const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+});
+
+// Socket.io integration
+const socketIo = require('socket.io');
+const io = socketIo(server, {
+    cors: { origin: process.env.CLIENT_URL || "http://localhost:3000" },
+});
+
+// When a client connects, store their socket using their user ID (this is one strategy)
+io.on('connection', (socket) => {
+    console.log('A client connected:', socket.id);
+
+    // Optionally, expect the client to send their user ID for room joining:
+    socket.on('join', (userId) => {
+        socket.join(userId);
+        console.log(`Socket ${socket.id} joined room: ${userId}`);
+    });
+
+    // Handle disconnect
+    socket.on('disconnect', () => {
+        console.log('Client disconnected:', socket.id);
+    });
+});
+
+// Example function to send a notification (to be called by your business logic)
+const sendNotification = (userId, notification) => {
+    io.to(userId).emit('newNotification', notification);
+};
+
+// Export sendNotification if needed for other modules
+module.exports.sendNotification = sendNotification;

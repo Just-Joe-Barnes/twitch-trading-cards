@@ -3,22 +3,23 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import '../styles/Navbar.css';
 import { searchUsers, fetchUserProfile } from '../utils/api';
+import NotificationDropdown from './NotificationDropdown';
 
 const Navbar = ({ isAdmin }) => {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
-    const [loggedInUsername, setLoggedInUsername] = useState('');
+    const [loggedInUser, setLoggedInUser] = useState({});
 
-    // Fetch the logged-in user's username on component mount
+    // Fetch logged-in user data including profile picture
     useEffect(() => {
         const fetchUsername = async () => {
             try {
                 const profile = await fetchUserProfile();
-                setLoggedInUsername(profile.username);
+                setLoggedInUser(profile);
             } catch (error) {
-                console.error('Error fetching logged-in user profile:', error.message);
+                console.error('Error fetching user profile:', error.message);
             }
         };
 
@@ -26,38 +27,36 @@ const Navbar = ({ isAdmin }) => {
     }, []);
 
     const handleLogout = () => {
-        localStorage.removeItem('token'); // Clear the token
-        navigate('/login'); // Redirect to login
+        localStorage.removeItem('token');
+        navigate('/login');
     };
 
     const handleSearchChange = async (e) => {
         const query = e.target.value;
         setSearchQuery(query);
-
         if (query.length > 1) {
             try {
-                const results = await searchUsers(query); // Fetch matching usernames
+                const results = await searchUsers(query);
                 setSearchResults(results);
-                setIsDropdownVisible(true); // Show the dropdown
+                setIsDropdownVisible(true);
             } catch (error) {
                 console.error('Error fetching search results:', error.message);
             }
         } else {
             setSearchResults([]);
-            setIsDropdownVisible(false); // Hide the dropdown if query is too short
+            setIsDropdownVisible(false);
         }
     };
 
     const handleSearchSelect = (username) => {
-        setSearchQuery(''); // Clear the search bar
-        setIsDropdownVisible(false); // Hide the dropdown
-        navigate(`/profile/${username}`); // Redirect to the selected user's profile
+        setSearchQuery('');
+        setIsDropdownVisible(false);
+        navigate(`/profile/${username}`);
     };
 
     return (
         <nav className="navbar">
             <div className="navbar-logo">
-                {/* Replace the text with your logo image */}
                 <img src="/images/NedsDecksLogo.png" alt="Ned's Decks" />
             </div>
 
@@ -88,66 +87,46 @@ const Navbar = ({ isAdmin }) => {
                 )}
             </div>
 
+            {/* Notification Dropdown using Twitch profile picture */}
+            <NotificationDropdown profilePic={loggedInUser.profilePic} userId={loggedInUser._id} />
+
             <ul className="navbar-links">
                 <li>
-                    <NavLink
-                        to="/dashboard"
-                        className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-                    >
+                    <NavLink to="/dashboard" className="nav-link">
                         Dashboard
                     </NavLink>
                 </li>
                 <li>
-                    <NavLink
-                        to={`/collection/${loggedInUsername}`}
-                        className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-                    >
+                    <NavLink to={`/collection/${loggedInUser.username}`} className="nav-link">
                         Collection
                     </NavLink>
                 </li>
                 <li>
-                    <NavLink
-                        to={`/profile/${loggedInUsername}`}
-                        className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-                    >
+                    <NavLink to={`/profile/${loggedInUser.username}`} className="nav-link">
                         My Profile
                     </NavLink>
                 </li>
                 <li>
-                    <NavLink
-                        to="/trading"
-                        className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-                    >
+                    <NavLink to="/trading" className="nav-link">
                         Trading
                     </NavLink>
                 </li>
-                {/* Only show admin-specific links */}
                 {isAdmin && (
                     <>
                         <li>
-                            <NavLink
-                                to="/admin-dashboard"
-                                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-                            >
+                            <NavLink to="/admin-dashboard" className="nav-link">
                                 Admin Dashboard
                             </NavLink>
                         </li>
                         <li>
-                            <NavLink
-                                to="/market"
-                                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-                            >
+                            <NavLink to="/market" className="nav-link">
                                 Market
                             </NavLink>
                         </li>
                     </>
                 )}
-                {/* Catalogue link is public */}
                 <li>
-                    <NavLink
-                        to="/catalogue"
-                        className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-                    >
+                    <NavLink to="/catalogue" className="nav-link">
                         Catalogue
                     </NavLink>
                 </li>
