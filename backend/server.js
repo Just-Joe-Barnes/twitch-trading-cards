@@ -1,4 +1,4 @@
-﻿// server.js
+﻿// /server.js
 
 const express = require('express');
 const cors = require('cors');
@@ -128,11 +128,9 @@ io.on('connection', (socket) => {
     });
 });
 
-// Function to send a notification to a user
-const sendNotification = (userId, notification) => {
-    console.log(`Sending notification to user: ${userId}`);
-    io.to(userId).emit('newNotification', notification);
-};
+// Initialize the notification service with the io instance
+const { setSocketInstance } = require('./notificationService');
+setSocketInstance(io);
 
-// Export sendNotification so other modules can use it
-module.exports.sendNotification = sendNotification;
+// Note: The sendNotification function is now part of notificationService.js,
+// so we no longer export it from server.js.

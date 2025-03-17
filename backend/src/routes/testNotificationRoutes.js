@@ -1,9 +1,9 @@
-// src/routes/testNotificationRoutes.js
+// /src/routes/testNotificationRoutes.js
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const User = require('../models/userModel');
-const { sendNotification } = require('../../server'); // adjust path as needed
+const { sendNotification } = require('../../notificationService'); // Updated path to notificationService
 
 // GET /api/test-notification
 // This route creates a test notification for the logged-in user.
@@ -31,8 +31,7 @@ router.get('/', protect, async (req, res) => {
         user.notifications.push(sampleNotification);
         await user.save();
 
-        // 2) Send real-time notification (if the user is in the Socket.io room)
-        //    Only do this if you're testing real-time and have 'sendNotification' exported
+        // 2) Send real-time notification
         sendNotification(userId, sampleNotification);
 
         // 3) Return a JSON response
