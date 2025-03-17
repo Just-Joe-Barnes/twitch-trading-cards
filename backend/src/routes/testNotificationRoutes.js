@@ -1,24 +1,49 @@
-// In a temporary file (e.g., src/routes/testNotificationRoutes.js)
+// src/routes/testNotificationRoutes.js
 const express = require('express');
 const router = express.Router();
+const { protect } = require('../middleware/authMiddleware');
+const User = require('../models/userModel');
 const { sendNotification } = require('../../server'); // adjust path as needed
 
-// This route triggers a test notification for the logged-in user.
-// For example: GET /api/test-notification?userId=<id>
-router.get('/test-notification', (req, res) => {
-    const { userId } = req.query;
-    if (!userId) {
-        return res.status(400).json({ message: 'Missing userId query parameter' });
+// GET /api/test-notification
+// This route creates a test notification for the logged-in user.
+router.get('/test-notification', protect, async (req, res) => {
+    try {
+        const userId = req.user.id; // from the JWT
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID not found in token.' });
+        }
+
+        // Create a sample notification
+        const sampleNotification = {
+            type: 'test',
+            message: 'This is a test notification!',
+            link: '/dashboard',  // or any relevant route
+            isRead: false,
+            extra: { priority: 'high' }
+        };
+
+        // 1) Insert into DB
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        user.notifications.push(sampleNotification);
+        await user.save();
+
+        // 2) Send real-time notification (if the user is in the Socket.io room)
+        //    Only do this if you're testing real-time and have 'sendNotification' exported
+        sendNotification(userId, sampleNotification);
+
+        // 3) Return a JSON response
+        res.json({
+            message: 'Test notification created and sent!',
+            notification: sampleNotification,
+        });
+    } catch (error) {
+        console.error('Error creating test notification:', error);
+        res.status(500).json({ message: 'Error creating test notification' });
     }
-    const sampleNotification = {
-        type: 'test',
-        message: 'This is a test notification.',
-        link: '/dashboard', // or any route you want to test
-        isRead: false,
-        extra: { priority: 'high' }
-    };
-    sendNotification(userId, sampleNotification);
-    res.json({ message: 'Test notification sent.' });
 });
 
 module.exports = router;

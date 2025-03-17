@@ -15,6 +15,7 @@ const cardRoutes = require('./src/routes/cardRoutes');
 const tradeRoutes = require('./src/routes/tradeRoutes');
 const marketRoutes = require('./src/routes/MarketRoutes');
 const notificationRoutes = require('./src/routes/notificationRoutes'); // ✅ Added missing import
+const testNotificationRoutes = require('./src/routes/testNotificationRoutes');
 
 const app = express();
 
@@ -71,6 +72,7 @@ app.use('/api/twitch', twitchRoutes);
 app.use('/api/trades', tradeRoutes);
 app.use('/api/market', marketRoutes);
 app.use('/api/notifications', notificationRoutes); // ✅ Fixed duplicate /api mount
+app.use('/api', testNotificationRoutes);
 
 // Default 404 handler (for any unmatched routes)
 app.use((req, res) => {
