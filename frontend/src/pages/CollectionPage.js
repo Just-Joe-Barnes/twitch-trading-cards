@@ -160,7 +160,7 @@ const CollectionPage = ({
         setFilteredCards(filtered);
     }, [allCards, search, rarityFilter, sortOption, order, showFeaturedOnly, featuredCards]);
 
-    // Single-click -> select card
+    // Single-click -> select card for deck builder
     const handleCardClick = (card) => {
         if (onSelectItem) {
             const alreadySelected = selectedItems.find((item) => item.itemId === card._id);
@@ -357,7 +357,6 @@ const CollectionPage = ({
                                 className={`cp-card-item ${isSelected ? 'cp-selected' : ''}`}
                                 onClick={() => handleClick(card)}
                                 onDoubleClick={() => handleDoubleClick(card)}
-                                style={{ position: 'relative' }}
                             >
                                 {isFeatured && <div className="cp-featured-badge">Featured</div>}
                                 <BaseCard
