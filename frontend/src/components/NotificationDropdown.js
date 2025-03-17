@@ -1,11 +1,13 @@
-// src/components/NotificationDropdown.js
-import React, { useEffect, useState } from 'react';
+// /src/components/NotificationDropdown.js
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/NotificationDropdown.css';
 import { fetchWithAuth } from '../utils/api';
 
 const NotificationDropdown = ({ profilePic, userId }) => {
     const [notifications, setNotifications] = useState([]);
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef(null);
 
     // Fetch notifications on mount
     const fetchNotifications = async () => {
@@ -17,8 +19,8 @@ const NotificationDropdown = ({ profilePic, userId }) => {
         }
     };
 
-    // Mark all as read when dropdown opens
-    const handleDropdownOpen = async () => {
+    // Mark notifications as read when opening the dropdown
+    const markNotificationsAsRead = async () => {
         try {
             await fetchWithAuth('/api/notifications/read', { method: 'PUT' });
             // Refresh notifications
@@ -26,6 +28,17 @@ const NotificationDropdown = ({ profilePic, userId }) => {
         } catch (error) {
             console.error('Error marking notifications as read:', error.message);
         }
+    };
+
+    // Toggle the dropdown open/closed
+    const toggleDropdown = () => {
+        setIsOpen(prev => {
+            // If opening, mark notifications as read
+            if (!prev) {
+                markNotificationsAsRead();
+            }
+            return !prev;
+        });
     };
 
     // Delete an individual notification
@@ -48,41 +61,58 @@ const NotificationDropdown = ({ profilePic, userId }) => {
         }
     };
 
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     useEffect(() => {
         fetchNotifications();
     }, []);
 
     return (
-        <div className="notification-dropdown" onMouseEnter={handleDropdownOpen}>
-            <button className="notification-icon">
+        <div className="notification-dropdown" ref={dropdownRef}>
+            <button className="notification-icon" onClick={toggleDropdown}>
                 <img src={profilePic} alt="Profile" className="notification-profile-pic" />
                 {notifications.filter(n => !n.isRead).length > 0 && (
-                    <span className="notification-badge">{notifications.filter(n => !n.isRead).length}</span>
+                    <span className="notification-badge">
+                        {notifications.filter(n => !n.isRead).length}
+                    </span>
                 )}
             </button>
-            <div className="notification-menu">
-                {notifications.length > 0 ? (
-                    <>
-                        <ul>
-                            {notifications.map((n) => (
-                                <li key={n._id} className={`notification-item ${n.isRead ? 'read' : 'unread'}`}>
-                                    <Link to={n.link || '#'}>
-                                        <span>{n.message}</span>
-                                    </Link>
-                                    <button className="delete-notification" onClick={() => handleDelete(n._id)}>
-                                        ×
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                        <button className="clear-all-btn" onClick={handleClearAll}>
-                            Clear All
-                        </button>
-                    </>
-                ) : (
-                    <p className="no-notifications">No notifications</p>
-                )}
-            </div>
+            {isOpen && (
+                <div className="notification-menu">
+                    {notifications.length > 0 ? (
+                        <>
+                            <ul>
+                                {notifications.map((n) => (
+                                    <li key={n._id} className={`notification-item ${n.isRead ? 'read' : 'unread'}`}>
+                                        <Link to={n.link || '#'}>
+                                            <span>{n.message}</span>
+                                        </Link>
+                                        <button className="delete-notification" onClick={() => handleDelete(n._id)}>
+                                            ×
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                            <button className="clear-all-btn" onClick={handleClearAll}>
+                                Clear All
+                            </button>
+                        </>
+                    ) : (
+                        <p className="no-notifications">No notifications</p>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

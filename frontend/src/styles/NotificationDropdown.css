@@ -1,5 +1,4 @@
-/* src/styles/NotificationDropdown.css */
-
+/* /src/styles/NotificationDropdown.css */
 .notification-dropdown {
     position: relative;
     display: inline-block;
@@ -33,7 +32,7 @@
 }
 
 .notification-menu {
-    display: none;
+    /* Always hidden by default; rendered only when isOpen is true */
     position: absolute;
     right: 0;
     margin-top: 10px;
@@ -46,10 +45,6 @@
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     animation: fadeIn 0.3s ease;
     z-index: 1000;
-}
-
-.notification-dropdown:hover .notification-menu {
-    display: block;
 }
 
 .notification-item {
