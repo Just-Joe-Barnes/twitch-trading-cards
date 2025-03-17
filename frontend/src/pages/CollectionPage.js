@@ -8,7 +8,7 @@ import {
     updateFeaturedCards,
 } from '../utils/api';
 import BaseCard from '../components/BaseCard';
-import LoadingSpinner from '../components/LoadingSpinner'; // Import the spinner component
+import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/CollectionPage.css';
 import { rarities } from '../constants/rarities';
 
@@ -38,8 +38,8 @@ const CollectionPage = ({
     const [filteredCards, setFilteredCards] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
-    const [rarityFilter, setRarity] = useState('');
-    const [sort, setSort] = useState('');
+    const [rarityFilter, setRarityFilter] = useState('');
+    const [sortOption, setSortOption] = useState('');
     const [order, setOrder] = useState('asc');
     const [packQuantity, setPackQuantity] = useState(0);
     const [featuredCards, setFeaturedCards] = useState([]);
@@ -47,7 +47,7 @@ const CollectionPage = ({
 
     const clickTimerRef = useRef(null);
 
-    // 1) Fetch the logged-in user
+    // 1) Fetch logged-in user
     useEffect(() => {
         const fetchProfile = async () => {
             try {
@@ -60,7 +60,7 @@ const CollectionPage = ({
         fetchProfile();
     }, []);
 
-    // 2) Fetch the collection for either the page owner or the logged-in user
+    // 2) Fetch collection
     useEffect(() => {
         const fetchCollection = async () => {
             try {
@@ -82,7 +82,7 @@ const CollectionPage = ({
         fetchCollection();
     }, [collectionOwner, loggedInUser]);
 
-    // 3) Fetch existing featured cards if this is your own collection
+    // 3) Fetch featured cards (if viewing own collection)
     useEffect(() => {
         const fetchFeatured = async () => {
             try {
@@ -116,25 +116,21 @@ const CollectionPage = ({
         }
 
         // Sorting
-        if (sort) {
+        if (sortOption) {
             filtered.sort((a, b) => {
-                if (sort === 'mintNumber') {
+                if (sortOption === 'mintNumber') {
                     const aNum = parseInt(a.mintNumber, 10);
                     const bNum = parseInt(b.mintNumber, 10);
                     return order === 'asc' ? aNum - bNum : bNum - aNum;
-                } else if (sort === 'name') {
+                } else if (sortOption === 'name') {
                     return order === 'asc'
                         ? a.name.localeCompare(b.name)
                         : b.name.localeCompare(a.name);
-                } else if (sort === 'rarity') {
-                    const rarityA = rarities.findIndex(
-                        (r) => r.name.toLowerCase() === a.rarity.toLowerCase()
-                    );
-                    const rarityB = rarities.findIndex(
-                        (r) => r.name.toLowerCase() === b.rarity.toLowerCase()
-                    );
+                } else if (sortOption === 'rarity') {
+                    const rarityA = rarities.findIndex((r) => r.name.toLowerCase() === a.rarity.toLowerCase());
+                    const rarityB = rarities.findIndex((r) => r.name.toLowerCase() === b.rarity.toLowerCase());
                     return order === 'asc' ? rarityA - rarityB : rarityB - rarityA;
-                } else if (sort === 'acquiredAt') { // NEW: sort by acquisition date
+                } else if (sortOption === 'acquiredAt') {
                     return order === 'asc'
                         ? new Date(a.acquiredAt) - new Date(b.acquiredAt)
                         : new Date(b.acquiredAt) - new Date(a.acquiredAt);
@@ -142,7 +138,6 @@ const CollectionPage = ({
                 return 0;
             });
         }
-
 
         // Show Featured Only
         if (showFeaturedOnly) {
@@ -152,7 +147,7 @@ const CollectionPage = ({
         }
 
         setFilteredCards(filtered);
-    }, [allCards, search, rarityFilter, sort, order, showFeaturedOnly, featuredCards]);
+    }, [allCards, search, rarityFilter, sortOption, order, showFeaturedOnly, featuredCards]);
 
     // Single-click -> select card for deck builder
     const handleCardClick = (card) => {
@@ -193,7 +188,6 @@ const CollectionPage = ({
         } else {
             newFeatured = [...featuredCards, card];
         }
-        // Server expects an array of card IDs, not full subdocs.
         const newFeaturedIds = newFeatured.map((c) => c._id);
         try {
             await updateFeaturedCards(newFeaturedIds);
@@ -253,7 +247,6 @@ const CollectionPage = ({
         }
     };
 
-    // Only allow featuring if it's the user's own collection
     const isOwner = !collectionOwner || loggedInUser === collectionOwner;
 
     if (loading) return <LoadingSpinner />;
@@ -271,7 +264,7 @@ const CollectionPage = ({
             </p>
 
             {/* Filters */}
-            <div className="filters">
+            <div className="collection-filters">
                 <input
                     type="text"
                     placeholder="Search by card name..."
@@ -293,7 +286,7 @@ const CollectionPage = ({
                     <option value="name">Name</option>
                     <option value="mintNumber">Mint Number</option>
                     <option value="rarity">Rarity</option>
-                    <option value="acquiredAt">Acquisition Date</option> {/* NEW */}
+                    <option value="acquiredAt">Acquisition Date</option>
                 </select>
                 <select value={order} onChange={(e) => setOrder(e.target.value)}>
                     <option value="asc">Ascending</option>
@@ -306,7 +299,7 @@ const CollectionPage = ({
                             checked={showFeaturedOnly}
                             onChange={(e) => setShowFeaturedOnly(e.target.checked)}
                         />
-                          Show Featured Only
+                        Show Featured Only
                     </label>
                     {isOwner && (
                         <button className="clear-featured-button" onClick={handleClearFeatured}>

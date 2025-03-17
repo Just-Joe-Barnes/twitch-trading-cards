@@ -6,6 +6,8 @@
     --surface-darker: #141414;
     --text-primary: rgba(255, 255, 255, 0.95);
     --border-dark: rgba(255, 255, 255, 0.12);
+    --border-radius: 16px;
+    --transition: all 0.3s ease;
 }
 
 /* Global Reset & Body */
@@ -56,8 +58,8 @@ body {
     color: var(--text-primary);
 }
 
-/* Filters Section - Force inline layout */
-.filters {
+/* Collection Filters (Unique Class Name) */
+.collection-filters {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
@@ -66,11 +68,11 @@ body {
     gap: 1.25rem;
     margin-bottom: 3rem;
     width: 100%;
-    max-width: 800px; /* Limits the width so that they stay inline */
+    max-width: 800px;
 }
 
-    .filters input[type="text"],
-    .filters select {
+    .collection-filters input[type="text"],
+    .collection-filters select {
         background: var(--surface-dark);
         border: 1px solid var(--border-dark);
         border-radius: 8px;
@@ -89,41 +91,41 @@ body {
         cursor: pointer;
     }
 
-    .filters select {
+    .collection-filters select {
         cursor: pointer;
         padding-right: 2.5rem;
     }
 
-        .filters select::-ms-expand {
+        .collection-filters select::-ms-expand {
             display: none;
         }
 
-        .filters select option {
+        .collection-filters select option {
             background: var(--surface-darker);
             color: var(--text-primary);
             padding: 0.75rem 1rem;
             border-bottom: 1px solid var(--border-dark);
         }
 
-        .filters select:focus {
+        .collection-filters select:focus {
             outline: 2px solid var(--brand-secondary);
             outline-offset: 2px;
             box-shadow: 0 0 0 3px rgba(136, 205, 219, 0.1);
         }
 
-    .filters input:-webkit-autofill,
-    .filters input:-webkit-autofill:hover,
-    .filters input:-webkit-autofill:focus {
+    .collection-filters input:-webkit-autofill,
+    .collection-filters input:-webkit-autofill:hover,
+    .collection-filters input:-webkit-autofill:focus {
         -webkit-text-fill-color: var(--text-primary);
         -webkit-box-shadow: 0 0 0px 1000px var(--surface-dark) inset;
     }
 
-    .filters select:-moz-focusring {
+    .collection-filters select:-moz-focusring {
         color: transparent;
         text-shadow: 0 0 0 var(--text-primary);
     }
 
-    .filters ::placeholder {
+    .collection-filters ::placeholder {
         color: rgba(255, 255, 255, 0.6);
     }
 
@@ -148,10 +150,10 @@ body {
         background-color: var(--brand-secondary);
     }
 
-/* Cards Grid Container - Force exactly 4 columns per row */
+/* Cards Grid Container - Fixed 4 columns per row */
 .cards-container {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* Exactly 4 columns */
+    grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
     background: var(--surface-darker);
     border-radius: 16px;
@@ -186,7 +188,7 @@ body {
         box-shadow: 0 4px 24px rgba(219, 136, 219, 0.1);
     }
 
-/* Selection Indicator for Selected Cards */
+/* Selection Indicator */
 .card-item.selected {
     border: 2px solid var(--brand-primary) !important;
     position: relative;
@@ -301,13 +303,15 @@ body {
         font-size: 2rem;
     }
 
-    .filters {
+    .filters, .collection-filters {
         flex-direction: column;
         align-items: center;
     }
 
         .filters input[type="text"],
-        .filters select {
+        .filters select,
+        .collection-filters input[type="text"],
+        .collection-filters select {
             width: 100%;
         }
 }
