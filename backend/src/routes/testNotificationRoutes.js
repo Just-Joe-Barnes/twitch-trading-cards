@@ -7,7 +7,7 @@ const { sendNotification } = require('../../server'); // adjust path as needed
 
 // GET /api/test-notification
 // This route creates a test notification for the logged-in user.
-router.get('/test-notification', protect, async (req, res) => {
+router.get('/', protect, async (req, res) => {
     try {
         const userId = req.user.id; // from the JWT
         if (!userId) {
