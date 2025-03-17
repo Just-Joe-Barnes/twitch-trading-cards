@@ -26,11 +26,11 @@ body {
     padding: 4rem 1.5rem 2rem;
     max-width: 1400px;
     margin: 0 auto;
+    text-align: center;
 }
 
     /* Page Title */
     .cp-page h1 {
-        text-align: center;
         font-size: 2.25rem;
         font-weight: 500;
         color: var(--text-primary);
@@ -52,7 +52,6 @@ body {
 
 /* Catalogue Description */
 .cp-catalogue-description {
-    text-align: center;
     font-size: 1.1rem;
     margin-bottom: 2.5rem;
     color: var(--text-primary);
@@ -129,14 +128,15 @@ body {
         color: rgba(255, 255, 255, 0.6);
     }
 
-/* Featured Controls Container */
+/* Featured Controls (moved below filters) */
 .cp-featured-controls {
     display: flex;
     justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
     width: 100%;
     max-width: 800px;
-    margin-bottom: 2rem;
-    gap: 1rem;
 }
 
 .cp-featured-toggle {
@@ -160,52 +160,79 @@ body {
         background-color: var(--brand-secondary);
     }
 
-/* Cards Grid Container - 4 columns per row, no hover border */
+/* Horizontal Rarity Key */
+.cp-rarity-key {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin: 2.5rem 0;
+    background: var(--surface-darker);
+    padding: 1rem 2rem;
+    border: 1px solid var(--border-dark);
+    border-radius: 16px;
+}
+
+.cp-rarity-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cp-color-box {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+}
+
+.cp-rarity-text {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+/* Cards Grid Container */
 .cp-cards-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr); /* Force 4 columns per row */
     gap: 1.5rem;
     background: var(--surface-darker);
     border-radius: 16px;
     border: 1px solid var(--border-dark);
     margin-bottom: 2rem;
-    position: relative;
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto; /* Center horizontally */
+    width: 85vw;
+    max-width: 1300px;
+    padding: 1rem;
+    margin-left: auto;
+    margin-right: auto;
+    overflow: hidden;
 }
 
-    .cp-cards-grid::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        border-radius: 16px;
-        box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.3);
-        pointer-events: none;
-    }
-
-/* Single Card Item */
+/* Card Item */
 .cp-card-item {
     position: relative;
     background: var(--surface-dark);
-    border-radius: 12px;
-    padding: 1rem; /* Slightly smaller padding so cards don’t overflow */
+    border-radius: var(--border-radius);
+    padding: 1rem;
     border: 1px solid var(--border-dark);
     transition: var(--transition);
     cursor: pointer;
-    /* Removed pink hover border & transform:
-     just remove or comment out the lines that change border color or add box-shadow
-  */
+    width: 100%;
+    max-width: 280px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
+    /* Remove hover transforms to avoid overflow issues */
     .cp-card-item:hover {
-        /* No transform or border color changes here to avoid pink hover border */
-        /* If you do want a subtle hover effect, you can add something else here */
+        transform: none;
+        border-color: var(--border-dark);
     }
 
-    /* Selection Indicator */
+    /* Selected Indicator */
     .cp-card-item.cp-selected {
-        border: 2px solid var(--brand-primary) !important;
+        border: 2px solid var(--brand-primary);
         overflow: visible;
     }
 
@@ -227,7 +254,7 @@ body {
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
 
-/* "Featured" Badge */
+/* Featured Badge */
 .cp-featured-badge {
     position: absolute;
     top: 8px;
@@ -276,36 +303,6 @@ body {
     }
 }
 
-/* Horizontal Card Rarity Key */
-.cp-rarity-key {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    margin: 2.5rem 0;
-    background: var(--surface-darker);
-    padding: 1rem 2rem;
-    border: 1px solid var(--border-dark);
-    border-radius: 16px;
-}
-
-.cp-rarity-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.cp-color-box {
-    width: 30px;
-    height: 30px;
-    border-radius: 6px;
-}
-
-.cp-rarity-text {
-    font-size: 1.1rem;
-    color: var(--text-primary);
-}
-
 /* Responsive Styles */
 @media (max-width: 768px) {
     .cp-cards-grid {
@@ -334,6 +331,6 @@ body {
     }
 
     .cp-card-item {
-        padding: 0.75rem; /* even smaller on mobile if needed */
+        padding: 0.75rem;
     }
 }
