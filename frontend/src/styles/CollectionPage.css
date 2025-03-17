@@ -19,7 +19,7 @@ body {
 }
 
 /* Collection Page Container */
-.collection-page {
+.cp-page {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -29,7 +29,7 @@ body {
 }
 
     /* Page Title with Brand Accent */
-    .collection-page h1 {
+    .cp-page h1 {
         text-align: center;
         font-size: 2.25rem;
         font-weight: 500;
@@ -38,7 +38,7 @@ body {
         position: relative;
     }
 
-        .collection-page h1::after {
+        .cp-page h1::after {
             content: '';
             position: absolute;
             bottom: -1rem;
@@ -51,15 +51,15 @@ body {
         }
 
 /* Catalogue Description */
-.catalogue-description {
+.cp-catalogue-description {
     text-align: center;
     font-size: 1.1rem;
     margin-bottom: 2.5rem;
     color: var(--text-primary);
 }
 
-/* Collection Filters */
-.collection-filters {
+/* Filters Container */
+.cp-filters {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
@@ -71,8 +71,8 @@ body {
     max-width: 800px;
 }
 
-    .collection-filters input[type="text"],
-    .collection-filters select {
+    .cp-filters input[type="text"],
+    .cp-filters select {
         background: var(--surface-dark);
         border: 1px solid var(--border-dark);
         border-radius: 8px;
@@ -80,7 +80,7 @@ body {
         color: var(--text-primary);
         font-family: 'Poppins', sans-serif;
         width: 240px;
-        transition: all 0.3s ease;
+        transition: var(--transition);
         appearance: none;
         -webkit-appearance: none;
         -moz-appearance: none;
@@ -91,75 +91,77 @@ body {
         cursor: pointer;
     }
 
-    .collection-filters select {
+    .cp-filters select {
         cursor: pointer;
         padding-right: 2.5rem;
     }
 
-        .collection-filters select::-ms-expand {
+        .cp-filters select::-ms-expand {
             display: none;
         }
 
-        .collection-filters select option {
+        .cp-filters select option {
             background: var(--surface-darker);
             color: var(--text-primary);
             padding: 0.75rem 1rem;
             border-bottom: 1px solid var(--border-dark);
         }
 
-        .collection-filters select:focus {
+        .cp-filters select:focus {
             outline: 2px solid var(--brand-secondary);
             outline-offset: 2px;
             box-shadow: 0 0 0 3px rgba(136, 205, 219, 0.1);
         }
 
-    .collection-filters input:-webkit-autofill,
-    .collection-filters input:-webkit-autofill:hover,
-    .collection-filters input:-webkit-autofill:focus {
+    .cp-filters input:-webkit-autofill,
+    .cp-filters input:-webkit-autofill:hover,
+    .cp-filters input:-webkit-autofill:focus {
         -webkit-text-fill-color: var(--text-primary);
         -webkit-box-shadow: 0 0 0px 1000px var(--surface-dark) inset;
     }
 
-    .collection-filters select:-moz-focusring {
+    .cp-filters select:-moz-focusring {
         color: transparent;
         text-shadow: 0 0 0 var(--text-primary);
     }
 
-    .collection-filters ::placeholder {
+    .cp-filters ::placeholder {
         color: rgba(255, 255, 255, 0.6);
     }
 
-/* Collection Featured Controls (moved outside filters) */
-.collection-featured-controls {
+/* Featured Controls Below Filters */
+.cp-featured-controls {
     display: flex;
     justify-content: center;
     width: 100%;
     max-width: 800px;
     margin-bottom: 2rem;
+    gap: 1rem;
 }
 
-    .collection-featured-controls .featured-controls {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
+.cp-featured-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+}
 
-    .collection-featured-controls .clear-featured-button {
-        padding: 8px 16px;
-        background-color: var(--brand-primary);
-        color: var(--background-dark);
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
+.cp-clear-featured-button {
+    padding: 8px 16px;
+    background-color: var(--brand-primary);
+    color: var(--background-dark);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--transition);
+}
 
-        .collection-featured-controls .clear-featured-button:hover {
-            background-color: var(--brand-secondary);
-        }
+    .cp-clear-featured-button:hover {
+        background-color: var(--brand-secondary);
+    }
 
 /* Cards Grid Container - 4 columns per row */
-.cards-container {
+.cp-cards-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
@@ -172,7 +174,7 @@ body {
     max-width: 1200px;
 }
 
-    .cards-container::before {
+    .cp-cards-grid::before {
         content: '';
         position: absolute;
         inset: 0;
@@ -181,48 +183,49 @@ body {
         pointer-events: none;
     }
 
-/* Card Styling (used by BaseCard) */
-.card {
+/* Card Item */
+.cp-card-item {
+    position: relative;
     background: var(--surface-dark);
     border-radius: 12px;
     padding: 1.5rem;
     border: 1px solid var(--border-dark);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: var(--transition);
+    cursor: pointer;
 }
 
-    .card:hover {
+    .cp-card-item:hover {
         transform: translateY(-4px);
         border-color: var(--brand-primary);
         box-shadow: 0 4px 24px rgba(219, 136, 219, 0.1);
     }
 
-/* Selection Indicator for Selected Cards */
-.card-item.selected {
-    border: 2px solid var(--brand-primary) !important;
-    position: relative;
-    overflow: visible;
-}
-
-    .card-item.selected::after {
-        content: '✓';
-        position: absolute;
-        top: -12px;
-        right: -12px;
-        background: var(--brand-primary);
-        color: var(--surface-dark);
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-        font-weight: 700;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    /* Selection Indicator */
+    .cp-card-item.cp-selected {
+        border: 2px solid var(--brand-primary) !important;
+        overflow: visible;
     }
 
+        .cp-card-item.cp-selected::after {
+            content: '✓';
+            position: absolute;
+            top: -12px;
+            right: -12px;
+            background: var(--brand-primary);
+            color: var(--surface-dark);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
 /* "Featured" Badge */
-.featured-badge {
+.cp-featured-badge {
     position: absolute;
     top: 8px;
     left: 8px;
@@ -238,12 +241,12 @@ body {
 }
 
 /* Double-click Highlight Animation */
-.double-clicked {
-    animation: highlightPop 1s ease;
+.cp-double-clicked {
+    animation: cpHighlightPop 1s ease;
     z-index: 2;
 }
 
-@keyframes highlightPop {
+@keyframes cpHighlightPop {
     0% {
         transform: scale(1);
         box-shadow: none;
@@ -271,7 +274,7 @@ body {
 }
 
 /* Horizontal Card Rarity Key */
-.card-rarity-key-horizontal {
+.cp-rarity-key {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -283,51 +286,51 @@ body {
     border-radius: 16px;
 }
 
-.rarity-item-horizontal {
+.cp-rarity-item {
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
-    .rarity-item-horizontal .color-box {
-        width: 30px;
-        height: 30px;
-        border-radius: 6px;
-    }
+.cp-color-box {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+}
 
-    .rarity-item-horizontal .rarity-text {
-        font-size: 1.1rem;
-        color: var(--text-primary);
-    }
+.cp-rarity-text {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
 
 /* Responsive Styles */
 @media (max-width: 768px) {
-    .cards-container {
+    .cp-cards-grid {
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         padding: 1.5rem;
     }
 
-    .collection-page h1 {
+    .cp-page h1 {
         font-size: 2rem;
     }
 
-    .collection-filters {
+    .cp-filters {
         flex-direction: column;
         align-items: center;
     }
 
-        .collection-filters input[type="text"],
-        .collection-filters select {
+        .cp-filters input[type="text"],
+        .cp-filters select {
             width: 100%;
         }
 }
 
 @media (max-width: 480px) {
-    .collection-page {
+    .cp-page {
         padding: 1.5rem 1rem;
     }
 
-    .card {
+    .cp-card-item {
         padding: 1.25rem;
     }
 }

@@ -37,17 +37,24 @@ const CollectionPage = ({
     const [allCards, setAllCards] = useState([]);
     const [filteredCards, setFilteredCards] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Filter states
     const [search, setSearch] = useState('');
     const [rarityFilter, setRarityFilter] = useState('');
     const [sortOption, setSortOption] = useState('');
     const [order, setOrder] = useState('asc');
-    const [packQuantity, setPackQuantity] = useState(0);
+
+    // Featured states
     const [featuredCards, setFeaturedCards] = useState([]);
     const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
 
+    // Optional: if using pack selection
+    const [packQuantity, setPackQuantity] = useState(0);
+
+    // For distinguishing single vs. double-click
     const clickTimerRef = useRef(null);
 
-    // 1) Fetch logged-in user
+    // 1) Fetch the logged-in user
     useEffect(() => {
         const fetchProfile = async () => {
             try {
@@ -60,7 +67,7 @@ const CollectionPage = ({
         fetchProfile();
     }, []);
 
-    // 2) Fetch the collection for page owner or logged-in user
+    // 2) Fetch the collection for either the page owner or the logged-in user
     useEffect(() => {
         const fetchCollection = async () => {
             try {
@@ -82,7 +89,7 @@ const CollectionPage = ({
         fetchCollection();
     }, [collectionOwner, loggedInUser]);
 
-    // 3) Fetch existing featured cards (if viewing own collection)
+    // 3) Fetch existing featured cards (if this is your own collection)
     useEffect(() => {
         const fetchFeatured = async () => {
             try {
@@ -153,7 +160,7 @@ const CollectionPage = ({
         setFilteredCards(filtered);
     }, [allCards, search, rarityFilter, sortOption, order, showFeaturedOnly, featuredCards]);
 
-    // Single-click -> select card for deck builder
+    // Single-click -> select card
     const handleCardClick = (card) => {
         if (onSelectItem) {
             const alreadySelected = selectedItems.find((item) => item.itemId === card._id);
@@ -215,11 +222,11 @@ const CollectionPage = ({
         } catch (error) {
             console.error(error);
         }
-        const cardElement = document.getElementById(`card-${card._id}`);
+        const cardElement = document.getElementById(`cp-card-${card._id}`);
         if (cardElement) {
-            cardElement.classList.add('double-clicked');
+            cardElement.classList.add('cp-double-clicked');
             setTimeout(() => {
-                cardElement.classList.remove('double-clicked');
+                cardElement.classList.remove('cp-double-clicked');
             }, 1000);
         }
     };
@@ -256,26 +263,29 @@ const CollectionPage = ({
     if (loading) return <LoadingSpinner />;
 
     return (
-        <div className="collection-page">
+        <div className="cp-page">
             {!hideHeader && (
                 <h1>{collectionTitle || `${collectionOwner || loggedInUser}'s Collection`}</h1>
             )}
 
-            <p className="catalogue-description">
+            <p className="cp-catalogue-description">
                 Browse your entire collection here! Use the filters below to search by name, rarity, or mint number.
                 You can also add up to 4 cards to your profile page as "featured cards" by double clicking them.
                 Double clicking a card again, or clicking the "Clear Featured Cards" button, will remove it.
             </p>
 
             {/* Filters */}
-            <div className="collection-filters">
+            <div className="cp-filters">
                 <input
                     type="text"
                     placeholder="Search by card name..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
-                <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
+                <select
+                    value={rarityFilter}
+                    onChange={(e) => setRarityFilter(e.target.value)}
+                >
                     <option value="">All Rarities</option>
                     {rarities
                         .filter((r) => r.name !== 'All')
@@ -285,63 +295,71 @@ const CollectionPage = ({
                             </option>
                         ))}
                 </select>
-                <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+                <select
+                    value={sortOption}
+                    onChange={(e) => setSortOption(e.target.value)}
+                >
                     <option value="">Sort By</option>
                     <option value="name">Name</option>
                     <option value="mintNumber">Mint Number</option>
                     <option value="rarity">Rarity</option>
                     <option value="acquiredAt">Acquisition Date</option>
                 </select>
-                <select value={order} onChange={(e) => setOrder(e.target.value)}>
+                <select
+                    value={order}
+                    onChange={(e) => setOrder(e.target.value)}
+                >
                     <option value="asc">Ascending</option>
                     <option value="desc">Descending</option>
                 </select>
             </div>
 
-            {/* Featured Controls - Below sorting options, above rarity key */}
-            <div className="collection-featured-controls">
-                <div className="featured-controls">
-                    <label className="featured-filter-toggle">
-                        <input
-                            type="checkbox"
-                            checked={showFeaturedOnly}
-                            onChange={(e) => setShowFeaturedOnly(e.target.checked)}
-                        />
-                        Show Featured Only
-                    </label>
-                    {isOwner && (
-                        <button className="clear-featured-button" onClick={handleClearFeatured}>
-                            Clear Featured Cards
-                        </button>
-                    )}
-                </div>
+            {/* Featured Controls - below filters, above rarity key */}
+            <div className="cp-featured-controls">
+                <label className="cp-featured-toggle">
+                    <input
+                        type="checkbox"
+                        checked={showFeaturedOnly}
+                        onChange={(e) => setShowFeaturedOnly(e.target.checked)}
+                    />
+                    Show Featured Only
+                </label>
+                {isOwner && (
+                    <button
+                        className="cp-clear-featured-button"
+                        onClick={handleClearFeatured}
+                    >
+                        Clear Featured Cards
+                    </button>
+                )}
             </div>
 
             {/* Rarity Key - Horizontal */}
-            <div className="card-rarity-key-horizontal">
+            <div className="cp-rarity-key">
                 {cardRarities.map((r) => (
-                    <div key={r.rarity} className="rarity-item-horizontal">
-                        <span className="color-box" style={{ backgroundColor: r.color }} />
-                        <span className="rarity-text">{r.rarity}</span>
+                    <div key={r.rarity} className="cp-rarity-item">
+                        <span className="cp-color-box" style={{ backgroundColor: r.color }} />
+                        <span className="cp-rarity-text">{r.rarity}</span>
                     </div>
                 ))}
             </div>
 
             {/* Cards Grid */}
-            <div className="cards-container">
+            <div className="cp-cards-grid">
                 {filteredCards.length > 0 ? (
                     filteredCards.map((card) => {
                         const isFeatured = featuredCards.some((fc) => fc._id === card._id);
+                        const isSelected = selectedItems.some((item) => item.itemId === card._id);
                         return (
                             <div
                                 key={card._id}
-                                id={`card-${card._id}`}
-                                className={`card-item ${selectedItems.some((item) => item.itemId === card._id) ? 'selected' : ''}`}
+                                id={`cp-card-${card._id}`}
+                                className={`cp-card-item ${isSelected ? 'cp-selected' : ''}`}
                                 onClick={() => handleClick(card)}
                                 onDoubleClick={() => handleDoubleClick(card)}
                                 style={{ position: 'relative' }}
                             >
-                                {isFeatured && <div className="featured-badge">Featured</div>}
+                                {isFeatured && <div className="cp-featured-badge">Featured</div>}
                                 <BaseCard
                                     name={card.name}
                                     image={card.imageUrl}
