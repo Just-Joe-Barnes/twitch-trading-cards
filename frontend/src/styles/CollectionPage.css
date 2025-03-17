@@ -58,7 +58,7 @@ body {
     color: var(--text-primary);
 }
 
-/* Collection Filters (Unique Class Name) */
+/* Collection Filters */
 .collection-filters {
     display: flex;
     flex-direction: row;
@@ -150,7 +150,7 @@ body {
         background-color: var(--brand-secondary);
     }
 
-/* Cards Grid Container - Fixed 4 columns per row */
+/* Cards Grid Container - Force 4 columns per row */
 .cards-container {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -173,7 +173,7 @@ body {
         pointer-events: none;
     }
 
-/* Card Styling (used by BaseCard) */
+/* Card Styling (BaseCard usage) */
 .card {
     background: var(--surface-dark);
     border-radius: 12px;
@@ -303,13 +303,11 @@ body {
         font-size: 2rem;
     }
 
-    .filters, .collection-filters {
+    .collection-filters {
         flex-direction: column;
         align-items: center;
     }
 
-        .filters input[type="text"],
-        .filters select,
         .collection-filters input[type="text"],
         .collection-filters select {
             width: 100%;

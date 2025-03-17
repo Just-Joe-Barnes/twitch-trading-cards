@@ -39,7 +39,7 @@ const CollectionPage = ({
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [rarityFilter, setRarityFilter] = useState('');
-    const [sortOption, setSortOption] = useState('');
+    const [sortOption, setSortOption] = useState(''); // renamed variable
     const [order, setOrder] = useState('asc');
     const [packQuantity, setPackQuantity] = useState(0);
     const [featuredCards, setFeaturedCards] = useState([]);
@@ -60,7 +60,7 @@ const CollectionPage = ({
         fetchProfile();
     }, []);
 
-    // 2) Fetch collection
+    // 2) Fetch collection for page owner or logged-in user
     useEffect(() => {
         const fetchCollection = async () => {
             try {
@@ -82,7 +82,7 @@ const CollectionPage = ({
         fetchCollection();
     }, [collectionOwner, loggedInUser]);
 
-    // 3) Fetch featured cards (if viewing own collection)
+    // 3) Fetch existing featured cards if viewing own collection
     useEffect(() => {
         const fetchFeatured = async () => {
             try {
@@ -127,8 +127,12 @@ const CollectionPage = ({
                         ? a.name.localeCompare(b.name)
                         : b.name.localeCompare(a.name);
                 } else if (sortOption === 'rarity') {
-                    const rarityA = rarities.findIndex((r) => r.name.toLowerCase() === a.rarity.toLowerCase());
-                    const rarityB = rarities.findIndex((r) => r.name.toLowerCase() === b.rarity.toLowerCase());
+                    const rarityA = rarities.findIndex(
+                        (r) => r.name.toLowerCase() === a.rarity.toLowerCase()
+                    );
+                    const rarityB = rarities.findIndex(
+                        (r) => r.name.toLowerCase() === b.rarity.toLowerCase()
+                    );
                     return order === 'asc' ? rarityA - rarityB : rarityB - rarityA;
                 } else if (sortOption === 'acquiredAt') {
                     return order === 'asc'
@@ -271,7 +275,7 @@ const CollectionPage = ({
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
-                <select value={rarityFilter} onChange={(e) => setRarity(e.target.value)}>
+                <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
                     <option value="">All Rarities</option>
                     {rarities
                         .filter((r) => r.name !== 'All')
@@ -281,7 +285,7 @@ const CollectionPage = ({
                             </option>
                         ))}
                 </select>
-                <select value={sort} onChange={(e) => setSort(e.target.value)}>
+                <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
                     <option value="">Sort By</option>
                     <option value="name">Name</option>
                     <option value="mintNumber">Mint Number</option>
@@ -319,7 +323,7 @@ const CollectionPage = ({
                 ))}
             </div>
 
-            {/* Cards */}
+            {/* Cards Grid */}
             <div className="cards-container">
                 {filteredCards.length > 0 ? (
                     filteredCards.map((card) => {
