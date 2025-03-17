@@ -12,7 +12,7 @@ const Navbar = ({ isAdmin }) => {
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
     const [loggedInUser, setLoggedInUser] = useState({});
 
-    // Fetch logged-in user data including profile picture
+    // Fetch logged-in user data including Twitch profile picture
     useEffect(() => {
         const fetchUsername = async () => {
             try {
@@ -88,7 +88,10 @@ const Navbar = ({ isAdmin }) => {
             </div>
 
             {/* Notification Dropdown using Twitch profile picture */}
-            <NotificationDropdown profilePic={loggedInUser.profilePic} userId={loggedInUser._id} />
+            <NotificationDropdown
+                profilePic={loggedInUser.twitchProfilePic || '/images/defaultProfile.png'}
+                userId={loggedInUser._id}
+            />
 
             <ul className="navbar-links">
                 <li>
