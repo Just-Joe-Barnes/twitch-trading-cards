@@ -16,10 +16,17 @@ const MarketPage = () => {
     const [sortOption, setSortOption] = useState('name');
     const [sortOrder, setSortOrder] = useState('asc');
 
-    const fetchListings = async () => {
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const listingsPerPage = 9; // Adjust as needed
+
+    const fetchListings = async (page = 1) => {
         try {
-            const res = await fetchWithAuth('/api/market/listings');
+            const res = await fetchWithAuth(`/api/market/listings?page=${page}&limit=${listingsPerPage}`);
             setListings(res.listings);
+            setCurrentPage(res.page);
+            setTotalPages(res.pages);
         } catch (err) {
             console.error('Error fetching market listings:', err);
             setError('Error fetching listings');
@@ -29,7 +36,8 @@ const MarketPage = () => {
     };
 
     useEffect(() => {
-        fetchListings();
+        fetchListings(currentPage);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const filteredListings = listings.filter((listing) => {
@@ -54,6 +62,20 @@ const MarketPage = () => {
         }
         return 0;
     });
+
+    const handlePreviousPage = () => {
+        if (currentPage > 1) {
+            setLoading(true);
+            fetchListings(currentPage - 1);
+        }
+    };
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setLoading(true);
+            fetchListings(currentPage + 1);
+        }
+    };
 
     if (loading) return <LoadingSpinner />;
     if (error) return <div className="market-page-error">{error}</div>;
@@ -117,6 +139,17 @@ const MarketPage = () => {
                 ) : (
                     <p>No listings found.</p>
                 )}
+            </div>
+            <div className="pagination-controls" style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+                <button onClick={handlePreviousPage} disabled={currentPage === 1}>
+                    Previous
+                </button>
+                <span style={{ margin: '0 1rem' }}>
+                    Page {currentPage} of {totalPages}
+                </span>
+                <button onClick={handleNextPage} disabled={currentPage === totalPages}>
+                    Next
+                </button>
             </div>
         </div>
     );
