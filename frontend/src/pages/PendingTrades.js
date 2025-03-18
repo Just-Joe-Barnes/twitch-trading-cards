@@ -1,4 +1,4 @@
-﻿// src/pages/PendingTrades.js
+// src/pages/PendingTrades.js
 import React, { useEffect, useState, useRef } from 'react';
 import { fetchUserProfile, fetchPendingTrades, acceptTrade, rejectTrade, cancelTrade } from '../utils/api';
 import BaseCard from '../components/BaseCard';
@@ -14,7 +14,6 @@ const PendingTrades = () => {
     const [filter, setFilter] = useState('all');
     const [sortOrder, setSortOrder] = useState('newest');
     const [expandedTrades, setExpandedTrades] = useState({});
-    const clickTimerRef = useRef(null);
 
     useEffect(() => {
         const loadUserProfile = async () => {

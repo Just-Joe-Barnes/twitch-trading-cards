@@ -1,4 +1,4 @@
-﻿// src/pages/CollectionPage.js
+// src/pages/CollectionPage.js
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import {
@@ -47,9 +47,6 @@ const CollectionPage = ({
     // Featured states
     const [featuredCards, setFeaturedCards] = useState([]);
     const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
-
-    // For optional pack quantity if needed
-    const [packQuantity, setPackQuantity] = useState(0);
 
     // For distinguishing single vs. double-click
     const clickTimerRef = useRef(null);
@@ -178,17 +175,6 @@ const CollectionPage = ({
         }
     };
 
-    // Update pack quantity (if used)
-    const handlePackQuantityChange = (e) => {
-        const quantity = Math.max(0, Math.min(parseInt(e.target.value || 0, 10), 10));
-        setPackQuantity(quantity);
-        if (onSelectItem) {
-            onSelectItem([
-                ...selectedItems.filter((item) => item.itemType !== 'pack'),
-                { itemId: 'pack', itemType: 'pack', quantity },
-            ]);
-        }
-    };
 
     // Toggle featured on the server
     const handleToggleFeatured = async (card) => {

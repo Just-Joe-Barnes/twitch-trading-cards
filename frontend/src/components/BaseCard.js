@@ -19,7 +19,6 @@ const BaseCard = ({
     // For other rarities, we keep the existing refs
     const holoVRef = useRef(null);
     const mythicCursorGradientRef = useRef(null);
-    const neoRainRef = useRef(null);
     const divineArtworkRef = useRef(null);
     // New ref for the description element so we can adjust its font size
     const descriptionRef = useRef(null);

@@ -1,6 +1,6 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { fetchTrades, createTrade, searchUsers, fetchWithAuth } from "../utils/api";
+import { createTrade, searchUsers, fetchWithAuth } from "../utils/api";
 import BaseCard from "../components/BaseCard";
 import "../styles/TradingPage.css";
 import { rarities } from "../constants/rarities";
