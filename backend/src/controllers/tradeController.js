@@ -47,20 +47,16 @@ const createTrade = async (req, res) => {
         }
 
         // 4) Check the user actually owns offeredItems
-        // Use your "cards" array to confirm the user owns each card ID in offeredItems
         const offeredCardsDetails = sender.cards.filter(card =>
             offeredItems.includes(card._id.toString())
         );
-        // If any item in offeredItems does NOT match the user’s cards, we can reject
         if (offeredItems.length !== offeredCardsDetails.length) {
             return res.status(400).json({
                 popupMessage: "You are attempting to trade card(s) you do not own."
             });
         }
 
-        // 5) Optionally check that the recipient truly owns each requestedItem
-        // If your trade system requires it. You already do partial checks for
-        // "No matching cards found," but let's do a thorough check:
+        // 5) Check that the recipient owns each requestedItem
         const requestedCardsDetails = recipientUser.cards.filter(card =>
             requestedItems.includes(card._id.toString())
         );
@@ -242,7 +238,7 @@ const updateTradeStatus = async (req, res) => {
             sender.packs = sender.packs - trade.offeredPacks + trade.requestedPacks;
             recipient.packs = recipient.packs - trade.requestedPacks + trade.offeredPacks;
 
-            // 2) Transfer cards
+            // 2) Transfer cards:
             // Offered -> remove from sender, add to recipient
             trade.offeredItems.forEach(itemId => {
                 const index = sender.cards.findIndex(c => c._id.toString() === itemId.toString());
@@ -267,6 +263,23 @@ const updateTradeStatus = async (req, res) => {
             // Save both users within the transaction
             await sender.save({ session });
             await recipient.save({ session });
+
+            // NEW: Cleanup conflicting trades that involve any traded cards
+            const tradedCardIds = [...trade.offeredItems, ...trade.requestedItems];
+            await Trade.updateMany(
+                {
+                    _id: { $ne: trade._id },
+                    status: 'pending',
+                    $or: [
+                        { offeredItems: { $in: tradedCardIds } },
+                        { requestedItems: { $in: tradedCardIds } }
+                    ]
+                },
+                {
+                    $set: { status: 'cancelled', cancellationReason: 'Card traded in another transaction' }
+                },
+                { session }
+            );
         }
 
         // For any status change (accepted, rejected, or cancelled), update the trade

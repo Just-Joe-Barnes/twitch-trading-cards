@@ -150,6 +150,40 @@ const MarketListingDetails = () => {
         }
     };
 
+    // New: Accept an offer
+    const handleAcceptOffer = async (offerId) => {
+        try {
+            const res = await fetchWithAuth(`/api/market/listings/${id}/offers/${offerId}/accept`, {
+                method: 'PUT',
+            });
+            if (res.message) {
+                alert('Offer accepted. Listing is now sold.');
+                navigate('/market');
+            }
+        } catch (error) {
+            console.error('Error accepting offer:', error);
+            alert('Error accepting offer.');
+        }
+    };
+
+    // New: Reject an offer
+    const handleRejectOffer = async (offerId) => {
+        try {
+            const res = await fetchWithAuth(`/api/market/listings/${id}/offers/${offerId}`, {
+                method: 'DELETE',
+            });
+            if (res.message) {
+                alert('Offer rejected.');
+                // Refresh listing details
+                const updated = await fetchWithAuth(`/api/market/listings/${id}`);
+                setListing(updated);
+            }
+        } catch (error) {
+            console.error('Error rejecting offer:', error);
+            alert('Error rejecting offer.');
+        }
+    };
+
     if (loading) return <LoadingSpinner />;
     if (!listing) return <div>Listing not found.</div>;
 
@@ -208,7 +242,6 @@ const MarketListingDetails = () => {
 
                         <div className="offer-cards-section">
                             <h3>Offer Cards</h3>
-                            {/* Collection filters placed below the subheading */}
                             <div className="filters">
                                 <input
                                     type="text"
@@ -292,8 +325,7 @@ const MarketListingDetails = () => {
                             </p>
                             {offer.offeredCards && offer.offeredCards.length > 0 && (
                                 <p>
-                                    <strong>Offered Cards:</strong>{' '}
-                                    {offer.offeredCards.map(card => card.name).join(', ')}
+                                    <strong>Offered Cards:</strong> {offer.offeredCards.map(card => card.name).join(', ')}
                                 </p>
                             )}
                             <p>
@@ -302,6 +334,12 @@ const MarketListingDetails = () => {
                             <p>
                                 <em>{new Date(offer.createdAt).toLocaleString()}</em>
                             </p>
+                            {isOwner && (
+                                <div className="offer-actions">
+                                    <button onClick={() => handleAcceptOffer(offer._id)}>Accept</button>
+                                    <button onClick={() => handleRejectOffer(offer._id)}>Reject</button>
+                                </div>
+                            )}
                         </li>
                     ))}
                 </ul>
