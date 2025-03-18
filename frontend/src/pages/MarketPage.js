@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-
 // frontend/src/pages/MarketPage.js
 import React, { useState, useEffect } from 'react';
 import { fetchWithAuth } from '../utils/api';
