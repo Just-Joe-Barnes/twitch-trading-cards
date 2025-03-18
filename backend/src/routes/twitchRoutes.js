@@ -1,4 +1,4 @@
-﻿// src/routes/twitchRoutes.js
+// src/routes/twitchRoutes.js
 const express = require('express');
 const crypto = require('crypto');
 const axios = require('axios');
@@ -118,13 +118,17 @@ const handleTwitchEvent = async (event) => {
 
 // Webhook Endpoint
 router.post('/webhook', verifyTwitchRequest, async (req, res) => {
+    // --- NEW CHALLENGE HANDLING ---
+    // If a challenge exists in the body, immediately return it.
+    if (req.body.challenge) {
+        console.log('Received challenge:', req.body.challenge);
+        return res.status(200).send(req.body.challenge);
+    }
+    // --------------------------------
+
     const messageType = req.headers['twitch-eventsub-message-type'];
     const event = req.body.event;
     const eventType = req.body.subscription ? req.body.subscription.type : event.type;
-
-    if (messageType === 'webhook_callback_verification') {
-        return res.status(200).send(req.body.challenge);
-    }
 
     if (messageType === 'notification') {
         try {

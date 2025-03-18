@@ -4,10 +4,12 @@ require('dotenv').config({ path: '../../.env' });
 // Environment variables from .env
 const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET;
-const TWITCH_USER_ACCESS_TOKEN = process.env.TWITCH_USER_ACCESS_TOKEN;
-const WEBHOOK_URL = 'https://neds-decks.onrender.com/webhook';
+const TWITCH_USER_ACCESS_TOKEN = 'ks9xvl7p5lq6yeogvkr7ertp4qr2iv';
+const TWITCH_SECRET = process.env.TWITCH_SECRET || 'your-default-twitch-secret';
+
+// Updated callback URL: make sure this matches your Express route mounting.
+const WEBHOOK_URL = 'https://neds-decks.onrender.com/api/twitch/webhook';
 const BROADCASTER_ID = '77266375'; // Replace with your broadcaster's Twitch ID
-const TWITCH_SECRET = process.env.TWITCH_SECRET || 'your-default-twitch-secret'; // Updated to use TWITCH_SECRET
 
 console.log('Environment Variables Loaded:');
 console.log('CLIENT_ID:', TWITCH_CLIENT_ID);
@@ -52,7 +54,7 @@ const fetchAppAccessToken = async () => {
 };
 
 // Subscribe to a specific event type
-const subscribeToEvent = async (type, condition, appAccessToken) => {
+const subscribeToEvent = async (type, condition, accessToken) => {
     try {
         console.log(`Sending Payload for ${type}:`, {
             type,
@@ -61,7 +63,7 @@ const subscribeToEvent = async (type, condition, appAccessToken) => {
             transport: {
                 method: 'webhook',
                 callback: WEBHOOK_URL,
-                secret: TWITCH_SECRET, // Updated to use TWITCH_SECRET
+                secret: TWITCH_SECRET,
             },
         });
 
@@ -74,13 +76,13 @@ const subscribeToEvent = async (type, condition, appAccessToken) => {
                 transport: {
                     method: 'webhook',
                     callback: WEBHOOK_URL,
-                    secret: TWITCH_SECRET, // Updated to use TWITCH_SECRET
+                    secret: TWITCH_SECRET,
                 },
             },
             {
                 headers: {
                     'Client-ID': TWITCH_CLIENT_ID,
-                    Authorization: `Bearer ${appAccessToken}`,
+                    Authorization: `Bearer ${accessToken}`,
                 },
             }
         );
@@ -93,15 +95,17 @@ const subscribeToEvent = async (type, condition, appAccessToken) => {
 // Subscribe to All Events
 const subscribeToAllEvents = async () => {
     try {
-        // Validate User Access Token
+        // Validate User Access Token (for channel subscriptions)
         await validateUserAccessToken();
 
-        // Fetch the App Access Token
+        // Fetch the App Access Token for channel points redemption event
         const appAccessToken = await fetchAppAccessToken();
 
-        // Subscribe to Twitch Events
-        await subscribeToEvent('channel.subscribe', { broadcaster_user_id: BROADCASTER_ID }, appAccessToken);
-        await subscribeToEvent('channel.subscription.gift', { broadcaster_user_id: BROADCASTER_ID }, appAccessToken);
+        // Use broadcaster's user access token for subscription events that require user-level authorization.
+        await subscribeToEvent('channel.subscribe', { broadcaster_user_id: BROADCASTER_ID }, TWITCH_USER_ACCESS_TOKEN);
+        await subscribeToEvent('channel.subscription.gift', { broadcaster_user_id: BROADCASTER_ID }, TWITCH_USER_ACCESS_TOKEN);
+
+        // Use app access token for channel points custom reward redemption event.
         await subscribeToEvent(
             'channel.channel_points_custom_reward_redemption.add',
             { broadcaster_user_id: BROADCASTER_ID },
