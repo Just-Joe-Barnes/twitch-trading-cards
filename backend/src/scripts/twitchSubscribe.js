@@ -5,7 +5,7 @@ require('dotenv').config({ path: '../../.env' });
 const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET;
 const TWITCH_USER_ACCESS_TOKEN = process.env.TWITCH_USER_ACCESS_TOKEN;
-const WEBHOOK_URL = 'https://c83e-2a00-23c6-b198-d001-cd22-aac7-203a-df37.ngrok-free.app'; // Replace with your ngrok URL
+const WEBHOOK_URL = 'https://neds-decks.onrender.com/webhook';
 const BROADCASTER_ID = '77266375'; // Replace with your broadcaster's Twitch ID
 const TWITCH_SECRET = process.env.TWITCH_SECRET || 'your-default-twitch-secret'; // Updated to use TWITCH_SECRET
 
