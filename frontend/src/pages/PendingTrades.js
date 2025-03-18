@@ -1,4 +1,4 @@
-// src/pages/PendingTrades.js
+﻿// src/pages/PendingTrades.js
 import React, { useEffect, useState, useRef } from 'react';
 import { fetchUserProfile, fetchPendingTrades, acceptTrade, rejectTrade, cancelTrade } from '../utils/api';
 import BaseCard from '../components/BaseCard';
