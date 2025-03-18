@@ -88,12 +88,6 @@ const Navbar = ({ isAdmin }) => {
                 )}
             </div>
 
-            {/* Notification Dropdown using Twitch profile picture from the API */}
-            <NotificationDropdown
-                profilePic={loggedInUser.twitchProfilePic || '/images/defaultProfile.png'}
-                userId={loggedInUser._id}
-            />
-
             <ul className="navbar-links">
                 <li>
                     <NavLink to="/dashboard" className="nav-link">
@@ -116,19 +110,18 @@ const Navbar = ({ isAdmin }) => {
                     </NavLink>
                 </li>
                 {isAdmin && (
-                    <>
-                        <li>
-                            <NavLink to="/admin-dashboard" className="nav-link">
-                                Admin Dashboard
-                            </NavLink>
-                        </li>
-                        <li>
-                            <NavLink to="/market" className="nav-link">
-                                Market
-                            </NavLink>
-                        </li>
-                    </>
+                    <li>
+                        <NavLink to="/admin-dashboard" className="nav-link">
+                            Admin Dashboard
+                        </NavLink>
+                    </li>
                 )}
+                {/* Market link is now available to everyone */}
+                <li>
+                    <NavLink to="/market" className="nav-link">
+                        Market
+                    </NavLink>
+                </li>
                 <li>
                     <NavLink to="/catalogue" className="nav-link">
                         Catalogue
@@ -140,6 +133,14 @@ const Navbar = ({ isAdmin }) => {
                     </button>
                 </li>
             </ul>
+
+            {/* Moved Notification Dropdown to far right */}
+            <div className="navbar-notifications">
+                <NotificationDropdown
+                    profilePic={loggedInUser.twitchProfilePic || '/images/defaultProfile.png'}
+                    userId={loggedInUser._id}
+                />
+            </div>
         </nav>
     );
 };
