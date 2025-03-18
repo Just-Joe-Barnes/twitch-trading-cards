@@ -104,7 +104,6 @@ const App = () => {
                 />
                 <Route path="/debug-trade" element={<DebugTradePage />} />
                 <Route path="/catalogue" element={<CataloguePage />} />
-                {/* Protected Market routes – admin only */}
                 <Route path="/market" element={<MarketPage />} />
                 <Route path="/market/create" element={<CreateListingPage />} />
                 <Route path="/market/listing/:id" element={<MarketListingDetails />} />
