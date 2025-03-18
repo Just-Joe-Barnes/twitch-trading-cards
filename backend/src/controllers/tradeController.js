@@ -13,14 +13,20 @@ const createTrade = async (req, res) => {
     console.log('Trade data received:', req.body);
 
     try {
-        // 1) Check the sender from token
+        // 1) Check if sender and recipient are the same
+        if (senderId === recipient) {
+            console.log("Trade failed: User cannot trade with themselves.");
+            return res.status(400).json({ popupMessage: "You cannot create a trade with yourself." });
+        }
+
+        // 2) Check the sender from token
         const sender = await User.findById(senderId);
         if (!sender) {
             console.log("Sender not found:", senderId);
             return res.status(404).json({ popupMessage: "Sender not found" });
         }
 
-        // 2) Check the recipient
+        // 3) Check the recipient
         let recipientUser;
         if (mongoose.Types.ObjectId.isValid(recipient)) {
             // If the client gave a userId
@@ -34,7 +40,7 @@ const createTrade = async (req, res) => {
             return res.status(404).json({ popupMessage: "Recipient not found" });
         }
 
-        // 3) Validate pack availability
+        // 4) Validate pack availability
         if (offeredPacks > sender.packs) {
             return res.status(400).json({
                 popupMessage: `Trade failed: You only have ${sender.packs} pack(s), but tried to offer ${offeredPacks}.`
@@ -46,7 +52,7 @@ const createTrade = async (req, res) => {
             });
         }
 
-        // 4) Check the user actually owns offeredItems
+        // 5) Check the user actually owns offeredItems
         const offeredCardsDetails = sender.cards.filter(card =>
             offeredItems.includes(card._id.toString())
         );
@@ -56,7 +62,7 @@ const createTrade = async (req, res) => {
             });
         }
 
-        // 5) Check that the recipient owns each requestedItem
+        // 6) Check that the recipient owns each requestedItem
         const requestedCardsDetails = recipientUser.cards.filter(card =>
             requestedItems.includes(card._id.toString())
         );
@@ -66,7 +72,7 @@ const createTrade = async (req, res) => {
             });
         }
 
-        // 6) If there's truly nothing being traded, reject
+        // 7) If there's truly nothing being traded, reject
         if (
             offeredCardsDetails.length === 0 &&
             requestedCardsDetails.length === 0 &&
@@ -78,7 +84,7 @@ const createTrade = async (req, res) => {
             });
         }
 
-        // 7) Save the trade
+        // 8) Save the trade
         const trade = new Trade({
             sender: sender._id,
             recipient: recipientUser._id,
@@ -97,7 +103,6 @@ const createTrade = async (req, res) => {
         res.status(500).json({ popupMessage: err.message });
     }
 };
-
 // Get pending trades for a user
 const getPendingTrades = async (req, res) => {
     const { userId } = req.params;
