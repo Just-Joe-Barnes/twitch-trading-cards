@@ -1,4 +1,4 @@
-﻿import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import '../styles/CardComponent.css';
 import { rarities } from '../constants/rarities';
 
