@@ -1,4 +1,4 @@
-﻿// src/components/Navbar.js
+// src/components/Navbar.js
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import '../styles/Navbar.css';

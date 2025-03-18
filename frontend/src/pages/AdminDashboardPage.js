@@ -1,4 +1,4 @@
-﻿// src/pages/AdminDashboardPage.js
+// src/pages/AdminDashboardPage.js
 import React, { useEffect, useState, useRef } from 'react';
 import { fetchWithAuth } from '../utils/api';
 import BaseCard from '../components/BaseCard';
