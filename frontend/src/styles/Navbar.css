@@ -153,6 +153,12 @@
     object-fit: contain;
 }
 
+/* Add this rule or update your existing .navbar-notifications */
+.navbar-notifications {
+    margin-left: 20px;
+}
+
+
 /* Responsive Adjustments */
 @media (max-width: 768px) {
     .navbar-links {
