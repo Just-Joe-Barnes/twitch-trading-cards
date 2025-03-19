@@ -28,7 +28,6 @@ router.post('/listings', protect, async (req, res) => {
 // GET /api/market/listings - Get all active listings with pagination.
 router.get('/listings', protect, async (req, res) => {
     try {
-        // Get pagination parameters from query, default page=1 and limit=9
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 9;
         const skip = (page - 1) * limit;
@@ -36,7 +35,7 @@ router.get('/listings', protect, async (req, res) => {
         const listingsPromise = MarketListing.find({ status: 'active' })
             .populate('owner', 'username')
             .populate('offers.offerer', 'username')
-            .populate('offers.offeredCards')
+            // Since offeredCards are embedded full objects now, no populate is needed.
             .skip(skip)
             .limit(limit);
 
@@ -56,8 +55,7 @@ router.get('/listings/:id', protect, async (req, res) => {
     try {
         const listing = await MarketListing.findById(req.params.id)
             .populate('owner', 'username')
-            .populate('offers.offerer', 'username')
-            .populate('offers.offeredCards');
+            .populate('offers.offerer', 'username');
         if (!listing) {
             return res.status(404).json({ message: 'Listing not found' });
         }
@@ -88,6 +86,7 @@ router.post('/listings/:id/offers', protect, async (req, res) => {
         if (existingOffer) {
             return res.status(400).json({ message: 'You already have an active offer on this listing.' });
         }
+        // Expect offeredCards to be an array of full card objects.
         listing.offers.push({
             offerer: req.user._id,
             message,
@@ -123,15 +122,12 @@ router.put('/listings/:id/offers/:offerId/accept', protect, async (req, res) => 
             session.endSession();
             return res.status(400).json({ message: 'Listing is not active.' });
         }
-        // Find the offer by offerId
         const offer = listing.offers.id(req.params.offerId);
         if (!offer) {
             await session.abortTransaction();
             session.endSession();
             return res.status(404).json({ message: 'Offer not found' });
         }
-        // Process the transaction:
-        // Transfer the listed card from seller to buyer and exchange packs if applicable.
         const seller = await User.findById(listing.owner).session(session);
         const buyer = await User.findById(offer.offerer).session(session);
         if (!seller || !buyer) {
@@ -150,10 +146,8 @@ router.put('/listings/:id/offers/:offerId/accept', protect, async (req, res) => 
             return res.status(400).json({ message: "Card not found in seller's collection" });
         }
         const card = seller.cards.splice(cardIndex, 1)[0];
-        // Add the card to buyer's collection.
         buyer.cards.push(card);
 
-        // Transfer packs: Buyer must have enough packs to pay the offeredPacks amount.
         if (buyer.packs < offer.offeredPacks) {
             await session.abortTransaction();
             session.endSession();
@@ -162,16 +156,13 @@ router.put('/listings/:id/offers/:offerId/accept', protect, async (req, res) => 
         buyer.packs -= offer.offeredPacks;
         seller.packs += offer.offeredPacks;
 
-        // Save the user documents.
         await seller.save({ session });
         await buyer.save({ session });
 
-        // Mark the listing as sold and clear all offers.
         listing.status = 'sold';
         listing.offers = [];
         await listing.save({ session });
 
-        // Cleanup: Cancel any other active listings with the same card.
         await MarketListing.updateMany(
             {
                 _id: { $ne: listing._id },
@@ -225,7 +216,6 @@ router.delete('/listings/:id', protect, async (req, res) => {
         if (!listing) {
             return res.status(404).json({ message: 'Listing not found' });
         }
-        // Only the listing owner can cancel the listing.
         if (listing.owner.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: 'You do not have permission to cancel this listing.' });
         }

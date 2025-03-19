@@ -45,7 +45,7 @@ const MarketListingDetails = () => {
     // Selected cards for the offer
     const [selectedOfferedCards, setSelectedOfferedCards] = useState([]);
 
-    // 1) Fetch market listing details
+    // Fetch market listing details
     useEffect(() => {
         const fetchListing = async () => {
             try {
@@ -60,7 +60,7 @@ const MarketListingDetails = () => {
         fetchListing();
     }, [id]);
 
-    // 2) Fetch logged-in user's profile & collection
+    // Fetch logged-in user's profile & collection
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -76,7 +76,7 @@ const MarketListingDetails = () => {
         fetchUserData();
     }, []);
 
-    // 3) Filter the user's collection based on search & rarity
+    // Filter the user's collection based on search & rarity
     useEffect(() => {
         let filtered = [...userCollection];
         if (search) {
@@ -116,7 +116,8 @@ const MarketListingDetails = () => {
                 method: 'POST',
                 body: JSON.stringify({
                     message: offerMessage,
-                    offeredCards: selectedOfferedCards.map(card => card._id),
+                    // Send full card objects so that offeredCards include card details.
+                    offeredCards: selectedOfferedCards,
                     offeredPacks: packsNumber,
                 }),
             });
@@ -150,7 +151,7 @@ const MarketListingDetails = () => {
         }
     };
 
-    // New: Accept an offer
+    // Accept an offer
     const handleAcceptOffer = async (offerId) => {
         try {
             const res = await fetchWithAuth(`/api/market/listings/${id}/offers/${offerId}/accept`, {
@@ -166,7 +167,7 @@ const MarketListingDetails = () => {
         }
     };
 
-    // New: Reject an offer
+    // Reject an offer
     const handleRejectOffer = async (offerId) => {
         try {
             const res = await fetchWithAuth(`/api/market/listings/${id}/offers/${offerId}`, {
@@ -174,7 +175,6 @@ const MarketListingDetails = () => {
             });
             if (res.message) {
                 alert('Offer rejected.');
-                // Refresh listing details
                 const updated = await fetchWithAuth(`/api/market/listings/${id}`);
                 setListing(updated);
             }
@@ -187,7 +187,6 @@ const MarketListingDetails = () => {
     if (loading) return <LoadingSpinner />;
     if (!listing) return <div>Listing not found.</div>;
 
-    // Determine if current user is the listing owner.
     const isOwner =
         currentUser &&
         listing.owner &&

@@ -209,5 +209,5 @@
 }
 
 .offered-card-item {
-    flex: 0 1 calc(25% - 1rem); /* Adjusts for 4 cards per row; change as needed */
+    flex: 0 1 calc(25% - 1rem); /* 4 cards per row; adjust as needed */
 }
