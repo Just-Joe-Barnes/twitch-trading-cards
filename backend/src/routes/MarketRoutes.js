@@ -35,7 +35,7 @@ router.get('/listings', protect, async (req, res) => {
         const listingsPromise = MarketListing.find({ status: 'active' })
             .populate('owner', 'username')
             .populate('offers.offerer', 'username')
-            // Since offeredCards are embedded full objects now, no populate is needed.
+            // offeredCards are embedded full objects now.
             .skip(skip)
             .limit(limit);
 
@@ -86,6 +86,12 @@ router.post('/listings/:id/offers', protect, async (req, res) => {
         if (existingOffer) {
             return res.status(400).json({ message: 'You already have an active offer on this listing.' });
         }
+
+        // Before adding the new offer, filter out any existing offers with incomplete card data.
+        listing.offers = listing.offers.filter(offer =>
+            offer.offeredCards.every(card => card.name && card.imageUrl && card.rarity && (card.mintNumber !== undefined && card.mintNumber !== null))
+        );
+
         // Expect offeredCards to be an array of full card objects.
         listing.offers.push({
             offerer: req.user._id,

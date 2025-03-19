@@ -113,17 +113,14 @@ const MarketListingDetails = () => {
             return;
         }
         try {
-            // Map each selected card to an object with the required fields.
+            // Map selected cards to objects with required fields.
             const mappedCards = selectedOfferedCards.map(card => ({
                 name: card.name,
                 imageUrl: card.imageUrl,
-                // Use card.rarity if available; if not, try the first rarity in card.rarities array.
                 rarity: card.rarity || (card.rarities && card.rarities[0]?.rarity) || '',
-                // Ensure mintNumber exists; if missing, you might need a default or skip the card.
                 mintNumber: card.mintNumber != null ? card.mintNumber : 0,
                 flavorText: card.flavorText || ''
             }));
-
             const res = await fetchWithAuth(`/api/market/listings/${id}/offers`, {
                 method: 'POST',
                 body: JSON.stringify({
