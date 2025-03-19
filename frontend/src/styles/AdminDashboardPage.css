@@ -10,7 +10,7 @@
     --transition: all 0.3s ease;
 }
 
-/* Container */
+/* Dashboard Container */
 .dashboard-container {
     padding: 6rem 1.5rem 2rem;
     background: var(--background-dark);
@@ -20,6 +20,7 @@
     position: relative;
 }
 
+    /* Dashboard Title using pseudo-element */
     .dashboard-container::before {
         content: "Dashboard";
         display: block;
@@ -44,7 +45,34 @@
             border-radius: 2px;
         }
 
-/* Grid layout */
+/* NEW: Admin Action Container */
+.admin-action-container {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.btn-set-packs {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    background-color: var(--brand-primary);
+    color: var(--background-dark);
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+    .btn-set-packs:hover {
+        background-color: var(--brand-secondary);
+    }
+
+.admin-message {
+    text-align: center;
+    margin-top: 0.5rem;
+    font-weight: bold;
+}
+
+/* Grid Layout */
 .grid-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -72,6 +100,7 @@
         padding-bottom: 0.5rem;
     }
 
+/* Users Table */
 .users-table {
     width: 100%;
     border-collapse: collapse;
@@ -101,7 +130,7 @@
         color: var(--text-primary);
     }
 
-/* Selected User -> Open Pack Section */
+/* Selected User Section */
 .selected-user-section {
     grid-column: 2 / 3;
     background: var(--surface-dark);
@@ -228,7 +257,6 @@
     flex-wrap: wrap;
     gap: 2rem;
     justify-content: center;
-    /* Overflow visible to allow front to exceed container if needed */
     overflow: visible;
 }
 
@@ -236,7 +264,6 @@
     transition: opacity 0.6s ease, transform 0.6s ease !important;
     position: relative;
     cursor: pointer;
-    /* Let the wrapper overflow too, so face-up card won't be clipped */
     overflow: visible !important;
     background-color: var(--surface-darker);
 }
@@ -252,7 +279,7 @@
         transform: translateY(0) !important;
     }
 
-/* face-down => show back, face-up => show front */
+/* Face-down vs face-up */
 .face-down .card-inner {
     transform: rotateY(0deg);
 }
@@ -261,33 +288,31 @@
     transform: rotateY(180deg);
 }
 
-/* Rarity glow on hover only if face-down */
+/* Rarity glow on hover for face-down */
 .card-wrapper.face-down:hover {
     box-shadow: 0 0 15px 5px var(--rarity-color);
 }
 
-/* card-content forced 300x450 */
+/* Card Content */
 .card-content {
     width: 300px;
     height: 450px;
     position: relative;
     perspective: 1000px;
-    /* No border color */
     border: none !important;
-    overflow: visible !important; /* ensure the front can exceed container */
+    overflow: visible !important;
 }
 
-/* 3D flipping container */
+/* Card Inner */
 .card-inner {
     width: 100%;
     height: 100%;
     transform-style: preserve-3d;
     transition: transform 0.6s ease;
     transform-origin: center center;
-    overflow: hidden; /* for face-down; we override for face-up below */
+    overflow: hidden;
 }
 
-/* card-back and card-front fill the container */
 .card-back,
 .card-front {
     position: absolute;
@@ -300,7 +325,6 @@
     border: none !important;
 }
 
-/* The back is forced 300x450 exactly */
 .card-back {
     transform: rotateY(0deg);
     z-index: 2;
@@ -313,7 +337,6 @@
         border-radius: var(--border-radius);
     }
 
-/* The front is behind at rotateY(180) in face-down mode */
 .card-front {
     transform: rotateY(180deg);
     display: flex;
@@ -323,26 +346,20 @@
     z-index: 1;
 }
 
-/* Remove margin from BaseCard's .card-container if it exists, face up only */
 .card-wrapper.face-up .card-front .card-container {
     margin: 0 !important;
 }
 
-/* 
-   For face-up, let the card-inner overflow be visible so corners won't clip.
-*/
 .card-wrapper.face-up .card-inner {
     overflow: visible !important;
 }
 
 .card-wrapper.face-up {
     border: none !important;
-    box-shadow: none !important; /* Ensures no extra glow when face-up */
+    box-shadow: none !important;
 }
 
-/* 
-   Pack-opening overlay, unchanged...
-*/
+/* Pack-opening overlay */
 .pack-opening-overlay {
     position: fixed;
     top: 0;

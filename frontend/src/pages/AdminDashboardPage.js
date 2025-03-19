@@ -55,6 +55,9 @@ const AdminDashboardPage = ({ user }) => {
     };
     const getRarityColor = (rarity) => cardRarities[rarity] || '#fff';
 
+    // Message for admin actions (button feedback)
+    const [adminMessage, setAdminMessage] = useState('');
+
     // On mount, verify admin & fetch user data
     useEffect(() => {
         if (!user?.isAdmin) {
@@ -86,8 +89,6 @@ const AdminDashboardPage = ({ user }) => {
     };
 
     // Open a pack for the selected user
-    // - All cards start face down
-    // - revealedCards => false
     const openPackForUser = async () => {
         if (!selectedUser) return;
         setLoading(true);
@@ -140,7 +141,7 @@ const AdminDashboardPage = ({ user }) => {
         }, 1000);
     };
 
-    // Immediately remove overlay & start reveal
+    // Video ended handler for pack opening
     const handleVideoEnd = () => {
         console.log('Video ended. Starting sequential reveal...');
         setIsOpeningAnimation(false);
@@ -183,23 +184,37 @@ const AdminDashboardPage = ({ user }) => {
         setIsOpeningAnimation(false);
     };
 
+    // Set all users' packs to 6 by calling the admin route
+    const handleSetAllPacks = async () => {
+        try {
+            setLoading(true);
+            const res = await fetchWithAuth('/api/admin/set-packs', { method: 'POST' });
+            if (res.message === 'All users now have 6 packs.') {
+                setAdminMessage('Successfully set all users’ packs to 6!');
+                setUsersWithPacks((prev) => prev.map((u) => ({ ...u, packs: 6 })));
+            } else {
+                setAdminMessage('Unexpected response. Check logs.');
+            }
+        } catch (error) {
+            console.error('Error setting all packs:', error);
+            setAdminMessage('Failed to set all packs to 6.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="dashboard-container">
-            {isOpeningAnimation && (
-                <div className="pack-opening-overlay">
-                    <video
-                        className="pack-opening-video"
-                        src="/animations/packopening.mp4"
-                        autoPlay
-                        playsInline
-                        controls={false}
-                        onEnded={handleVideoEnd}
-                    />
-                </div>
-            )}
-
+            <h1>Admin Dashboard</h1>
+            {/* NEW: Button placed just below the dashboard title */}
+            <div className="admin-action-container">
+                <button onClick={handleSetAllPacks} disabled={loading} className="btn-set-packs">
+                    {loading ? 'Updating...' : "Set All Users' Packs to 6"}
+                </button>
+            </div>
+            {adminMessage && <p className="admin-message">{adminMessage}</p>}
             <div className="grid-container">
-                {/* Users with Packs */}
+                {/* Users with Packs Section */}
                 <div className="users-with-packs">
                     <h2>Users with Packs</h2>
                     <div className="users-search">
@@ -250,7 +265,7 @@ const AdminDashboardPage = ({ user }) => {
                     )}
                 </div>
 
-                {/* Card Rarity Key */}
+                {/* Card Rarity Key Section */}
                 <div className="card-rarity-key">
                     <h2>Card Rarity Key</h2>
                     <div className="rarity-list">
@@ -263,7 +278,7 @@ const AdminDashboardPage = ({ user }) => {
                     </div>
                 </div>
 
-                {/* Opened Cards */}
+                {/* Opened Cards Section */}
                 <div className="opened-cards">
                     <h2>Opened Cards</h2>
                     <div className="cards-container">
