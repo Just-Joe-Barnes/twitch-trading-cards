@@ -45,7 +45,7 @@ const MarketListingDetails = () => {
     // Selected cards for the offer
     const [selectedOfferedCards, setSelectedOfferedCards] = useState([]);
 
-    // Fetch market listing details
+    // 1) Fetch market listing details
     useEffect(() => {
         const fetchListing = async () => {
             try {
@@ -60,7 +60,7 @@ const MarketListingDetails = () => {
         fetchListing();
     }, [id]);
 
-    // Fetch logged-in user's profile & collection
+    // 2) Fetch logged-in user's profile & collection
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -76,7 +76,7 @@ const MarketListingDetails = () => {
         fetchUserData();
     }, []);
 
-    // Filter the user's collection based on search & rarity
+    // 3) Filter the user's collection based on search & rarity
     useEffect(() => {
         let filtered = [...userCollection];
         if (search) {
@@ -86,7 +86,8 @@ const MarketListingDetails = () => {
         }
         if (rarityFilter) {
             filtered = filtered.filter(
-                (card) => card.rarity.toLowerCase() === rarityFilter.toLowerCase()
+                (card) => card.rarity?.toLowerCase() === rarityFilter.toLowerCase() ||
+                    (card.rarities && card.rarities[0]?.rarity?.toLowerCase() === rarityFilter.toLowerCase())
             );
         }
         setFilteredCollection(filtered);
@@ -112,12 +113,22 @@ const MarketListingDetails = () => {
             return;
         }
         try {
+            // Map each selected card to an object with the required fields.
+            const mappedCards = selectedOfferedCards.map(card => ({
+                name: card.name,
+                imageUrl: card.imageUrl,
+                // Use card.rarity if available; if not, try the first rarity in card.rarities array.
+                rarity: card.rarity || (card.rarities && card.rarities[0]?.rarity) || '',
+                // Ensure mintNumber exists; if missing, you might need a default or skip the card.
+                mintNumber: card.mintNumber != null ? card.mintNumber : 0,
+                flavorText: card.flavorText || ''
+            }));
+
             const res = await fetchWithAuth(`/api/market/listings/${id}/offers`, {
                 method: 'POST',
                 body: JSON.stringify({
                     message: offerMessage,
-                    // Send full card objects so that offeredCards include card details.
-                    offeredCards: selectedOfferedCards,
+                    offeredCards: mappedCards,
                     offeredPacks: packsNumber,
                 }),
             });
@@ -272,7 +283,7 @@ const MarketListingDetails = () => {
                                             <BaseCard
                                                 name={card.name}
                                                 image={card.imageUrl}
-                                                rarity={card.rarity}
+                                                rarity={card.rarity || (card.rarities && card.rarities[0]?.rarity)}
                                                 description={card.flavorText}
                                                 mintNumber={card.mintNumber}
                                             />
@@ -291,7 +302,7 @@ const MarketListingDetails = () => {
                                             <BaseCard
                                                 name={card.name}
                                                 image={card.imageUrl}
-                                                rarity={card.rarity}
+                                                rarity={card.rarity || (card.rarities && card.rarities[0]?.rarity)}
                                                 description={card.flavorText}
                                                 mintNumber={card.mintNumber}
                                             />
