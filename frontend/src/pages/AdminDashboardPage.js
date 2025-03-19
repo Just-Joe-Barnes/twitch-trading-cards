@@ -141,13 +141,13 @@ const AdminDashboardPage = ({ user }) => {
         }, 1000);
     };
 
-    // Video ended handler for pack opening
-    const handleVideoEnd = () => {
-        console.log('Video ended. Starting sequential reveal...');
-        setIsOpeningAnimation(false);
-        setSequentialRevealStarted(true);
-        revealCardSequentially(0);
-    };
+    //// Video ended handler for pack opening
+    //const handleVideoEnd = () => {
+    //    console.log('Video ended. Starting sequential reveal...');
+    //    setIsOpeningAnimation(false);
+    //    setSequentialRevealStarted(true);
+    //    revealCardSequentially(0);
+    //};
 
     // Fallback: if no card is revealed after 4s, reveal them all
     useEffect(() => {
