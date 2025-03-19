@@ -1,4 +1,4 @@
-﻿// /server.js
+// /server.js
 
 const express = require('express');
 const cors = require('cors');
@@ -18,6 +18,7 @@ const tradeRoutes = require('./src/routes/tradeRoutes');
 const marketRoutes = require('./src/routes/MarketRoutes');
 const notificationRoutes = require('./src/routes/notificationRoutes');
 const testNotificationRoutes = require('./src/routes/testNotificationRoutes');
+const adminRoutes = require('./src/routes/adminRoutes');
 
 const app = express();
 const server = http.createServer(app); // Use http server for Socket.io
@@ -76,6 +77,7 @@ app.use('/api/trades', tradeRoutes);
 app.use('/api/market', marketRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/test-notification', testNotificationRoutes); // Ensure this is correctly set up
+app.use('/api/admin', adminRoutes);
 
 // Default 404 handler (for any unmatched routes)
 app.use((req, res) => {
