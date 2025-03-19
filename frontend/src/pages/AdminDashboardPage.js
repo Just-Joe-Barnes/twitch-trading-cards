@@ -55,7 +55,7 @@ const AdminDashboardPage = ({ user }) => {
     };
     const getRarityColor = (rarity) => cardRarities[rarity] || '#fff';
 
-    // NEW: Message for admin actions
+    // NEW: Message for admin actions (button feedback)
     const [adminMessage, setAdminMessage] = useState('');
 
     // On mount, verify admin & fetch user data
@@ -207,21 +207,17 @@ const AdminDashboardPage = ({ user }) => {
 
     return (
         <div className="dashboard-container">
-            {isOpeningAnimation && (
-                <div className="pack-opening-overlay">
-                    <video
-                        className="pack-opening-video"
-                        src="/animations/packopening.mp4"
-                        autoPlay
-                        playsInline
-                        controls={false}
-                        onEnded={handleVideoEnd}
-                    />
-                </div>
-            )}
-
+            <h1>Admin Dashboard</h1>
+            {/* NEW: Button to set all users' packs, placed just below the title */}
+            <div className="admin-action-container">
+                <button onClick={handleSetAllPacks} disabled={loading} className="btn-set-packs">
+                    {loading ? 'Updating...' : "Set All Users' Packs to 6"}
+                </button>
+            </div>
+            {/* Display admin action message */}
+            {adminMessage && <p className="admin-message">{adminMessage}</p>}
             <div className="grid-container">
-                {/* Users with Packs */}
+                {/* Users with Packs Section */}
                 <div className="users-with-packs">
                     <h2>Users with Packs</h2>
                     <div className="users-search">
@@ -270,14 +266,6 @@ const AdminDashboardPage = ({ user }) => {
                             </button>
                         </>
                     )}
-                    {/* NEW: Button to set all users' packs to 6 */}
-                    <div style={{ marginTop: '1rem' }}>
-                        <button onClick={handleSetAllPacks} disabled={loading}>
-                            {loading ? 'Updating...' : "Set All Users' Packs to 6"}
-                        </button>
-                    </div>
-                    {/* Display admin message */}
-                    {adminMessage && <p>{adminMessage}</p>}
                 </div>
 
                 {/* Card Rarity Key */}
@@ -293,7 +281,7 @@ const AdminDashboardPage = ({ user }) => {
                     </div>
                 </div>
 
-                {/* Opened Cards */}
+                {/* Opened Cards Section */}
                 <div className="opened-cards">
                     <h2>Opened Cards</h2>
                     <div className="cards-container">
