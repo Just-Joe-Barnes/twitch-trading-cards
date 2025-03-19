@@ -195,3 +195,19 @@
         .owner-actions .cancel-button:hover {
             background-color: var(--brand-secondary);
         }
+
+.offered-cards {
+    margin-top: 0.5rem;
+    text-align: left;
+}
+
+.offered-cards-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.offered-card-item {
+    flex: 0 1 calc(25% - 1rem); /* Adjusts for 4 cards per row; change as needed */
+}

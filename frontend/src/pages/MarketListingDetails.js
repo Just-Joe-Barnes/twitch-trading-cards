@@ -324,9 +324,22 @@ const MarketListingDetails = () => {
                                 <strong>Message:</strong> {offer.message || 'No message'}
                             </p>
                             {offer.offeredCards && offer.offeredCards.length > 0 && (
-                                <p>
-                                    <strong>Offered Cards:</strong> {offer.offeredCards.map(card => card.name).join(', ')}
-                                </p>
+                                <div className="offered-cards">
+                                    <strong>Offered Cards:</strong>
+                                    <div className="offered-cards-grid">
+                                        {offer.offeredCards.map(card => (
+                                            <div key={card._id || card.name} className="offered-card-item">
+                                                <BaseCard
+                                                    name={card.name}
+                                                    image={card.imageUrl}
+                                                    rarity={card.rarity}
+                                                    description={card.flavorText}
+                                                    mintNumber={card.mintNumber}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             )}
                             <p>
                                 <strong>Packs Offered:</strong> {offer.offeredPacks}
