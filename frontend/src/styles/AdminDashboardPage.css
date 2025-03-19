@@ -363,33 +363,6 @@
     animation: fadeInOut 0.5s ease-in-out;
 }
 
-.admin-action-container {
-    margin: 1rem 0;
-    text-align: center;
-}
-
-.btn-set-packs {
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    background-color: var(--brand-primary);
-    color: var(--background-dark);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-    .btn-set-packs:hover {
-        background-color: var(--brand-secondary);
-    }
-
-.admin-message {
-    text-align: center;
-    margin-top: 0.5rem;
-    font-weight: bold;
-}
-
-
 @keyframes fadeInOut {
     0% {
         opacity: 0;

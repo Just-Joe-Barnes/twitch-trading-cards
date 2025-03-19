@@ -55,9 +55,6 @@ const AdminDashboardPage = ({ user }) => {
     };
     const getRarityColor = (rarity) => cardRarities[rarity] || '#fff';
 
-    // NEW: Message for admin actions (button feedback)
-    const [adminMessage, setAdminMessage] = useState('');
-
     // On mount, verify admin & fetch user data
     useEffect(() => {
         if (!user?.isAdmin) {
@@ -186,38 +183,23 @@ const AdminDashboardPage = ({ user }) => {
         setIsOpeningAnimation(false);
     };
 
-    // NEW: Set all users' packs to 6 by calling the admin route
-    const handleSetAllPacks = async () => {
-        try {
-            setLoading(true);
-            const res = await fetchWithAuth('/api/admin/set-packs', { method: 'POST' });
-            if (res.message === 'All users now have 6 packs.') {
-                setAdminMessage('Successfully set all users’ packs to 6!');
-                setUsersWithPacks((prev) => prev.map((u) => ({ ...u, packs: 6 })));
-            } else {
-                setAdminMessage('Unexpected response. Check logs.');
-            }
-        } catch (error) {
-            console.error('Error setting all packs:', error);
-            setAdminMessage('Failed to set all packs to 6.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
     return (
         <div className="dashboard-container">
-            <h1>Admin Dashboard</h1>
-            {/* NEW: Button to set all users' packs, placed just below the title */}
-            <div className="admin-action-container">
-                <button onClick={handleSetAllPacks} disabled={loading} className="btn-set-packs">
-                    {loading ? 'Updating...' : "Set All Users' Packs to 6"}
-                </button>
-            </div>
-            {/* Display admin action message */}
-            {adminMessage && <p className="admin-message">{adminMessage}</p>}
+            {isOpeningAnimation && (
+                <div className="pack-opening-overlay">
+                    <video
+                        className="pack-opening-video"
+                        src="/animations/packopening.mp4"
+                        autoPlay
+                        playsInline
+                        controls={false}
+                        onEnded={handleVideoEnd}
+                    />
+                </div>
+            )}
+
             <div className="grid-container">
-                {/* Users with Packs Section */}
+                {/* Users with Packs */}
                 <div className="users-with-packs">
                     <h2>Users with Packs</h2>
                     <div className="users-search">
@@ -281,7 +263,7 @@ const AdminDashboardPage = ({ user }) => {
                     </div>
                 </div>
 
-                {/* Opened Cards Section */}
+                {/* Opened Cards */}
                 <div className="opened-cards">
                     <h2>Opened Cards</h2>
                     <div className="cards-container">
