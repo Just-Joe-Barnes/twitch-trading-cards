@@ -55,6 +55,9 @@ const AdminDashboardPage = ({ user }) => {
     };
     const getRarityColor = (rarity) => cardRarities[rarity] || '#fff';
 
+    // NEW: Message for admin actions
+    const [adminMessage, setAdminMessage] = useState('');
+
     // On mount, verify admin & fetch user data
     useEffect(() => {
         if (!user?.isAdmin) {
@@ -183,6 +186,25 @@ const AdminDashboardPage = ({ user }) => {
         setIsOpeningAnimation(false);
     };
 
+    // NEW: Set all users' packs to 6 by calling the admin route
+    const handleSetAllPacks = async () => {
+        try {
+            setLoading(true);
+            const res = await fetchWithAuth('/api/admin/set-packs', { method: 'POST' });
+            if (res.message === 'All users now have 6 packs.') {
+                setAdminMessage('Successfully set all users’ packs to 6!');
+                setUsersWithPacks((prev) => prev.map((u) => ({ ...u, packs: 6 })));
+            } else {
+                setAdminMessage('Unexpected response. Check logs.');
+            }
+        } catch (error) {
+            console.error('Error setting all packs:', error);
+            setAdminMessage('Failed to set all packs to 6.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="dashboard-container">
             {isOpeningAnimation && (
@@ -248,6 +270,14 @@ const AdminDashboardPage = ({ user }) => {
                             </button>
                         </>
                     )}
+                    {/* NEW: Button to set all users' packs to 6 */}
+                    <div style={{ marginTop: '1rem' }}>
+                        <button onClick={handleSetAllPacks} disabled={loading}>
+                            {loading ? 'Updating...' : "Set All Users' Packs to 6"}
+                        </button>
+                    </div>
+                    {/* Display admin message */}
+                    {adminMessage && <p>{adminMessage}</p>}
                 </div>
 
                 {/* Card Rarity Key */}

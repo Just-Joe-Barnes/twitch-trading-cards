@@ -28,4 +28,15 @@ router.post('/clear-cards', async (req, res) => {
     }
 });
 
+// API to set all users' pack count to 6
+router.post('/set-packs', async (req, res) => {
+    try {
+        const result = await User.updateMany({}, { packs: 6 });
+        res.json({ message: 'All users now have 6 packs.', updatedCount: result.modifiedCount });
+    } catch (error) {
+        console.error('Error updating pack count for all users:', error);
+        res.status(500).json({ error: 'Failed to update packs for all users.' });
+    }
+});
+
 module.exports = router;
