@@ -291,6 +291,50 @@ const seedDatabase = async () => {
                 remainingCopies: rarity.totalCopies,
                 availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
             })),
+        },
+        {
+            name: 'Best Boy BOSCO',
+            imageUrl: '/images/cards/bestboybosco.jpg',
+            flavorText: 'R&D says its too dangerous to go alone, APD-B317, but you can call him BOSCO.',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
+        },
+        {
+            name: 'Hunters Companion',
+            imageUrl: '/images/cards/hunterscompanion.jpg',
+            flavorText: 'The kitten with claws and an aptitude for hunting, our boy Beans.',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
+        },
+        {
+            name: 'Sip From The Erdtree',
+            imageUrl: '/images/cards/sipfromtheerdtree.jpg',
+            flavorText: 'Take a sip, right in their face, no respect.',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
+        },
+        {
+            name: 'Trash Panda Tavern',
+            imageUrl: '/images/cards/trashpandatavern.jpg',
+            flavorText: 'Cogsworth has just the tipple to set your mind on the course for adventure and beyond. - UnfitFilms',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
         }
     ];
 
