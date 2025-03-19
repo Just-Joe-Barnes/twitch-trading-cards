@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     --brand-primary: #db88db;
     --brand-secondary: #88cddb;
     --background-dark: #0a0a0a;
@@ -170,6 +170,7 @@ body {
     padding: 1rem 2rem;
     border: 1px solid var(--border-dark);
     border-radius: 16px;
+    flex-wrap: wrap
 }
 
 .cp-rarity-item {
@@ -191,18 +192,20 @@ body {
 
 /* Cards Grid Container */
 .cp-cards-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    display: flex;
     gap: 1.5rem;
     background: var(--surface-darker);
     border-radius: 16px;
     border: 1px solid var(--border-dark);
     margin-bottom: 2rem;
-    max-width: 1600px;
+    max-width: 100%;
     padding: 1rem;
     margin-left: auto;
     margin-right: auto;
     overflow: hidden;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
 }
 
 /* Card Item */
