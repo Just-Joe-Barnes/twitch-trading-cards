@@ -159,6 +159,35 @@
         color: rgba(255, 255, 255, 0.6);
     }
 
+/* Trade Preview Section - Offer and Request side by side */
+.tp-trade-preview {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: 2.5rem;
+    background: var(--surface-dark);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-dark);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Ensure the offer and request sections are laid out as columns */
+.tp-offer-section,
+.tp-request-section {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Horizontal Cards Row for Trade Preview */
+.tp-cards-horizontal {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem 0;
+    min-height: 250px;
+    overflow-x: auto;
+}
+
 /* Cards Grid Container (using flex layout from Collection Page) */
 .tp-cards-grid {
     display: flex;
@@ -175,7 +204,7 @@
     align-items: center;
 }
 
-/* Individual Card Item (mimicking .cp-card-item) */
+/* Individual Card Item */
 .tp-card-item {
     position: relative;
     padding: 1rem;
@@ -217,16 +246,7 @@
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
 
-/* Horizontal Cards Row for Trade Preview */
-.tp-cards-horizontal {
-    display: flex;
-    gap: 1.5rem;
-    padding: 1rem 0;
-    min-height: 250px;
-    overflow-x: auto;
-}
-
-/* Card Preview Wrapper (unchanged for trade preview) */
+/* Card Preview Wrapper (for other sections) */
 .tp-card-preview-wrapper {
     flex: 0 0 280px;
     position: relative;
@@ -379,6 +399,10 @@
         .tp-filters select {
             width: 100%;
         }
+
+    .tp-trade-preview {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 480px) {
