@@ -35,7 +35,6 @@ router.get('/listings', protect, async (req, res) => {
         const listingsPromise = MarketListing.find({ status: 'active' })
             .populate('owner', 'username')
             .populate('offers.offerer', 'username')
-            // offeredCards are embedded full objects now.
             .skip(skip)
             .limit(limit);
 
@@ -82,7 +81,7 @@ router.post('/listings/:id/offers', protect, async (req, res) => {
         console.log('[MAKE OFFER] Listing owner:', listing.owner.toString());
         console.log('[MAKE OFFER] Current user:', req.user._id.toString());
 
-        // 3. Prevent offering on your own listing (if that is intended logic)
+        // 3. Prevent offering on your own listing
         if (listing.owner.toString() === req.user._id.toString()) {
             return res.status(400).json({ message: 'You cannot offer on your own listing.' });
         }
@@ -106,7 +105,7 @@ router.post('/listings/:id/offers', protect, async (req, res) => {
             return res.status(400).json({ message: 'You already have an active offer on this listing.' });
         }
 
-        // 6. Everything is valid -> add the new offer
+        // 6. Add the new offer
         listing.offers.push({
             offerer: req.user._id,
             message,
@@ -121,7 +120,6 @@ router.post('/listings/:id/offers', protect, async (req, res) => {
         res.status(500).json({ message: 'Server error making offer' });
     }
 });
-
 
 // PUT /api/market/listings/:id/offers/:offerId/accept - Accept an offer (listing owner only)
 router.put('/listings/:id/offers/:offerId/accept', protect, async (req, res) => {
@@ -172,8 +170,7 @@ router.put('/listings/:id/offers/:offerId/accept', protect, async (req, res) => 
             seller.cards.push(transferredCard);
         }
 
-
-        // Identify the card in seller's collection using card name and mintNumber.
+        // Transfer the listed card from seller to buyer
         const cardIndex = seller.cards.findIndex(card =>
             card.name === listing.card.name && card.mintNumber === listing.card.mintNumber
         );
@@ -223,6 +220,50 @@ router.put('/listings/:id/offers/:offerId/accept', protect, async (req, res) => 
     }
 });
 
+// DELETE /api/market/listings/:id/offers/self - Cancel (delete) your own offer
+// (Place this BEFORE the more general DELETE route below)
+router.delete('/listings/:id/offers/self', protect, async (req, res) => {
+    try {
+        const listing = await MarketListing.findById(req.params.id);
+        if (!listing) {
+            return res.status(404).json({ message: 'Listing not found' });
+        }
+
+        // Debug logs
+        const currentUserId = req.user._id.toString();
+        console.log('[CANCEL OFFER] Current user ID:', currentUserId);
+        console.log('[CANCEL OFFER] Offerer IDs in listing:', listing.offers.map(o => o.offerer.toString()));
+
+        // Filter out incomplete offers first
+        listing.offers = listing.offers.filter(offer =>
+            offer.offeredCards.every(card =>
+                card.name &&
+                card.imageUrl &&
+                card.rarity &&
+                card.mintNumber !== undefined &&
+                card.mintNumber !== null
+            )
+        );
+
+        // Find the user's offer
+        const userOffer = listing.offers.find(
+            offer => offer.offerer.toString() === currentUserId
+        );
+        if (!userOffer) {
+            return res.status(404).json({ message: 'No offer found for the current user.' });
+        }
+
+        // Remove the offer using Mongoose's pull() method
+        listing.offers.pull({ _id: userOffer._id });
+        await listing.save();
+
+        res.status(200).json({ message: 'Your offer has been cancelled.' });
+    } catch (error) {
+        console.error('Error cancelling offer:', error);
+        res.status(500).json({ message: 'Server error cancelling offer' });
+    }
+});
+
 // DELETE /api/market/listings/:id/offers/:offerId - Reject (delete) an offer (listing owner only)
 router.delete('/listings/:id/offers/:offerId', protect, async (req, res) => {
     try {
@@ -260,51 +301,5 @@ router.delete('/listings/:id', protect, async (req, res) => {
         res.status(500).json({ message: 'Server error deleting listing' });
     }
 });
-
-// DELETE /api/market/listings/:id/offers/self - Cancel (delete) your own offer
-router.delete('/listings/:id/offers/self', protect, async (req, res) => {
-    try {
-        const listing = await MarketListing.findById(req.params.id);
-        if (!listing) {
-            return res.status(404).json({ message: 'Listing not found' });
-        }
-
-        // 1. Debug logs
-        const currentUserId = req.user._id.toString();
-        console.log('[CANCEL OFFER] Current user ID:', currentUserId);
-        console.log('[CANCEL OFFER] Offerer IDs in listing:', listing.offers.map(o => o.offerer.toString()));
-
-        // 2. Filter out incomplete offers first
-        listing.offers = listing.offers.filter(offer =>
-            offer.offeredCards.every(card =>
-                card.name &&
-                card.imageUrl &&
-                card.rarity &&
-                card.mintNumber !== undefined &&
-                card.mintNumber !== null
-            )
-        );
-
-        // 3. Now find the user's offer
-        const userOffer = listing.offers.find(
-            offer => offer.offerer.toString() === currentUserId
-        );
-        if (!userOffer) {
-            // Return 404 to indicate the user has no matching offer
-            return res.status(404).json({ message: 'No offer found for the current user.' });
-        }
-
-        // 4. Remove the offer using Mongoose's pull() method
-        listing.offers.pull({ _id: userOffer._id });
-        await listing.save();
-
-        res.status(200).json({ message: 'Your offer has been cancelled.' });
-    } catch (error) {
-        console.error('Error cancelling offer:', error);
-        res.status(500).json({ message: 'Server error cancelling offer' });
-    }
-});
-
-
 
 module.exports = router;
