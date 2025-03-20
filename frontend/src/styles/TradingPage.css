@@ -111,7 +111,6 @@
     gap: 1.25rem;
     margin-bottom: 3rem;
     width: 100%;
-    max-width: 800px;
 }
 
     .tp-filters input[type="text"],
@@ -197,6 +196,7 @@
     .tp-card-item.tp-selected {
         border: 2px solid var(--brand-primary);
         overflow: visible;
+        border-radius: 20px;
     }
 
         .tp-card-item.tp-selected::after {

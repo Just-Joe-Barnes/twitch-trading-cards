@@ -221,10 +221,7 @@ const TradingPage = ({ userId }) => {
                                                         rarity={card.rarity}
                                                         mintNumber={card.mintNumber}
                                                         maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
-                                                    />
-                                                    {tradeOffer.some((c) => c._id === card._id) && (
-                                                        <div className="tp-selection-badge">✓</div>
-                                                    )}
+                                                    />                                                    
                                                 </div>
                                             ))}
                                         </div>
@@ -259,10 +256,7 @@ const TradingPage = ({ userId }) => {
                                                         rarity={card.rarity}
                                                         mintNumber={card.mintNumber}
                                                         maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
-                                                    />
-                                                    {tradeRequest.some((c) => c._id === card._id) && (
-                                                        <div className="tp-selection-badge">✓</div>
-                                                    )}
+                                                    />                                                  
                                                 </div>
                                             ))}
                                         </div>
