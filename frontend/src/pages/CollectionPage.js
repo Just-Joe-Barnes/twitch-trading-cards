@@ -38,6 +38,23 @@ const CollectionPage = ({
     const [filteredCards, setFilteredCards] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Card Container Scale Slider
+    const defaultCardScale = 1;
+
+    const [cardScale, setCardScale] = useState(() => {
+        const storedScale = localStorage.getItem("cardScale");
+        return storedScale !== null ? parseFloat(storedScale) : defaultCardScale;
+    });
+
+    useEffect(() => {
+        localStorage.setItem("cardScale", cardScale);
+    }, [cardScale]);
+
+    const handleCardScaleChange = (e) => {
+        const newScale = parseFloat(e.target.value);
+        setCardScale(newScale);
+    };
+
     // Filter states
     const [search, setSearch] = useState('');
     const [rarityFilter, setRarityFilter] = useState('');
@@ -306,6 +323,20 @@ const CollectionPage = ({
                         Clear Featured Cards
                     </button>
                 )}
+            </div>
+
+            {/* Card Container Scale Slider */ }
+            <div className="slidecontainer">
+                <label>Card Scale: </label>
+                <input
+                    type="range"
+                    min="0.5"
+                    max="2"
+                    step="0.05"
+                    value={cardScale}
+                    onChange={handleCardScaleChange}
+                />
+                <p>{Math.round(cardScale * 100)}%</p>
             </div>
 
             {/* Rarity Key */}
