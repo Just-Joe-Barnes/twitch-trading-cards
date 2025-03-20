@@ -196,6 +196,22 @@
             background-color: var(--brand-secondary);
         }
 
+/* Offer actions buttons styling */
+.offer-actions button {
+    padding: 0.5rem 1rem;
+    margin-right: 0.5rem;
+    background-color: var(--brand-primary);
+    border: none;
+    border-radius: 6px;
+    color: var(--background-dark);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .offer-actions button:hover {
+        background-color: var(--brand-secondary);
+    }
+
 .offered-cards {
     margin-top: 0.5rem;
     text-align: left;

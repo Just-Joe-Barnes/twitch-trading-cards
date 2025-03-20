@@ -175,7 +175,7 @@ const MarketListingDetails = () => {
         }
     };
 
-    // Reject an offer
+    // Reject an offer (for listing owner)
     const handleRejectOffer = async (offerId) => {
         try {
             const res = await fetchWithAuth(`/api/market/listings/${id}/offers/${offerId}`, {
@@ -189,6 +189,23 @@ const MarketListingDetails = () => {
         } catch (error) {
             console.error('Error rejecting offer:', error);
             alert('Error rejecting offer.');
+        }
+    };
+
+    // Cancel your own offer (for offerer)
+    const handleCancelOffer = async (offerId) => {
+        try {
+            const res = await fetchWithAuth(`/api/market/listings/${id}/offers/self`, {
+                method: 'DELETE',
+            });
+            if (res.message) {
+                alert('Offer cancelled.');
+                const updated = await fetchWithAuth(`/api/market/listings/${id}`);
+                setListing(updated);
+            }
+        } catch (error) {
+            console.error('Error cancelling offer:', error);
+            alert('Error cancelling offer.');
         }
     };
 
@@ -354,12 +371,20 @@ const MarketListingDetails = () => {
                             <p>
                                 <em>{new Date(offer.createdAt).toLocaleString()}</em>
                             </p>
-                            {isOwner && (
-                                <div className="offer-actions">
-                                    <button onClick={() => handleAcceptOffer(offer._id)}>Accept</button>
-                                    <button onClick={() => handleRejectOffer(offer._id)}>Reject</button>
-                                </div>
-                            )}
+                            <div className="offer-actions">
+                                {isOwner && (
+                                    <>
+                                        <button onClick={() => handleAcceptOffer(offer._id)}>Accept</button>
+                                        <button onClick={() => handleRejectOffer(offer._id)}>Reject</button>
+                                    </>
+                                )}
+                                {!isOwner && currentUser &&
+                                    ((offer.offerer._id
+                                        ? offer.offerer._id.toString() === currentUser._id.toString()
+                                        : offer.offerer.toString() === currentUser._id.toString())) && (
+                                        <button onClick={() => handleCancelOffer(offer._id)}>Cancel Offer</button>
+                                    )}
+                            </div>
                         </li>
                     ))}
                 </ul>

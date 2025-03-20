@@ -212,13 +212,11 @@ body {
 /* Card Item */
 .cp-card-item {
     position: relative;
-    background: var(--surface-darker);
     padding: 1rem;
     transition: var(--transition);
     cursor: pointer;
     width: 100%;
     max-width: 320px;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -227,6 +225,7 @@ body {
     .cp-card-item:hover {
         transform: none;
         border-color: var(--border-dark);
+        transform: scale(1.1);
     }
 
     /* Selected Indicator */

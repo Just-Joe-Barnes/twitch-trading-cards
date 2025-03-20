@@ -142,6 +142,21 @@ router.put('/listings/:id/offers/:offerId/accept', protect, async (req, res) => 
             return res.status(404).json({ message: 'Seller or Buyer not found' });
         }
 
+        // Transfer each offered card from buyer to seller
+        for (const offeredCard of offer.offeredCards) {
+            const buyerCardIndex = buyer.cards.findIndex(c =>
+                c.name === offeredCard.name && c.mintNumber === offeredCard.mintNumber
+            );
+            if (buyerCardIndex === -1) {
+                await session.abortTransaction();
+                session.endSession();
+                return res.status(400).json({ message: `Offered card ${offeredCard.name} not found in buyer's collection` });
+            }
+            const transferredCard = buyer.cards.splice(buyerCardIndex, 1)[0];
+            seller.cards.push(transferredCard);
+        }
+
+
         // Identify the card in seller's collection using card name and mintNumber.
         const cardIndex = seller.cards.findIndex(card =>
             card.name === listing.card.name && card.mintNumber === listing.card.mintNumber
@@ -202,11 +217,8 @@ router.delete('/listings/:id/offers/:offerId', protect, async (req, res) => {
         if (listing.owner.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: 'You do not have permission to reject offers on this listing.' });
         }
-        const offer = listing.offers.id(req.params.offerId);
-        if (!offer) {
-            return res.status(404).json({ message: 'Offer not found' });
-        }
-        offer.remove();
+        // Use pull to remove the offer directly
+        listing.offers.pull({ _id: req.params.offerId });
         await listing.save();
         res.status(200).json({ message: 'Offer rejected and removed.' });
     } catch (error) {
@@ -232,5 +244,30 @@ router.delete('/listings/:id', protect, async (req, res) => {
         res.status(500).json({ message: 'Server error deleting listing' });
     }
 });
+
+// DELETE /api/market/listings/:id/offers/self - Cancel (delete) your own offer
+router.delete('/listings/:id/offers/self', protect, async (req, res) => {
+    try {
+        const listing = await MarketListing.findById(req.params.id);
+        if (!listing) {
+            return res.status(404).json({ message: 'Listing not found' });
+        }
+        // Find the offer made by the current user
+        const userOffer = listing.offers.find(
+            offer => offer.offerer.toString() === req.user._id.toString()
+        );
+        if (!userOffer) {
+            return res.status(404).json({ message: 'No offer found for the current user.' });
+        }
+        // Remove the offer using pull()
+        listing.offers.pull({ _id: userOffer._id });
+        await listing.save();
+        res.status(200).json({ message: 'Your offer has been cancelled.' });
+    } catch (error) {
+        console.error('Error cancelling offer:', error);
+        res.status(500).json({ message: 'Server error cancelling offer' });
+    }
+});
+
 
 module.exports = router;
