@@ -56,7 +56,48 @@ body {
     color: var(--text-primary);
 }
 
-/* Filters Container */
+/* ------------------- New Top Section Styles ------------------- */
+.cp-top-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 2rem;
+}
+
+.cp-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+@media (max-width: 768px) {
+    .cp-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.cp-filters-container,
+.cp-featured-container,
+.cp-slider-container,
+.cp-rarity-container {
+    background: var(--surface-dark);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+}
+
+    .cp-filters-container h3,
+    .cp-featured-container h3 {
+        margin: 0;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+/* ------------------- End New Top Section ------------------- */
+
+/* Filters Container (existing styling reused) */
 .cp-filters {
     display: flex;
     flex-direction: row;
@@ -64,7 +105,7 @@ body {
     justify-content: center;
     align-items: center;
     gap: 1.25rem;
-    margin-bottom: 3rem;
+    margin-bottom: 0;
     width: 100%;
     max-width: 800px;
 }
@@ -111,18 +152,6 @@ body {
             box-shadow: 0 0 0 3px rgba(136, 205, 219, 0.1);
         }
 
-    .cp-filters input:-webkit-autofill,
-    .cp-filters input:-webkit-autofill:hover,
-    .cp-filters input:-webkit-autofill:focus {
-        -webkit-text-fill-color: var(--text-primary);
-        -webkit-box-shadow: 0 0 0px 1000px var(--surface-dark) inset;
-    }
-
-    .cp-filters select:-moz-focusring {
-        color: transparent;
-        text-shadow: 0 0 0 var(--text-primary);
-    }
-
     .cp-filters ::placeholder {
         color: rgba(255, 255, 255, 0.6);
     }
@@ -133,7 +162,7 @@ body {
     justify-content: center;
     align-items: center;
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 0;
     width: 100%;
     max-width: 800px;
 }
@@ -159,18 +188,23 @@ body {
         background-color: var(--brand-secondary);
     }
 
+/* Slide Container (Card Scale Slider) */
+.slidecontainer {
+    margin: 0;
+}
+
 /* Horizontal Rarity Key */
 .cp-rarity-key {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 1rem;
-    margin: 2.5rem 0;
+    margin: 0;
     background: var(--surface-darker);
     padding: 1rem 2rem;
     border: 1px solid var(--border-dark);
     border-radius: 16px;
-    flex-wrap: wrap
+    flex-wrap: wrap;
 }
 
 .cp-rarity-item {
@@ -228,7 +262,6 @@ body {
         transform: scale(1.1);
     }
 
-    /* Selected Indicator */
     .cp-card-item.cp-selected {
         border: 2px solid var(--brand-primary);
         overflow: visible;

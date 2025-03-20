@@ -40,16 +40,13 @@ const CollectionPage = ({
 
     // Card Container Scale Slider
     const defaultCardScale = 1;
-
     const [cardScale, setCardScale] = useState(() => {
         const storedScale = localStorage.getItem("cardScale");
         return storedScale !== null ? parseFloat(storedScale) : defaultCardScale;
     });
-
     useEffect(() => {
         localStorage.setItem("cardScale", cardScale);
     }, [cardScale]);
-
     const handleCardScaleChange = (e) => {
         const newScale = parseFloat(e.target.value);
         setCardScale(newScale);
@@ -192,7 +189,6 @@ const CollectionPage = ({
         }
     };
 
-
     // Toggle featured on the server
     const handleToggleFeatured = async (card) => {
         const isCurrentlyFeatured = featuredCards.some((fc) => fc._id === card._id);
@@ -277,80 +273,91 @@ const CollectionPage = ({
                 Double clicking a card again, or clicking the "Clear Featured Cards" button, will remove it.
             </p>
 
-            {/* Filters */}
-            <div className="cp-filters">
-                <input
-                    type="text"
-                    placeholder="Search by card name..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
-                <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
-                    <option value="">All Rarities</option>
-                    {rarities
-                        .filter((r) => r.name !== 'All')
-                        .map((r) => (
-                            <option key={r.name} value={r.name.toLowerCase()}>
-                                {r.name}
-                            </option>
-                        ))}
-                </select>
-                <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
-                    <option value="">Sort By</option>
-                    <option value="name">Name</option>
-                    <option value="mintNumber">Mint Number</option>
-                    <option value="rarity">Rarity</option>
-                    <option value="acquiredAt">Acquisition Date</option>
-                </select>
-                <select value={order} onChange={(e) => setOrder(e.target.value)}>
-                    <option value="asc">Ascending</option>
-                    <option value="desc">Descending</option>
-                </select>
-            </div>
-
-            {/* Featured Controls */}
-            <div className="cp-featured-controls">
-                <label className="cp-featured-toggle">
-                    <input
-                        type="checkbox"
-                        checked={showFeaturedOnly}
-                        onChange={(e) => setShowFeaturedOnly(e.target.checked)}
-                    />
-                    Show Featured Only
-                </label>
-                {isOwner && (
-                    <button className="cp-clear-featured-button" onClick={handleClearFeatured}>
-                        Clear Featured Cards
-                    </button>
-                )}
-            </div>
-
-            {/* Card Container Scale Slider */ }
-            <div className="slidecontainer">
-                <label>Card Scale: </label>
-                <input
-                    type="range"
-                    min="0.5"
-                    max="2"
-                    step="0.05"
-                    value={cardScale}
-                    onChange={handleCardScaleChange}
-                />
-                <p>{Math.round(cardScale * 100)}%</p>
-            </div>
-
-            {/* Rarity Key */}
-            <div className="cp-rarity-key">
-                {cardRarities.map((r) => (
-                    <div key={r.rarity} className="cp-rarity-item">
-                        <span className="cp-color-box" style={{ backgroundColor: r.color }} />
-                        <span className="cp-rarity-text">{r.rarity}</span>
+            {/* New Top Section Container */}
+            <div className="cp-top-section">
+                <div className="cp-row">
+                    <div className="cp-filters-container">
+                        <h3>Filters</h3>
+                        <div className="cp-filters">
+                            <input
+                                type="text"
+                                placeholder="Search by card name..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                            <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
+                                <option value="">All Rarities</option>
+                                {rarities
+                                    .filter((r) => r.name !== 'All')
+                                    .map((r) => (
+                                        <option key={r.name} value={r.name.toLowerCase()}>
+                                            {r.name}
+                                        </option>
+                                    ))}
+                            </select>
+                            <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+                                <option value="">Sort By</option>
+                                <option value="name">Name</option>
+                                <option value="mintNumber">Mint Number</option>
+                                <option value="rarity">Rarity</option>
+                                <option value="acquiredAt">Acquisition Date</option>
+                            </select>
+                            <select value={order} onChange={(e) => setOrder(e.target.value)}>
+                                <option value="asc">Ascending</option>
+                                <option value="desc">Descending</option>
+                            </select>
+                        </div>
                     </div>
-                ))}
+                    <div className="cp-featured-container">
+                        <h3>Featured Controls</h3>
+                        <div className="cp-featured-controls">
+                            <label className="cp-featured-toggle">
+                                <input
+                                    type="checkbox"
+                                    checked={showFeaturedOnly}
+                                    onChange={(e) => setShowFeaturedOnly(e.target.checked)}
+                                />
+                                Show Featured Only
+                            </label>
+                            {isOwner && (
+                                <button className="cp-clear-featured-button" onClick={handleClearFeatured}>
+                                    Clear Featured Cards
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="cp-row">
+                    <div className="cp-slider-container">
+                        <div className="slidecontainer">
+                            <label>Card Scale: </label>
+                            <input
+                                type="range"
+                                min="0.5"
+                                max="2"
+                                step="0.05"
+                                value={cardScale}
+                                onChange={handleCardScaleChange}
+                            />
+                            <p>{Math.round(cardScale * 100)}%</p>
+                        </div>
+                    </div>
+                    <div className="cp-rarity-container">
+                        <div className="cp-rarity-key">
+                            {cardRarities.map((r) => (
+                                <div key={r.rarity} className="cp-rarity-item">
+                                    <span className="cp-color-box" style={{ backgroundColor: r.color }} />
+                                    <span className="cp-rarity-text">{r.rarity}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            {/* Cards Grid */}
-            <div className="cp-cards-grid" style={{"--card-scale": cardScale} }>
+            {/* Cards Grid (unchanged) */}
+            <div className="cp-cards-grid" style={{ "--card-scale": cardScale }}>
                 {filteredCards.length > 0 ? (
                     filteredCards.map((card) => {
                         const isFeatured = featuredCards.some((fc) => fc._id === card._id);
@@ -371,8 +378,9 @@ const CollectionPage = ({
                                     description={card.flavorText}
                                     mintNumber={card.mintNumber}
                                     maxMint={
-                                        rarities.find((r) => r.name.toLowerCase() === card.rarity.toLowerCase())?.totalCopies ||
-                                        '???'
+                                        rarities.find(
+                                            (r) => r.name.toLowerCase() === card.rarity.toLowerCase()
+                                        )?.totalCopies || '???'
                                     }
                                 />
                             </div>
