@@ -153,36 +153,36 @@ const TradingPage = ({ userId }) => {
     };
 
     return (
-        <div className="trading-container">
+        <div className="tp-trading-container">
             <h1>Trading</h1>
-            <p className="trading-info">
+            <p className="tp-trading-info">
                 Welcome to the trading system! You can trade up to 3 cards and/or up to 10 packs with other users.
                 Double-click on any selected card to remove it from your trade. Make sure to review your offers
                 and requests carefully before confirming a trade. Pending trades can be managed through the "View Pending Trades" button below.
             </p>
 
-            <div className="trade-control-buttons">
+            <div className="tp-trade-control-buttons">
                 <button
-                    className="toggle-form-button"
+                    className="tp-toggle-form-button"
                     onClick={() => setShowTradeForm(!showTradeForm)}
                 >
                     {showTradeForm ? "Hide Trade Form" : "Create New Trade"}
                 </button>
                 <Link to="/trades/pending">
-                    <button className="view-pending-button">View Pending Trades</button>
+                    <button className="tp-view-pending-button">View Pending Trades</button>
                 </Link>
             </div>
 
             {showTradeForm && (
                 <>
-                    <div className="user-search">
+                    <div className="tp-user-search">
                         <input
                             type="text"
                             placeholder="Search user to trade with..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
-                        <ul className="suggestions">
+                        <ul className="tp-suggestions">
                             {userSuggestions.map((user) => (
                                 <li key={user._id} onClick={() => handleUserSelect(user.username)}>
                                     {user.username}
@@ -192,10 +192,10 @@ const TradingPage = ({ userId }) => {
                     </div>
 
                     {selectedUser && (
-                        <div className="trade-interface">
-                            <div className="trade-preview-control">
+                        <div className="tp-trade-interface">
+                            <div className="tp-trade-preview-control">
                                 <button
-                                    className="toggle-preview-button"
+                                    className="tp-toggle-preview-button"
                                     onClick={() => setShowTradePreview(!showTradePreview)}
                                 >
                                     {showTradePreview ? "Hide Trade Preview" : "Show Trade Preview"}
@@ -203,14 +203,14 @@ const TradingPage = ({ userId }) => {
                             </div>
 
                             {showTradePreview && (
-                                <div className="trade-preview">
-                                    <div className="offer-section">
+                                <div className="tp-trade-preview">
+                                    <div className="tp-offer-section">
                                         <h3>Your Offer</h3>
-                                        <div className="cards-horizontal">
+                                        <div className="tp-cards-horizontal">
                                             {tradeOffer.map((card) => (
                                                 <div
                                                     key={card._id}
-                                                    className="card-preview-wrapper"
+                                                    className="tp-card-preview-wrapper"
                                                     onDoubleClick={() => handleRemoveItem(card, "offer")}
                                                 >
                                                     <BaseCard
@@ -224,7 +224,7 @@ const TradingPage = ({ userId }) => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="pack-control">
+                                        <div className="tp-pack-control">
                                             <label>Packs: </label>
                                             <input
                                                 type="number"
@@ -238,13 +238,13 @@ const TradingPage = ({ userId }) => {
                                         </div>
                                     </div>
 
-                                    <div className="request-section">
+                                    <div className="tp-request-section">
                                         <h3>Your Request</h3>
-                                        <div className="cards-horizontal">
+                                        <div className="tp-cards-horizontal">
                                             {tradeRequest.map((card) => (
                                                 <div
                                                     key={card._id}
-                                                    className="card-preview-wrapper"
+                                                    className="tp-card-preview-wrapper"
                                                     onDoubleClick={() => handleRemoveItem(card, "request")}
                                                 >
                                                     <BaseCard
@@ -258,7 +258,7 @@ const TradingPage = ({ userId }) => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="pack-control">
+                                        <div className="tp-pack-control">
                                             <label>Packs: </label>
                                             <input
                                                 type="number"
@@ -274,11 +274,10 @@ const TradingPage = ({ userId }) => {
                                 </div>
                             )}
 
-                            <div className="collections-wrapper">
-                                <div className="collection-panel">
-                                    {/* New subheading for the logged-in user's collection */}
-                                    <h3 className="collection-header">Your Collection</h3>
-                                    <div className="filters">
+                            <div className="tp-collections-wrapper">
+                                <div className="tp-collection-panel">
+                                    <h3 className="tp-collection-header">Your Collection</h3>
+                                    <div className="tp-filters">
                                         <input
                                             type="text"
                                             placeholder="Search your collection..."
@@ -303,11 +302,11 @@ const TradingPage = ({ userId }) => {
                                             <option value="desc">Descending</option>
                                         </select>
                                     </div>
-                                    <div className="cards-grid">
+                                    <div className="tp-cards-grid">
                                         {applyFilters(userCollection, leftSearch, leftRarity, leftSort, leftSortDir).map((card) => (
                                             <div
                                                 key={card._id}
-                                                className={`card-wrapper ${tradeOffer.some((c) => c._id === card._id) ? "selected" : ""}`}
+                                                className={`tp-card-wrapper ${tradeOffer.some((c) => c._id === card._id) ? "selected" : ""}`}
                                                 onClick={() => handleSelectItem(card, "offer")}
                                             >
                                                 <BaseCard
@@ -319,17 +318,16 @@ const TradingPage = ({ userId }) => {
                                                     maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
                                                 />
                                                 {tradeOffer.some((c) => c._id === card._id) && (
-                                                    <div className="selection-badge">✓</div>
+                                                    <div className="tp-selection-badge">✓</div>
                                                 )}
                                             </div>
                                         ))}
                                     </div>
                                 </div>
 
-                                <div className="collection-panel">
-                                    {/* New subheading for the selected user's collection */}
-                                    <h3 className="collection-header">{selectedUser}'s Collection</h3>
-                                    <div className="filters">
+                                <div className="tp-collection-panel">
+                                    <h3 className="tp-collection-header">{selectedUser}'s Collection</h3>
+                                    <div className="tp-filters">
                                         <input
                                             type="text"
                                             placeholder={`Search ${selectedUser}'s collection...`}
@@ -354,11 +352,11 @@ const TradingPage = ({ userId }) => {
                                             <option value="desc">Descending</option>
                                         </select>
                                     </div>
-                                    <div className="cards-grid">
+                                    <div className="tp-cards-grid">
                                         {applyFilters(recipientCollection, rightSearch, rightRarity, rightSort, rightSortDir).map((card) => (
                                             <div
                                                 key={card._id}
-                                                className={`card-wrapper ${tradeRequest.some((c) => c._id === card._id) ? "selected" : ""}`}
+                                                className={`tp-card-wrapper ${tradeRequest.some((c) => c._id === card._id) ? "selected" : ""}`}
                                                 onClick={() => handleSelectItem(card, "request")}
                                             >
                                                 <BaseCard
@@ -370,7 +368,7 @@ const TradingPage = ({ userId }) => {
                                                     maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
                                                 />
                                                 {tradeRequest.some((c) => c._id === card._id) && (
-                                                    <div className="selection-badge">✓</div>
+                                                    <div className="tp-selection-badge">✓</div>
                                                 )}
                                             </div>
                                         ))}
@@ -378,7 +376,7 @@ const TradingPage = ({ userId }) => {
                                 </div>
                             </div>
 
-                            <button className="submit-button" onClick={handleSubmit}>
+                            <button className="tp-submit-button" onClick={handleSubmit}>
                                 Confirm Trade
                             </button>
                         </div>

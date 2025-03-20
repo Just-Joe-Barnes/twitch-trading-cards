@@ -11,8 +11,7 @@
 }
 
 /* Main Trading Page Container */
-/* Reduced top padding from 4rem to 2rem */
-.trading-container {
+.tp-trading-container {
     padding: 2rem 1.5rem 2rem;
     background: var(--background-dark);
     color: var(--text-primary);
@@ -20,18 +19,17 @@
     box-sizing: border-box;
 }
 
-    /* Title styled like the Collection page title, with reduced margin */
-    .trading-container h1 {
+    .tp-trading-container h1 {
         text-align: center;
         font-size: 2.25rem;
         font-weight: 500;
         color: var(--text-primary);
-        margin-bottom: 1rem; /* Reduced from 2rem */
+        margin-bottom: 1rem;
         position: relative;
         margin-top: 4rem;
     }
 
-        .trading-container h1::after {
+        .tp-trading-container h1::after {
             content: '';
             position: absolute;
             bottom: -0.5rem;
@@ -43,28 +41,26 @@
             border-radius: 2px;
         }
 
-/* Trading Information Paragraph with tighter padding and margins */
-.trading-info {
+.tp-trading-info {
     background: var(--surface-dark);
     border: 1px solid var(--border-dark);
-    padding: 1rem; /* Reduced from 1.5rem */
+    padding: 1rem;
     border-radius: var(--border-radius);
-    margin: 0.5rem 0 1rem; /* Reduced top and bottom margins */
+    margin: 0.5rem 0 1rem;
     font-size: 1rem;
     line-height: 1.6;
 }
 
-/* Control Buttons with reduced gap and margin */
-.trade-control-buttons {
+.tp-trade-control-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem; /* Reduced from 1.5rem */
-    margin: 1rem 0; /* Reduced from 2rem */
+    gap: 1rem;
+    margin: 1rem 0;
     justify-content: center;
 }
 
-.view-pending-button,
-.toggle-form-button {
+.tp-view-pending-button,
+.tp-toggle-form-button {
     padding: 0.75rem 1.5rem;
     border: 1px solid var(--border-dark);
     border-radius: var(--border-radius);
@@ -75,21 +71,20 @@
     color: var(--text-primary);
 }
 
-    .view-pending-button:hover,
-    .toggle-form-button:hover {
+    .tp-view-pending-button:hover,
+    .tp-toggle-form-button:hover {
         background: var(--surface-darker);
         border-color: var(--brand-primary);
     }
 
-/* Collections Layout (Trade Panels) */
-.collections-wrapper {
+.tp-collections-wrapper {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
     margin: 2rem 0;
 }
 
-.collection-panel {
+.tp-collection-panel {
     background: var(--surface-dark);
     padding: 1.5rem;
     border-radius: var(--border-radius);
@@ -98,16 +93,14 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
-/* New Collection Header Styling */
-.collection-header {
+.tp-collection-header {
     text-align: center;
     font-size: 1.25rem;
     margin-bottom: 1rem;
     color: var(--text-primary);
 }
 
-/* Cards Grid */
-.cards-grid {
+.tp-cards-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 1.5rem;
@@ -119,8 +112,7 @@
     max-height: 600px;
 }
 
-/* Card Wrapper */
-.card-wrapper {
+.tp-card-wrapper {
     position: relative;
     transition: var(--transition);
     cursor: pointer;
@@ -129,20 +121,19 @@
     background: var(--surface-dark);
 }
 
-    .card-wrapper:hover {
+    .tp-card-wrapper:hover {
         transform: scale(1.02);
         border-color: var(--brand-primary);
         box-shadow: 0 4px 15px rgba(219, 136, 219, 0.2);
         z-index: 2;
     }
 
-    .card-wrapper.selected {
+    .tp-card-wrapper.selected {
         border-color: var(--brand-secondary);
         box-shadow: 0 0 10px rgba(136, 205, 219, 0.7);
     }
 
-/* Selection Badge */
-.selection-badge {
+.tp-selection-badge {
     position: absolute;
     top: 8px;
     right: 8px;
@@ -159,14 +150,13 @@
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
-/* User Search */
-.user-search {
+.tp-user-search {
     position: relative;
     margin: 2.5rem 0;
     max-width: 600px;
 }
 
-    .user-search input {
+    .tp-user-search input {
         width: 100%;
         padding: 1rem 1.5rem;
         border: 2px solid var(--border-dark);
@@ -176,15 +166,15 @@
         font-size: 1rem;
         transition: var(--transition);
         box-sizing: border-box;
-        text-align: center; /* Center align the input text */
+        text-align: center;
     }
 
-        .user-search input:focus {
+        .tp-user-search input:focus {
             outline: none;
             box-shadow: 0 0 0 3px rgba(219, 136, 219, 0.3);
         }
 
-.suggestions {
+.tp-suggestions {
     position: absolute;
     width: 100%;
     background: var(--surface-dark);
@@ -198,7 +188,7 @@
     overflow-y: auto;
 }
 
-    .suggestions li {
+    .tp-suggestions li {
         padding: 1rem 1.5rem;
         cursor: pointer;
         transition: var(--transition);
@@ -206,20 +196,18 @@
         color: var(--text-primary);
     }
 
-        .suggestions li:hover {
+        .tp-suggestions li:hover {
             background: rgba(219, 136, 219, 0.15);
         }
 
-/* Trade Interface */
-.trade-interface {
+.tp-trade-interface {
     display: flex;
     flex-direction: column;
     gap: 2.5rem;
     margin-top: 1.5rem;
 }
 
-/* Trade Preview */
-.trade-preview {
+.tp-trade-preview {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2.5rem;
@@ -230,17 +218,16 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
-/* Offer and Request Sections */
-.offer-section,
-.request-section {
+.tp-offer-section,
+.tp-request-section {
     padding: 1.5rem;
     background: var(--surface-darker);
     border-radius: var(--border-radius);
     border: 1px solid var(--border-dark);
 }
 
-    .offer-section h3,
-    .request-section h3 {
+    .tp-offer-section h3,
+    .tp-request-section h3 {
         margin: 0 0 1.5rem;
         padding: 0.8rem 1.2rem;
         background: var(--surface-dark);
@@ -250,8 +237,7 @@
         font-weight: 600;
     }
 
-/* Horizontal Cards Row for Trade Preview */
-.cards-horizontal {
+.tp-cards-horizontal {
     display: flex;
     gap: 1.5rem;
     padding: 1rem 0;
@@ -259,8 +245,7 @@
     overflow-x: auto;
 }
 
-/* Card Preview Wrapper */
-.card-preview-wrapper {
+.tp-card-preview-wrapper {
     flex: 0 0 280px;
     position: relative;
     transition: var(--transition);
@@ -268,12 +253,11 @@
     background: var(--surface-dark);
 }
 
-    .card-preview-wrapper:hover {
+    .tp-card-preview-wrapper:hover {
         transform: translateY(-3px);
     }
 
-/* Form Controls */
-.pack-control {
+.tp-pack-control {
     margin-top: 1.5rem;
     display: flex;
     align-items: center;
@@ -283,13 +267,13 @@
     border-radius: var(--border-radius);
 }
 
-    .pack-control label {
+    .tp-pack-control label {
         color: var(--text-primary);
         font-weight: 600;
         min-width: 80px;
     }
 
-    .pack-control input {
+    .tp-pack-control input {
         width: 100px;
         padding: 0.6rem;
         border: 2px solid var(--border-dark);
@@ -299,8 +283,7 @@
         font-weight: 600;
     }
 
-/* Submit Button */
-.submit-button {
+.tp-submit-button {
     align-self: center;
     padding: 1.2rem 2rem;
     background: var(--brand-primary);
@@ -314,18 +297,17 @@
     font-weight: 600;
 }
 
-    .submit-button:hover {
+    .tp-submit-button:hover {
         background: #b366b3;
         transform: translateY(-2px);
     }
 
-/* Trade Preview Control */
-.trade-preview-control {
+.tp-trade-preview-control {
     text-align: center;
     margin-bottom: 2rem;
 }
 
-.toggle-preview-button {
+.tp-toggle-preview-button {
     padding: 0.8rem 2rem;
     background: var(--surface-dark);
     color: var(--text-primary);
@@ -336,58 +318,56 @@
     font-weight: 600;
 }
 
-    .toggle-preview-button:hover {
+    .tp-toggle-preview-button:hover {
         background: var(--surface-darker);
         border-color: var(--brand-primary);
     }
 
-/* New Filters Styling: Display filters inline on larger screens */
-.filters {
+.tp-filters {
     display: flex;
     align-items: center;
     gap: 1rem;
 }
 
-/* Responsive Design */
 @media (max-width: 1200px) {
-    .collections-wrapper {
+    .tp-collections-wrapper {
         grid-template-columns: 1fr;
     }
 
-    .cards-grid {
+    .tp-cards-grid {
         grid-template-columns: repeat(3, 1fr);
     }
 }
 
 @media (max-width: 768px) {
-    .filters {
+    .tp-filters {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 1rem;
     }
 
-    .cards-grid {
+    .tp-cards-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 480px) {
-    .cards-grid {
+    .tp-cards-grid {
         grid-template-columns: 1fr;
         padding: 0.5rem;
     }
 
-    .card-wrapper {
+    .tp-card-wrapper {
         margin: 0.25rem;
     }
 
-    .filters {
+    .tp-filters {
         display: grid;
         grid-template-columns: 1fr;
         gap: 0.5rem;
     }
 
-    .trade-control-buttons {
+    .tp-trade-control-buttons {
         flex-direction: column;
     }
 }
