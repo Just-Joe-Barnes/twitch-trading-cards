@@ -252,18 +252,18 @@ router.delete('/listings/:id/offers/self', protect, async (req, res) => {
         if (!listing) {
             return res.status(404).json({ message: 'Listing not found' });
         }
-        // Debug logs: compare current user ID with offerer IDs
+        // Get the current user's ID from the auth middleware (as an ObjectId string)
         const currentUserId = req.user._id.toString();
-        console.log('Current user ID:', currentUserId);
-        console.log('Offerer IDs:', listing.offers.map(o => o.offerer.toString()));
+        console.log('[CANCEL OFFER] Current user ID:', currentUserId);
+        console.log('[CANCEL OFFER] Offerer IDs in listing:', listing.offers.map(o => o.offerer.toString()));
 
-        // Find the offer made by the current user
+        // Look for an offer where the offerer matches the current user
         const userOffer = listing.offers.find(offer => offer.offerer.toString() === currentUserId);
         if (!userOffer) {
-            // Return 403 if no matching offer is found
-            return res.status(403).json({ message: 'You do not have permission to cancel this offer.' });
+            // If no matching offer is found, return 404 rather than 403 for clarity.
+            return res.status(404).json({ message: 'No offer found for the current user.' });
         }
-        // Use Mongoose's pull() method to remove the offer
+        // Remove the offer using Mongoose's pull() method
         listing.offers.pull({ _id: userOffer._id });
         await listing.save();
         res.status(200).json({ message: 'Your offer has been cancelled.' });
@@ -272,6 +272,7 @@ router.delete('/listings/:id/offers/self', protect, async (req, res) => {
         res.status(500).json({ message: 'Server error cancelling offer' });
     }
 });
+
 
 
 module.exports = router;
