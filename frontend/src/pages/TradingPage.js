@@ -276,6 +276,8 @@ const TradingPage = ({ userId }) => {
 
                             <div className="collections-wrapper">
                                 <div className="collection-panel">
+                                    {/* New subheading for the logged-in user's collection */}
+                                    <h3 className="collection-header">Your Collection</h3>
                                     <div className="filters">
                                         <input
                                             type="text"
@@ -325,6 +327,8 @@ const TradingPage = ({ userId }) => {
                                 </div>
 
                                 <div className="collection-panel">
+                                    {/* New subheading for the selected user's collection */}
+                                    <h3 className="collection-header">{selectedUser}'s Collection</h3>
                                     <div className="filters">
                                         <input
                                             type="text"

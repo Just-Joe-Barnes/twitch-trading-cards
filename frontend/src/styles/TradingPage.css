@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     --brand-primary: #db88db;
     --brand-secondary: #88cddb;
     --background-dark: #0a0a0a;
@@ -98,6 +98,14 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
+/* New Collection Header Styling */
+.collection-header {
+    text-align: center;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
 /* Cards Grid */
 .cards-grid {
     display: grid;
@@ -168,6 +176,7 @@
         font-size: 1rem;
         transition: var(--transition);
         box-sizing: border-box;
+        text-align: center; /* Center align the input text */
     }
 
         .user-search input:focus {
@@ -332,6 +341,13 @@
         border-color: var(--brand-primary);
     }
 
+/* New Filters Styling: Display filters inline on larger screens */
+.filters {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .collections-wrapper {
@@ -344,12 +360,14 @@
 }
 
 @media (max-width: 768px) {
-    .cards-grid {
-        grid-template-columns: repeat(2, 1fr);
+    .filters {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
     }
 
-    .filters {
-        grid-template-columns: 1fr 1fr;
+    .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -364,7 +382,9 @@
     }
 
     .filters {
+        display: grid;
         grid-template-columns: 1fr;
+        gap: 0.5rem;
     }
 
     .trade-control-buttons {
