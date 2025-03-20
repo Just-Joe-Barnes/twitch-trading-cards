@@ -210,8 +210,9 @@ const TradingPage = ({ userId }) => {
                                             {tradeOffer.map((card) => (
                                                 <div
                                                     key={card._id}
-                                                    className="tp-card-preview-wrapper"
+                                                    className="tp-card-item"
                                                     onDoubleClick={() => handleRemoveItem(card, "offer")}
+                                                    onClick={() => handleSelectItem(card, "offer")}
                                                 >
                                                     <BaseCard
                                                         name={card.name}
@@ -221,6 +222,9 @@ const TradingPage = ({ userId }) => {
                                                         mintNumber={card.mintNumber}
                                                         maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
                                                     />
+                                                    {tradeOffer.some((c) => c._id === card._id) && (
+                                                        <div className="tp-selection-badge">✓</div>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
@@ -244,8 +248,9 @@ const TradingPage = ({ userId }) => {
                                             {tradeRequest.map((card) => (
                                                 <div
                                                     key={card._id}
-                                                    className="tp-card-preview-wrapper"
+                                                    className="tp-card-item"
                                                     onDoubleClick={() => handleRemoveItem(card, "request")}
+                                                    onClick={() => handleSelectItem(card, "request")}
                                                 >
                                                     <BaseCard
                                                         name={card.name}
@@ -255,6 +260,9 @@ const TradingPage = ({ userId }) => {
                                                         mintNumber={card.mintNumber}
                                                         maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
                                                     />
+                                                    {tradeRequest.some((c) => c._id === card._id) && (
+                                                        <div className="tp-selection-badge">✓</div>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
@@ -306,7 +314,7 @@ const TradingPage = ({ userId }) => {
                                         {applyFilters(userCollection, leftSearch, leftRarity, leftSort, leftSortDir).map((card) => (
                                             <div
                                                 key={card._id}
-                                                className={`tp-card-wrapper ${tradeOffer.some((c) => c._id === card._id) ? "selected" : ""}`}
+                                                className={`tp-card-item ${tradeOffer.some((c) => c._id === card._id) ? "tp-selected" : ""}`}
                                                 onClick={() => handleSelectItem(card, "offer")}
                                             >
                                                 <BaseCard
@@ -356,7 +364,7 @@ const TradingPage = ({ userId }) => {
                                         {applyFilters(recipientCollection, rightSearch, rightRarity, rightSort, rightSortDir).map((card) => (
                                             <div
                                                 key={card._id}
-                                                className={`tp-card-wrapper ${tradeRequest.some((c) => c._id === card._id) ? "selected" : ""}`}
+                                                className={`tp-card-item ${tradeRequest.some((c) => c._id === card._id) ? "tp-selected" : ""}`}
                                                 onClick={() => handleSelectItem(card, "request")}
                                             >
                                                 <BaseCard
