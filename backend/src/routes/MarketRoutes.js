@@ -71,15 +71,34 @@ router.post('/listings/:id/offers', protect, async (req, res) => {
     try {
         const listingId = req.params.id;
         const { message, offeredCards, offeredPacks } = req.body;
+
+        // 1. Fetch the listing
         const listing = await MarketListing.findById(listingId);
         if (!listing) {
             return res.status(404).json({ message: 'Listing not found' });
         }
-        // Prevent offering on your own listing.
+
+        // 2. Debug logs
+        console.log('[MAKE OFFER] Listing owner:', listing.owner.toString());
+        console.log('[MAKE OFFER] Current user:', req.user._id.toString());
+
+        // 3. Prevent offering on your own listing (if that is intended logic)
         if (listing.owner.toString() === req.user._id.toString()) {
             return res.status(400).json({ message: 'You cannot offer on your own listing.' });
         }
-        // Allow only one offer per user on a listing.
+
+        // 4. Filter out any existing offers with incomplete card data BEFORE checking for an existing offer
+        listing.offers = listing.offers.filter(offer =>
+            offer.offeredCards.every(card =>
+                card.name &&
+                card.imageUrl &&
+                card.rarity &&
+                card.mintNumber !== undefined &&
+                card.mintNumber !== null
+            )
+        );
+
+        // 5. Allow only one offer per user on a listing
         const existingOffer = listing.offers.find(
             offer => offer.offerer.toString() === req.user._id.toString()
         );
@@ -87,18 +106,14 @@ router.post('/listings/:id/offers', protect, async (req, res) => {
             return res.status(400).json({ message: 'You already have an active offer on this listing.' });
         }
 
-        // Before adding the new offer, filter out any existing offers with incomplete card data.
-        listing.offers = listing.offers.filter(offer =>
-            offer.offeredCards.every(card => card.name && card.imageUrl && card.rarity && (card.mintNumber !== undefined && card.mintNumber !== null))
-        );
-
-        // Expect offeredCards to be an array of full card objects.
+        // 6. Everything is valid -> add the new offer
         listing.offers.push({
             offerer: req.user._id,
             message,
             offeredCards: offeredCards || [],
             offeredPacks: offeredPacks || 0,
         });
+
         await listing.save();
         res.status(200).json({ message: 'Offer submitted successfully' });
     } catch (error) {
@@ -106,6 +121,7 @@ router.post('/listings/:id/offers', protect, async (req, res) => {
         res.status(500).json({ message: 'Server error making offer' });
     }
 });
+
 
 // PUT /api/market/listings/:id/offers/:offerId/accept - Accept an offer (listing owner only)
 router.put('/listings/:id/offers/:offerId/accept', protect, async (req, res) => {
@@ -252,20 +268,36 @@ router.delete('/listings/:id/offers/self', protect, async (req, res) => {
         if (!listing) {
             return res.status(404).json({ message: 'Listing not found' });
         }
-        // Get the current user's ID from the auth middleware (as an ObjectId string)
+
+        // 1. Debug logs
         const currentUserId = req.user._id.toString();
         console.log('[CANCEL OFFER] Current user ID:', currentUserId);
         console.log('[CANCEL OFFER] Offerer IDs in listing:', listing.offers.map(o => o.offerer.toString()));
 
-        // Look for an offer where the offerer matches the current user
-        const userOffer = listing.offers.find(offer => offer.offerer.toString() === currentUserId);
+        // 2. Filter out incomplete offers first
+        listing.offers = listing.offers.filter(offer =>
+            offer.offeredCards.every(card =>
+                card.name &&
+                card.imageUrl &&
+                card.rarity &&
+                card.mintNumber !== undefined &&
+                card.mintNumber !== null
+            )
+        );
+
+        // 3. Now find the user's offer
+        const userOffer = listing.offers.find(
+            offer => offer.offerer.toString() === currentUserId
+        );
         if (!userOffer) {
-            // If no matching offer is found, return 404 rather than 403 for clarity.
+            // Return 404 to indicate the user has no matching offer
             return res.status(404).json({ message: 'No offer found for the current user.' });
         }
-        // Remove the offer using Mongoose's pull() method
+
+        // 4. Remove the offer using Mongoose's pull() method
         listing.offers.pull({ _id: userOffer._id });
         await listing.save();
+
         res.status(200).json({ message: 'Your offer has been cancelled.' });
     } catch (error) {
         console.error('Error cancelling offer:', error);
