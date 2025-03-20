@@ -77,6 +77,11 @@ router.post('/listings/:id/offers', protect, async (req, res) => {
             return res.status(404).json({ message: 'Listing not found' });
         }
 
+        // NEW: Prevent modifying if listing is no longer active.
+        if (listing.status !== 'active') {
+            return res.status(400).json({ message: 'This listing is no longer active.' });
+        }
+
         // 2. Debug logs
         console.log('[MAKE OFFER] Listing owner:', listing.owner.toString());
         console.log('[MAKE OFFER] Current user:', req.user._id.toString());
@@ -132,15 +137,18 @@ router.put('/listings/:id/offers/:offerId/accept', protect, async (req, res) => 
             session.endSession();
             return res.status(404).json({ message: 'Listing not found' });
         }
+
+        // NEW: Ensure the listing is still active.
+        if (listing.status !== 'active') {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(400).json({ message: 'This listing is no longer active.' });
+        }
+
         if (listing.owner.toString() !== req.user._id.toString()) {
             await session.abortTransaction();
             session.endSession();
             return res.status(403).json({ message: 'You do not have permission to accept offers on this listing.' });
-        }
-        if (listing.status !== 'active') {
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(400).json({ message: 'Listing is not active.' });
         }
         const offer = listing.offers.id(req.params.offerId);
         if (!offer) {
@@ -229,6 +237,11 @@ router.delete('/listings/:id/offers/self', protect, async (req, res) => {
             return res.status(404).json({ message: 'Listing not found' });
         }
 
+        // NEW: Prevent modifications if the listing is not active.
+        if (listing.status !== 'active') {
+            return res.status(400).json({ message: 'This listing is no longer active.' });
+        }
+
         // Debug logs
         const currentUserId = req.user._id.toString();
         console.log('[CANCEL OFFER] Current user ID:', currentUserId);
@@ -271,6 +284,12 @@ router.delete('/listings/:id/offers/:offerId', protect, async (req, res) => {
         if (!listing) {
             return res.status(404).json({ message: 'Listing not found' });
         }
+
+        // NEW: Prevent modifications if the listing is not active.
+        if (listing.status !== 'active') {
+            return res.status(400).json({ message: 'This listing is no longer active.' });
+        }
+
         if (listing.owner.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: 'You do not have permission to reject offers on this listing.' });
         }
@@ -290,6 +309,10 @@ router.delete('/listings/:id', protect, async (req, res) => {
         const listing = await MarketListing.findById(req.params.id);
         if (!listing) {
             return res.status(404).json({ message: 'Listing not found' });
+        }
+        // NEW: Prevent deleting a listing that's already completed.
+        if (listing.status !== 'active') {
+            return res.status(400).json({ message: 'This listing is no longer active.' });
         }
         if (listing.owner.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: 'You do not have permission to cancel this listing.' });
