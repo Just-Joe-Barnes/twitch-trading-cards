@@ -1,5 +1,5 @@
 const Card = require('../models/cardModel');
-const UserCard = require('../models/userCardModel'); // New model to check user collections
+const User = require('../models/userModel'); // Using the User model since cards are embedded
 
 // Updated rarity probabilities: Basic is most common, Divine is most rare.
 const rarityProbabilities = [
@@ -27,10 +27,10 @@ const pickRarity = () => {
             return rarity;
         }
     }
-    return 'Basic'; // Fallback if probabilities don't sum to 1 exactly
+    return 'Basic'; // Fallback if probabilities don't sum exactly to 1
 };
 
-// Generate a card with probabilities and ensure uniqueness across collections
+// Generate a card with probabilities and ensure uniqueness across all user collections
 const generateCardWithProbability = async (attempts = 0) => {
     if (attempts >= MAX_ATTEMPTS) {
         console.warn('Maximum attempts reached. Unable to generate a unique card.');
@@ -68,11 +68,12 @@ const generateCardWithProbability = async (attempts = 0) => {
         const randomIndex = Math.floor(Math.random() * rarityObj.availableMintNumbers.length);
         const mintNumber = rarityObj.availableMintNumbers[randomIndex];
 
-        // Check that no card with the same name, rarity, and mint number already exists in any user's collection.
-        const duplicate = await UserCard.findOne({
-            name: selectedCard.name,
-            rarity: selectedRarity,
-            mintNumber: mintNumber
+        // Check that no card with the same name, rarity, and mint number exists in any user's collection
+        const duplicate = await User.findOne({
+            $or: [
+                { cards: { $elemMatch: { name: selectedCard.name, rarity: selectedRarity, mintNumber } } },
+                { openedCards: { $elemMatch: { name: selectedCard.name, rarity: selectedRarity, mintNumber } } }
+            ]
         });
         if (duplicate) {
             console.warn(`Duplicate card detected for ${selectedCard.name}, rarity: ${selectedRarity}, mint number: ${mintNumber}. Retrying...`);
