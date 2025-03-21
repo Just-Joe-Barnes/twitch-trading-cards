@@ -13,6 +13,18 @@ router.post('/listings', protect, async (req, res) => {
         if (!card || !card.name || !card.imageUrl || !card.rarity || !card.mintNumber) {
             return res.status(400).json({ message: 'Invalid card data' });
         }
+
+        // New check: Prevent listing the same card multiple times.
+        const existingListing = await MarketListing.findOne({
+            owner: req.user._id,
+            "card.name": card.name,
+            "card.mintNumber": card.mintNumber,
+            status: 'active'
+        });
+        if (existingListing) {
+            return res.status(400).json({ message: 'You already have an active listing for this card.' });
+        }
+
         const newListing = new MarketListing({
             owner: req.user._id,
             card,
@@ -24,6 +36,7 @@ router.post('/listings', protect, async (req, res) => {
         res.status(500).json({ message: 'Server error creating listing' });
     }
 });
+
 
 // GET /api/market/listings - Get all active listings with pagination.
 router.get('/listings', protect, async (req, res) => {
