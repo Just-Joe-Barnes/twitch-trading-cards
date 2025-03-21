@@ -7,14 +7,15 @@ import {
     fetchUserProfileByUsername,
     fetchUserCollection,
 } from '../utils/api';
-import LoadingSpinner from '../components/LoadingSpinner'; // Import the spinner component
+import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/App.css';
 import '../styles/ProfilePage.css';
-
 
 const ProfilePage = () => {
     const [featuredCards, setFeaturedCards] = useState([]);
     const [collectionCount, setCollectionCount] = useState(0);
+    const [currentPacks, setCurrentPacks] = useState(0);
+    const [openedPacks, setOpenedPacks] = useState(0);
     const [loading, setLoading] = useState(true);
     const [username, setUsername] = useState('');
     const navigate = useNavigate();
@@ -32,6 +33,10 @@ const ProfilePage = () => {
                     profile = await fetchUserProfile();
                 }
                 setUsername(profile.username || 'User');
+                // Set new stats from profile
+                setCurrentPacks(profile.packs || 0);
+                setOpenedPacks(profile.openedPacks || 0);
+
                 let tempFeatured = profile.featuredCards || [];
                 if (profile._id) {
                     const collectionData = await fetchUserCollection(profile._id);
@@ -75,8 +80,12 @@ const ProfilePage = () => {
                         <span>{collectionCount}</span>
                     </div>
                     <div className="stat">
-                        <div>Featured Cards</div>
-                        <span>{featuredCards.length}</span>
+                        <div>Current Packs</div>
+                        <span>{currentPacks}</span>
+                    </div>
+                    <div className="stat">
+                        <div>Opened Packs</div>
+                        <span>{openedPacks}</span>
                     </div>
                 </div>
             </div>
