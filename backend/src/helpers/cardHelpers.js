@@ -1,20 +1,23 @@
 const Card = require('../models/cardModel');
+const UserCard = require('../models/userCardModel'); // New model to check user collections
 
-// Rarity probabilities
+// Updated rarity probabilities: Basic is most common, Divine is most rare.
 const rarityProbabilities = [
-    { rarity: 'Divine', probability: 0.001 },
-    { rarity: 'Unique', probability: 0.01 },
-    { rarity: 'Mythic', probability: 0.05 },
-    { rarity: 'Legendary', probability: 0.1 },
-    { rarity: 'Epic', probability: 0.15 },
-    { rarity: 'Rare', probability: 0.2 },
-    { rarity: 'Uncommon', probability: 0.2 },
+    { rarity: 'Basic', probability: 0.40 },
+    { rarity: 'Common', probability: 0.20 },
     { rarity: 'Standard', probability: 0.15 },
-    { rarity: 'Common', probability: 0.09 },
-    { rarity: 'Basic', probability: 0.029 },
+    { rarity: 'Uncommon', probability: 0.10 },
+    { rarity: 'Rare', probability: 0.07 },
+    { rarity: 'Epic', probability: 0.04 },
+    { rarity: 'Legendary', probability: 0.02 },
+    { rarity: 'Mythic', probability: 0.014 },
+    { rarity: 'Unique', probability: 0.005 },
+    { rarity: 'Divine', probability: 0.001 },
 ];
 
-// Helper to randomly pick a rarity based on probabilities
+const MAX_ATTEMPTS = 5; // Maximum number of re-roll attempts
+
+// Helper to randomly pick a rarity based on updated probabilities
 const pickRarity = () => {
     const random = Math.random();
     let cumulativeProbability = 0;
@@ -24,11 +27,15 @@ const pickRarity = () => {
             return rarity;
         }
     }
-    return 'Basic'; // Fallback if probabilities don't sum to 1
+    return 'Basic'; // Fallback if probabilities don't sum to 1 exactly
 };
 
-// Generate a card with probabilities using optimized queries
-const generateCardWithProbability = async () => {
+// Generate a card with probabilities and ensure uniqueness across collections
+const generateCardWithProbability = async (attempts = 0) => {
+    if (attempts >= MAX_ATTEMPTS) {
+        console.warn('Maximum attempts reached. Unable to generate a unique card.');
+        return null;
+    }
     try {
         const selectedRarity = pickRarity();
 
@@ -38,7 +45,7 @@ const generateCardWithProbability = async () => {
                 $match: {
                     'rarities.rarity': selectedRarity,
                     'rarities.remainingCopies': { $gt: 0 },
-                    'rarities.availableMintNumbers.0': { $exists: true } // ensure there is at least one available mint number
+                    'rarities.availableMintNumbers.0': { $exists: true } // ensure at least one available mint number
                 }
             },
             { $sample: { size: 1 } }
@@ -61,8 +68,18 @@ const generateCardWithProbability = async () => {
         const randomIndex = Math.floor(Math.random() * rarityObj.availableMintNumbers.length);
         const mintNumber = rarityObj.availableMintNumbers[randomIndex];
 
-        // Atomically update the card:
-        // Decrement remainingCopies and remove the chosen mint number from availableMintNumbers
+        // Check that no card with the same name, rarity, and mint number already exists in any user's collection.
+        const duplicate = await UserCard.findOne({
+            name: selectedCard.name,
+            rarity: selectedRarity,
+            mintNumber: mintNumber
+        });
+        if (duplicate) {
+            console.warn(`Duplicate card detected for ${selectedCard.name}, rarity: ${selectedRarity}, mint number: ${mintNumber}. Retrying...`);
+            return await generateCardWithProbability(attempts + 1);
+        }
+
+        // Atomically update the card: decrement remainingCopies and remove the chosen mint number
         const updatedCard = await Card.findOneAndUpdate(
             {
                 _id: selectedCard._id,
