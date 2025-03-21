@@ -104,7 +104,7 @@ const createTrade = async (req, res) => {
         await createNotification(recipientUser._id, {
             type: 'Trade Offer Received',
             message: `You have received a trade offer from ${sender.username}.`,
-            link: `/trades/${trade._id}`
+            link: `/trades/pending`
         });
 
         res.status(201).json(trade);
@@ -234,31 +234,31 @@ const updateTradeStatus = async (req, res) => {
             await createNotification(sender._id, {
                 type: 'Trade Update',
                 message: `Your trade offer to ${recipient.username} has been accepted.`,
-                link: `/trades/${trade._id}`
+                link: `/trades/pending`
             });
             await createNotification(recipient._id, {
                 type: 'Trade Update',
                 message: `You have accepted a trade offer from ${sender.username}.`,
-                link: `/trades/${trade._id}`
+                link: `/trades/pending`
             });
         } else if (status === 'rejected') {
             await createNotification(sender._id, {
                 type: 'Trade Update',
                 message: `Your trade offer to ${recipient.username} has been rejected.`,
-                link: `/trades/${trade._id}`
+                link: `/trades/pending`
             });
         } else if (status === 'cancelled') {
             if (isSender) {
                 await createNotification(recipient._id, {
                     type: 'Trade Update',
                     message: `The trade offer from ${sender.username} has been cancelled.`,
-                    link: `/trades/${trade._id}`
+                    link: `/trades/pending`
                 });
             } else {
                 await createNotification(sender._id, {
                     type: 'Trade Update',
                     message: `Your trade offer to ${recipient.username} has been cancelled.`,
-                    link: `/trades/${trade._id}`
+                    link: `/trades/pending`
                 });
             }
         }

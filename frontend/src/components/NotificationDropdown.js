@@ -99,7 +99,7 @@ const NotificationDropdown = ({ profilePic, userId }) => {
                                             <span>{n.message}</span>
                                         </Link>
                                         <button className="delete-notification" onClick={() => handleDelete(n._id)}>
-                                            ×
+                                            ðŸ—‘
                                         </button>
                                     </li>
                                 ))}
