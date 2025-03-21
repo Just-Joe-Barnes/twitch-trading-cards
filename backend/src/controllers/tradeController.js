@@ -1,7 +1,7 @@
-// controllers/tradeController.js
 const mongoose = require('mongoose');
 const Trade = require('../models/tradeModel');
 const User = require('../models/userModel');
+const { createNotification } = require('../helpers/notificationHelper');
 
 // Create a new trade
 const createTrade = async (req, res) => {
@@ -97,12 +97,23 @@ const createTrade = async (req, res) => {
 
         await trade.save();
         console.log('Trade saved successfully:', trade);
+
+        // Debug: Log before calling createNotification
+        console.log('Sending trade offer notification to recipient:', recipientUser._id, 'from sender:', sender.username, 'for trade:', trade._id);
+
+        await createNotification(recipientUser._id, {
+            type: 'Trade Offer Received',
+            message: `You have received a trade offer from ${sender.username}.`,
+            link: `/trades/${trade._id}`
+        });
+
         res.status(201).json(trade);
     } catch (err) {
         console.error("Error creating trade:", err);
         res.status(500).json({ popupMessage: err.message });
     }
 };
+
 // Get pending trades for a user
 const getPendingTrades = async (req, res) => {
     const { userId } = req.params;

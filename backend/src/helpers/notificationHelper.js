@@ -2,6 +2,7 @@ const User = require('../models/userModel');
 
 const createNotification = async (userId, { type, message, link, extra = {} }) => {
     try {
+        console.log('Creating notification for user:', userId, { type, message, link, extra });
         await User.findByIdAndUpdate(
             userId,
             {
@@ -22,5 +23,6 @@ const createNotification = async (userId, { type, message, link, extra = {} }) =
         console.error('Error creating notification:', error.message);
     }
 };
+
 
 module.exports = { createNotification };
