@@ -97,6 +97,48 @@ body {
 
 /* ------------------- End New Top Section ------------------- */
 
+/* New Stats Container */
+.cp-stats-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+    background: var(--surface-dark);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 2rem;
+}
+
+.cp-stats-item {
+    text-align: center;
+}
+
+    .cp-stats-item h4 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: var(--text-primary);
+    }
+
+    .cp-stats-item p {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--text-primary);
+    }
+
+/* Slide Container (Card Scale Slider) - Updated to center content */
+.cp-slider-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+    .cp-slider-container .slidecontainer {
+        width: 100%;
+        text-align: center;
+    }
+
 /* Filters Container (existing styling reused) */
 .cp-filters {
     display: flex;
@@ -187,11 +229,6 @@ body {
     .cp-clear-featured-button:hover {
         background-color: var(--brand-secondary);
     }
-
-/* Slide Container (Card Scale Slider) */
-.slidecontainer {
-    margin: 0;
-}
 
 /* Horizontal Rarity Key */
 .cp-rarity-key {

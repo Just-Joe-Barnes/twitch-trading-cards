@@ -37,6 +37,7 @@ const CollectionPage = ({
     const [allCards, setAllCards] = useState([]);
     const [filteredCards, setFilteredCards] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [totalPacks, setTotalPacks] = useState(0); // new state for packs
 
     // Card Container Scale Slider
     const defaultCardScale = 1;
@@ -89,6 +90,7 @@ const CollectionPage = ({
                     if (data.cards) {
                         setAllCards(data.cards);
                         setFilteredCards(data.cards);
+                        setTotalPacks(data.packs || 0); // update total packs if provided
                     }
                 }
             } catch (error) {
@@ -353,6 +355,18 @@ const CollectionPage = ({
                             ))}
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {/* New Stats Container */}
+            <div className="cp-stats-container">
+                <div className="cp-stats-item">
+                    <h4>Total Cards</h4>
+                    <p>{allCards.length}</p>
+                </div>
+                <div className="cp-stats-item">
+                    <h4>Total Packs</h4>
+                    <p>{totalPacks}</p>
                 </div>
             </div>
 
