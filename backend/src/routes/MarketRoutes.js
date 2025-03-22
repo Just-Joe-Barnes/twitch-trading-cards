@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const MarketListing = require('../models/MarketListing');
 const User = require('../models/userModel');
 const { protect } = require('../middleware/authMiddleware');
+const { createNotification } = require('../helpers/notificationHelper');
 
 // POST /api/market/listings - Create a new market listing.
 router.post('/listings', protect, async (req, res) => {
@@ -14,7 +15,7 @@ router.post('/listings', protect, async (req, res) => {
             return res.status(400).json({ message: 'Invalid card data' });
         }
 
-        // New check: Prevent listing the same card multiple times.
+        // Prevent listing the same card multiple times.
         const existingListing = await MarketListing.findOne({
             owner: req.user._id,
             "card.name": card.name,
@@ -36,7 +37,6 @@ router.post('/listings', protect, async (req, res) => {
         res.status(500).json({ message: 'Server error creating listing' });
     }
 });
-
 
 // GET /api/market/listings - Get all active listings with pagination.
 router.get('/listings', protect, async (req, res) => {
@@ -90,21 +90,20 @@ router.post('/listings/:id/offers', protect, async (req, res) => {
             return res.status(404).json({ message: 'Listing not found' });
         }
 
-        // NEW: Prevent modifying if listing is no longer active.
+        // Prevent modifying if listing is not active.
         if (listing.status !== 'active') {
             return res.status(400).json({ message: 'This listing is no longer active.' });
         }
 
-        // 2. Debug logs
         console.log('[MAKE OFFER] Listing owner:', listing.owner.toString());
         console.log('[MAKE OFFER] Current user:', req.user._id.toString());
 
-        // 3. Prevent offering on your own listing
+        // Prevent offering on your own listing
         if (listing.owner.toString() === req.user._id.toString()) {
             return res.status(400).json({ message: 'You cannot offer on your own listing.' });
         }
 
-        // 4. Filter out any existing offers with incomplete card data BEFORE checking for an existing offer
+        // Filter out any existing offers with incomplete card data BEFORE checking for an existing offer
         listing.offers = listing.offers.filter(offer =>
             offer.offeredCards.every(card =>
                 card.name &&
@@ -115,7 +114,7 @@ router.post('/listings/:id/offers', protect, async (req, res) => {
             )
         );
 
-        // 5. Allow only one offer per user on a listing
+        // Allow only one offer per user on a listing
         const existingOffer = listing.offers.find(
             offer => offer.offerer.toString() === req.user._id.toString()
         );
@@ -123,7 +122,7 @@ router.post('/listings/:id/offers', protect, async (req, res) => {
             return res.status(400).json({ message: 'You already have an active offer on this listing.' });
         }
 
-        // 6. Add the new offer
+        // Add the new offer
         listing.offers.push({
             offerer: req.user._id,
             message,
@@ -132,6 +131,14 @@ router.post('/listings/:id/offers', protect, async (req, res) => {
         });
 
         await listing.save();
+
+        // Send notification to the listing owner: New Market Offer
+        await createNotification(listing.owner, {
+            type: 'New Market Offer',
+            message: `You have received a new offer on your market listing.`,
+            link: `/market/listings/${listing._id}`
+        });
+
         res.status(200).json({ message: 'Offer submitted successfully' });
     } catch (error) {
         console.error('Error making offer:', error);
@@ -151,7 +158,7 @@ router.put('/listings/:id/offers/:offerId/accept', protect, async (req, res) => 
             return res.status(404).json({ message: 'Listing not found' });
         }
 
-        // NEW: Ensure the listing is still active.
+        // Ensure the listing is still active.
         if (listing.status !== 'active') {
             await session.abortTransaction();
             session.endSession();
@@ -177,37 +184,13 @@ router.put('/listings/:id/offers/:offerId/accept', protect, async (req, res) => 
             return res.status(404).json({ message: 'Seller or Buyer not found' });
         }
 
-        // Transfer each offered card from buyer to seller
-        for (const offeredCard of offer.offeredCards) {
-            const buyerCardIndex = buyer.cards.findIndex(c =>
-                c.name === offeredCard.name && c.mintNumber === offeredCard.mintNumber
-            );
-            if (buyerCardIndex === -1) {
-                await session.abortTransaction();
-                session.endSession();
-                return res.status(400).json({ message: `Offered card ${offeredCard.name} not found in buyer's collection` });
-            }
-            const transferredCard = buyer.cards.splice(buyerCardIndex, 1)[0];
-            seller.cards.push(transferredCard);
-        }
-
-        // Transfer the listed card from seller to buyer
-        const cardIndex = seller.cards.findIndex(card =>
-            card.name === listing.card.name && card.mintNumber === listing.card.mintNumber
-        );
-        if (cardIndex === -1) {
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(400).json({ message: "Card not found in seller's collection" });
-        }
-        const card = seller.cards.splice(cardIndex, 1)[0];
-        buyer.cards.push(card);
-
         if (buyer.packs < offer.offeredPacks) {
             await session.abortTransaction();
             session.endSession();
             return res.status(400).json({ message: "Buyer does not have enough packs" });
         }
+
+        // Adjust packs: buyer loses offeredPacks, seller gains them.
         buyer.packs -= offer.offeredPacks;
         seller.packs += offer.offeredPacks;
 
@@ -232,6 +215,18 @@ router.put('/listings/:id/offers/:offerId/accept', protect, async (req, res) => 
         await session.commitTransaction();
         session.endSession();
 
+        // Send notifications for listing update on offer acceptance
+        await createNotification(seller._id, {
+            type: 'Listing Update',
+            message: `Your listing has been sold to ${buyer.username}.`,
+            link: `/market/listings/${listing._id}`
+        });
+        await createNotification(buyer._id, {
+            type: 'Listing Update',
+            message: `Your offer on the listing has been accepted.`,
+            link: `/market/listings/${listing._id}`
+        });
+
         res.status(200).json({ message: "Offer accepted, card transferred, and listing sold." });
     } catch (error) {
         console.error('Error accepting offer:', error);
@@ -242,7 +237,6 @@ router.put('/listings/:id/offers/:offerId/accept', protect, async (req, res) => 
 });
 
 // DELETE /api/market/listings/:id/offers/self - Cancel (delete) your own offer
-// (Place this BEFORE the more general DELETE route below)
 router.delete('/listings/:id/offers/self', protect, async (req, res) => {
     try {
         const listing = await MarketListing.findById(req.params.id);
@@ -250,17 +244,13 @@ router.delete('/listings/:id/offers/self', protect, async (req, res) => {
             return res.status(404).json({ message: 'Listing not found' });
         }
 
-        // NEW: Prevent modifications if the listing is not active.
         if (listing.status !== 'active') {
             return res.status(400).json({ message: 'This listing is no longer active.' });
         }
 
-        // Debug logs
-        const currentUserId = req.user._id.toString();
-        console.log('[CANCEL OFFER] Current user ID:', currentUserId);
+        console.log('[CANCEL OFFER] Current user ID:', req.user._id.toString());
         console.log('[CANCEL OFFER] Offerer IDs in listing:', listing.offers.map(o => o.offerer.toString()));
 
-        // Filter out incomplete offers first
         listing.offers = listing.offers.filter(offer =>
             offer.offeredCards.every(card =>
                 card.name &&
@@ -271,17 +261,22 @@ router.delete('/listings/:id/offers/self', protect, async (req, res) => {
             )
         );
 
-        // Find the user's offer
         const userOffer = listing.offers.find(
-            offer => offer.offerer.toString() === currentUserId
+            offer => offer.offerer.toString() === req.user._id.toString()
         );
         if (!userOffer) {
             return res.status(404).json({ message: 'No offer found for the current user.' });
         }
 
-        // Remove the offer using Mongoose's pull() method
         listing.offers.pull({ _id: userOffer._id });
         await listing.save();
+
+        // Notify listing owner that an offer was cancelled.
+        await createNotification(listing.owner, {
+            type: 'Listing Update',
+            message: `An offer on your listing has been cancelled.`,
+            link: `/market/listings/${listing._id}`
+        });
 
         res.status(200).json({ message: 'Your offer has been cancelled.' });
     } catch (error) {
@@ -298,7 +293,6 @@ router.delete('/listings/:id/offers/:offerId', protect, async (req, res) => {
             return res.status(404).json({ message: 'Listing not found' });
         }
 
-        // NEW: Prevent modifications if the listing is not active.
         if (listing.status !== 'active') {
             return res.status(400).json({ message: 'This listing is no longer active.' });
         }
@@ -306,9 +300,24 @@ router.delete('/listings/:id/offers/:offerId', protect, async (req, res) => {
         if (listing.owner.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: 'You do not have permission to reject offers on this listing.' });
         }
-        // Use pull to remove the offer directly
+
+        // Fetch the offer details before removal for notification purposes
+        const offer = listing.offers.id(req.params.offerId);
+        if (!offer) {
+            return res.status(404).json({ message: 'Offer not found' });
+        }
+        const offererId = offer.offerer;
+
         listing.offers.pull({ _id: req.params.offerId });
         await listing.save();
+
+        // Notify the offerer that their offer was rejected.
+        await createNotification(offererId, {
+            type: 'Listing Update',
+            message: `Your offer on the listing has been rejected.`,
+            link: `/market/listings/${listing._id}`
+        });
+
         res.status(200).json({ message: 'Offer rejected and removed.' });
     } catch (error) {
         console.error('Error rejecting offer:', error);
@@ -323,7 +332,6 @@ router.delete('/listings/:id', protect, async (req, res) => {
         if (!listing) {
             return res.status(404).json({ message: 'Listing not found' });
         }
-        // NEW: Prevent deleting a listing that's already completed.
         if (listing.status !== 'active') {
             return res.status(400).json({ message: 'This listing is no longer active.' });
         }
