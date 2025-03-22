@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/userModel');
+const { protect } = require('../middleware/authMiddleware');
 
 // Middleware to check admin privileges
 const adminOnly = (req, res, next) => {
@@ -12,7 +13,7 @@ const adminOnly = (req, res, next) => {
 };
 
 // API to clear all cards for a specific user
-router.post('/clear-cards', adminOnly, async (req, res) => {
+router.post('/clear-cards', protect, adminOnly, async (req, res) => {
     const { userId } = req.body;
     if (!userId) {
         return res.status(400).json({ error: 'User ID is required to clear cards.' });
@@ -33,7 +34,7 @@ router.post('/clear-cards', adminOnly, async (req, res) => {
 });
 
 // API to set all users' pack count to 6
-router.post('/set-packs', adminOnly, async (req, res) => {
+router.post('/set-packs', protect, adminOnly, async (req, res) => {
     try {
         const result = await User.updateMany({}, { packs: 6 });
         res.json({ message: 'All users now have 6 packs.', updatedCount: result.modifiedCount });
@@ -44,7 +45,7 @@ router.post('/set-packs', adminOnly, async (req, res) => {
 });
 
 // New endpoint: Broadcast custom notification to all users
-router.post('/notifications', adminOnly, async (req, res) => {
+router.post('/notifications', protect, adminOnly, async (req, res) => {
     const { type, message } = req.body;
     if (!type || !message) {
         return res.status(400).json({ message: 'Type and message are required.' });
@@ -53,7 +54,7 @@ router.post('/notifications', adminOnly, async (req, res) => {
         const notification = {
             type,
             message,
-            link: "",  // default empty link, since we removed the requirement
+            link: "",  // default empty link
             extra: {},
             isRead: false,
             createdAt: new Date()
