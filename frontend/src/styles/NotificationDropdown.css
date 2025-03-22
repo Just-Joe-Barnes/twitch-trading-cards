@@ -94,6 +94,26 @@
     color: var(--text-primary);
 }
 
+.notification-bell {
+    position: absolute;
+    top: 5px; /* adjust as needed */
+    right: 5px; /* adjust as needed */
+    font-size: 18px;
+    pointer-events: none; /* so clicks pass through to the button */
+}
+
+/* Adjust the badge position if needed */
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: red;
+    color: white;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 50%;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;

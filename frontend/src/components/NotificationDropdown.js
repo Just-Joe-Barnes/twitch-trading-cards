@@ -22,7 +22,6 @@ const NotificationDropdown = ({ profilePic, userId }) => {
         socketRef.current.emit('join', userId);
         socketRef.current.on('notification', (newNotification) => {
             console.log("Received new notification via socket:", newNotification);
-            // Prepend the new notification to the state
             setNotifications(prev => [newNotification, ...prev]);
         });
 
@@ -50,10 +49,7 @@ const NotificationDropdown = ({ profilePic, userId }) => {
     const markNotificationsAsRead = async () => {
         try {
             await fetchWithAuth('/api/notifications/read', { method: 'PUT' });
-            // Optionally, you might update local state here if needed
-            setNotifications((prev) =>
-                prev.map((n) => ({ ...n, isRead: true }))
-            );
+            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
         } catch (error) {
             console.error('Error marking notifications as read:', error.message);
         }
@@ -62,7 +58,6 @@ const NotificationDropdown = ({ profilePic, userId }) => {
     const toggleDropdown = () => {
         setIsOpen((prev) => {
             if (!prev) {
-                // When opening, mark as read but do not re-fetch (since we rely on socket updates)
                 markNotificationsAsRead();
             }
             return !prev;
@@ -72,7 +67,7 @@ const NotificationDropdown = ({ profilePic, userId }) => {
     const handleDelete = async (notificationId) => {
         try {
             await fetchWithAuth(`/api/notifications/${notificationId}`, { method: 'DELETE' });
-            setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
+            setNotifications(prev => prev.filter((n) => n._id !== notificationId));
         } catch (error) {
             console.error('Error deleting notification:', error.message);
         }
@@ -103,6 +98,7 @@ const NotificationDropdown = ({ profilePic, userId }) => {
         <div className="notification-dropdown" ref={dropdownRef}>
             <button className="notification-icon" onClick={toggleDropdown}>
                 <img src={profilePic} alt="Profile" className="notification-profile-pic" />
+                <span className="notification-bell">🔔</span>
                 {notifications.filter(n => !n.isRead).length > 0 && (
                     <span className="notification-badge">
                         {notifications.filter(n => !n.isRead).length}
