@@ -1,19 +1,23 @@
-// /notificationService.js
-
+// notificationService.js
 let ioInstance = null;
 
-// Setter to initialize the Socket.io instance
-const setSocketInstance = (io) => {
+function setSocketInstance(io) {
     ioInstance = io;
-};
+    console.log("[notificationService] Socket.io instance set.");
+}
 
-const sendNotification = (userId, notification) => {
+// Broadcast a notification event to all connected clients
+function broadcastNotification(notification) {
     if (!ioInstance) {
-        console.error('Socket.io instance not set!');
+        console.warn("[notificationService] No Socket.io instance available. Notification not broadcast.");
         return;
     }
-    console.log(`Sending notification to user: ${userId}`);
-    ioInstance.to(userId).emit('newNotification', notification);
-};
+    // This emits to everyone. If you want per-user logic, you can do .to(userId).emit(...) instead.
+    ioInstance.emit("notification", notification);
+    console.log("[notificationService] Broadcasted notification:", notification);
+}
 
-module.exports = { setSocketInstance, sendNotification };
+module.exports = {
+    setSocketInstance,
+    broadcastNotification,
+};

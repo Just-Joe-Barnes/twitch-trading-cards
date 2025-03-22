@@ -5,7 +5,7 @@ const cors = require('cors');
 const session = require('express-session');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
-const http = require('http'); // Ensure we use http for Socket.io compatibility
+const http = require('http'); // Use http for Socket.io compatibility
 require('dotenv').config();
 
 const authRoutes = require('./src/routes/authRoutes');
@@ -21,7 +21,7 @@ const testNotificationRoutes = require('./src/routes/testNotificationRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
 
 const app = express();
-const server = http.createServer(app); // Use http server for Socket.io
+const server = http.createServer(app); // Create HTTP server for Socket.io
 
 // Use an environment variable (e.g., CLIENT_URL) with a fallback to localhost
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:3000", credentials: true }));
@@ -96,7 +96,7 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
 });
 
-// Optional: Increase timeouts if needed (uncomment to enable)
+// Optional: Increase timeouts if needed
 server.headersTimeout = 120000; // 120 seconds
 server.keepAliveTimeout = 120000;
 
