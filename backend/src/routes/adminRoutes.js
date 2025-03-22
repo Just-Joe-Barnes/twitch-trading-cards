@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/userModel');
 const { protect } = require('../middleware/authMiddleware');
-const { broadcastNotification } = require('../notificationService');
+const { broadcastNotification } = require('../../notificationService');
 
 // Middleware to check admin privileges
 const adminOnly = (req, res, next) => {
