@@ -45,16 +45,16 @@ router.post('/set-packs', adminOnly, async (req, res) => {
 
 // New endpoint: Broadcast custom notification to all users
 router.post('/notifications', adminOnly, async (req, res) => {
-    const { type, message, link, extra } = req.body;
-    if (!type || !message || !link) {
-        return res.status(400).json({ message: 'Type, message, and link are required.' });
+    const { type, message } = req.body;
+    if (!type || !message) {
+        return res.status(400).json({ message: 'Type and message are required.' });
     }
     try {
         const notification = {
             type,
             message,
-            link,
-            extra: extra || {},
+            link: "",  // default empty link, since we removed the requirement
+            extra: {},
             isRead: false,
             createdAt: new Date()
         };
