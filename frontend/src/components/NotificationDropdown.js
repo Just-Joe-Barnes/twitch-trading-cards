@@ -56,7 +56,7 @@ const NotificationDropdown = ({ profilePic, userId }) => {
     };
 
     const toggleDropdown = () => {
-        setIsOpen((prev) => {
+        setIsOpen(prev => {
             if (!prev) {
                 markNotificationsAsRead();
             }
@@ -67,7 +67,7 @@ const NotificationDropdown = ({ profilePic, userId }) => {
     const handleDelete = async (notificationId) => {
         try {
             await fetchWithAuth(`/api/notifications/${notificationId}`, { method: 'DELETE' });
-            setNotifications(prev => prev.filter((n) => n._id !== notificationId));
+            setNotifications(prev => prev.filter(n => n._id !== notificationId));
         } catch (error) {
             console.error('Error deleting notification:', error.message);
         }
@@ -98,11 +98,8 @@ const NotificationDropdown = ({ profilePic, userId }) => {
         <div className="notification-dropdown" ref={dropdownRef}>
             <button className="notification-icon" onClick={toggleDropdown}>
                 <img src={profilePic} alt="Profile" className="notification-profile-pic" />
-                <span className="notification-bell">🔔</span>
                 {notifications.filter(n => !n.isRead).length > 0 && (
-                    <span className="notification-badge">
-                        {notifications.filter(n => !n.isRead).length}
-                    </span>
+                    <span className="notification-indicator"></span>
                 )}
             </button>
             {isOpen && (
