@@ -34,7 +34,7 @@ const ProfilePage = () => {
                 }
                 setUsername(profile.username || 'User');
                 // Set new stats from profile
-                setCurrentPacks(profile.packs || 0);
+                setCurrentPacks(collectionData.packs || 0);
                 setOpenedPacks(profile.openedPacks || 0);
 
                 let tempFeatured = profile.featuredCards || [];
