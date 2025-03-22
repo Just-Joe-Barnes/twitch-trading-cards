@@ -11,20 +11,26 @@ const NotificationDropdown = ({ profilePic, userId }) => {
     const dropdownRef = useRef(null);
     const socketRef = useRef(null);
 
-    // Establish the socket connection as soon as the component mounts.
+    // Establish the socket connection on mount
     useEffect(() => {
-        if (!userId) return; // Don't connect if userId is not available
+        if (!userId) return; // Do not connect if userId is not available
 
+        // Create the socket connection to the backend
         socketRef.current = io(API_BASE_URL, {
-            transports: ['websocket']
+            transports: ['websocket'],
         });
 
+        // Join the room corresponding to this user so that the server can target notifications
         socketRef.current.emit('join', userId);
+
+        // Listen for incoming notifications
         socketRef.current.on('notification', (newNotification) => {
             console.log("Received new notification via socket:", newNotification);
-            setNotifications(prev => [newNotification, ...prev]);
+            // Prepend the new notification so that it's visible immediately
+            setNotifications((prev) => [newNotification, ...prev]);
         });
 
+        // Clean up the socket connection when the component unmounts
         return () => {
             if (socketRef.current) {
                 socketRef.current.disconnect();
@@ -32,7 +38,7 @@ const NotificationDropdown = ({ profilePic, userId }) => {
         };
     }, [userId]);
 
-    // Fetch notifications on mount
+    // Fetch notifications on component mount
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
@@ -45,19 +51,23 @@ const NotificationDropdown = ({ profilePic, userId }) => {
         fetchNotifications();
     }, []);
 
-    // Mark notifications as read when dropdown opens
+    // Mark notifications as read when the dropdown opens
     const markNotificationsAsRead = async () => {
         try {
             await fetchWithAuth('/api/notifications/read', { method: 'PUT' });
-            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+            // Locally update notifications to mark them as read
+            setNotifications((prev) =>
+                prev.map((n) => ({ ...n, isRead: true }))
+            );
         } catch (error) {
             console.error('Error marking notifications as read:', error.message);
         }
     };
 
     const toggleDropdown = () => {
-        setIsOpen(prev => {
+        setIsOpen((prev) => {
             if (!prev) {
+                // When opening, mark as read
                 markNotificationsAsRead();
             }
             return !prev;
@@ -67,7 +77,7 @@ const NotificationDropdown = ({ profilePic, userId }) => {
     const handleDelete = async (notificationId) => {
         try {
             await fetchWithAuth(`/api/notifications/${notificationId}`, { method: 'DELETE' });
-            setNotifications(prev => prev.filter(n => n._id !== notificationId));
+            setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
         } catch (error) {
             console.error('Error deleting notification:', error.message);
         }
@@ -82,6 +92,7 @@ const NotificationDropdown = ({ profilePic, userId }) => {
         }
     };
 
+    // Close dropdown if clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -98,6 +109,7 @@ const NotificationDropdown = ({ profilePic, userId }) => {
         <div className="notification-dropdown" ref={dropdownRef}>
             <button className="notification-icon" onClick={toggleDropdown}>
                 <img src={profilePic} alt="Profile" className="notification-profile-pic" />
+                {/* Show a red circle indicator only if there are unread notifications */}
                 {notifications.filter(n => !n.isRead).length > 0 && (
                     <span className="notification-indicator"></span>
                 )}
