@@ -35,7 +35,8 @@ const AdminActions = () => {
                 message
             };
 
-            const response = await fetchWithAuth('/api/admin/notifications', {
+            // Since fetchWithAuth already returns parsed JSON, we don't need to call .json() again.
+            await fetchWithAuth('/api/admin/notifications', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -43,15 +44,10 @@ const AdminActions = () => {
                 body: JSON.stringify(payload)
             });
 
-            const data = await response.json();
-            if (response.ok) {
-                setStatus('Notification sent successfully.');
-                // Clear fields on success
-                setNotificationType('');
-                setMessage('');
-            } else {
-                setStatus('Failed to send notification: ' + data.message);
-            }
+            setStatus('Notification sent successfully.');
+            // Clear fields on success
+            setNotificationType('');
+            setMessage('');
         } catch (error) {
             console.error('Error sending notification:', error);
             setStatus('Error sending notification.');
