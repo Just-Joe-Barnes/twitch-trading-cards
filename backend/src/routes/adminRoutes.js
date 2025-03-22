@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/userModel');
 const { protect } = require('../middleware/authMiddleware');
+const { broadcastNotification } = require('../notificationService');
 
 // Middleware to check admin privileges
 const adminOnly = (req, res, next) => {
@@ -54,14 +55,20 @@ router.post('/notifications', protect, adminOnly, async (req, res) => {
         const notification = {
             type,
             message,
-            link: "",  // default empty link
+            link: "", // default empty link
             extra: {},
             isRead: false,
             createdAt: new Date()
         };
 
-        // Push the notification into every user's notifications array
+        console.log("[AdminRoutes] Broadcasting notification:", notification);
+
+        // Update the database: push the notification into every user's notifications array
         await User.updateMany({}, { $push: { notifications: notification } });
+
+        // Emit a real-time notification event to all connected clients
+        broadcastNotification(notification);
+
         res.status(200).json({ message: 'Notification broadcast successfully.' });
     } catch (error) {
         console.error('Error broadcasting notification:', error.message);

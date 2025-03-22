@@ -1,4 +1,4 @@
-// notificationService.js
+// File: backend/notificationService.js
 let ioInstance = null;
 
 function setSocketInstance(io) {
@@ -12,7 +12,7 @@ function broadcastNotification(notification) {
         console.warn("[notificationService] No Socket.io instance available. Notification not broadcast.");
         return;
     }
-    // This emits to everyone. If you want per-user logic, you can do .to(userId).emit(...) instead.
+    // Emit to everyone; if you need per-user emissions, modify this accordingly.
     ioInstance.emit("notification", notification);
     console.log("[notificationService] Broadcasted notification:", notification);
 }
