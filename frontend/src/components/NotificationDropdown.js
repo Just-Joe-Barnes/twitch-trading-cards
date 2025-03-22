@@ -1,13 +1,38 @@
-// /src/components/NotificationDropdown.js
+// src/components/NotificationDropdown.js
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/NotificationDropdown.css';
-import { fetchWithAuth } from '../utils/api';
+import { fetchWithAuth, API_BASE_URL } from '../utils/api';
+import io from 'socket.io-client';
 
 const NotificationDropdown = ({ profilePic, userId }) => {
     const [notifications, setNotifications] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
+    const socketRef = useRef(null);
+
+    // Establish a socket connection and subscribe to notifications for this user.
+    useEffect(() => {
+        // Connect to the socket server
+        socketRef.current = io(API_BASE_URL, {
+            transports: ['websocket']
+        });
+
+        // Join the room corresponding to the userId
+        socketRef.current.emit('join', userId);
+
+        // Listen for new notifications
+        socketRef.current.on('notification', (newNotification) => {
+            console.log("Received new notification via socket:", newNotification);
+            setNotifications(prev => [newNotification, ...prev]);
+        });
+
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+            }
+        };
+    }, [userId]);
 
     // Fetch notifications on mount
     const fetchNotifications = async () => {
@@ -33,7 +58,6 @@ const NotificationDropdown = ({ profilePic, userId }) => {
     // Toggle the dropdown open/closed
     const toggleDropdown = () => {
         setIsOpen(prev => {
-            // If opening, mark notifications as read
             if (!prev) {
                 markNotificationsAsRead();
             }
@@ -45,7 +69,7 @@ const NotificationDropdown = ({ profilePic, userId }) => {
     const handleDelete = async (notificationId) => {
         try {
             await fetchWithAuth(`/api/notifications/${notificationId}`, { method: 'DELETE' });
-            setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
+            setNotifications(prev => prev.filter(n => n._id !== notificationId));
         } catch (error) {
             console.error('Error deleting notification:', error.message);
         }
@@ -99,7 +123,7 @@ const NotificationDropdown = ({ profilePic, userId }) => {
                                             <span>{n.message}</span>
                                         </Link>
                                         <button className="delete-notification" onClick={() => handleDelete(n._id)}>
-                                            🗑
+                                            ×
                                         </button>
                                     </li>
                                 ))}
