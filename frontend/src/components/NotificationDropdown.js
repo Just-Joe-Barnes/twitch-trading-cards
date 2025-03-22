@@ -11,26 +11,25 @@ const NotificationDropdown = ({ profilePic, userId }) => {
     const dropdownRef = useRef(null);
     const socketRef = useRef(null);
 
-    // Establish the socket connection on mount
+    // Establish socket connection on mount when userId is available
     useEffect(() => {
-        if (!userId) return; // Do not connect if userId is not available
-
-        // Create the socket connection to the backend
+        if (!userId) {
+            console.log("NotificationDropdown: userId is not available yet.");
+            return;
+        }
+        console.log("NotificationDropdown: Establishing socket connection for user:", userId);
         socketRef.current = io(API_BASE_URL, {
             transports: ['websocket'],
         });
 
-        // Join the room corresponding to this user so that the server can target notifications
         socketRef.current.emit('join', userId);
+        console.log("NotificationDropdown: Emitted join event for user:", userId);
 
-        // Listen for incoming notifications
         socketRef.current.on('notification', (newNotification) => {
             console.log("Received new notification via socket:", newNotification);
-            // Prepend the new notification so that it's visible immediately
-            setNotifications((prev) => [newNotification, ...prev]);
+            setNotifications(prev => [newNotification, ...prev]);
         });
 
-        // Clean up the socket connection when the component unmounts
         return () => {
             if (socketRef.current) {
                 socketRef.current.disconnect();
@@ -38,7 +37,7 @@ const NotificationDropdown = ({ profilePic, userId }) => {
         };
     }, [userId]);
 
-    // Fetch notifications on component mount
+    // Fetch notifications on mount
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
@@ -51,13 +50,12 @@ const NotificationDropdown = ({ profilePic, userId }) => {
         fetchNotifications();
     }, []);
 
-    // Mark notifications as read when the dropdown opens
+    // Mark notifications as read when dropdown opens
     const markNotificationsAsRead = async () => {
         try {
             await fetchWithAuth('/api/notifications/read', { method: 'PUT' });
-            // Locally update notifications to mark them as read
-            setNotifications((prev) =>
-                prev.map((n) => ({ ...n, isRead: true }))
+            setNotifications(prev =>
+                prev.map(n => ({ ...n, isRead: true }))
             );
         } catch (error) {
             console.error('Error marking notifications as read:', error.message);
@@ -65,9 +63,8 @@ const NotificationDropdown = ({ profilePic, userId }) => {
     };
 
     const toggleDropdown = () => {
-        setIsOpen((prev) => {
+        setIsOpen(prev => {
             if (!prev) {
-                // When opening, mark as read
                 markNotificationsAsRead();
             }
             return !prev;
@@ -77,7 +74,7 @@ const NotificationDropdown = ({ profilePic, userId }) => {
     const handleDelete = async (notificationId) => {
         try {
             await fetchWithAuth(`/api/notifications/${notificationId}`, { method: 'DELETE' });
-            setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
+            setNotifications(prev => prev.filter(n => n._id !== notificationId));
         } catch (error) {
             console.error('Error deleting notification:', error.message);
         }
@@ -109,7 +106,6 @@ const NotificationDropdown = ({ profilePic, userId }) => {
         <div className="notification-dropdown" ref={dropdownRef}>
             <button className="notification-icon" onClick={toggleDropdown}>
                 <img src={profilePic} alt="Profile" className="notification-profile-pic" />
-                {/* Show a red circle indicator only if there are unread notifications */}
                 {notifications.filter(n => !n.isRead).length > 0 && (
                     <span className="notification-indicator"></span>
                 )}

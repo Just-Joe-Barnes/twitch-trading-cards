@@ -23,7 +23,6 @@ const Navbar = ({ isAdmin }) => {
                 console.error('Error fetching user profile:', error.message);
             }
         };
-
         fetchUsername();
     }, []);
 
@@ -123,7 +122,6 @@ const Navbar = ({ isAdmin }) => {
                         </li>
                     </>
                 )}
-                {/* Market link is now available to everyone */}
                 <li>
                     <NavLink to="/market" className="nav-link">
                         Market
@@ -141,13 +139,15 @@ const Navbar = ({ isAdmin }) => {
                 </li>
             </ul>
 
-            {/* Moved Notification Dropdown to far right */}
-            <div className="navbar-notifications">
-                <NotificationDropdown
-                    profilePic={loggedInUser.twitchProfilePic || '/images/defaultProfile.png'}
-                    userId={loggedInUser._id}
-                />
-            </div>
+            {/* Render NotificationDropdown only when loggedInUser._id is available */}
+            {loggedInUser._id && (
+                <div className="navbar-notifications">
+                    <NotificationDropdown
+                        profilePic={loggedInUser.twitchProfilePic || '/images/defaultProfile.png'}
+                        userId={loggedInUser._id}
+                    />
+                </div>
+            )}
         </nav>
     );
 };
