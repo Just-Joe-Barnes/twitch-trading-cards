@@ -9,12 +9,12 @@ import Navbar from './components/Navbar';
 import ProfilePage from './pages/ProfilePage';
 import TradingPage from './pages/TradingPage';
 import PendingTrades from './pages/PendingTrades';
-import DebugTradePage from './pages/DebugTradePage';
 import CataloguePage from './pages/CataloguePage';
 import LoadingSpinner from './components/LoadingSpinner';
 import MarketPage from './pages/MarketPage';
 import CreateListingPage from './pages/CreateListingPage';
 import MarketListingDetails from './pages/MarketListingDetails';
+import AdminActions from './pages/AdminActions';
 import 'normalize.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -102,7 +102,10 @@ const App = () => {
                     path="/trades/pending"
                     element={user ? <PendingTrades userId={user._id} /> : <Navigate to="/login" />}
                 />
-                <Route path="/debug-trade" element={<DebugTradePage />} />
+                <Route
+                    path="/admin/actions"
+                    element={user?.isAdmin ? <AdminActions user={user} /> : <Navigate to="/login" />}
+                />
                 <Route path="/catalogue" element={<CataloguePage />} />
                 <Route path="/market" element={<MarketPage />} />
                 <Route path="/market/create" element={<CreateListingPage />} />

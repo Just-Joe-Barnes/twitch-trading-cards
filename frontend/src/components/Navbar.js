@@ -110,11 +110,18 @@ const Navbar = ({ isAdmin }) => {
                     </NavLink>
                 </li>
                 {isAdmin && (
-                    <li>
-                        <NavLink to="/admin-dashboard" className="nav-link">
-                            Admin Dashboard
-                        </NavLink>
-                    </li>
+                    <>
+                        <li>
+                            <NavLink to="/admin-dashboard" className="nav-link">
+                                Admin Dashboard
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink to="/admin/actions" className="nav-link">
+                                Admin Actions
+                            </NavLink>
+                        </li>
+                    </>
                 )}
                 {/* Market link is now available to everyone */}
                 <li>
