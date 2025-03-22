@@ -11,19 +11,18 @@ const NotificationDropdown = ({ profilePic, userId }) => {
     const dropdownRef = useRef(null);
     const socketRef = useRef(null);
 
-    // Establish a socket connection and subscribe to notifications for this user.
+    // Establish the socket connection as soon as the component mounts.
     useEffect(() => {
-        // Connect to the socket server
+        if (!userId) return; // Don't connect if userId is not available
+
         socketRef.current = io(API_BASE_URL, {
             transports: ['websocket']
         });
 
-        // Join the room corresponding to the userId
         socketRef.current.emit('join', userId);
-
-        // Listen for new notifications
         socketRef.current.on('notification', (newNotification) => {
             console.log("Received new notification via socket:", newNotification);
+            // Prepend the new notification to the state
             setNotifications(prev => [newNotification, ...prev]);
         });
 
@@ -35,47 +34,50 @@ const NotificationDropdown = ({ profilePic, userId }) => {
     }, [userId]);
 
     // Fetch notifications on mount
-    const fetchNotifications = async () => {
-        try {
-            const data = await fetchWithAuth('/api/notifications', { method: 'GET' });
-            setNotifications(data);
-        } catch (error) {
-            console.error('Error fetching notifications:', error.message);
-        }
-    };
+    useEffect(() => {
+        const fetchNotifications = async () => {
+            try {
+                const data = await fetchWithAuth('/api/notifications', { method: 'GET' });
+                setNotifications(data);
+            } catch (error) {
+                console.error('Error fetching notifications:', error.message);
+            }
+        };
+        fetchNotifications();
+    }, []);
 
-    // Mark notifications as read when opening the dropdown
+    // Mark notifications as read when dropdown opens
     const markNotificationsAsRead = async () => {
         try {
             await fetchWithAuth('/api/notifications/read', { method: 'PUT' });
-            // Refresh notifications
-            fetchNotifications();
+            // Optionally, you might update local state here if needed
+            setNotifications((prev) =>
+                prev.map((n) => ({ ...n, isRead: true }))
+            );
         } catch (error) {
             console.error('Error marking notifications as read:', error.message);
         }
     };
 
-    // Toggle the dropdown open/closed
     const toggleDropdown = () => {
-        setIsOpen(prev => {
+        setIsOpen((prev) => {
             if (!prev) {
+                // When opening, mark as read but do not re-fetch (since we rely on socket updates)
                 markNotificationsAsRead();
             }
             return !prev;
         });
     };
 
-    // Delete an individual notification
     const handleDelete = async (notificationId) => {
         try {
             await fetchWithAuth(`/api/notifications/${notificationId}`, { method: 'DELETE' });
-            setNotifications(prev => prev.filter(n => n._id !== notificationId));
+            setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
         } catch (error) {
             console.error('Error deleting notification:', error.message);
         }
     };
 
-    // Delete all notifications
     const handleClearAll = async () => {
         try {
             await fetchWithAuth('/api/notifications/clear', { method: 'DELETE' });
@@ -85,7 +87,6 @@ const NotificationDropdown = ({ profilePic, userId }) => {
         }
     };
 
-    // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -96,10 +97,6 @@ const NotificationDropdown = ({ profilePic, userId }) => {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, []);
-
-    useEffect(() => {
-        fetchNotifications();
     }, []);
 
     return (
