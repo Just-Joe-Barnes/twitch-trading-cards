@@ -5,7 +5,7 @@ import { fetchUserProfile, fetchWithAuth } from '../utils/api';
 import '../styles/AdminActions.css';
 
 const AdminActions = () => {
-    const [type, setType] = useState('');
+    const [notificationType, setNotificationType] = useState('');
     const [message, setMessage] = useState('');
     const [status, setStatus] = useState('');
     const navigate = useNavigate();
@@ -29,9 +29,9 @@ const AdminActions = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Prepare payload without link or extra fields.
+            // Prepare payload with the selected type and message.
             const payload = {
-                type,
+                type: notificationType,
                 message
             };
 
@@ -47,7 +47,7 @@ const AdminActions = () => {
             if (response.ok) {
                 setStatus('Notification sent successfully.');
                 // Clear fields on success
-                setType('');
+                setNotificationType('');
                 setMessage('');
             } else {
                 setStatus('Failed to send notification: ' + data.message);
@@ -64,13 +64,21 @@ const AdminActions = () => {
             <form onSubmit={handleSubmit} className="aa-admin-actions-form">
                 <div className="aa-form-group">
                     <label>Type:</label>
-                    <input
-                        type="text"
-                        value={type}
-                        onChange={(e) => setType(e.target.value)}
-                        placeholder="e.g. General Update"
+                    <select
+                        value={notificationType}
+                        onChange={(e) => setNotificationType(e.target.value)}
                         required
-                    />
+                    >
+                        <option value="" disabled>
+                            Select notification type
+                        </option>
+                        <option value="Trade Offer Received">Trade Offer Received</option>
+                        <option value="Trade Update">Trade Update</option>
+                        <option value="New Market Offer">New Market Offer</option>
+                        <option value="Listing Update">Listing Update</option>
+                        <option value="Collection Milestone">Collection Milestone</option>
+                        <option value="General Announcement">General Announcement</option>
+                    </select>
                 </div>
                 <div className="aa-form-group">
                     <label>Message:</label>
