@@ -33,14 +33,18 @@ const ProfilePage = () => {
                     profile = await fetchUserProfile();
                 }
                 setUsername(profile.username || 'User');
-                // Set new stats from profile
-                setCurrentPacks(collectionData.packs || 0);
+                // Set opened packs from profile
                 setOpenedPacks(profile.openedPacks || 0);
 
                 let tempFeatured = profile.featuredCards || [];
                 if (profile._id) {
+                    // Fetch collection data using the profile _id
                     const collectionData = await fetchUserCollection(profile._id);
+                    // Update total cards count
                     setCollectionCount(collectionData.cards ? collectionData.cards.length : 0);
+                    // Update current packs from collection data
+                    setCurrentPacks(collectionData.packs || 0);
+
                     if (collectionData.cards) {
                         // Filter out any featured card that is no longer in the collection.
                         tempFeatured = tempFeatured.filter((card) =>
