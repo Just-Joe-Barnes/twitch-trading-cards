@@ -16,6 +16,24 @@
         color: var(--brand-primary);
     }
 
+/* Flex container for panels */
+.aa-admin-panels {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+/* Panel style for both notification and packs management */
+.aa-panel {
+    flex: 1;
+    min-width: 300px;
+    padding: 1rem;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--border-radius);
+    background: var(--surface-dark);
+}
+
+/* Existing form styles for notifications */
 .aa-admin-actions-form {
     display: flex;
     flex-direction: column;
@@ -72,18 +90,7 @@
     color: var(--brand-primary);
 }
 
-.aa-admin-packs-section {
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-dark);
-}
-
-    .aa-admin-packs-section h2 {
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-        color: var(--brand-primary);
-    }
-
+/* Styles for Packs Management Panel */
 .aa-admin-packs-form {
     display: flex;
     flex-wrap: wrap;
@@ -93,4 +100,21 @@
 
     .aa-admin-packs-form .aa-form-group {
         flex: 1 1 200px;
+    }
+
+/* Reset button specific style */
+.aa-reset-button {
+    background: var(--brand-secondary);
+    color: var(--background-dark);
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: background 0.3s ease;
+}
+
+    .aa-reset-button:hover {
+        background: var(--brand-primary);
     }
