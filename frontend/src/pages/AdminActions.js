@@ -11,6 +11,7 @@ const AdminActions = () => {
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState('');
     const [packAmount, setPackAmount] = useState('');
+    const [isDropdownVisible, setIsDropdownVisible] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -51,10 +52,34 @@ const AdminActions = () => {
         }
     };
 
+    // Handle changes in the user search input
+    const handleSearchChange = (e) => {
+        const value = e.target.value;
+        setSelectedUser(value);
+        if (value.length > 0) {
+            setIsDropdownVisible(true);
+        } else {
+            setIsDropdownVisible(false);
+        }
+    };
+
+    // Compute filtered users based on input
+    const filteredUsers = selectedUser
+        ? users.filter((u) =>
+            u.username.toLowerCase().includes(selectedUser.toLowerCase())
+        )
+        : [];
+
+    // When a user is selected from the dropdown
+    const handleSelectUser = (user) => {
+        setSelectedUser(user.username);
+        setIsDropdownVisible(false);
+    };
+
     const handleGivePacks = async (e) => {
         e.preventDefault();
         // Find the user object by matching the username
-        const userObj = users.find(u => u.username === selectedUser);
+        const userObj = users.find((u) => u.username === selectedUser);
         if (!userObj) {
             setStatus('User not found, please select a valid user.');
             return;
@@ -82,6 +107,11 @@ const AdminActions = () => {
         }
     };
 
+    // Hide dropdown on blur (with a slight delay to allow click events)
+    const handleBlur = () => {
+        setTimeout(() => setIsDropdownVisible(false), 200);
+    };
+
     return (
         <div className="aa-admin-actions-page">
             <h1>Admin Actions</h1>
@@ -92,7 +122,11 @@ const AdminActions = () => {
                     <form onSubmit={handleNotificationSubmit} className="aa-admin-actions-form">
                         <div className="aa-form-group">
                             <label>Type:</label>
-                            <select value={notificationType} onChange={e => setNotificationType(e.target.value)} required>
+                            <select
+                                value={notificationType}
+                                onChange={e => setNotificationType(e.target.value)}
+                                required
+                            >
                                 <option value="" disabled>Select notification type</option>
                                 <option>Trade Offer Received</option>
                                 <option>Trade Update</option>
@@ -121,20 +155,38 @@ const AdminActions = () => {
                     <form onSubmit={handleGivePacks} className="aa-admin-packs-form">
                         <div className="aa-form-group">
                             <label>User:</label>
-                            <input
-                                type="text"
-                                list="user-list"
-                                className="search-bar"
-                                value={selectedUser}
-                                onChange={e => setSelectedUser(e.target.value)}
-                                placeholder="Search for a user..."
-                                required
-                            />
-                            <datalist id="user-list">
-                                {users.map(u => (
-                                    <option key={u._id} value={u.username} />
-                                ))}
-                            </datalist>
+                            <div className="search-container" onBlur={handleBlur}>
+                                <input
+                                    type="text"
+                                    className="search-bar"
+                                    value={selectedUser}
+                                    onChange={handleSearchChange}
+                                    placeholder="Search for a user..."
+                                    required
+                                    onFocus={() => {
+                                        if (selectedUser.length > 0) {
+                                            setIsDropdownVisible(true);
+                                        }
+                                    }}
+                                />
+                                {isDropdownVisible && (
+                                    <ul className="search-dropdown">
+                                        {filteredUsers.length > 0 ? (
+                                            filteredUsers.map((user) => (
+                                                <li
+                                                    key={user._id}
+                                                    className="search-result-item"
+                                                    onClick={() => handleSelectUser(user)}
+                                                >
+                                                    {user.username}
+                                                </li>
+                                            ))
+                                        ) : (
+                                            <li className="no-results">No users found</li>
+                                        )}
+                                    </ul>
+                                )}
+                            </div>
                         </div>
                         <div className="aa-form-group">
                             <label>Packs to Give:</label>
