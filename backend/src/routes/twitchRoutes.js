@@ -51,39 +51,44 @@ const verifyTwitchRequest = (req, res, next) => {
 // Function to handle Twitch events
 const handleTwitchEvent = async (event) => {
     console.log('Handling Twitch event:', event.type);
-    const { user_id, user_name, type, reward, total, recipient_id } = event;
+    const { user_id, user_name, type, reward, total } = event;
 
     try {
         switch (type) {
             case 'channel.subscribe':
                 console.log(`Processing channel.subscribe for ${user_name} (${user_id})`);
-                await User.findOneAndUpdate(
-                    { twitchId: user_id },
-                    { $inc: { packs: 1 } },
-                    { upsert: true, new: true }
-                );
+                // Check if the user exists before updating
+                const existingSubscriber = await User.findOne({ twitchId: user_id });
+                if (existingSubscriber) {
+                    await User.findOneAndUpdate(
+                        { twitchId: user_id },
+                        { $inc: { packs: 1 } },
+                        { new: true }
+                    );
+                    console.log(`1 pack awarded to subscriber ${user_name} (${user_id}).`);
+                } else {
+                    console.error(`❌ User not found for Twitch ID ${user_id} (${user_name}). Subscription event ignored.`);
+                }
                 break;
 
             case 'channel.subscription.gift':
                 console.log('Processing channel.subscription.gift event:', event);
-
-                // Always award the packs to the **gifter** (user_id)
+                // Always award the packs to the gifter (user_id)
                 const giftedCount = total || 1;
                 if (!user_id) {
                     console.error("❌ No valid Twitch ID found for gifted subscription event", event);
                     break;
                 }
-
-                const updatedGifter = await User.findOneAndUpdate(
-                    { twitchId: user_id },
-                    { $inc: { packs: giftedCount } },
-                    { upsert: true, new: true }
-                );
-
-                if (updatedGifter) {
-                    console.log(`🎁 ${giftedCount} pack(s) awarded to **Gifter** (${user_id}). New pack count: ${updatedGifter.packs}`);
+                const existingGifter = await User.findOne({ twitchId: user_id });
+                if (existingGifter) {
+                    const updatedGifter = await User.findOneAndUpdate(
+                        { twitchId: user_id },
+                        { $inc: { packs: giftedCount } },
+                        { new: true }
+                    );
+                    console.log(`🎁 ${giftedCount} pack(s) awarded to gifter (${user_id}). New pack count: ${updatedGifter.packs}`);
                 } else {
-                    console.error(`❌ Failed to update gifter with Twitch ID ${user_id}`);
+                    console.error(`❌ User not found for Twitch ID ${user_id} in gifted subscription event. Event ignored.`);
                 }
                 break;
 
