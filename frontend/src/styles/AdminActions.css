@@ -120,21 +120,29 @@
         background: var(--brand-primary);
     }
 
-/* Styling for the user search input and datalist */
-.aa-user-input {
-    padding: 0.75rem;
-    border: 1px solid var(--border-dark);
-    border-radius: var(--border-radius);
-    background: var(--surface-dark);
+/* --- New Search Field Styles (matching Navbar) --- */
+.search-bar {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border: 1px solid var(--brand-primary);
+    border-radius: 0.5rem;
+    background-color: var(--surface-darker);
     color: var(--text-primary);
-    width: 100%;
+    width: 250px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
 }
 
-/* Note: Styling for <datalist> is limited and browser-dependent */
+    .search-bar:focus {
+        outline: none;
+        border-color: var(--brand-secondary);
+    }
+
+/* Datalist styling (browser-dependent) */
 datalist {
     background: var(--surface-dark);
-    border: 1px solid var(--border-dark);
-    border-radius: var(--border-radius);
+    border: 1px solid var(--brand-primary);
+    border-radius: 0.5rem;
     color: var(--text-primary);
     padding: 0.5rem;
 }

@@ -124,7 +124,7 @@ const AdminActions = () => {
                             <input
                                 type="text"
                                 list="user-list"
-                                className="aa-user-input"
+                                className="search-bar"
                                 value={selectedUser}
                                 onChange={e => setSelectedUser(e.target.value)}
                                 placeholder="Search for a user..."
