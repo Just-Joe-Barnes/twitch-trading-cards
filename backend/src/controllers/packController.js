@@ -1,6 +1,6 @@
 const Pack = require('../models/packModel');
 const User = require('../models/userModel');
-const { generateCardWithProbability } = require('../helpers/cardHelpers');
+const { generateCardWithProbability, generatePack } = require('../helpers/cardHelpers');
 
 // Get all users with packs (Admin-only functionality)
 const getUsersWithPacks = async (req, res) => {
@@ -63,11 +63,9 @@ const openPacksForUser = async (req, res) => {
             return res.status(400).json({ message: 'No unopened packs available for this user' });
         }
 
-        // Open 5 cards concurrently
-        const cardPromises = Array.from({ length: 5 }, () => generateCardWithProbability());
-        const newCards = (await Promise.all(cardPromises)).filter(card => card);
-
-        if (!newCards.length) {
+        // Generate a pack of 5 cards ensuring at least one is Rare or above.
+        const newCards = await generatePack(5);
+        if (!newCards || !newCards.length) {
             return res.status(500).json({ message: 'Failed to generate cards for the pack' });
         }
 
@@ -107,10 +105,9 @@ const openPackById = async (req, res) => {
             return res.status(404).json({ message: 'Pack not found' });
         }
 
-        // Open 5 cards concurrently for the pack
-        const cardPromises = Array.from({ length: 5 }, () => generateCardWithProbability());
-        const cards = (await Promise.all(cardPromises)).filter(card => card);
-        if (!cards.length) {
+        // Generate a pack of 5 cards ensuring at least one is Rare or above.
+        const cards = await generatePack(5);
+        if (!cards || !cards.length) {
             return res.status(500).json({ message: 'Failed to generate cards' });
         }
 

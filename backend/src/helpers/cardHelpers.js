@@ -120,4 +120,46 @@ const generateCardWithProbability = async (attempts = 0) => {
     }
 };
 
-module.exports = { generateCardWithProbability, pickRarity };
+// --- New functions to ensure at least one Rare or above in a pack ---
+
+// Define the set of rarities that are considered Rare or higher
+const rareTier = new Set(["Rare", "Epic", "Legendary", "Mythic", "Unique", "Divine"]);
+
+const isRareOrAbove = (rarity) => {
+    return rareTier.has(rarity);
+};
+
+// Generates a card ensuring its rarity is Rare or above by re-rolling if necessary.
+const generateRareCardWithProbability = async (attempts = 0) => {
+    if (attempts >= MAX_ATTEMPTS) {
+        console.warn('Maximum attempts reached for rare card.');
+        return null;
+    }
+    const card = await generateCardWithProbability();
+    if (card && isRareOrAbove(card.rarity)) {
+        return card;
+    } else {
+        return await generateRareCardWithProbability(attempts + 1);
+    }
+};
+
+// Generates a pack of cards (default size: 5) and ensures that at least one card is Rare or higher.
+const generatePack = async (packSize = 5) => {
+    const pack = [];
+    while (pack.length < packSize) {
+        const card = await generateCardWithProbability();
+        if (card) {
+            pack.push(card);
+        }
+    }
+    // If no card in the pack is Rare or above, replace the first card with a rare card.
+    if (!pack.some(card => isRareOrAbove(card.rarity))) {
+        const rareCard = await generateRareCardWithProbability();
+        if (rareCard) {
+            pack[0] = rareCard;
+        }
+    }
+    return pack;
+};
+
+module.exports = { generateCardWithProbability, pickRarity, generatePack };
