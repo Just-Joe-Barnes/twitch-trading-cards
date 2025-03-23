@@ -34,7 +34,7 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Existing form styles for notifications */
+/* Form and group styling */
 .aa-admin-actions-form {
     display: flex;
     flex-direction: column;
@@ -91,7 +91,7 @@
     color: var(--brand-primary);
 }
 
-/* Styles for Packs Management Panel */
+/* Packs Management Panel specific styles */
 .aa-admin-packs-form {
     display: flex;
     flex-wrap: wrap;
@@ -103,7 +103,7 @@
         flex: 1 1 200px;
     }
 
-/* Reset button specific style */
+/* Reset button styling */
 .aa-reset-button {
     background: var(--brand-secondary);
     color: var(--background-dark);
@@ -120,7 +120,8 @@
         background: var(--brand-primary);
     }
 
-/* --- Custom Search Field Styles (matching Navbar) --- */
+/* --- Custom Search Field and Dropdown Styling --- */
+/* Using the same search-bar style as in Navbar.css */
 .search-bar {
     padding: 0.5rem 1rem;
     font-size: 1rem;
@@ -138,15 +139,10 @@
         border-color: var(--brand-secondary);
     }
 
-/* Custom autocomplete dropdown */
-.search-container {
-    position: relative;
-    width: 250px;
-}
-
+/* Custom dropdown styling */
 .search-dropdown {
     position: absolute;
-    top: calc(100% + 0.25rem);
+    top: 100%;
     left: 0;
     width: 100%;
     max-height: 200px;
@@ -172,10 +168,3 @@
         background-color: var(--brand-primary);
         color: var(--text-primary);
     }
-
-.no-results {
-    padding: 0.75rem;
-    text-align: center;
-    color: var(--text-primary);
-    font-style: italic;
-}

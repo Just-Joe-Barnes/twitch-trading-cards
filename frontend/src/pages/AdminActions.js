@@ -5,13 +5,15 @@ import { fetchUserProfile, fetchWithAuth } from '../utils/api';
 import '../styles/AdminActions.css';
 
 const AdminActions = () => {
+    // State for notification panel
     const [notificationType, setNotificationType] = useState('');
     const [message, setMessage] = useState('');
     const [status, setStatus] = useState('');
+    // State for user packs management
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState('');
     const [packAmount, setPackAmount] = useState('');
-    const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+    const [isUserDropdownVisible, setUserDropdownVisible] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -36,6 +38,13 @@ const AdminActions = () => {
         fetchUsers();
     }, [navigate]);
 
+    // Compute filtered users based on current input
+    const filteredUsers = selectedUser
+        ? users.filter(u =>
+            u.username.toLowerCase().includes(selectedUser.toLowerCase())
+        )
+        : [];
+
     const handleNotificationSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -52,34 +61,10 @@ const AdminActions = () => {
         }
     };
 
-    // Handle changes in the user search input
-    const handleSearchChange = (e) => {
-        const value = e.target.value;
-        setSelectedUser(value);
-        if (value.length > 0) {
-            setIsDropdownVisible(true);
-        } else {
-            setIsDropdownVisible(false);
-        }
-    };
-
-    // Compute filtered users based on input
-    const filteredUsers = selectedUser
-        ? users.filter((u) =>
-            u.username.toLowerCase().includes(selectedUser.toLowerCase())
-        )
-        : [];
-
-    // When a user is selected from the dropdown
-    const handleSelectUser = (user) => {
-        setSelectedUser(user.username);
-        setIsDropdownVisible(false);
-    };
-
     const handleGivePacks = async (e) => {
         e.preventDefault();
         // Find the user object by matching the username
-        const userObj = users.find((u) => u.username === selectedUser);
+        const userObj = users.find(u => u.username === selectedUser);
         if (!userObj) {
             setStatus('User not found, please select a valid user.');
             return;
@@ -105,11 +90,6 @@ const AdminActions = () => {
         } catch {
             setStatus('Error resetting packs.');
         }
-    };
-
-    // Hide dropdown on blur (with a slight delay to allow click events)
-    const handleBlur = () => {
-        setTimeout(() => setIsDropdownVisible(false), 200);
     };
 
     return (
@@ -152,41 +132,32 @@ const AdminActions = () => {
                 {/* Packs Management Panel */}
                 <section className="aa-panel">
                     <h2>Manage User Packs</h2>
-                    <form onSubmit={handleGivePacks} className="aa-admin-packs-form">
-                        <div className="aa-form-group">
+                    <form onSubmit={handleGivePacks} className="aa-admin-packs-form" style={{ position: 'relative' }}>
+                        <div className="aa-form-group" style={{ position: 'relative' }}>
                             <label>User:</label>
-                            <div className="search-container" onBlur={handleBlur}>
-                                <input
-                                    type="text"
-                                    className="search-bar"
-                                    value={selectedUser}
-                                    onChange={handleSearchChange}
-                                    placeholder="Search for a user..."
-                                    required
-                                    onFocus={() => {
-                                        if (selectedUser.length > 0) {
-                                            setIsDropdownVisible(true);
-                                        }
-                                    }}
-                                />
-                                {isDropdownVisible && (
-                                    <ul className="search-dropdown">
-                                        {filteredUsers.length > 0 ? (
-                                            filteredUsers.map((user) => (
-                                                <li
-                                                    key={user._id}
-                                                    className="search-result-item"
-                                                    onClick={() => handleSelectUser(user)}
-                                                >
-                                                    {user.username}
-                                                </li>
-                                            ))
-                                        ) : (
-                                            <li className="no-results">No users found</li>
-                                        )}
-                                    </ul>
-                                )}
-                            </div>
+                            <input
+                                type="text"
+                                className="search-bar"
+                                value={selectedUser}
+                                onChange={e => setSelectedUser(e.target.value)}
+                                placeholder="Search for a user..."
+                                required
+                                onFocus={() => setUserDropdownVisible(true)}
+                                onBlur={() => setTimeout(() => setUserDropdownVisible(false), 150)}
+                            />
+                            {isUserDropdownVisible && selectedUser && filteredUsers.length > 0 && (
+                                <ul className="search-dropdown">
+                                    {filteredUsers.map(u => (
+                                        <li
+                                            key={u._id}
+                                            className="search-result-item"
+                                            onMouseDown={() => setSelectedUser(u.username)}
+                                        >
+                                            {u.username}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </div>
                         <div className="aa-form-group">
                             <label>Packs to Give:</label>
