@@ -71,3 +71,26 @@
     font-weight: bold;
     color: var(--brand-primary);
 }
+
+.aa-admin-packs-section {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-dark);
+}
+
+    .aa-admin-packs-section h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--brand-primary);
+    }
+
+.aa-admin-packs-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+    .aa-admin-packs-form .aa-form-group {
+        flex: 1 1 200px;
+    }

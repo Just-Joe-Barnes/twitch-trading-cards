@@ -76,4 +76,32 @@ router.post('/notifications', protect, adminOnly, async (req, res) => {
     }
 });
 
+// GET list of users (id + username + packs)
+router.get('/users', protect, adminOnly, async (req, res) => {
+    try {
+        const users = await User.find({}, 'username packs');
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch users.' });
+    }
+});
+
+// POST give X packs to a single user
+router.post('/give-packs', protect, adminOnly, async (req, res) => {
+    const { userId, amount } = req.body;
+    if (!userId || typeof amount !== 'number') {
+        return res.status(400).json({ error: 'User ID and pack amount required.' });
+    }
+    try {
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ error: 'User not found.' });
+        user.packs = (user.packs || 0) + amount;
+        await user.save();
+        res.json({ message: `Added ${amount} packs to ${user.username}.` });
+    } catch {
+        res.status(500).json({ error: 'Failed to give packs.' });
+    }
+});
+
+
 module.exports = router;
