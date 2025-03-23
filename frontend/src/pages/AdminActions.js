@@ -90,6 +90,9 @@ const AdminActions = () => {
         }
     };
 
+    // Look up the selected user's packs if a valid user is selected
+    const selectedUserObj = selectedUser && users.find(u => u.username === selectedUser);
+
     return (
         <div className="aa-admin-actions-page">
             <h1 className="page-title">Admin Actions</h1>
@@ -151,6 +154,11 @@ const AdminActions = () => {
                                         </li>
                                     ))}
                                 </ul>
+                            )}
+                            {selectedUserObj && (
+                                <div className="user-packs-info">
+                                    Current packs: {selectedUserObj.packs}
+                                </div>
                             )}
                         </div>
                         <div className="aa-form-group">
