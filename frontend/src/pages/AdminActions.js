@@ -5,11 +5,11 @@ import { fetchUserProfile, fetchWithAuth } from '../utils/api';
 import '../styles/AdminActions.css';
 
 const AdminActions = () => {
-    // State for notification panel
+    // Notification panel state
     const [notificationType, setNotificationType] = useState('');
     const [message, setMessage] = useState('');
     const [status, setStatus] = useState('');
-    // State for user packs management
+    // Packs management state
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState('');
     const [packAmount, setPackAmount] = useState('');
@@ -38,11 +38,9 @@ const AdminActions = () => {
         fetchUsers();
     }, [navigate]);
 
-    // Compute filtered users based on current input
+    // Filter users based on the current input
     const filteredUsers = selectedUser
-        ? users.filter(u =>
-            u.username.toLowerCase().includes(selectedUser.toLowerCase())
-        )
+        ? users.filter(u => u.username.toLowerCase().includes(selectedUser.toLowerCase()))
         : [];
 
     const handleNotificationSubmit = async (e) => {
@@ -63,7 +61,7 @@ const AdminActions = () => {
 
     const handleGivePacks = async (e) => {
         e.preventDefault();
-        // Find the user object by matching the username
+        // Match the username to get the user ID
         const userObj = users.find(u => u.username === selectedUser);
         if (!userObj) {
             setStatus('User not found, please select a valid user.');
@@ -94,7 +92,7 @@ const AdminActions = () => {
 
     return (
         <div className="aa-admin-actions-page">
-            <h1>Admin Actions</h1>
+            <h1 className="page-title">Admin Actions</h1>
             <div className="aa-admin-panels">
                 {/* Notification Panel */}
                 <section className="aa-panel">
@@ -102,11 +100,7 @@ const AdminActions = () => {
                     <form onSubmit={handleNotificationSubmit} className="aa-admin-actions-form">
                         <div className="aa-form-group">
                             <label>Type:</label>
-                            <select
-                                value={notificationType}
-                                onChange={e => setNotificationType(e.target.value)}
-                                required
-                            >
+                            <select value={notificationType} onChange={e => setNotificationType(e.target.value)} required>
                                 <option value="" disabled>Select notification type</option>
                                 <option>Trade Offer Received</option>
                                 <option>Trade Update</option>

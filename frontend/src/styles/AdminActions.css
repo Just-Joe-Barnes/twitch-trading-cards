@@ -1,40 +1,43 @@
-/* src/styles/AdminActions.css */
+/* Updated AdminActions.css to match the overall style of your other pages */
+
+/* Page Container (similar to CataloguePage/CollectionPage) */
 .aa-admin-actions-page {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 1rem;
-    background-color: var(--surface-dark);
-    border: 1px solid var(--border-dark);
-    border-radius: var(--border-radius);
-    color: var(--text-primary);
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #1a1a1a;
+    color: #f5f5dc;
+    min-height: 100vh;
 }
 
-    .aa-admin-actions-page h1 {
-        text-align: center;
-        margin-bottom: 1.5rem;
-        font-size: 2rem;
-        color: var(--brand-primary);
-    }
+.page-title {
+    text-align: center;
+    margin-top: 100px;
+    margin-bottom: 20px;
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
 
-/* Flex container for panels */
+/* Panels container */
 .aa-admin-panels {
     display: flex;
     gap: 2rem;
     flex-wrap: wrap;
 }
 
-/* Panel style for both notification and packs management (tile look) */
+/* Panel (tile) styling */
 .aa-panel {
     flex: 1;
     min-width: 300px;
-    padding: 1rem;
-    border: 1px solid var(--border-dark);
-    border-radius: var(--border-radius);
+    padding: 20px;
     background: var(--surface-dark);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-dark);
+    border-radius: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Form and group styling */
+/* Form styling */
 .aa-admin-actions-form {
     display: flex;
     flex-direction: column;
@@ -56,9 +59,10 @@
     .aa-form-group select {
         padding: 0.75rem;
         border: 1px solid var(--border-dark);
-        border-radius: var(--border-radius);
-        background: var(--surface-dark);
-        color: var(--text-primary);
+        border-radius: 8px;
+        background: var(--surface-darker);
+        color: #f5f5dc;
+        font-size: 1rem;
     }
 
     .aa-form-group textarea {
@@ -66,13 +70,14 @@
         min-height: 80px;
     }
 
+/* Button styling */
 .aa-admin-actions-form button {
     align-self: center;
     padding: 0.75rem 1.5rem;
     background: var(--brand-primary);
     color: var(--background-dark);
     border: none;
-    border-radius: var(--border-radius);
+    border-radius: 8px;
     cursor: pointer;
     font-size: 1rem;
     font-weight: bold;
@@ -83,32 +88,11 @@
         background: var(--brand-secondary);
     }
 
-.aa-status-message {
-    text-align: center;
-    margin-top: 1rem;
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: var(--brand-primary);
-}
-
-/* Packs Management Panel specific styles */
-.aa-admin-packs-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: flex-end;
-}
-
-    .aa-admin-packs-form .aa-form-group {
-        flex: 1 1 200px;
-    }
-
-/* Reset button styling */
 .aa-reset-button {
     background: var(--brand-secondary);
     color: var(--background-dark);
     border: none;
-    border-radius: var(--border-radius);
+    border-radius: 8px;
     padding: 0.75rem 1.5rem;
     cursor: pointer;
     font-size: 1rem;
@@ -120,15 +104,23 @@
         background: var(--brand-primary);
     }
 
-/* --- Custom Search Field and Dropdown Styling --- */
-/* Using the same search-bar style as in Navbar.css */
+/* Status message */
+.aa-status-message {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--brand-primary);
+}
+
+/* Custom Search Field and Dropdown (mimicking Navbar) */
 .search-bar {
     padding: 0.5rem 1rem;
     font-size: 1rem;
     border: 1px solid var(--brand-primary);
     border-radius: 0.5rem;
     background-color: var(--surface-darker);
-    color: var(--text-primary);
+    color: #f5f5dc;
     width: 250px;
     box-sizing: border-box;
     transition: all 0.3s ease;
@@ -139,7 +131,6 @@
         border-color: var(--brand-secondary);
     }
 
-/* Custom dropdown styling */
 .search-dropdown {
     position: absolute;
     top: 100%;
@@ -161,10 +152,18 @@
     padding: 0.75rem;
     cursor: pointer;
     transition: background-color 0.2s ease;
-    color: var(--text-primary);
+    color: #f5f5dc;
 }
 
     .search-result-item:hover {
         background-color: var(--brand-primary);
-        color: var(--text-primary);
+        color: #f5f5dc;
     }
+
+/* Input focus outline adjustment */
+.aa-form-group input:focus,
+.aa-form-group textarea:focus,
+.aa-form-group select:focus {
+    outline: none;
+    border-color: var(--brand-secondary);
+}
