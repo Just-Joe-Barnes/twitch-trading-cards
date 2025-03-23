@@ -23,7 +23,7 @@
     flex-wrap: wrap;
 }
 
-/* Panel style for both notification and packs management */
+/* Panel style for both notification and packs management (tile look) */
 .aa-panel {
     flex: 1;
     min-width: 300px;
@@ -31,6 +31,7 @@
     border: 1px solid var(--border-dark);
     border-radius: var(--border-radius);
     background: var(--surface-dark);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Existing form styles for notifications */
@@ -117,4 +118,29 @@
 
     .aa-reset-button:hover {
         background: var(--brand-primary);
+    }
+
+/* Styling for the user search input and datalist */
+.aa-user-input {
+    padding: 0.75rem;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--border-radius);
+    background: var(--surface-dark);
+    color: var(--text-primary);
+    width: 100%;
+}
+
+/* Note: Styling for <datalist> is limited and browser-dependent */
+datalist {
+    background: var(--surface-dark);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    padding: 0.5rem;
+}
+
+    datalist option {
+        padding: 0.5rem;
+        background: var(--surface-dark);
+        color: var(--text-primary);
     }
