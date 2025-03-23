@@ -38,7 +38,8 @@
 }
 
 /* Form styling */
-.aa-admin-actions-form {
+.aa-admin-actions-form,
+.aa-admin-packs-form {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -71,8 +72,9 @@
         min-height: 100px;
     }
 
-/* Button styling for all buttons with extra padding and hover effect */
+/* Button styling for both forms and reset button */
 .aa-admin-actions-form button,
+.aa-admin-packs-form button,
 .aa-reset-button {
     align-self: center;
     padding: 1rem 2rem;
@@ -88,14 +90,11 @@
 }
 
     .aa-admin-actions-form button:hover,
+    .aa-admin-packs-form button:hover,
     .aa-reset-button:hover {
         background: var(--brand-secondary);
         transform: scale(1.05);
     }
-
-.aa-reset-button {
-    background: var(--brand-secondary);
-}
 
 /* Status message styling */
 .aa-status-message {
