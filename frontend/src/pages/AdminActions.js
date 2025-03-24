@@ -30,19 +30,22 @@ const AdminActions = () => {
                 navigate('/');
             }
         };
+
         const fetchUsers = async () => {
             try {
+                // fetchWithAuth returns parsed JSON
                 const data = await fetchWithAuth('/api/admin/users');
                 setUsers(data);
             } catch (err) {
                 console.error('Fetch users failed:', err);
             }
         };
+
         checkAdmin();
         fetchUsers();
     }, [navigate]);
 
-    // Filter users based on current input
+    // Filter users for pack management
     const filteredUsers = selectedUser
         ? users.filter(u => u.username.toLowerCase().includes(selectedUser.toLowerCase()))
         : [];
@@ -102,7 +105,7 @@ const AdminActions = () => {
         setCardSearchQuery(e.target.value);
     };
 
-    // Debounced effect: fetch card search results 300ms after user stops typing
+    // Debounce search: fetch results 300ms after the user stops typing
     useEffect(() => {
         const fetchCardResults = async () => {
             if (cardSearchQuery.length > 0) {
