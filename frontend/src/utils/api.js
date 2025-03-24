@@ -1,7 +1,6 @@
 // src/utils/api.js
 export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-
 export const fetchWithAuth = async (endpoint, options = {}) => {
     try {
         const token = localStorage.getItem("token");
@@ -46,7 +45,7 @@ export const fetchUserProfile = async () => {
     return fetchWithAuth("/api/users/me", { method: "GET" });
 };
 
-// NEW: Fetch a user profile by username
+// Fetch a user profile by username
 export const fetchUserProfileByUsername = async (username) => {
     try {
         return fetchWithAuth(`/api/users/profile/${username}`, { method: "GET" });
@@ -85,6 +84,19 @@ export const fetchCards = async ({ search = "", rarity = "", sort = "", page = 1
     } catch (error) {
         console.error("[API] Error fetching cards:", error.message);
         throw error;
+    }
+};
+
+// NEW: Search cards by name (for admin card search tool)
+export const searchCardsByName = async (query) => {
+    try {
+        const response = await fetchWithAuth(`/api/cards/search?name=${encodeURIComponent(query)}`, {
+            method: "GET",
+        });
+        return response.cards || [];
+    } catch (error) {
+        console.error('[API] Error searching cards by name:', error.message);
+        return [];
     }
 };
 
@@ -150,7 +162,6 @@ export const createTrade = async (tradeData) => {
             body: JSON.stringify(tradeData),
         });
 
-        // If the response is not OK, parse the JSON error
         if (!response.ok) {
             let errorMessage = `HTTP error! Status: ${response.status}`;
             try {
@@ -164,7 +175,6 @@ export const createTrade = async (tradeData) => {
             throw new Error(errorMessage);
         }
 
-        // If response is OK, parse the JSON for the trade data
         return await response.json();
     } catch (error) {
         console.error('Error creating trade:', error);

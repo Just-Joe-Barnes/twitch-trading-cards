@@ -1,7 +1,7 @@
 // src/pages/AdminActions.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchUserProfile, fetchWithAuth } from '../utils/api';
+import { fetchUserProfile, fetchWithAuth, searchCardsByName } from '../utils/api';
 import '../styles/AdminActions.css';
 
 const AdminActions = () => {
@@ -33,7 +33,6 @@ const AdminActions = () => {
 
         const fetchUsers = async () => {
             try {
-                // fetchWithAuth returns parsed JSON
                 const data = await fetchWithAuth('/api/admin/users');
                 setUsers(data);
             } catch (err) {
@@ -99,27 +98,16 @@ const AdminActions = () => {
     const selectedUserObj = selectedUser && users.find(u => u.username === selectedUser);
 
     // --- Card Search Tool functions ---
-
-    // Update card search query as you type
     const handleCardSearchInput = (e) => {
         setCardSearchQuery(e.target.value);
     };
 
-    // Debounce search: fetch results 300ms after the user stops typing
+    // Debounced effect to fetch card search results
     useEffect(() => {
         const fetchCardResults = async () => {
             if (cardSearchQuery.length > 0) {
-                try {
-                    const res = await fetchWithAuth(`/api/cards/search?name=${encodeURIComponent(cardSearchQuery)}`);
-                    if (res.cards) {
-                        setCardSearchResults(res.cards);
-                    } else {
-                        setCardSearchResults([]);
-                    }
-                } catch (error) {
-                    console.error('Error searching cards:', error);
-                    setCardSearchResults([]);
-                }
+                const results = await searchCardsByName(cardSearchQuery);
+                setCardSearchResults(results);
             } else {
                 setCardSearchResults([]);
             }
