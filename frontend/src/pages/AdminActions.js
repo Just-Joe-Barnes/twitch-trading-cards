@@ -32,7 +32,6 @@ const AdminActions = () => {
         };
         const fetchUsers = async () => {
             try {
-                // fetchWithAuth already returns parsed JSON
                 const data = await fetchWithAuth('/api/admin/users');
                 setUsers(data);
             } catch (err) {
@@ -43,7 +42,7 @@ const AdminActions = () => {
         fetchUsers();
     }, [navigate]);
 
-    // Filter users based on the current input
+    // Filter users based on current input
     const filteredUsers = selectedUser
         ? users.filter(u => u.username.toLowerCase().includes(selectedUser.toLowerCase()))
         : [];
@@ -66,7 +65,6 @@ const AdminActions = () => {
 
     const handleGivePacks = async (e) => {
         e.preventDefault();
-        // Match the username to get the user ID
         const userObj = users.find(u => u.username === selectedUser);
         if (!userObj) {
             setStatus('User not found, please select a valid user.');
@@ -95,29 +93,40 @@ const AdminActions = () => {
         }
     };
 
-    // Look up the selected user's packs if a valid user is selected
     const selectedUserObj = selectedUser && users.find(u => u.username === selectedUser);
 
     // --- Card Search Tool functions ---
-    const handleCardSearch = async (e) => {
-        const query = e.target.value;
-        setCardSearchQuery(query);
-        if (query.length > 1) {
-            try {
-                const res = await fetchWithAuth(`/api/cards/search?name=${encodeURIComponent(query)}`);
-                if (res.cards) {
-                    setCardSearchResults(res.cards);
-                } else {
+
+    // Update card search query as you type
+    const handleCardSearchInput = (e) => {
+        setCardSearchQuery(e.target.value);
+    };
+
+    // Debounced effect: fetch card search results 300ms after user stops typing
+    useEffect(() => {
+        const fetchCardResults = async () => {
+            if (cardSearchQuery.length > 0) {
+                try {
+                    const res = await fetchWithAuth(`/api/cards/search?name=${encodeURIComponent(cardSearchQuery)}`);
+                    if (res.cards) {
+                        setCardSearchResults(res.cards);
+                    } else {
+                        setCardSearchResults([]);
+                    }
+                } catch (error) {
+                    console.error('Error searching cards:', error);
                     setCardSearchResults([]);
                 }
-            } catch (error) {
-                console.error('Error searching cards:', error);
+            } else {
                 setCardSearchResults([]);
             }
-        } else {
-            setCardSearchResults([]);
-        }
-    };
+        };
+
+        const timer = setTimeout(() => {
+            fetchCardResults();
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [cardSearchQuery]);
 
     const handleSelectCard = (card) => {
         setSelectedCardDetails(card);
@@ -220,7 +229,7 @@ const AdminActions = () => {
                                 type="text"
                                 className="search-bar"
                                 value={cardSearchQuery}
-                                onChange={handleCardSearch}
+                                onChange={handleCardSearchInput}
                                 placeholder="Search for a card..."
                             />
                             {cardSearchResults.length > 0 && (
