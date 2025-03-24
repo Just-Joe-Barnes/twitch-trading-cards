@@ -14,7 +14,7 @@ const AdminActions = () => {
     const [selectedUser, setSelectedUser] = useState('');
     const [packAmount, setPackAmount] = useState('');
     const [isUserDropdownVisible, setUserDropdownVisible] = useState(false);
-    // Card search state
+    // Card Search Tool state
     const [cardSearchQuery, setCardSearchQuery] = useState('');
     const [cardSearchResults, setCardSearchResults] = useState([]);
     const [selectedCardDetails, setSelectedCardDetails] = useState(null);
@@ -43,7 +43,7 @@ const AdminActions = () => {
         fetchUsers();
     }, [navigate]);
 
-    // Filter users based on the current input (for packs tool)
+    // Filter users based on the current input
     const filteredUsers = selectedUser
         ? users.filter(u => u.username.toLowerCase().includes(selectedUser.toLowerCase()))
         : [];
@@ -95,7 +95,10 @@ const AdminActions = () => {
         }
     };
 
-    // --- New Card Search Tool functions ---
+    // Look up the selected user's packs if a valid user is selected
+    const selectedUserObj = selectedUser && users.find(u => u.username === selectedUser);
+
+    // --- Card Search Tool functions ---
     const handleCardSearch = async (e) => {
         const query = e.target.value;
         setCardSearchQuery(query);
@@ -168,9 +171,10 @@ const AdminActions = () => {
                                 onChange={e => setSelectedUser(e.target.value)}
                                 placeholder="Search for a user..."
                                 required
-                                onFocus={() => {}}
+                                onFocus={() => setUserDropdownVisible(true)}
+                                onBlur={() => setTimeout(() => setUserDropdownVisible(false), 150)}
                             />
-                            {filteredUsers.length > 0 && (
+                            {isUserDropdownVisible && selectedUser && filteredUsers.length > 0 && (
                                 <ul className="search-dropdown">
                                     {filteredUsers.map(u => (
                                         <li
@@ -182,6 +186,11 @@ const AdminActions = () => {
                                         </li>
                                     ))}
                                 </ul>
+                            )}
+                            {selectedUserObj && (
+                                <div className="user-packs-info">
+                                    Current packs: {selectedUserObj.packs}
+                                </div>
                             )}
                         </div>
                         <div className="aa-form-group">
