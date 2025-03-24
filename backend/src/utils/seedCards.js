@@ -346,6 +346,28 @@ const seedDatabase = async () => {
                 remainingCopies: rarity.totalCopies,
                 availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
             })),
+        },
+        {
+            name: 'Night City Vibes',
+            imageUrl: '/images/cards/nightcityvibes.jpg',
+            flavorText: 'What makes you a criminal in Night City? Getting caught.',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
+        },
+        {
+            name: 'Silverhand',
+            imageUrl: '/images/cards/silverhand.jpg',
+            flavorText: 'Wake the fuck up samurai, we got a city to burn.',
+            rarities: rarities.map((rarity) => ({
+                rarity: rarity.name,
+                totalCopies: rarity.totalCopies,
+                remainingCopies: rarity.totalCopies,
+                availableMintNumbers: Array.from({ length: rarity.totalCopies }, (_, i) => i + 1),
+            })),
         }
     ];
 
