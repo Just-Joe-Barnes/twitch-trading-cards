@@ -1,54 +1,38 @@
-// backend/src/routes/cards.js
+// backend/src/routes/cardRoutes.js
 const express = require('express');
-const { protect } = require('../middleware/authMiddleware'); // Middleware for auth
 const router = express.Router();
-const User = require('../models/userModel'); // Assuming User schema includes cards
-const Card = require('../models/cardModel'); // Import Card model for population
+const { protect } = require('../middleware/authMiddleware');
+const Card = require('../models/cardModel');
+const User = require('../models/userModel'); // Needed for some endpoints
 
-// Fetch all cards in the user's collection
-router.get('/collection', protect, async (req, res) => {
+// NEW: Search route placed first so it isn't masked by dynamic routes
+// GET /api/cards/search?name=...
+router.get('/search', async (req, res) => {
+    const { name } = req.query;
+    if (!name) {
+        return res.status(400).json({ message: 'Name query parameter is required.' });
+    }
     try {
-        const user = await User.findById(req.user._id).populate({
-            path: 'cards',
-            model: Card,
-        });
-        if (!user) {
-            return res.status(404).json({ message: 'User not found.' });
-        }
-        const enrichedCards = user.cards.map((card) => ({
-            ...card.toObject(),
-            maxMint: card.rarities.find((r) => r.rarity === card.rarity)?.totalCopies || '???',
-        }));
-        res.status(200).json({ cards: enrichedCards });
-    } catch (error) {
-        console.error('Error fetching card collection:', error.message);
-        res.status(500).json({ message: 'Failed to fetch card collection.' });
+        // Search for cards where the name matches (case-insensitive)
+        const cards = await Card.find({ name: { $regex: name, $options: 'i' } });
+        res.status(200).json({ cards });
+    } catch (err) {
+        res.status(500).json({ message: 'Failed to search cards', error: err.message });
     }
 });
 
-// Fetch a single card by ID
-router.get('/:cardId', protect, async (req, res) => {
+// Fetch all cards for the catalogue
+router.get('/', async (req, res) => {
     try {
-        const user = await User.findById(req.user._id).populate('cards');
-        if (!user) {
-            return res.status(404).json({ message: 'User not found.' });
-        }
-        const card = user.cards.find((card) => card._id.toString() === req.params.cardId);
-        if (!card) {
-            return res.status(404).json({ message: 'Card not found in your collection.' });
-        }
-        const enrichedCard = {
-            ...card.toObject(),
-            maxMint: card.rarities.find((r) => r.rarity === card.rarity)?.totalCopies || '???',
-        };
-        res.status(200).json({ card: enrichedCard });
+        const cards = await Card.find({});
+        res.status(200).json({ cards, totalCards: cards.length });
     } catch (error) {
-        console.error('Error fetching card:', error.message);
-        res.status(500).json({ message: 'Failed to fetch card.' });
+        console.error('Error fetching cards:', error.message);
+        res.status(500).json({ message: 'Failed to fetch cards.' });
     }
 });
 
-// Fetch cards filtered by rarity
+// Fetch cards by rarity
 router.get('/rarity/:rarity', protect, async (req, res) => {
     try {
         const { rarity } = req.params;
@@ -90,53 +74,46 @@ router.get('/featured-cards', protect, async (req, res) => {
     }
 });
 
-// Update featured cards for the user
-router.put('/featured-cards', protect, async (req, res) => {
+// Fetch user collection (for authenticated users)
+router.get('/collection', protect, async (req, res) => {
     try {
-        const { featuredCards } = req.body;
-        const user = await User.findById(req.user._id);
+        const user = await User.findById(req.user._id).populate({
+            path: 'cards',
+            model: Card,
+        });
         if (!user) {
             return res.status(404).json({ message: 'User not found.' });
         }
-        const validCardIds = featuredCards.filter((cardId) =>
-            user.cards.some((userCard) => userCard.toString() === cardId)
-        );
-        if (validCardIds.length !== featuredCards.length) {
-            return res.status(400).json({ message: 'Invalid featured cards selected.' });
+        const enrichedCards = user.cards.map((card) => ({
+            ...card.toObject(),
+            maxMint: card.rarities.find((r) => r.rarity === card.rarity)?.totalCopies || '???',
+        }));
+        res.status(200).json({ cards: enrichedCards });
+    } catch (error) {
+        console.error('Error fetching card collection:', error.message);
+        res.status(500).json({ message: 'Failed to fetch card collection.' });
+    }
+});
+
+// Dynamic route for a single card must come last to prevent conflict with /search
+router.get('/:cardId', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).populate('cards');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
         }
-        user.featuredCards = validCardIds;
-        await user.save();
-        res.status(200).json({ message: 'Featured cards updated successfully.' });
+        const card = user.cards.find((card) => card._id.toString() === req.params.cardId);
+        if (!card) {
+            return res.status(404).json({ message: 'Card not found in your collection.' });
+        }
+        const enrichedCard = {
+            ...card.toObject(),
+            maxMint: card.rarities.find((r) => r.rarity === card.rarity)?.totalCopies || '???',
+        };
+        res.status(200).json({ card: enrichedCard });
     } catch (error) {
-        console.error('Error updating featured cards:', error.message);
-        res.status(500).json({ message: 'Failed to update featured cards.' });
-    }
-});
-
-// *** NEW: Catalogue Route ***
-// GET /api/cards - Return all cards (for catalogue)
-router.get('/', async (req, res) => {
-    try {
-        const cards = await Card.find({});
-        res.status(200).json({ cards, totalCards: cards.length });
-    } catch (error) {
-        console.error('Error fetching cards:', error.message);
-        res.status(500).json({ message: 'Failed to fetch cards.' });
-    }
-});
-
-// GET /api/cards/search?name=...
-router.get('/search', async (req, res) => {
-    const { name } = req.query;
-    if (!name) {
-        return res.status(400).json({ message: 'Name query parameter is required.' });
-    }
-    try {
-        // Search for cards where the name matches (case-insensitive)
-        const cards = await Card.find({ name: { $regex: name, $options: 'i' } });
-        res.status(200).json({ cards });
-    } catch (err) {
-        res.status(500).json({ message: 'Failed to search cards', error: err.message });
+        console.error('Error fetching card:', error.message);
+        res.status(500).json({ message: 'Failed to fetch card.' });
     }
 });
 
