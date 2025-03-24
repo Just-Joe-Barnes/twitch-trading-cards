@@ -14,6 +14,11 @@ const AdminActions = () => {
     const [selectedUser, setSelectedUser] = useState('');
     const [packAmount, setPackAmount] = useState('');
     const [isUserDropdownVisible, setUserDropdownVisible] = useState(false);
+    // Card search state
+    const [cardSearchQuery, setCardSearchQuery] = useState('');
+    const [cardSearchResults, setCardSearchResults] = useState([]);
+    const [selectedCardDetails, setSelectedCardDetails] = useState(null);
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -38,7 +43,7 @@ const AdminActions = () => {
         fetchUsers();
     }, [navigate]);
 
-    // Filter users based on the current input
+    // Filter users based on the current input (for packs tool)
     const filteredUsers = selectedUser
         ? users.filter(u => u.username.toLowerCase().includes(selectedUser.toLowerCase()))
         : [];
@@ -90,8 +95,32 @@ const AdminActions = () => {
         }
     };
 
-    // Look up the selected user's packs if a valid user is selected
-    const selectedUserObj = selectedUser && users.find(u => u.username === selectedUser);
+    // --- New Card Search Tool functions ---
+    const handleCardSearch = async (e) => {
+        const query = e.target.value;
+        setCardSearchQuery(query);
+        if (query.length > 1) {
+            try {
+                const res = await fetchWithAuth(`/api/cards/search?name=${encodeURIComponent(query)}`);
+                if (res.cards) {
+                    setCardSearchResults(res.cards);
+                } else {
+                    setCardSearchResults([]);
+                }
+            } catch (error) {
+                console.error('Error searching cards:', error);
+                setCardSearchResults([]);
+            }
+        } else {
+            setCardSearchResults([]);
+        }
+    };
+
+    const handleSelectCard = (card) => {
+        setSelectedCardDetails(card);
+        setCardSearchQuery(card.name);
+        setCardSearchResults([]);
+    };
 
     return (
         <div className="aa-admin-actions-page">
@@ -139,10 +168,9 @@ const AdminActions = () => {
                                 onChange={e => setSelectedUser(e.target.value)}
                                 placeholder="Search for a user..."
                                 required
-                                onFocus={() => setUserDropdownVisible(true)}
-                                onBlur={() => setTimeout(() => setUserDropdownVisible(false), 150)}
+                                onFocus={() => {}}
                             />
-                            {isUserDropdownVisible && selectedUser && filteredUsers.length > 0 && (
+                            {filteredUsers.length > 0 && (
                                 <ul className="search-dropdown">
                                     {filteredUsers.map(u => (
                                         <li
@@ -154,11 +182,6 @@ const AdminActions = () => {
                                         </li>
                                     ))}
                                 </ul>
-                            )}
-                            {selectedUserObj && (
-                                <div className="user-packs-info">
-                                    Current packs: {selectedUserObj.packs}
-                                </div>
                             )}
                         </div>
                         <div className="aa-form-group">
@@ -176,6 +199,46 @@ const AdminActions = () => {
                             Reset All Packs to 6
                         </button>
                     </form>
+                </section>
+
+                {/* Card Search Tool Panel */}
+                <section className="aa-panel">
+                    <h2>Card Search Tool</h2>
+                    <div className="aa-admin-actions-form">
+                        <div className="aa-form-group" style={{ position: 'relative' }}>
+                            <label>Card Name:</label>
+                            <input
+                                type="text"
+                                className="search-bar"
+                                value={cardSearchQuery}
+                                onChange={handleCardSearch}
+                                placeholder="Search for a card..."
+                            />
+                            {cardSearchResults.length > 0 && (
+                                <ul className="search-dropdown">
+                                    {cardSearchResults.map(card => (
+                                        <li
+                                            key={card._id}
+                                            className="search-result-item"
+                                            onMouseDown={() => handleSelectCard(card)}
+                                        >
+                                            {card.name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                        {selectedCardDetails && (
+                            <div className="card-details">
+                                <h3>{selectedCardDetails.name}</h3>
+                                {selectedCardDetails.rarities && selectedCardDetails.rarities.map((r, idx) => (
+                                    <div key={idx} className="rarity-info">
+                                        <strong>{r.rarity}:</strong> {r.remainingCopies} copies remaining
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </section>
             </div>
             {status && <p className="aa-status-message">{status}</p>}
