@@ -31,9 +31,9 @@ const AdminDashboardPage = ({ user }) => {
 
     // Cards & reveal states
     const [openedCards, setOpenedCards] = useState([]);
-    // revealedCards => fade-in: false=hidden, true=visible
+    // revealedCards => false means not revealed, true means revealed
     const [revealedCards, setRevealedCards] = useState([]);
-    // faceDownCards => false=face up, true=face down
+    // faceDownCards => true means card is still face down, false means flipped up
     const [faceDownCards, setFaceDownCards] = useState([]);
 
     // For sequential reveal
@@ -86,8 +86,7 @@ const AdminDashboardPage = ({ user }) => {
     };
 
     // Open a pack for the selected user
-    // - All cards start face down
-    // - revealedCards => false
+    // - All cards start not revealed and face down
     const openPackForUser = async () => {
         if (!selectedUser) return;
         setLoading(true);
@@ -106,8 +105,8 @@ const AdminDashboardPage = ({ user }) => {
             console.log('New cards:', newCards);
 
             setOpenedCards(newCards);
-            setRevealedCards(Array(newCards.length).fill(false)); // fade-in
-            setFaceDownCards(Array(newCards.length).fill(true));  // face-down
+            setRevealedCards(Array(newCards.length).fill(false)); // not revealed yet
+            setFaceDownCards(Array(newCards.length).fill(true));  // still face down
 
             // Decrement the user's pack count
             setUsersWithPacks((prev) =>
@@ -176,7 +175,7 @@ const AdminDashboardPage = ({ user }) => {
         if (!faceDownCards[i]) return; // already face up
         setFaceDownCards((prev) => {
             const updated = [...prev];
-            updated[i] = false; // face up
+            updated[i] = false; // flip card up
             return updated;
         });
     };
@@ -275,15 +274,15 @@ const AdminDashboardPage = ({ user }) => {
                     <h2>Opened Cards</h2>
                     <div className="cards-container">
                         {openedCards.map((card, i) => {
-                            const isVisible = revealedCards[i];
-                            const isFaceDown = faceDownCards[i];
-                            const visibilityClass = isVisible ? 'visible' : 'hidden';
-                            const flipClass = isFaceDown ? 'face-down' : 'face-up';
+                            // Use the 'revealed' class only if the card is revealed
+                            const revealClass = revealedCards[i] ? 'revealed' : '';
+                            // Maintain the face-down/face-up class as before
+                            const flipClass = faceDownCards[i] ? 'face-down' : 'face-up';
 
                             return (
                                 <div
                                     key={i}
-                                    className={`card-wrapper ${visibilityClass} ${flipClass}`}
+                                    className={`card-wrapper ${revealClass} ${flipClass}`}
                                     style={{ '--rarity-color': getRarityColor(card.rarity) }}
                                     onClick={() => handleFlipCard(i)}
                                 >

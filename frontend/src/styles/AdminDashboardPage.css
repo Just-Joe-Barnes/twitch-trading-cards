@@ -229,10 +229,10 @@
     flex-wrap: wrap;
     gap: 2rem;
     justify-content: center;
-    /* Overflow visible to allow front to exceed container if needed */
     overflow: visible;
 }
 
+/* Card Wrapper – now using a single 'revealed' class */
 .card-wrapper {
     transition: opacity 0.6s ease, transform 0.6s ease;
     position: relative;
@@ -240,22 +240,14 @@
     overflow: visible;
     background-color: var(--surface-darker);
     border-radius: var(--border-radius);
+    /* Default hidden state */
+    opacity: 0;
+    transform: translateY(20px);
 }
 
-    .card-wrapper.hidden {
-        opacity: 0;
-        transform: translateY(20px);
-        pointer-events: none;
-    }
-
-    .card-wrapper.visible {
+    .card-wrapper.revealed {
         opacity: 1;
         transform: translateY(0);
-    }
-
-    .card-wrapper.hidden.visible {
-        opacity: 1 !important;
-        transform: translateY(0) !important;
     }
 
 /* face-down => show back, face-up => show front */
@@ -279,9 +271,8 @@
     height: 450px;
     position: relative;
     perspective: 1000px;
-    /* No border color */
     border: none !important;
-    overflow: visible !important; /* ensure the front can exceed container */
+    overflow: visible !important;
 }
 
 /* 3D flipping container */
@@ -291,7 +282,7 @@
     transform-style: preserve-3d;
     transition: transform 0.6s ease;
     transform-origin: center center;
-    overflow: hidden; /* for face-down; we override for face-up below */
+    overflow: hidden;
 }
 
 /* card-back and card-front fill the container */
@@ -307,7 +298,6 @@
     border: none !important;
 }
 
-/* The back is forced 300x450 exactly */
 .card-back {
     transform: rotateY(0deg);
     z-index: 2;
@@ -320,7 +310,6 @@
         border-radius: var(--border-radius);
     }
 
-/* The front is behind at rotateY(180) in face-down mode */
 .card-front {
     transform: rotateY(180deg);
     display: flex;
@@ -330,26 +319,20 @@
     z-index: 1;
 }
 
-/* Remove margin from BaseCard's .card-container if it exists, face up only */
 .card-wrapper.face-up .card-front .card-container {
     margin: 0 !important;
 }
 
-/* 
-   For face-up, let the card-inner overflow be visible so corners won't clip.
-*/
 .card-wrapper.face-up .card-inner {
     overflow: visible !important;
 }
 
 .card-wrapper.face-up {
     border: none !important;
-    box-shadow: none !important; /* Ensures no extra glow when face-up */
+    box-shadow: none !important;
 }
 
-/* 
-   Pack-opening overlay, unchanged...
-*/
+/* Pack-opening overlay */
 .pack-opening-overlay {
     position: fixed;
     top: 0;
