@@ -234,23 +234,22 @@
 }
 
 .card-wrapper {
-    transition: opacity 0.6s ease, transform 0.6s ease !important;
+    transition: opacity 0.6s ease, transform 0.6s ease;
     position: relative;
     cursor: pointer;
-    /* Let the wrapper overflow too, so face-up card won't be clipped */
-    overflow: visible !important;
+    overflow: visible;
     background-color: var(--surface-darker);
 }
 
     .card-wrapper.hidden {
-        opacity: 0 !important;
-        transform: translateY(20px) !important;
+        opacity: 0;
+        transform: translateY(20px);
         pointer-events: none;
     }
 
     .card-wrapper.visible {
-        opacity: 1 !important;
-        transform: translateY(0) !important;
+        opacity: 1;
+        transform: translateY(0);
     }
 
 /* face-down => show back, face-up => show front */
