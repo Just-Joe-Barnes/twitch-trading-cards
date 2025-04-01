@@ -234,11 +234,14 @@
 }
 
 .card-wrapper {
+    /* Existing properties */
     transition: opacity 0.6s ease, transform 0.6s ease;
     position: relative;
     cursor: pointer;
-    overflow: visible;
+    overflow: visible; /* keep so face-up side won't be clipped */
     background-color: var(--surface-darker);
+    /* NEW: match the card's corner radius */
+    border-radius: var(--border-radius);
 }
 
     .card-wrapper.hidden {
@@ -263,7 +266,10 @@
 
 /* Rarity glow on hover only if face-down */
 .card-wrapper.face-down:hover {
+    /* Existing glow */
     box-shadow: 0 0 15px 5px var(--rarity-color);
+    /* NEW: match the corners when glowing */
+    border-radius: var(--border-radius);
 }
 
 /* card-content forced 300x450 */
