@@ -40,6 +40,9 @@ const AdminDashboardPage = ({ user }) => {
     const [sequentialRevealStarted, setSequentialRevealStarted] = useState(false);
     const fallbackTimerRef = useRef(null);
 
+    // Pack counter to force video re-mounting each time
+    const [packCounter, setPackCounter] = useState(0);
+
     // Rarity => color map for glow
     const cardRarities = {
         Basic: '#8D8D8D',
@@ -89,6 +92,14 @@ const AdminDashboardPage = ({ user }) => {
     // - All cards start not revealed and face down
     const openPackForUser = async () => {
         if (!selectedUser) return;
+        // Clear any leftover fallback timer from previous pack
+        if (fallbackTimerRef.current) {
+            clearTimeout(fallbackTimerRef.current);
+            fallbackTimerRef.current = null;
+        }
+        // Increment pack counter to force video re-mount
+        setPackCounter(prev => prev + 1);
+
         setLoading(true);
         setIsOpeningAnimation(true);
         setOpenedCards([]);
@@ -141,7 +152,7 @@ const AdminDashboardPage = ({ user }) => {
         }, 1000);
     };
 
-    // Immediately remove overlay & start reveal
+    // Immediately remove overlay & start reveal when video ends
     const handleVideoEnd = () => {
         console.log('handleVideoEnd triggered');
         console.log('Video ended. Starting sequential reveal...');
@@ -194,6 +205,7 @@ const AdminDashboardPage = ({ user }) => {
             {isOpeningAnimation && (
                 <div className="pack-opening-overlay">
                     <video
+                        key={packCounter} // forces remount on each new pack
                         className="pack-opening-video"
                         src="/animations/packopening.mp4"
                         autoPlay
@@ -274,9 +286,9 @@ const AdminDashboardPage = ({ user }) => {
                     <h2>Opened Cards</h2>
                     <div className="cards-container">
                         {openedCards.map((card, i) => {
-                            // Use the 'revealed' class only if the card is revealed
+                            // Add 'revealed' class if the card is revealed
                             const revealClass = revealedCards[i] ? 'revealed' : '';
-                            // Maintain the face-down/face-up class as before
+                            // Maintain face-down/face-up class as before
                             const flipClass = faceDownCards[i] ? 'face-down' : 'face-up';
 
                             return (
