@@ -16,17 +16,16 @@ const AdminDashboardPage = ({ user }) => {
     // Loading & animation states
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
-    // Flag to indicate that the pack-opening video has ended
     const [videoEnded, setVideoEnded] = useState(false);
 
     // Cards & reveal states
     const [openedCards, setOpenedCards] = useState([]);
-    // revealedCards: false means not revealed, true means revealed
     const [revealedCards, setRevealedCards] = useState([]);
-    // faceDownCards: true means card is face down; false means flipped up
     const [faceDownCards, setFaceDownCards] = useState([]);
 
-    // Pack counter to force video re-mount each time
+    // useRef for the reveal interval
+    const revealIntervalRef = useRef(null);
+    // Pack counter forces video remount each time a new pack is opened
     const [packCounter, setPackCounter] = useState(0);
 
     // Rarity color mapping
@@ -44,7 +43,7 @@ const AdminDashboardPage = ({ user }) => {
     };
     const getRarityColor = (rarity) => cardRarities[rarity] || '#fff';
 
-    // On mount, verify admin and fetch user data
+    // On mount, verify admin & fetch user data
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -77,9 +76,14 @@ const AdminDashboardPage = ({ user }) => {
     // Open a pack for the selected user
     const openPackForUser = async () => {
         if (!selectedUser) return;
-        // Reset the videoEnded flag for the new pack
+        // Reset videoEnded flag for the new pack
         setVideoEnded(false);
-        // Increment pack counter to force video re-mount
+        // Clear any existing reveal interval
+        if (revealIntervalRef.current) {
+            clearInterval(revealIntervalRef.current);
+            revealIntervalRef.current = null;
+        }
+        // Increment pack counter to force remount of the video element
         setPackCounter((prev) => prev + 1);
         setLoading(true);
         setIsOpeningAnimation(true);
@@ -94,11 +98,9 @@ const AdminDashboardPage = ({ user }) => {
             );
             const { newCards } = res;
             console.log('New cards:', newCards);
-
             setOpenedCards(newCards);
-            // Initially, all cards are hidden (not revealed)
+            // All cards start hidden and face down
             setRevealedCards(Array(newCards.length).fill(false));
-            // And all cards are face down
             setFaceDownCards(Array(newCards.length).fill(true));
 
             // Decrement the user's pack count
@@ -115,7 +117,26 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // When the video ends, set videoEnded to true so the reveal effect kicks in
+    // Start sequentially revealing cards one by one using setInterval
+    const startSequentialReveal = () => {
+        let index = 0;
+        revealIntervalRef.current = setInterval(() => {
+            setRevealedCards((prev) => {
+                const updated = [...prev];
+                updated[index] = true;
+                console.log(`Card ${index} revealed`, updated);
+                return updated;
+            });
+            index++;
+            if (index >= openedCards.length) {
+                clearInterval(revealIntervalRef.current);
+                revealIntervalRef.current = null;
+                setIsOpeningAnimation(false);
+            }
+        }, 1000);
+    };
+
+    // When the pack-opening video ends, mark videoEnded and start reveal
     const handleVideoEnd = () => {
         console.log('handleVideoEnd triggered');
         console.log('Video ended. Starting sequential reveal...');
@@ -123,25 +144,16 @@ const AdminDashboardPage = ({ user }) => {
         setVideoEnded(true);
     };
 
-    // Sequentially reveal cards one by one using setTimeout.
+    // When video has ended and cards are available, start the sequential reveal
     useEffect(() => {
         if (videoEnded && openedCards.length > 0) {
-            openedCards.forEach((_, index) => {
-                setTimeout(() => {
-                    setRevealedCards((prev) => {
-                        const updated = [...prev];
-                        updated[index] = true;
-                        console.log(`Card ${index} revealed`, updated);
-                        return updated;
-                    });
-                }, 1000 * (index + 1));
-            });
+            startSequentialReveal();
         }
     }, [videoEnded, openedCards]);
 
-    // One-way flip on click: if a card is face down, clicking it flips it up.
+    // One-way flip on click: if card is face down, flip it up
     const handleFlipCard = (i) => {
-        if (!faceDownCards[i]) return; // already flipped
+        if (!faceDownCards[i]) return;
         setFaceDownCards((prev) => {
             const updated = [...prev];
             updated[i] = false;
@@ -151,6 +163,10 @@ const AdminDashboardPage = ({ user }) => {
 
     // Reset pack state
     const handleResetPack = () => {
+        if (revealIntervalRef.current) {
+            clearInterval(revealIntervalRef.current);
+            revealIntervalRef.current = null;
+        }
         console.log('Resetting pack state');
         setOpenedCards([]);
         setRevealedCards([]);
@@ -164,7 +180,7 @@ const AdminDashboardPage = ({ user }) => {
             {isOpeningAnimation && (
                 <div className="pack-opening-overlay">
                     <video
-                        key={packCounter} // Forces remount for each new pack
+                        key={packCounter}
                         className="pack-opening-video"
                         src="/animations/packopening.mp4"
                         autoPlay
@@ -245,9 +261,7 @@ const AdminDashboardPage = ({ user }) => {
                     <h2>Opened Cards</h2>
                     <div className="cards-container">
                         {openedCards.map((card, i) => {
-                            // If revealedCards[i] is true, add the "revealed" class.
                             const revealClass = revealedCards[i] ? 'revealed' : '';
-                            // Preserve face-down state (for flipping functionality).
                             const flipClass = faceDownCards[i] ? 'face-down' : 'face-up';
 
                             return (
