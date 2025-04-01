@@ -8,7 +8,7 @@ import '../styles/AdminDashboardPage.css';
 const AdminDashboardPage = ({ user }) => {
     const navigate = useNavigate();
 
-    // Basic user list states
+    // User list state
     const [usersWithPacks, setUsersWithPacks] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -17,14 +17,16 @@ const AdminDashboardPage = ({ user }) => {
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
 
-    // Cards & reveal states
+    // Cards state
     const [openedCards, setOpenedCards] = useState([]);
-    // revealedCards: false means not revealed, true means revealed
+    // revealedCards: an array of booleans; false = not revealed, true = revealed
     const [revealedCards, setRevealedCards] = useState([]);
-    // faceDownCards: true means card is face down; false means flipped up
+    // faceDownCards: true = card is face down; false = flipped up
     const [faceDownCards, setFaceDownCards] = useState([]);
 
-    // Pack counter forces video remount each time a new pack is opened
+    // currentRevealIndex controls how many cards are revealed
+    const [currentRevealIndex, setCurrentRevealIndex] = useState(0);
+    // Pack counter forces remounting of the video element each time
     const [packCounter, setPackCounter] = useState(0);
 
     // Rarity color mapping
@@ -42,7 +44,7 @@ const AdminDashboardPage = ({ user }) => {
     };
     const getRarityColor = (rarity) => cardRarities[rarity] || '#fff';
 
-    // On mount, verify admin & fetch user data
+    // On mount: verify admin & fetch users with packs
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -63,7 +65,7 @@ const AdminDashboardPage = ({ user }) => {
         fetchData();
     }, [user, navigate]);
 
-    // Filter user list by search query
+    // Filter users by search query
     const filteredUsers = usersWithPacks.filter((u) =>
         u.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -75,7 +77,9 @@ const AdminDashboardPage = ({ user }) => {
     // Open a pack for the selected user
     const openPackForUser = async () => {
         if (!selectedUser) return;
-        // Increment pack counter to force video remount
+        // Reset reveal index for new pack
+        setCurrentRevealIndex(0);
+        // Force remount video by updating packCounter
         setPackCounter((prev) => prev + 1);
         setLoading(true);
         setIsOpeningAnimation(true);
@@ -90,11 +94,8 @@ const AdminDashboardPage = ({ user }) => {
             );
             const { newCards } = res;
             console.log('New cards:', newCards);
-
             setOpenedCards(newCards);
-            // All cards start hidden (not revealed)
             setRevealedCards(Array(newCards.length).fill(false));
-            // All cards are face down
             setFaceDownCards(Array(newCards.length).fill(true));
 
             // Decrement the user's pack count
@@ -111,33 +112,38 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // Recursive function to reveal cards sequentially
-    const revealNextCard = (index) => {
-        if (index >= openedCards.length) {
-            console.log('All cards revealed.');
-            setIsOpeningAnimation(false);
-            return;
-        }
-        setTimeout(() => {
+    // When currentRevealIndex changes, update revealedCards so that all cards
+    // with index < currentRevealIndex are marked as revealed.
+    useEffect(() => {
+        if (openedCards.length > 0) {
             setRevealedCards((prev) => {
                 const updated = [...prev];
-                updated[index] = true;
-                console.log(`Card ${index} revealed`, updated);
+                for (let i = 0; i < openedCards.length; i++) {
+                    updated[i] = i < currentRevealIndex;
+                }
                 return updated;
             });
-            revealNextCard(index + 1);
+        }
+    }, [currentRevealIndex, openedCards]);
+
+    // When the video ends, start a sequential reveal using setInterval
+    const handleVideoEnd = () => {
+        console.log('handleVideoEnd triggered');
+        setIsOpeningAnimation(false);
+        // Start revealing cards: update currentRevealIndex every second
+        const intervalId = setInterval(() => {
+            setCurrentRevealIndex((prev) => {
+                if (prev >= openedCards.length) {
+                    clearInterval(intervalId);
+                    return prev;
+                }
+                console.log(`Revealing card index ${prev}`);
+                return prev + 1;
+            });
         }, 1000);
     };
 
-    // When the video ends, start revealing cards sequentially
-    const handleVideoEnd = () => {
-        console.log('handleVideoEnd triggered');
-        console.log('Video ended. Starting sequential reveal...');
-        setIsOpeningAnimation(false);
-        revealNextCard(0);
-    };
-
-    // One-way flip on click: if a card is face down, flip it up
+    // Flip card on click: if the card is still face down, flip it up
     const handleFlipCard = (i) => {
         if (!faceDownCards[i]) return;
         setFaceDownCards((prev) => {
@@ -154,6 +160,7 @@ const AdminDashboardPage = ({ user }) => {
         setRevealedCards([]);
         setFaceDownCards([]);
         setIsOpeningAnimation(false);
+        setCurrentRevealIndex(0);
     };
 
     return (
@@ -242,11 +249,8 @@ const AdminDashboardPage = ({ user }) => {
                     <h2>Opened Cards</h2>
                     <div className="cards-container">
                         {openedCards.map((card, i) => {
-                            // If revealedCards[i] is true, add the "revealed" class
                             const revealClass = revealedCards[i] ? 'revealed' : '';
-                            // Maintain face-down/face-up state for flipping
                             const flipClass = faceDownCards[i] ? 'face-down' : 'face-up';
-
                             return (
                                 <div
                                     key={i}
