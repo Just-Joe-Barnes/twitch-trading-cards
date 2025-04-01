@@ -125,7 +125,9 @@ const AdminDashboardPage = ({ user }) => {
 
     // Reveal cards sequentially
     const revealCardSequentially = (index) => {
+        console.log('revealCardSequentially called with index', index);
         if (index >= openedCards.length) {
+            console.log('All cards revealed.');
             setIsOpeningAnimation(false);
             return;
         }
@@ -133,7 +135,7 @@ const AdminDashboardPage = ({ user }) => {
             setRevealedCards((prev) => {
                 const updated = [...prev];
                 updated[index] = true;
-                console.log(`Card ${index} revealed`);
+                console.log(`Card ${index} revealed`, updated);
                 return updated;
             });
             revealCardSequentially(index + 1);
@@ -142,6 +144,7 @@ const AdminDashboardPage = ({ user }) => {
 
     // Immediately remove overlay & start reveal
     const handleVideoEnd = () => {
+        console.log('handleVideoEnd triggered');
         console.log('Video ended. Starting sequential reveal...');
         setIsOpeningAnimation(false);
         setSequentialRevealStarted(true);
@@ -155,12 +158,16 @@ const AdminDashboardPage = ({ user }) => {
             !revealedCards.some(Boolean) &&
             !sequentialRevealStarted
         ) {
+            console.log('Fallback timer set to reveal cards after 4s');
             fallbackTimerRef.current = setTimeout(() => {
                 console.log('Fallback: revealing all cards after 4s');
                 setRevealedCards(Array(openedCards.length).fill(true));
                 setIsOpeningAnimation(false);
             }, 4000);
-            return () => clearTimeout(fallbackTimerRef.current);
+            return () => {
+                console.log('Fallback timer cleared');
+                clearTimeout(fallbackTimerRef.current);
+            };
         }
     }, [openedCards, revealedCards, sequentialRevealStarted]);
 
