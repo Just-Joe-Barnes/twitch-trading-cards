@@ -1,5 +1,5 @@
 // src/pages/AdminDashboardPage.js
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { fetchWithAuth } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import { useNavigate } from 'react-router-dom';
@@ -16,8 +16,6 @@ const AdminDashboardPage = ({ user }) => {
     // Loading & animation states
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
-    // Flag to control the video overlay
-    const [videoEnded, setVideoEnded] = useState(false);
 
     // Cards & reveal states
     const [openedCards, setOpenedCards] = useState([]);
@@ -77,8 +75,6 @@ const AdminDashboardPage = ({ user }) => {
     // Open a pack for the selected user
     const openPackForUser = async () => {
         if (!selectedUser) return;
-        // Reset videoEnded flag for new pack
-        setVideoEnded(false);
         // Increment pack counter to force video remount
         setPackCounter((prev) => prev + 1);
         setLoading(true);
@@ -138,11 +134,10 @@ const AdminDashboardPage = ({ user }) => {
         console.log('handleVideoEnd triggered');
         console.log('Video ended. Starting sequential reveal...');
         setIsOpeningAnimation(false);
-        setVideoEnded(true);
         revealNextCard(0);
     };
 
-    // One-way flip on click: if card is face down, flip it up
+    // One-way flip on click: if a card is face down, flip it up
     const handleFlipCard = (i) => {
         if (!faceDownCards[i]) return;
         setFaceDownCards((prev) => {
@@ -159,7 +154,6 @@ const AdminDashboardPage = ({ user }) => {
         setRevealedCards([]);
         setFaceDownCards([]);
         setIsOpeningAnimation(false);
-        setVideoEnded(false);
     };
 
     return (
@@ -248,9 +242,9 @@ const AdminDashboardPage = ({ user }) => {
                     <h2>Opened Cards</h2>
                     <div className="cards-container">
                         {openedCards.map((card, i) => {
-                            // Add the "revealed" class if the card is revealed
+                            // If revealedCards[i] is true, add the "revealed" class
                             const revealClass = revealedCards[i] ? 'revealed' : '';
-                            // Preserve face-down state for flipping functionality
+                            // Maintain face-down/face-up state for flipping
                             const flipClass = faceDownCards[i] ? 'face-down' : 'face-up';
 
                             return (
