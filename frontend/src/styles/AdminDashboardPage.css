@@ -246,9 +246,10 @@
 }
 
     .card-wrapper.revealed {
-        opacity: 1;
-        transform: translateY(0);
+        opacity: 1 !important;
+        transform: translateY(0) !important;
     }
+
 
 /* face-down => show back, face-up => show front */
 .face-down .card-inner {
