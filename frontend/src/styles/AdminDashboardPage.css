@@ -249,6 +249,11 @@
     }
 
     .card-wrapper.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .card-wrapper.hidden.visible {
         opacity: 1 !important;
         transform: translateY(0) !important;
     }
