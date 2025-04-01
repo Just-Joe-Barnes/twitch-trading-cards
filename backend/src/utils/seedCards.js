@@ -20,7 +20,7 @@ const seedDatabase = async () => {
         {
             name: 'Glintstone Guardian',
             imageUrl: '/images/cards/glintstoneguardian.jpg',
-            flavorText: 'The only thing between you and the academy.',  // <-- Added comma here
+            flavorText: 'The only thing between you and the academy.',
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,
@@ -86,7 +86,7 @@ const seedDatabase = async () => {
         {
             name: 'The Pirate Legend',
             imageUrl: '/images/cards/piratelegend.jpg',
-            flavorText: "Its not getting to 100 hours, never has, never will.",
+            flavorText: "It's not getting to 100 hours, never has, never will.",
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,
@@ -328,7 +328,7 @@ const seedDatabase = async () => {
         {
             name: 'Trash Panda Tavern',
             imageUrl: '/images/cards/trashpandatavern.jpg',
-            flavorText: 'Cogsworth has just the tipple to set your mind on the course for adventure and beyond. - UnfitFilms',
+            flavorText: "Cogsworth has just the tipple to set your mind on the course for adventure and beyond. - UnfitFilms",
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,
@@ -372,12 +372,20 @@ const seedDatabase = async () => {
     ];
 
     try {
-        // Clear existing cards first to avoid duplicates
-        await Card.deleteMany({});
-        console.log('Existing cards cleared.');
-
-        // Insert the new cards
-        await Card.insertMany(cards);
+        for (const cardData of cards) {
+            const existingCard = await Card.findOne({ name: cardData.name });
+            if (existingCard) {
+                // Update non-critical fields (imageUrl and flavorText) if needed
+                existingCard.imageUrl = cardData.imageUrl;
+                existingCard.flavorText = cardData.flavorText;
+                // Leave the existing 'rarities' data (remainingCopies, availableMintNumbers) intact
+                await existingCard.save();
+                console.log(`Card "${cardData.name}" already exists. Updated non-critical fields.`);
+            } else {
+                await Card.create(cardData);
+                console.log(`Card "${cardData.name}" inserted.`);
+            }
+        }
         console.log('Cards seeded successfully.');
     } catch (error) {
         console.error('Error seeding database:', error.message);

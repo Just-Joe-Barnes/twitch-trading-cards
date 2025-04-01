@@ -57,7 +57,7 @@ const handleTwitchEvent = async (event) => {
         switch (type) {
             case 'channel.subscribe':
                 console.log(`Processing channel.subscribe for ${user_name} (${user_id})`);
-                // Check if the user exists before updating
+                // Check if the user exists before awarding a pack
                 const existingSubscriber = await User.findOne({ twitchId: user_id });
                 if (existingSubscriber) {
                     await User.findOneAndUpdate(
@@ -73,7 +73,7 @@ const handleTwitchEvent = async (event) => {
 
             case 'channel.subscription.gift':
                 console.log('Processing channel.subscription.gift event:', event);
-                // Always award the packs to the gifter (user_id)
+                // Award packs to the gifter only if they have an account on Ned's Decks
                 const giftedCount = total || 1;
                 if (!user_id) {
                     console.error("❌ No valid Twitch ID found for gifted subscription event", event);
@@ -81,6 +81,7 @@ const handleTwitchEvent = async (event) => {
                 }
                 const existingGifter = await User.findOne({ twitchId: user_id });
                 if (existingGifter) {
+                    // Increment packs for existing gifter
                     const updatedGifter = await User.findOneAndUpdate(
                         { twitchId: user_id },
                         { $inc: { packs: giftedCount } },
@@ -88,7 +89,8 @@ const handleTwitchEvent = async (event) => {
                     );
                     console.log(`🎁 ${giftedCount} pack(s) awarded to gifter (${user_id}). New pack count: ${updatedGifter.packs}`);
                 } else {
-                    console.error(`❌ User not found for Twitch ID ${user_id} in gifted subscription event. Event ignored.`);
+                    // No account exists, so do not award a pack.
+                    console.error(`❌ User not found for Twitch ID ${user_id} in gifted subscription event. Pack not awarded.`);
                 }
                 break;
 

@@ -15,9 +15,6 @@ const rarityProbabilities = [
     { rarity: 'Divine', probability: 0.001 },
 ];
 
-const MAX_ATTEMPTS = 5; // Maximum number of re-roll attempts
-
-// Helper to randomly pick a rarity based on updated probabilities
 const pickRarity = () => {
     const random = Math.random();
     let cumulativeProbability = 0;
@@ -31,92 +28,90 @@ const pickRarity = () => {
 };
 
 // Generate a card with probabilities and ensure uniqueness across all user collections
-const generateCardWithProbability = async (attempts = 0) => {
-    if (attempts >= MAX_ATTEMPTS) {
-        console.warn('Maximum attempts reached. Unable to generate a unique card.');
-        return null;
-    }
-    try {
-        const selectedRarity = pickRarity();
+const generateCardWithProbability = async () => {
+    while (true) {
+        try {
+            const selectedRarity = pickRarity();
 
-        // Use aggregation to randomly select a card with the desired rarity and available copies
-        const cards = await Card.aggregate([
-            {
-                $match: {
+            // Use aggregation to randomly select a card with the desired rarity and available copies
+            const cards = await Card.aggregate([
+                {
+                    $match: {
+                        'rarities.rarity': selectedRarity,
+                        'rarities.remainingCopies': { $gt: 0 },
+                        'rarities.availableMintNumbers.0': { $exists: true } // ensure at least one available mint number
+                    }
+                },
+                { $sample: { size: 1 } }
+            ]);
+
+            if (!cards || cards.length === 0) {
+                console.warn(`No cards found for rarity: ${selectedRarity}. Retrying...`);
+                continue;
+            }
+            const selectedCard = cards[0];
+
+            // Find the subdocument for the selected rarity
+            const rarityObj = selectedCard.rarities.find(r => r.rarity === selectedRarity);
+            if (!rarityObj || rarityObj.remainingCopies <= 0 || !rarityObj.availableMintNumbers || rarityObj.availableMintNumbers.length === 0) {
+                console.warn(`No valid rarity data for rarity: ${selectedRarity} in card: ${selectedCard.name}. Retrying...`);
+                continue;
+            }
+
+            // Select a random mint number from availableMintNumbers
+            const randomIndex = Math.floor(Math.random() * rarityObj.availableMintNumbers.length);
+            const mintNumber = rarityObj.availableMintNumbers[randomIndex];
+
+            // Check that no card with the same name, rarity, and mint number exists in any user's collection
+            const duplicate = await User.findOne({
+                $or: [
+                    { cards: { $elemMatch: { name: selectedCard.name, rarity: selectedRarity, mintNumber } } },
+                    { openedCards: { $elemMatch: { name: selectedCard.name, rarity: selectedRarity, mintNumber } } }
+                ]
+            });
+            if (duplicate) {
+                console.warn(`Duplicate card detected for ${selectedCard.name}, rarity: ${selectedRarity}, mint number: ${mintNumber}. Retrying...`);
+                continue;
+            }
+
+            // Atomically update the card: decrement remainingCopies and remove the chosen mint number
+            const updatedCard = await Card.findOneAndUpdate(
+                {
+                    _id: selectedCard._id,
                     'rarities.rarity': selectedRarity,
-                    'rarities.remainingCopies': { $gt: 0 },
-                    'rarities.availableMintNumbers.0': { $exists: true } // ensure at least one available mint number
-                }
-            },
-            { $sample: { size: 1 } }
-        ]);
+                    'rarities.remainingCopies': { $gt: 0 }
+                },
+                {
+                    $inc: { 'rarities.$.remainingCopies': -1 },
+                    $pull: { 'rarities.$.availableMintNumbers': mintNumber }
+                },
+                { new: true }
+            );
 
-        if (!cards || cards.length === 0) {
-            console.warn(`No cards found for rarity: ${selectedRarity}`);
-            return null;
+            if (!updatedCard) {
+                console.warn(`Failed to update card: ${selectedCard.name}. Retrying...`);
+                continue;
+            }
+
+            console.log('[generateCardWithProbability] Generated card:', {
+                name: selectedCard.name,
+                rarity: selectedRarity,
+                mintNumber,
+                imageUrl: selectedCard.imageUrl,
+                flavorText: selectedCard.flavorText,
+            });
+
+            return {
+                name: selectedCard.name,
+                rarity: selectedRarity,
+                mintNumber,
+                imageUrl: selectedCard.imageUrl,
+                flavorText: selectedCard.flavorText || 'No flavor text available',
+            };
+        } catch (error) {
+            console.error('[generateCardWithProbability] Error:', error.message);
+            // Continue loop after error
         }
-        const selectedCard = cards[0];
-
-        // Find the subdocument for the selected rarity
-        const rarityObj = selectedCard.rarities.find(r => r.rarity === selectedRarity);
-        if (!rarityObj || rarityObj.remainingCopies <= 0 || !rarityObj.availableMintNumbers || rarityObj.availableMintNumbers.length === 0) {
-            console.warn(`No valid rarity data for rarity: ${selectedRarity} in card: ${selectedCard.name}`);
-            return null;
-        }
-
-        // Select a random mint number from availableMintNumbers
-        const randomIndex = Math.floor(Math.random() * rarityObj.availableMintNumbers.length);
-        const mintNumber = rarityObj.availableMintNumbers[randomIndex];
-
-        // Check that no card with the same name, rarity, and mint number exists in any user's collection
-        const duplicate = await User.findOne({
-            $or: [
-                { cards: { $elemMatch: { name: selectedCard.name, rarity: selectedRarity, mintNumber } } },
-                { openedCards: { $elemMatch: { name: selectedCard.name, rarity: selectedRarity, mintNumber } } }
-            ]
-        });
-        if (duplicate) {
-            console.warn(`Duplicate card detected for ${selectedCard.name}, rarity: ${selectedRarity}, mint number: ${mintNumber}. Retrying...`);
-            return await generateCardWithProbability(attempts + 1);
-        }
-
-        // Atomically update the card: decrement remainingCopies and remove the chosen mint number
-        const updatedCard = await Card.findOneAndUpdate(
-            {
-                _id: selectedCard._id,
-                'rarities.rarity': selectedRarity,
-                'rarities.remainingCopies': { $gt: 0 }
-            },
-            {
-                $inc: { 'rarities.$.remainingCopies': -1 },
-                $pull: { 'rarities.$.availableMintNumbers': mintNumber }
-            },
-            { new: true }
-        );
-
-        if (!updatedCard) {
-            console.warn(`Failed to update card: ${selectedCard.name}`);
-            return null;
-        }
-
-        console.log('[generateCardWithProbability] Generated card:', {
-            name: selectedCard.name,
-            rarity: selectedRarity,
-            mintNumber,
-            imageUrl: selectedCard.imageUrl,
-            flavorText: selectedCard.flavorText,
-        });
-
-        return {
-            name: selectedCard.name,
-            rarity: selectedRarity,
-            mintNumber,
-            imageUrl: selectedCard.imageUrl,
-            flavorText: selectedCard.flavorText || 'No flavor text available',
-        };
-    } catch (error) {
-        console.error('[generateCardWithProbability] Error:', error.message);
-        return null;
     }
 };
 
@@ -129,17 +124,14 @@ const isRareOrAbove = (rarity) => {
     return rareTier.has(rarity);
 };
 
-// Generates a card ensuring its rarity is Rare or above by re-rolling if necessary.
-const generateRareCardWithProbability = async (attempts = 0) => {
-    if (attempts >= MAX_ATTEMPTS) {
-        console.warn('Maximum attempts reached for rare card.');
-        return null;
-    }
-    const card = await generateCardWithProbability();
-    if (card && isRareOrAbove(card.rarity)) {
-        return card;
-    } else {
-        return await generateRareCardWithProbability(attempts + 1);
+// Generates a card ensuring its rarity is Rare or above by trying until it succeeds.
+const generateRareCardWithProbability = async () => {
+    while (true) {
+        const card = await generateCardWithProbability();
+        if (card && isRareOrAbove(card.rarity)) {
+            return card;
+        }
+        console.warn(`Generated card is not Rare or above. Retrying for a rare card...`);
     }
 };
 
