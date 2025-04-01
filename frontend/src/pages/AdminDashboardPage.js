@@ -8,12 +8,11 @@ import '../styles/AdminDashboardPage.css';
 /*
   AdminDashboardPage:
   - Lists users with unopened packs
-  - Plays pack-opening animation
+  - Plays pack-opening animation (video overlay)
   - Cards appear face down (300x450 forced for the back)
-  - The front can exceed 300x450 in face-up mode; we allow overflow on the wrapper
+  - Cards are revealed sequentially one by one after the video ends
   - One-way flip: once face-up, further clicks do nothing
   - Glow on face-down hover only
-  - No spinner or extra delay after the animation
 */
 
 const AdminDashboardPage = ({ user }) => {
@@ -24,26 +23,23 @@ const AdminDashboardPage = ({ user }) => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Internal loading (no spinner displayed)
+    // Loading & animation states
     const [loading, setLoading] = useState(true);
-    // Pack-opening overlay
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
 
     // Cards & reveal states
     const [openedCards, setOpenedCards] = useState([]);
-    // revealedCards => false means not revealed, true means revealed
+    // revealedCards: false means not revealed, true means revealed
     const [revealedCards, setRevealedCards] = useState([]);
-    // faceDownCards => true means card is still face down, false means flipped up
+    // Face-down state remains as before (if needed for flipping)
     const [faceDownCards, setFaceDownCards] = useState([]);
 
-    // For sequential reveal
-    const [sequentialRevealStarted, setSequentialRevealStarted] = useState(false);
-    const fallbackTimerRef = useRef(null);
-
-    // Pack counter to force video re-mounting each time
+    // For sequential reveal using setInterval
+    const revealIntervalRef = useRef(null);
+    // Pack counter forces video re-mounting each time a new pack is opened
     const [packCounter, setPackCounter] = useState(0);
 
-    // Rarity => color map for glow
+    // Rarity color mapping
     const cardRarities = {
         Basic: '#8D8D8D',
         Common: '#64B5F6',
@@ -58,7 +54,7 @@ const AdminDashboardPage = ({ user }) => {
     };
     const getRarityColor = (rarity) => cardRarities[rarity] || '#fff';
 
-    // On mount, verify admin & fetch user data
+    // On mount, verify admin and fetch user data
     useEffect(() => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -79,7 +75,7 @@ const AdminDashboardPage = ({ user }) => {
         fetchData();
     }, [user, navigate]);
 
-    // Filter user list by search
+    // Filter user list by search query
     const filteredUsers = usersWithPacks.filter((u) =>
         u.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -89,23 +85,20 @@ const AdminDashboardPage = ({ user }) => {
     };
 
     // Open a pack for the selected user
-    // - All cards start not revealed and face down
     const openPackForUser = async () => {
         if (!selectedUser) return;
-        // Clear any leftover fallback timer from previous pack
-        if (fallbackTimerRef.current) {
-            clearTimeout(fallbackTimerRef.current);
-            fallbackTimerRef.current = null;
+        // Clear any previous reveal interval
+        if (revealIntervalRef.current) {
+            clearInterval(revealIntervalRef.current);
+            revealIntervalRef.current = null;
         }
         // Increment pack counter to force video re-mount
-        setPackCounter(prev => prev + 1);
-
+        setPackCounter((prev) => prev + 1);
         setLoading(true);
         setIsOpeningAnimation(true);
         setOpenedCards([]);
         setRevealedCards([]);
         setFaceDownCards([]);
-        setSequentialRevealStarted(false);
 
         try {
             const res = await fetchWithAuth(
@@ -116,8 +109,9 @@ const AdminDashboardPage = ({ user }) => {
             console.log('New cards:', newCards);
 
             setOpenedCards(newCards);
-            setRevealedCards(Array(newCards.length).fill(false)); // not revealed yet
-            setFaceDownCards(Array(newCards.length).fill(true));  // still face down
+            // Start with all cards hidden
+            setRevealedCards(Array(newCards.length).fill(false));
+            setFaceDownCards(Array(newCards.length).fill(true));
 
             // Decrement the user's pack count
             setUsersWithPacks((prev) =>
@@ -133,66 +127,39 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // Reveal cards sequentially
-    const revealCardSequentially = (index) => {
-        console.log('revealCardSequentially called with index', index);
-        if (index >= openedCards.length) {
-            console.log('All cards revealed.');
-            setIsOpeningAnimation(false);
-            return;
-        }
-        setTimeout(() => {
+    // Sequentially reveal cards one by one using setInterval
+    const startSequentialReveal = () => {
+        let index = 0;
+        revealIntervalRef.current = setInterval(() => {
             setRevealedCards((prev) => {
                 const updated = [...prev];
                 updated[index] = true;
                 console.log(`Card ${index} revealed`, updated);
                 return updated;
             });
-            revealCardSequentially(index + 1);
+            index++;
+            if (index >= openedCards.length) {
+                clearInterval(revealIntervalRef.current);
+                revealIntervalRef.current = null;
+                setIsOpeningAnimation(false);
+            }
         }, 1000);
     };
 
-    // Immediately remove overlay & start reveal when video ends
+    // When the pack-opening video ends, start the sequential reveal
     const handleVideoEnd = () => {
         console.log('handleVideoEnd triggered');
         console.log('Video ended. Starting sequential reveal...');
         setIsOpeningAnimation(false);
-        setSequentialRevealStarted(true);
-        revealCardSequentially(0);
-    };
-
-    // Fallback: if no card is revealed after 4s, reveal them all
-    useEffect(() => {
-        if (
-            openedCards.length > 0 &&
-            !revealedCards.some(Boolean) &&
-            !sequentialRevealStarted
-        ) {
-            console.log('Fallback timer set to reveal cards after 4s');
-            fallbackTimerRef.current = setTimeout(() => {
-                console.log('Fallback: revealing all cards after 4s');
-                setRevealedCards(Array(openedCards.length).fill(true));
-                setIsOpeningAnimation(false);
-            }, 4000);
-            return () => {
-                console.log('Fallback timer cleared');
-                clearTimeout(fallbackTimerRef.current);
-            };
-        }
-    }, [openedCards, revealedCards, sequentialRevealStarted]);
-
-    // One-way flip on click
-    const handleFlipCard = (i) => {
-        if (!faceDownCards[i]) return; // already face up
-        setFaceDownCards((prev) => {
-            const updated = [...prev];
-            updated[i] = false; // flip card up
-            return updated;
-        });
+        startSequentialReveal();
     };
 
     // Reset pack state
     const handleResetPack = () => {
+        if (revealIntervalRef.current) {
+            clearInterval(revealIntervalRef.current);
+            revealIntervalRef.current = null;
+        }
         console.log('Resetting pack state');
         setOpenedCards([]);
         setRevealedCards([]);
@@ -205,7 +172,7 @@ const AdminDashboardPage = ({ user }) => {
             {isOpeningAnimation && (
                 <div className="pack-opening-overlay">
                     <video
-                        key={packCounter} // forces remount on each new pack
+                        key={packCounter} // Forces a re-mount for each new pack
                         className="pack-opening-video"
                         src="/animations/packopening.mp4"
                         autoPlay
@@ -286,9 +253,9 @@ const AdminDashboardPage = ({ user }) => {
                     <h2>Opened Cards</h2>
                     <div className="cards-container">
                         {openedCards.map((card, i) => {
-                            // Add 'revealed' class if the card is revealed
+                            // Apply the "revealed" class if the card is revealed
                             const revealClass = revealedCards[i] ? 'revealed' : '';
-                            // Maintain face-down/face-up class as before
+                            // Preserve face-down state (if you want flipping functionality)
                             const flipClass = faceDownCards[i] ? 'face-down' : 'face-up';
 
                             return (
@@ -296,7 +263,16 @@ const AdminDashboardPage = ({ user }) => {
                                     key={i}
                                     className={`card-wrapper ${revealClass} ${flipClass}`}
                                     style={{ '--rarity-color': getRarityColor(card.rarity) }}
-                                    onClick={() => handleFlipCard(i)}
+                                    onClick={() => {
+                                        // Optional: flip card on click
+                                        if (faceDownCards[i]) {
+                                            setFaceDownCards((prev) => {
+                                                const updated = [...prev];
+                                                updated[i] = false;
+                                                return updated;
+                                            });
+                                        }
+                                    }}
                                 >
                                     <div className="card-content">
                                         <div className="card-inner">
