@@ -11,6 +11,7 @@ const cardSchema = new mongoose.Schema({
     name: { type: String, required: true },
     imageUrl: { type: String, required: true },
     flavorText: { type: String },
+    modifier: { type: mongoose.Schema.Types.ObjectId, ref: 'Modifier' },
     rarities: [raritySchema], // Nest rarities as an array of objects
 });
 

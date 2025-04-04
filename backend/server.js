@@ -78,6 +78,7 @@ app.use('/api/market', marketRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/test-notification', testNotificationRoutes); // Ensure this is correctly set up
 app.use('/api/admin', adminRoutes);
+app.use('/api/modifiers', require('./src/routes/modifierRoutes'));
 
 // Default 404 handler (for any unmatched routes)
 app.use((req, res) => {

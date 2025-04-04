@@ -1,5 +1,6 @@
 const Pack = require('../models/packModel');
 const User = require('../models/userModel');
+const Modifier = require('../models/modifierModel');
 const { generateCardWithProbability, generatePack } = require('../helpers/cardHelpers');
 
 // Get all users with packs (Admin-only functionality)
@@ -27,6 +28,13 @@ const openPack = async (req, res) => {
         const newCard = await generateCardWithProbability();
         if (!newCard) {
             return res.status(500).json({ message: 'Failed to generate a card' });
+        }
+
+        // Add modifier logic here
+        const modifiers = await Modifier.find();
+        if (modifiers && modifiers.length > 0) {
+            const randomIndex = Math.floor(Math.random() * modifiers.length);
+            newCard.modifier = modifiers[randomIndex]._id;
         }
 
         user.cards.push(newCard);
@@ -67,6 +75,15 @@ const openPacksForUser = async (req, res) => {
         const newCards = await generatePack(5);
         if (!newCards || !newCards.length) {
             return res.status(500).json({ message: 'Failed to generate cards for the pack' });
+        }
+
+        // Add modifier logic here
+        const modifiers = await Modifier.find();
+        for (const newCard of newCards) {
+            if (modifiers && modifiers.length > 0) {
+                const randomIndex = Math.floor(Math.random() * modifiers.length);
+                newCard.modifier = modifiers[randomIndex]._id;
+            }
         }
 
         user.packs -= 1;

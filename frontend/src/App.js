@@ -106,6 +106,10 @@ const App = () => {
                     path="/admin/actions"
                     element={user?.isAdmin ? <AdminActions user={user} /> : <Navigate to="/login" />}
                 />
+                <Route
+                    path="/admin-catalogue"
+                    element={user?.isAdmin ? <AdminCataloguePage user={user} /> : <Navigate to="/login" />}
+                />
                 <Route path="/catalogue" element={<CataloguePage />} />
                 <Route path="/market" element={<MarketPage />} />
                 <Route path="/market/create" element={<CreateListingPage />} />

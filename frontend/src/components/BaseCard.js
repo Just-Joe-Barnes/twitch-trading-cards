@@ -1,6 +1,8 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import '../styles/CardComponent.css';
+import '../styles/RainbowHolo.css';
 import { rarities } from '../constants/rarities';
+import { fetchWithAuth } from '../utils/api';
 
 const BaseCard = ({
     name,
@@ -11,8 +13,10 @@ const BaseCard = ({
     draggable,
     onDragStart,
     onDoubleClick,
+    modifier,
 }) => {
     const cardRef = useRef(null);
+    const [modifierData, setModifierData] = useState(null);
     // Refs for lower rarity effects (unchanged)
     const glareRef = useRef(null);
     const holoRef = useRef(null);
@@ -22,6 +26,22 @@ const BaseCard = ({
     const divineArtworkRef = useRef(null);
     // New ref for the description element so we can adjust its font size
     const descriptionRef = useRef(null);
+
+    useEffect(() => {
+        const fetchModifier = async () => {
+            if (modifier) {
+                try {
+                    const data = await fetchWithAuth(`/api/modifiers/${modifier}`, { method: 'GET' });
+                    setModifierData(data);
+                } catch (error) {
+                    console.error('Error fetching modifier:', error.message);
+                }
+            } else {
+                setModifierData(null);
+            }
+        };
+        fetchModifier();
+    }, [modifier]);
 
     // useEffect to adjust the font size of the description so that it fits in 90px height.
     useEffect(() => {
@@ -142,7 +162,10 @@ const BaseCard = ({
             draggable={draggable}
             onDragStart={(e) => draggable && onDragStart && onDragStart(e)}
             onDoubleClick={onDoubleClick}
-            style={rarity.toLowerCase() === 'divine' ? { backgroundImage: `url(${image})` } : {}}
+            style={{
+                ...(rarity.toLowerCase() === 'divine' ? { backgroundImage: `url(${image})` } : {}),
+                ...(modifierData?.css ? JSON.parse(modifierData.css) : {}),
+            }}
         >
             {/* Render glare for lower rarities */}
             {["basic", "common", "standard", "uncommon"].includes(rarity.toLowerCase()) && (
@@ -181,7 +204,7 @@ const BaseCard = ({
                     </div>
                 ) : (
                     <>
-                        <div className="card-name">{name}</div>
+                        <div className={`card-name ${modifierData?.name === 'Rainbow Holo' ? 'rainbow-holo' : ''}`}>{name}</div>
                         <div className="card-artwork">
                             <img src={image} alt={name} />
                         </div>
