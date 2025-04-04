@@ -1,7 +1,6 @@
 // src/components/Navbar.js
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import '../styles/Navbar.css';
 import { searchUsers, fetchUserProfile } from '../utils/api';
 import NotificationDropdown from './NotificationDropdown';
 
@@ -55,93 +54,95 @@ const Navbar = ({ isAdmin }) => {
     };
 
     return (
-        <nav className="navbar">
-            <div className="navbar-logo">
-                <img src="/images/NedsDecksLogo.png" alt="Ned's Decks" />
+        <nav className="bg-gray-800 p-4 flex items-center justify-between text-white font-sans">
+            <div className="flex items-center">
+                <img src="/images/NedsDecksLogo.png" alt="Ned's Decks" className="h-8 w-auto" />
             </div>
 
-            <div className="navbar-search">
-                <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                    placeholder="Search for users..."
-                    className="search-bar"
-                />
-                {isDropdownVisible && (
-                    <ul className="search-dropdown">
-                        {searchResults.length > 0 ? (
-                            searchResults.map((user) => (
-                                <li
-                                    key={user._id}
-                                    onClick={() => handleSearchSelect(user.username)}
-                                    className="search-result-item"
-                                >
-                                    {user.username}
-                                </li>
-                            ))
-                        ) : (
-                            <li className="no-results">No users found</li>
-                        )}
-                    </ul>
-                )}
-            </div>
+            <div className="flex items-center">
+                <div className="mr-4">
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        placeholder="Search for users..."
+                        className="bg-gray-700 text-white rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    {isDropdownVisible && (
+                        <ul className="absolute bg-gray-700 text-white rounded-md shadow-lg mt-1 py-1 z-10">
+                            {searchResults.length > 0 ? (
+                                searchResults.map((user) => (
+                                    <li
+                                        key={user._id}
+                                        onClick={() => handleSearchSelect(user.username)}
+                                        className="px-4 py-2 hover:bg-gray-600 cursor-pointer"
+                                    >
+                                        {user.username}
+                                    </li>
+                                ))
+                            ) : (
+                                <li className="px-4 py-2">No users found</li>
+                            )}
+                        </ul>
+                    )}
+                </div>
 
-            <ul className="navbar-links">
-                <li>
-                    <NavLink to="/dashboard" className="nav-link">
-                        Dashboard
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink to={`/collection/${loggedInUser.username}`} className="nav-link">
-                        Collection
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink to={`/profile/${loggedInUser.username}`} className="nav-link">
-                        My Profile
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink to="/trading" className="nav-link">
-                        Trading
-                    </NavLink>
-                </li>
-                {isAdmin && (
-                    <>
-                        <li>
-                            <NavLink to="/admin-dashboard" className="nav-link">
-                                Admin Dashboard
-                            </NavLink>
-                        </li>
-                        <li>
-                            <NavLink to="/admin/actions" className="nav-link">
-                                Admin Actions
-                            </NavLink>
-                        </li>
-                    </>
-                )}
-                <li>
-                    <NavLink to="/market" className="nav-link">
-                        Market
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink to="/catalogue" className="nav-link">
-                        Catalogue
-                    </NavLink>
-                </li>
-                <li>
-                    <button className="logout-button" onClick={handleLogout}>
-                        Logout
-                    </button>
-                </li>
-            </ul>
+                <ul className="flex items-center space-x-4">
+                    <li>
+                        <NavLink to="/dashboard" className="hover:text-gray-300">
+                            Dashboard
+                        </NavLink>
+                    </li>
+                    <li>
+                        <NavLink to={`/collection/${loggedInUser.username}`} className="hover:text-gray-300">
+                            Collection
+                        </NavLink>
+                    </li>
+                    <li>
+                        <NavLink to={`/profile/${loggedInUser.username}`} className="hover:text-gray-300">
+                            My Profile
+                        </NavLink>
+                    </li>
+                    <li>
+                        <NavLink to="/trading" className="hover:text-gray-300">
+                            Trading
+                        </NavLink>
+                    </li>
+                    {isAdmin && (
+                        <>
+                            <li>
+                                <NavLink to="/admin-dashboard" className="hover:text-gray-300">
+                                    Admin Dashboard
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="/admin/actions" className="hover:text-gray-300">
+                                    Admin Actions
+                                </NavLink>
+                            </li>
+                        </>
+                    )}
+                    <li>
+                        <NavLink to="/market" className="hover:text-gray-300">
+                            Market
+                        </NavLink>
+                    </li>
+                    <li>
+                        <NavLink to="/catalogue" className="hover:text-gray-300">
+                            Catalogue
+                        </NavLink>
+                    </li>
+                    <li>
+                        <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={handleLogout}>
+                            Logout
+                        </button>
+                    </li>
+                </ul>
+            </div>
 
             {/* Render NotificationDropdown only when loggedInUser._id is available */}
             {loggedInUser._id && (
-                <div className="navbar-notifications">
+                <div className="ml-4">
                     <NotificationDropdown
                         profilePic={loggedInUser.twitchProfilePic || '/images/defaultProfile.png'}
                         userId={loggedInUser._id}
