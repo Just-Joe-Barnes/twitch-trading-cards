@@ -63,7 +63,7 @@
     overflow-y: auto;
 }
 
-    .users-with-packs h2 {
+.users-with-packs h2 {
         font-size: 1.5rem;
         color: var(--text-primary);
         margin-bottom: 1rem;
@@ -71,6 +71,27 @@
         border-bottom: 2px solid var(--brand-primary);
         padding-bottom: 0.5rem;
     }
+
+.users-filter {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.users-filter button {
+    padding: 0.5rem 1rem;
+    background: var(--surface-darker);
+    color: var(--text-primary);
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.9rem;
+}
+
+.users-filter button.active {
+    background: var(--brand-primary);
+}
 
 .users-table {
     width: 100%;
