@@ -167,6 +167,8 @@ const BaseCard = ({
             style={{
                 ...(rarity.toLowerCase() === 'divine' ? { backgroundImage: `url(${image})` } : {}),
                 ...(modifierData?.css ? JSON.parse(modifierData.css) : {}),
+                '--mx': `${cursorPosition.x}px`,
+                '--my': `${cursorPosition.y}px`,
                 '--posx': `${cursorPosition.x}px`,
                 '--posy': `${cursorPosition.y}px`,
             }}
