@@ -4,19 +4,20 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    animation: rainbow 5s linear infinite;
+    background: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/shinyrays.png"), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 20%, rgba(0, 0, 0, 0.5) 75%);
     mix-blend-mode: overlay;
+    z-index: 1;
 }
 
-@keyframes rainbow {
-    0% {
-        background-position: 0%;
-    }
-    100% {
-        background-position: 100%;
-    }
+.rainbow-holo-image:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(45deg, #474747 15%, transparent 15%, transparent 85%, #474747 85%), linear-gradient(135deg, #474747 15%, transparent 15%, transparent 85%, #474747 85%);
+    background-size: 8px 8px;
+    mix-blend-mode: color-dodge;
+    z-index: 2;
 }
