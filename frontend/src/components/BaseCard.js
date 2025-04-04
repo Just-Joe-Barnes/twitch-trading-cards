@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
 import '../styles/CardComponent.css';
-import '../styles/RainbowHolo.css';
 import { rarities } from '../constants/rarities';
 import { fetchWithAuth } from '../utils/api';
 
