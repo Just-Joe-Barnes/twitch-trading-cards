@@ -5,7 +5,6 @@ import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner'; // Import spinner component
 import '../styles/CataloguePage.css';
 import { useNavigate } from 'react-router-dom';
-import RainbowHoloSquare from '../components/RainbowHoloSquare';
 
 const rarityData = [
     { name: 'Basic', color: '#8D8D8D' },
