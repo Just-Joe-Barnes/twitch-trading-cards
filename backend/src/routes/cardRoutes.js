@@ -21,17 +21,6 @@ router.get('/search', async (req, res) => {
     }
 });
 
-// Fetch all cards for the catalogue
-router.get('/', async (req, res) => {
-    try {
-        const cards = await Card.find({});
-        res.status(200).json({ cards, totalCards: cards.length });
-    } catch (error) {
-        console.error('Error fetching cards:', error.message);
-        res.status(500).json({ message: 'Failed to fetch cards.' });
-    }
-});
-
 // Fetch cards by rarity
 router.get('/rarity/:rarity', protect, async (req, res) => {
     try {

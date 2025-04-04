@@ -120,11 +120,6 @@ const Navbar = ({ isAdmin }) => {
                                 Admin Actions
                             </NavLink>
                         </li>
-                        <li>
-                            <NavLink to="/admin-catalogue" className="nav-link">
-                                Admin Catalogue
-                            </NavLink>
-                        </li>
                     </>
                 )}
                 <li>
