@@ -4,7 +4,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/shinyrays.png"), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 20%, rgba(0, 0, 0, 0.5) 75%);
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 0%, rgba(0, 0, 0, 0.3) 75%);
     mix-blend-mode: overlay;
     z-index: 1;
     background-position: var(--cursor-x) var(--cursor-y);
@@ -18,7 +18,7 @@
     right: 0;
     bottom: 0;
     left: 0;
-    background: linear-gradient(45deg, #474747 15%, transparent 15%, transparent 85%, #474747 85%), linear-gradient(135deg, #474747 15%, transparent 15%, transparent 85%, #474747 85%);
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 15%, transparent 15%, transparent 85%, rgba(255, 255, 255, 0.1) 85%), linear-gradient(135deg, rgba(255, 255, 255, 0.1) 15%, transparent 15%, transparent 85%, rgba(255, 255, 255, 0.1) 85%);
     background-size: 8px 8px;
     mix-blend-mode: color-dodge;
     z-index: 2;
