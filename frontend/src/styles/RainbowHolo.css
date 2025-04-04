@@ -9,7 +9,7 @@
   z-index: 1;
 }
 
-.rainbow-holo-image:after {
+.rainbow-holo-image::after {
   content: "";
   position: absolute;
   top: 0;
