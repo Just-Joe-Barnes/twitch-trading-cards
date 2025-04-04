@@ -1,53 +1,21 @@
-.rainbow-holo-image {
-
-  --grain: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCI+CjxmaWx0ZXIgaWQ9Im4iPgo8ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjciIG51bU9jdGF2ZXM9IjEwIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIj48L2ZlVHVyYnVsZW5jZT4KPC9maWx0ZXI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIiBmaWxsPSIjMDAwIj48L3JlY3Q+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIiBmaWx0ZXI9InVybCgjbikiIG9wYWNpdHk9IjAuMyI+PC9yZWN0Pgo8L3N2Zz4=");
-  
-  --space: 6%;
-  --angle: 133deg;
-  --imgsize: 500px;
-
-  --red: #f80e7b;
-  --yel: #eedf10;
-  --gre: #21e985;
-  --blu: #0dbde9;
-  --vio: #c929f1;
+.rainbow-holo-square {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  background: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/shinyrays.png"), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 20%, rgba(0, 0, 0, 0.5) 75%);
+  mix-blend-mode: overlay;
+  z-index: 1;
 }
 
-.rainbow-holo-image {
-
-  --space: 4%;
-
-  clip-path: inset( 11.5% 8.5% 44.5% 8.5% );
-
-  background-image: 
-    var(--galaxy),
-    repeating-linear-gradient(
-      82deg, 
-      rgb(219, 204, 86) calc(var(--space)*1), 
-      rgb(121, 199, 58) calc(var(--space)*2), 
-      rgb(58, 192, 183) calc(var(--space)*3), 
-      rgb(71, 98, 207) calc(var(--space)*4), 
-      rgb(170, 69, 209) calc(var(--space)*5), 
-      rgb(255, 90, 180) calc(var(--space)*6), 
-      rgb(255, 90, 180) calc(var(--space)*7), 
-      rgb(170, 69, 209) calc(var(--space)*8), 
-      rgb(71, 98, 207) calc(var(--space)*9), 
-      rgb(58, 192, 183) calc(var(--space)*10), 
-      rgb(121, 199, 58) calc(var(--space)*11), 
-      rgb(219, 204, 86) calc(var(--space)*12) 
-    ), 
-    radial-gradient( 
-      farthest-corner circle 
-      at var(--mx) var(--my), 
-      rgba(255, 255, 255, 0.6) 5%, 
-      rgba(150, 150, 150, .3) 40%, 
-      rgb(0, 0, 0) 100% 
-  );
-
-  background-blend-mode: color-dodge, color-burn, saturation, screen;
-  background-position: var(--galaxybg, cover), var(--galaxybg, cover), var(--galaxybg, cover), calc(((50% - var(--posx)) * 2.5) + 50%) calc(((50% - var(--posy)) * 2.5) + 50%), center;
-  background-size: cover, cover, cover, 400% 900%, cover;
-
-  filter: brightness(.75) contrast(1.2) saturate(1.5);
+.rainbow-holo-square::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, #474747 15%, transparent 15%, transparent 85%, #474747 85%), linear-gradient(135deg, #474747 15%, transparent 15%, transparent 85%, #474747 85%);
+  background-size: 8px 8px;
   mix-blend-mode: color-dodge;
+  z-index: 2;
 }

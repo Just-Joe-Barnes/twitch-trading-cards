@@ -5,6 +5,7 @@ import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner'; // Import spinner component
 import '../styles/CataloguePage.css';
 import { useNavigate } from 'react-router-dom';
+import RainbowHoloSquare from '../components/RainbowHoloSquare';
 
 const rarityData = [
     { name: 'Basic', color: '#8D8D8D' },
@@ -112,6 +113,7 @@ const AdminCataloguePage = ({ user }) => {
                 find cards by name, and click on the rarity buttons below to preview each
                 card in a different style.
             </p>
+            <RainbowHoloSquare />
 
             <div className="filters-container">
                 {/* Search Box */}
