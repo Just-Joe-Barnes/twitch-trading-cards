@@ -10,6 +10,7 @@ const NotificationDropdown = ({ profilePic, userId }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
     const socketRef = useRef(null);
+    const [keyCounter, setKeyCounter] = useState(0); // Add a key counter
 
     // Establish socket connection on mount when userId is available
     useEffect(() => {
@@ -75,6 +76,7 @@ const NotificationDropdown = ({ profilePic, userId }) => {
         try {
             await fetchWithAuth(`/api/notifications/${notificationId}`, { method: 'DELETE' });
             setNotifications(prev => prev.filter(n => n._id !== notificationId));
+            setKeyCounter(prev => prev + 1); // Increment the key counter
         } catch (error) {
             console.error('Error deleting notification:', error.message);
         }
@@ -116,7 +118,7 @@ const NotificationDropdown = ({ profilePic, userId }) => {
                         <>
                             <ul>
                                 {notifications.map((n) => (
-                                    <li key={n._id} className={`notification-item ${n.isRead ? 'read' : 'unread'}`}>
+                                    <li key={`${n._id}-${keyCounter}`} className={`notification-item ${n.isRead ? 'read' : 'unread'}`}>
                                         <Link to={n.link || '#'}>
                                             <span>{n.message}</span>
                                         </Link>
