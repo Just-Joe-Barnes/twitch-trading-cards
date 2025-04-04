@@ -167,6 +167,8 @@ const BaseCard = ({
             style={{
                 ...(rarity.toLowerCase() === 'divine' ? { backgroundImage: `url(${image})` } : {}),
                 ...(modifierData?.css ? JSON.parse(modifierData.css) : {}),
+                '--posx': `${cursorPosition.x}px`,
+                '--posy': `${cursorPosition.y}px`,
             }}
         >
             {/* Render glare for lower rarities */}
