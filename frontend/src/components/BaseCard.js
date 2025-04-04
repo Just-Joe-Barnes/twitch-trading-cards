@@ -172,6 +172,7 @@ const BaseCard = ({
                 '--posx': `${cursorPosition.x}px`,
                 '--posy': `${cursorPosition.y}px`,
                 '--hyp': `${Math.sqrt(cursorPosition.x * cursorPosition.x + cursorPosition.y * cursorPosition.y)}px`,
+                '--galaxy': `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='rainbow' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%' stop-color='%23ff0000' /%3E%3Cstop offset='16.666%' stop-color='%23ff7f00' /%3E%3Cstop offset='33.333%' stop-color='%23ffff00' /%3E%3Cstop offset='50%' stop-color='%2300ff00' /%3E%3Cstop offset='66.666%' stop-color='%230000ff' /%3E%3Cstop offset='83.333%' stop-color='%234b0082' /%3E%3Cstop offset='100%' stop-color='%238b00ff' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' fill='url(%23rainbow)' /%3E%3C/svg%3E")`,
             }}
         >
             {/* Render glare for lower rarities */}
