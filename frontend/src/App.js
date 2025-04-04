@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import CollectionPage from './pages/CollectionPage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
 import Navbar from './components/Navbar';
 import ProfilePage from './pages/ProfilePage';
 import TradingPage from './pages/TradingPage';
@@ -15,7 +14,6 @@ import MarketPage from './pages/MarketPage';
 import CreateListingPage from './pages/CreateListingPage';
 import MarketListingDetails from './pages/MarketListingDetails';
 import AdminActions from './pages/AdminActions';
-import AdminCataloguePage from './pages/AdminCataloguePage';
 import 'normalize.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -90,10 +88,6 @@ const App = () => {
                     path="/collection"
                     element={user ? <CollectionPage user={user} /> : <Navigate to="/login" />}
                 />
-                <Route
-                    path="/admin-dashboard"
-                    element={user?.isAdmin ? <AdminDashboardPage user={user} /> : <Navigate to="/login" />}
-                />
                 <Route path="/profile/:username" element={<ProfilePage />} />
                 <Route
                     path="/trading"
@@ -106,10 +100,6 @@ const App = () => {
                 <Route
                     path="/admin/actions"
                     element={user?.isAdmin ? <AdminActions user={user} /> : <Navigate to="/login" />}
-                />
-                <Route
-                    path="/admin-catalogue"
-                    element={user?.isAdmin ? <AdminCataloguePage user={user} /> : <Navigate to="/login" />}
                 />
                 <Route path="/catalogue" element={<CataloguePage />} />
                 <Route path="/market" element={<MarketPage />} />

@@ -18,7 +18,6 @@ const tradeRoutes = require('./src/routes/tradeRoutes');
 const marketRoutes = require('./src/routes/MarketRoutes');
 const notificationRoutes = require('./src/routes/notificationRoutes');
 const testNotificationRoutes = require('./src/routes/testNotificationRoutes');
-const adminRoutes = require('./src/routes/adminRoutes');
 
 const app = express();
 const server = http.createServer(app); // Create HTTP server for Socket.io
@@ -77,7 +76,6 @@ app.use('/api/trades', tradeRoutes);
 app.use('/api/market', marketRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/test-notification', testNotificationRoutes); // Ensure this is correctly set up
-app.use('/api/admin', adminRoutes);
 app.use('/api/modifiers', require('./src/routes/modifierRoutes'));
 
 // Default 404 handler (for any unmatched routes)
