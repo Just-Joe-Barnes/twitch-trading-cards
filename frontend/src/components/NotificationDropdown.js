@@ -120,14 +120,20 @@ const NotificationDropdown = ({ profilePic, userId }) => {
                                 {notifications.map((n) => {
                                     console.log("Notification link:", n.link);
                                     return (
-                                        <li key={`${n._id}-${keyCounter}`} className={`notification-item ${n.isRead ? 'read' : 'unread'}`}>
+                                        <li
+                                            key={`${n._id}-${keyCounter}`}
+                                            className={`notification-item ${n.isRead ? 'read' : 'unread'}`}
+                                        >
                                             <Link to={n.link || '#'}>
                                                 <span>{n.message}</span>
                                             </Link>
-                                            <button className="delete-notification" onClick={() => {
-                                                console.log("Deleting notification with ID:", n._id);
-                                                handleDelete(n._id);
-                                            }}>
+                                            <button
+                                                className="delete-notification"
+                                                onClick={() => {
+                                                    console.log("Deleting notification with ID:", n._id);
+                                                    handleDelete(n._id);
+                                                }}
+                                            >
                                                 ×
                                             </button>
                                         </li>
