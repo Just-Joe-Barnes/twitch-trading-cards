@@ -17,17 +17,16 @@ const createNotification = async (userId, { type, message, link, extra = {} }) =
             extra
         };
 
-        // Save notification to the database
+        // Save notification to the database and get the updated user
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             { $push: { notifications: notificationData } },
             { new: true } // `new: true` returns the modified document
-        );
+        ).populate('notifications'); // Populate the notifications array
 
         if (updatedUser) {
             // If saving was successful, send the real-time notification via Socket.IO
-            // Find the most recently added notification to send its ID as well
-            // MongoDB typically adds the new element to the end of the array
+            // The new notification is the last one in the array
             const savedNotification = updatedUser.notifications[updatedUser.notifications.length - 1];
             sendNotificationToUser(userId, savedNotification); // Send the actual saved notification object
             console.log('Notification saved and real-time event sent to user:', userId);
