@@ -80,25 +80,20 @@
 
     .users-table th,
     .users-table td {
-        padding: 0.5rem 0.75rem;
-        border-bottom: 1px solid var(--border-dark);
+        padding: 0.25rem 0.5rem;
     }
 
     .users-table th {
         background: var(--surface-darker);
         color: var(--text-primary);
-        text-transform: uppercase;
         font-size: 0.85rem;
-        border-bottom: 2px solid var(--brand-primary);
         text-align: left;
     }
 
     .users-table tr:hover {
-        background-color: var(--surface-darker);
     }
 
     .users-table tr.selected {
-        background-color: var(--brand-primary);
         color: var(--text-primary);
     }
 
