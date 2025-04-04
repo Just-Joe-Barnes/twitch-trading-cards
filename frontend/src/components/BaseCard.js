@@ -26,6 +26,7 @@ const BaseCard = ({
     const divineArtworkRef = useRef(null);
     // New ref for the description element so we can adjust its font size
     const descriptionRef = useRef(null);
+    const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
 
     useEffect(() => {
         const fetchModifier = async () => {
@@ -66,6 +67,7 @@ const BaseCard = ({
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
+        setCursorPosition({ x, y });
         const halfW = rect.width / 2;
         const halfH = rect.height / 2;
         const rotateX = -((y - halfH) / 10);
@@ -208,7 +210,13 @@ const BaseCard = ({
                         <div className="card-artwork">
                             <img src={image} alt={name} />
                             {modifierData?.name === 'Rainbow Holo' && (
-                                <div className="rainbow-holo-image"></div>
+                                <div
+                                    className="rainbow-holo-image"
+                                    style={{
+                                        '--cursor-x': `${cursorPosition.x}px`,
+                                        '--cursor-y': `${cursorPosition.y}px`,
+                                    }}
+                                ></div>
                             )}
                         </div>
                         {description && (
