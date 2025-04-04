@@ -1,5 +1,6 @@
 // src/routes/notificationRoutes.js
 const express = require('express');
+const mongoose = require('mongoose'); // Add this line
 const router = express.Router();
 const User = require('../models/userModel');
 const { protect } = require('../middleware/authMiddleware');
