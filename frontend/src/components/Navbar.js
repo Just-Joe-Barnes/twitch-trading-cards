@@ -108,6 +108,25 @@ const Navbar = ({ isAdmin }) => {
                         Trading
                     </NavLink>
                 </li>
+                {isAdmin && (
+                    <>
+                        <li>
+                            <NavLink to="/admin-dashboard" className="nav-link">
+                                Admin Dashboard
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink to="/admin/actions" className="nav-link">
+                                Admin Actions
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink to="/admin-catalogue" className="nav-link">
+                                Admin Catalogue
+                            </NavLink>
+                        </li>
+                    </>
+                )}
                 <li>
                     <NavLink to="/market" className="nav-link">
                         Market
