@@ -49,10 +49,17 @@ router.delete('/:notificationId', protect, async (req, res) => {
         if (!isValidObjectId) {
             return res.status(400).json({ message: 'Invalid notification ID format' });
         }
-        await User.updateOne(
-            { _id: req.user.id },
-            { $pull: { notifications: { _id: new mongoose.Types.ObjectId(notificationId) } } }
-        );
+
+        const userId = req.user.id;
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.notifications.pull({ _id: new mongoose.Types.ObjectId(notificationId) });
+        await user.save();
+
         res.status(200).json({ message: 'Notification deleted' });
     } catch (error) {
         console.error('Error deleting notification:', error.message);
