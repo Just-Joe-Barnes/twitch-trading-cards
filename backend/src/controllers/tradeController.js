@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Trade = require('../models/tradeModel');
 const User = require('../models/userModel');
+const MarketListing = require('../models/MarketListing');
 const { createNotification } = require('../helpers/notificationHelper');
 
 // Create a new trade
@@ -72,6 +73,16 @@ const createTrade = async (req, res) => {
             });
         }
 
+        // 6.5) Check if any of the cards are already pending
+        const pendingOfferedCards = offeredCardsDetails.filter(card => card.status === 'pending');
+        const pendingRequestedCards = requestedCardsDetails.filter(card => card.status === 'pending');
+
+        if (pendingOfferedCards.length > 0 || pendingRequestedCards.length > 0) {
+            return res.status(400).json({
+                popupMessage: "One or more cards in this trade are currently pending in another trade or market listing."
+            });
+        }
+
         // 7) If there's truly nothing being traded, reject
         if (
             offeredCardsDetails.length === 0 &&
@@ -97,6 +108,20 @@ const createTrade = async (req, res) => {
 
         await trade.save();
         console.log('Trade saved successfully:', trade);
+
+        // Mark cards as pending in the sender's collection
+        await User.updateOne(
+            { _id: sender._id, "cards._id": { $in: offeredCardsDetails.map(c => c._id) } },
+            { $set: { "cards.$[element].status": 'pending' } },
+            { arrayFilters: [{ "element._id": { $in: offeredCardsDetails.map(c => c._id) } }] }
+        );
+
+        // Mark cards as pending in the recipient's collection
+        await User.updateOne(
+            { _id: recipientUser._id, "cards._id": { $in: requestedCardsDetails.map(c => c._id) } },
+            { $set: { "cards.$[element].status": 'pending' } },
+            { arrayFilters: [{ "element._id": { $in: requestedCardsDetails.map(c => c._id) } }] }
+        );
 
         // Debug log before sending notification
         console.log('Sending trade offer notification to recipient:', recipientUser._id, 'from sender:', sender.username, 'for trade:', trade._id);
@@ -179,28 +204,49 @@ const updateTradeStatus = async (req, res) => {
             recipient.packs = recipient.packs - trade.requestedPacks + trade.offeredPacks;
 
             // Transfer offered cards: remove from sender, add to recipient
-            trade.offeredItems.forEach(itemId => {
-                const index = sender.cards.findIndex(c => c._id.toString() === itemId.toString());
+            const offeredCardsDetails = sender.cards.filter(card =>
+                trade.offeredItems.some(itemId => itemId.equals(card._id))
+            );
+            offeredCardsDetails.forEach(card => {
+                const index = sender.cards.findIndex(c => c._id.toString() === card._id.toString());
                 if (index !== -1) {
                     const card = sender.cards.splice(index, 1)[0];
                     recipient.cards.push(card);
                 } else {
-                    console.warn(`Offered card with ID ${itemId} not found in sender's collection.`);
+                    console.warn(`Offered card with ID ${card._id} not found in sender's collection.`);
                 }
             });
+
             // Transfer requested cards: remove from recipient, add to sender
-            trade.requestedItems.forEach(itemId => {
-                const index = recipient.cards.findIndex(c => c._id.toString() === itemId.toString());
+            const requestedCardsDetails = recipient.cards.filter(card =>
+                trade.requestedItems.some(itemId => itemId.equals(card._id))
+            );
+            requestedCardsDetails.forEach(card => {
+                const index = recipient.cards.findIndex(c => c._id.toString() === card._id.toString());
                 if (index !== -1) {
                     const card = recipient.cards.splice(index, 1)[0];
                     sender.cards.push(card);
                 } else {
-                    console.warn(`Requested card with ID ${itemId} not found in recipient's collection.`);
+                    console.warn(`Requested card with ID ${card._id} not found in recipient's collection.`);
                 }
             });
 
             await sender.save({ session });
             await recipient.save({ session });
+
+            // Mark cards as available in the sender's collection
+            await User.updateOne(
+                { _id: sender._id, "cards._id": { $in: offeredCardsDetails.map(c => c._id) } },
+                { $set: { "cards.$[element].status": 'available' } },
+                { arrayFilters: [{ "element._id": { $in: offeredCardsDetails.map(c => c._id) } }] }
+            ).session(session);
+
+            // Mark cards as available in the recipient's collection
+            await User.updateOne(
+                { _id: recipient._id, "cards._id": { $in: requestedCardsDetails.map(c => c._id) } },
+                { $set: { "cards.$[element].status": 'available' } },
+                { arrayFilters: [{ "element._id": { $in: requestedCardsDetails.map(c => c._id) } }] }
+            ).session(session);
 
             // Cleanup conflicting trades involving traded cards
             const tradedCardIds = [...trade.offeredItems, ...trade.requestedItems];
@@ -218,6 +264,35 @@ const updateTradeStatus = async (req, res) => {
                 },
                 { session }
             );
+
+            // Cancel any active market listings for the traded cards
+            await MarketListing.updateMany(
+                {
+                    "card._id": { $in: tradedCardIds },
+                    status: 'active'
+                },
+                {
+                    $set: { status: 'cancelled', cancellationReason: 'Card traded in another transaction' }
+                },
+                { session }
+            );
+        } else if (status === 'rejected' || status === 'cancelled') {
+            const offeredCardIds = trade.offeredItems;
+            const requestedCardIds = trade.requestedItems;
+
+            // Mark offered cards as available in the sender's collection
+            await User.updateOne(
+                { _id: sender._id, "cards._id": { $in: offeredCardIds } },
+                { $set: { "cards.$[element].status": 'available' } },
+                { arrayFilters: [{ "element._id": { $in: offeredCardIds } }] }
+            ).session(session);
+
+            // Mark requested cards as available in the recipient's collection
+            await User.updateOne(
+                { _id: recipient._id, "cards._id": { $in: requestedCardIds } },
+                { $set: { "cards.$[element].status": 'available' } },
+                { arrayFilters: [{ "element._id": { $in: requestedCardIds } }] }
+            ).session(session);
         }
 
         // Update trade status for accepted, rejected, or cancelled

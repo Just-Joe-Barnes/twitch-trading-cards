@@ -44,9 +44,14 @@ router.delete('/clear', protect, async (req, res) => {
 router.delete('/:notificationId', protect, async (req, res) => {
     try {
         const { notificationId } = req.params;
+        // Ensure notificationId is a valid MongoDB ObjectId
+        const isValidObjectId = mongoose.Types.ObjectId.isValid(notificationId);
+        if (!isValidObjectId) {
+            return res.status(400).json({ message: 'Invalid notification ID format' });
+        }
         await User.updateOne(
             { _id: req.user.id },
-            { $pull: { notifications: { _id: notificationId } } }
+            { $pull: { notifications: { _id: new mongoose.Types.ObjectId(notificationId) } } }
         );
         res.status(200).json({ message: 'Notification deleted' });
     } catch (error) {

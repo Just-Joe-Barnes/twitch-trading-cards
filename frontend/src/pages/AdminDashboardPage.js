@@ -4,14 +4,16 @@ import { fetchWithAuth } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import { useNavigate } from 'react-router-dom';
 import '../styles/AdminDashboardPage.css';
+import moment from 'moment';
 
 const AdminDashboardPage = ({ user }) => {
     const navigate = useNavigate();
 
     // User list state
-    const [usersWithPacks, setUsersWithPacks] = useState([]);
+    const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [activeFilter, setActiveFilter] = useState('all'); // 'all' or 'active'
 
     // Loading & animation states
     const [loading, setLoading] = useState(true);
@@ -54,19 +56,20 @@ const AdminDashboardPage = ({ user }) => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const data = await fetchWithAuth('/api/packs/usersWithPacks');
-                setUsersWithPacks(data.users || []);
+                const activeMinutesParam = activeFilter === 'active' ? '&activeMinutes=15' : '';
+                const data = await fetchWithAuth(`/api/admin/users-activity?${activeMinutesParam}`);
+                setUsers(data || []);
             } catch (err) {
-                console.error('Error fetching packs:', err);
+                console.error('Error fetching users with activity:', err);
             } finally {
                 setLoading(false);
             }
         };
         fetchData();
-    }, [user, navigate]);
+    }, [user, navigate, activeFilter]);
 
     // Filter users by search query
-    const filteredUsers = usersWithPacks.filter((u) =>
+    const filteredUsers = users.filter((u) =>
         u.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -99,7 +102,7 @@ const AdminDashboardPage = ({ user }) => {
             setFaceDownCards(Array(newCards.length).fill(true));
 
             // Decrement the user's pack count
-            setUsersWithPacks((prev) =>
+            setUsers((prev) =>
                 prev.map((u) =>
                     u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
                 )
@@ -163,6 +166,10 @@ const AdminDashboardPage = ({ user }) => {
         setCurrentRevealIndex(0);
     };
 
+    const handleFilterChange = (filter) => {
+        setActiveFilter(filter);
+    };
+
     return (
         <div className="dashboard-container">
             {isOpeningAnimation && (
@@ -192,11 +199,26 @@ const AdminDashboardPage = ({ user }) => {
                             className="users-search-input"
                         />
                     </div>
+                    <div className="users-filter">
+                        <button
+                            className={activeFilter === 'all' ? 'active' : ''}
+                            onClick={() => handleFilterChange('all')}
+                        >
+                            All Users
+                        </button>
+                        <button
+                            className={activeFilter === 'active' ? 'active' : ''}
+                            onClick={() => handleFilterChange('active')}
+                        >
+                            Active in Last 15 Minutes
+                        </button>
+                    </div>
                     <table className="users-table">
                         <thead>
                             <tr>
                                 <th>Username</th>
                                 <th>Unopened Packs</th>
+                                <th>Last Active</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -209,6 +231,7 @@ const AdminDashboardPage = ({ user }) => {
                                 >
                                     <td>{u.username}</td>
                                     <td>{u.packs}</td>
+                                    <td>{u.lastActive ? moment(u.lastActive).fromNow() : 'Never'}</td>
                                     <td>{u.packs > 0 ? 'Available' : 'No packs'}</td>
                                 </tr>
                             ))}

@@ -6,7 +6,8 @@ const cardSchema = new mongoose.Schema({
     mintNumber: Number,
     imageUrl: String,
     flavorText: String,
-    acquiredAt: { type: Date, default: Date.now } // Track when the card was acquired
+    acquiredAt: { type: Date, default: Date.now }, // Track when the card was acquired
+    status: { type: String, enum: ['available', 'pending'], default: 'available' } // Card status
 });
 
 // Notification schema
@@ -39,7 +40,8 @@ const userSchema = new mongoose.Schema({
     ],
     notifications: [notificationSchema], // NEW: Notifications for the user
     firstLogin: { type: Boolean, default: false },
-    isAdmin: { type: Boolean, default: false }
+    isAdmin: { type: Boolean, default: false },
+    lastActive: { type: Date } // Last active in chat
 });
 
 const User = mongoose.model('User', userSchema);

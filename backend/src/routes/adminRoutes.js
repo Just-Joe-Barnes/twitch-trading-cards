@@ -47,7 +47,7 @@ router.post('/set-packs', protect, adminOnly, async (req, res) => {
 
 // New endpoint: Broadcast custom notification to all users
 router.post('/notifications', protect, adminOnly, async (req, res) => {
-    const { type, message } = req.body;
+    const { type, message, link = "" } = req.body; // Allow optional link
     if (!type || !message) {
         return res.status(400).json({ message: 'Type and message are required.' });
     }
@@ -55,7 +55,7 @@ router.post('/notifications', protect, adminOnly, async (req, res) => {
         const notification = {
             type,
             message,
-            link: "", // default empty link
+            link: link,
             extra: {},
             isRead: false,
             createdAt: new Date()
@@ -103,5 +103,26 @@ router.post('/give-packs', protect, adminOnly, async (req, res) => {
     }
 });
 
+// GET list of users with activity status
+router.get('/users-activity', protect, adminOnly, async (req, res) => {
+    try {
+        const { activeMinutes } = req.query;
+        const activeMinutesNum = parseInt(activeMinutes) || 15; // Default to 15 minutes
+
+        let query = {};
+        if (activeMinutes) {
+            const cutoff = new Date(Date.now() - activeMinutesNum * 60 * 1000);
+            query = { lastActive: { $gte: cutoff } };
+        }
+
+        const users = await User.find(query, 'username packs lastActive')
+                                .sort({ lastActive: -1 }); // Sort by last active, most recent first
+
+        res.json(users);
+    } catch (err) {
+        console.error('Error fetching users with activity:', err);
+        res.status(500).json({ error: 'Failed to fetch users with activity.' });
+    }
+});
 
 module.exports = router;

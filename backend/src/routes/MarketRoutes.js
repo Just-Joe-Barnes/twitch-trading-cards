@@ -15,6 +15,20 @@ router.post('/listings', protect, async (req, res) => {
             return res.status(400).json({ message: 'Invalid card data' });
         }
 
+        // Check if the card is already pending
+        const user = await User.findById(req.user._id);
+        const cardInCollection = user.cards.find(
+            c => c.name === card.name && c.mintNumber === card.mintNumber
+        );
+
+        if (!cardInCollection) {
+            return res.status(400).json({ message: 'Card not found in your collection.' });
+        }
+
+        if (cardInCollection.status === 'pending') {
+            return res.status(400).json({ message: 'This card is currently pending in another trade or market listing.' });
+        }
+
         // Prevent listing the same card multiple times.
         const existingListing = await MarketListing.findOne({
             owner: req.user._id,
@@ -30,6 +44,13 @@ router.post('/listings', protect, async (req, res) => {
             owner: req.user._id,
             card,
         });
+
+        // Mark the card as pending in the user's collection
+        await User.updateOne(
+            { _id: req.user._id, "cards._id": cardInCollection._id },
+            { $set: { "cards.$.status": 'pending' } }
+        );
+
         const savedListing = await newListing.save();
         res.status(201).json(savedListing);
     } catch (error) {
@@ -194,13 +215,44 @@ router.put('/listings/:id/offers/:offerId/accept', protect, async (req, res) => 
         buyer.packs -= offer.offeredPacks;
         seller.packs += offer.offeredPacks;
 
+        // --- BEGIN CARD TRANSFER LOGIC ---
+        // Find the index of the card being sold in the seller's collection
+        const cardIndexInSeller = seller.cards.findIndex(
+            c => c.name === listing.card.name && c.mintNumber === listing.card.mintNumber
+        );
+
+        if (cardIndexInSeller === -1) {
+            // This should ideally not happen if the listing was created correctly, but handle defensively
+            await session.abortTransaction();
+            session.endSession();
+            console.error(`[Accept Offer Error] Listed card (${listing.card.name} #${listing.card.mintNumber}) not found in seller's (${seller.username}) collection.`);
+            return res.status(400).json({ message: "Listed card not found in seller's collection. Cannot complete sale." });
+        }
+
+        // Remove the card from the seller's collection
+        const [cardToTransfer] = seller.cards.splice(cardIndexInSeller, 1);
+
+        // Add the card to the buyer's collection
+        buyer.cards.push(cardToTransfer);
+        // --- END CARD TRANSFER LOGIC ---
+
+        // Mark the card as available in the buyer's collection
+        await User.updateOne(
+            { _id: buyer._id, "cards._id": cardToTransfer._id },
+            { $set: { "cards.$[element].status": 'available' } },
+            { arrayFilters: [{ "element._id": cardToTransfer._id }] }
+        ).session(session);
+
         await seller.save({ session });
         await buyer.save({ session });
 
         listing.status = 'sold';
         listing.offers = [];
-        await listing.save({ session });
 
+        // Remove the listing
+        await listing.deleteOne({ session });
+
+        // Cancel any other listings for the same card
         await MarketListing.updateMany(
             {
                 _id: { $ne: listing._id },
@@ -211,6 +263,13 @@ router.put('/listings/:id/offers/:offerId/accept', protect, async (req, res) => 
             { $set: { status: 'cancelled', cancellationReason: 'Card sold in another listing' } },
             { session }
         );
+
+        // Mark the card as available in the seller's collection
+        await User.updateOne(
+            { _id: seller._id, "cards._id": cardToTransfer._id },
+            { $set: { "cards.$[element].status": 'available' } },
+            { arrayFilters: [{ "element._id": cardToTransfer._id }] }
+        ).session(session);
 
         await session.commitTransaction();
         session.endSession();
@@ -338,6 +397,20 @@ router.delete('/listings/:id', protect, async (req, res) => {
         if (listing.owner.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: 'You do not have permission to cancel this listing.' });
         }
+
+        const user = await User.findById(req.user._id);
+        const cardInCollection = user.cards.find(
+            c => c.name === listing.card.name && c.mintNumber === listing.card.mintNumber
+        );
+
+        if (cardInCollection) {
+            // Mark the card as available in the user's collection
+            await User.updateOne(
+                { _id: req.user._id, "cards._id": cardInCollection._id },
+                { $set: { "cards.$.status": 'available' } }
+            );
+        }
+
         await listing.deleteOne();
         res.status(200).json({ message: 'Listing cancelled and deleted successfully.' });
     } catch (error) {

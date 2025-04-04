@@ -89,6 +89,13 @@ const getMyPacks = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
+
+        // Check if the user has any cards in a pending state
+        const hasPendingCards = user.cards.some(card => card.status === 'pending');
+        if (hasPendingCards) {
+            return res.status(400).json({ message: 'Cannot open packs while you have cards pending in trades or market listings.' });
+        }
+
         res.status(200).json({ packs: user.packs });
     } catch (error) {
         console.error('[getMyPacks] Error:', error);

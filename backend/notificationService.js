@@ -17,7 +17,19 @@ function broadcastNotification(notification) {
     console.log("[notificationService] Broadcasted notification:", notification);
 }
 
+// Send a notification event to a specific user ID
+function sendNotificationToUser(userId, notification) {
+    if (!ioInstance) {
+        console.warn("[notificationService] No Socket.io instance available. Notification not sent to user:", userId);
+        return;
+    }
+    // Emit specifically to the room identified by the userId
+    ioInstance.to(userId.toString()).emit("notification", notification);
+    console.log(`[notificationService] Sent notification to user ${userId}:`, notification);
+}
+
 module.exports = {
     setSocketInstance,
     broadcastNotification,
+    sendNotificationToUser, // Export the new function
 };
