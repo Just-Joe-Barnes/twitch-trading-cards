@@ -207,6 +207,9 @@ const BaseCard = ({
                         <div className={`card-name ${modifierData?.name === 'Rainbow Holo' ? 'rainbow-holo' : ''}`}>{name}</div>
                         <div className="card-artwork">
                             <img src={image} alt={name} />
+                            {modifierData?.name === 'Rainbow Holo' && (
+                                <div className="rainbow-holo-image"></div>
+                            )}
                         </div>
                         {description && (
                             <div

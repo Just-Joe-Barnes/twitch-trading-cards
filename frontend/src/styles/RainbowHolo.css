@@ -1,9 +1,15 @@
-.rainbow-holo {
+.rainbow-holo-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     animation: rainbow 5s linear infinite;
+    mix-blend-mode: overlay;
 }
 
 @keyframes rainbow {
