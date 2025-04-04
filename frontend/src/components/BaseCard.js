@@ -171,6 +171,7 @@ const BaseCard = ({
                 '--my': `${cursorPosition.y}px`,
                 '--posx': `${cursorPosition.x}px`,
                 '--posy': `${cursorPosition.y}px`,
+                '--hyp': `${Math.sqrt(cursorPosition.x * cursorPosition.x + cursorPosition.y * cursorPosition.y)}px`,
             }}
         >
             {/* Render glare for lower rarities */}
