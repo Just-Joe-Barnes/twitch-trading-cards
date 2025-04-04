@@ -15,6 +15,7 @@ import MarketPage from './pages/MarketPage';
 import CreateListingPage from './pages/CreateListingPage';
 import MarketListingDetails from './pages/MarketListingDetails';
 import AdminActions from './pages/AdminActions';
+import AdminCataloguePage from './pages/AdminCataloguePage';
 import 'normalize.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
