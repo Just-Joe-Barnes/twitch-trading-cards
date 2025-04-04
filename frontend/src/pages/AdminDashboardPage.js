@@ -13,7 +13,9 @@ const AdminDashboardPage = ({ user }) => {
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeFilter, setActiveFilter] = useState('all'); // 'all' or 'active'
+    const [activeFilter, setActiveFilter] = useState('all');
+    const [sortColumn, setSortColumn] = useState(null);
+    const [sortDirection, setSortDirection] = useState('asc');
 
     // Loading & animation states
     const [loading, setLoading] = useState(true);
@@ -72,6 +74,30 @@ const AdminDashboardPage = ({ user }) => {
     const filteredUsers = users.filter((u) =>
         u.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const handleSort = (column) => {
+        if (column === sortColumn) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortColumn(column);
+            setSortDirection('asc');
+        }
+    };
+
+    const sortedUsers = [...filteredUsers].sort((a, b) => {
+        if (sortColumn) {
+            const aValue = a[sortColumn];
+            const bValue = b[sortColumn];
+
+            if (aValue < bValue) {
+                return sortDirection === 'asc' ? -1 : 1;
+            }
+            if (aValue > bValue) {
+                return sortDirection === 'asc' ? 1 : -1;
+            }
+        }
+        return 0;
+    });
 
     const toggleUserSelection = (u) => {
         setSelectedUser((prev) => (prev?._id === u._id ? null : u));
@@ -216,14 +242,13 @@ const AdminDashboardPage = ({ user }) => {
                     <table className="users-table">
                         <thead>
                             <tr>
-                                <th>Username</th>
-                                <th>Unopened Packs</th>
-                                <th>Last Active</th>
-                                <th>Actions</th>
+                                <th onClick={() => handleSort('username')}>Username</th>
+                                <th onClick={() => handleSort('packs')}>Unopened Packs</th>
+                                <th onClick={() => handleSort('lastActive')}>Last Active</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredUsers.map((u) => (
+                            {sortedUsers.map((u) => (
                                 <tr
                                     key={u._id}
                                     className={selectedUser?._id === u._id ? 'selected' : ''}
@@ -232,7 +257,6 @@ const AdminDashboardPage = ({ user }) => {
                                     <td>{u.username}</td>
                                     <td>{u.packs}</td>
                                     <td>{u.lastActive ? moment(u.lastActive).fromNow() : 'Never'}</td>
-                                    <td>{u.packs > 0 ? 'Available' : 'No packs'}</td>
                                 </tr>
                             ))}
                         </tbody>
