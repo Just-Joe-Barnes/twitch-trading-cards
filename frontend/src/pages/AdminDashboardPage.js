@@ -155,21 +155,11 @@ const AdminDashboardPage = ({ user }) => {
         }
     }, [currentRevealIndex, openedCards]);
 
-    // When the video ends, start a sequential reveal using setInterval
+    // When the video ends, reveal all cards immediately
     const handleVideoEnd = () => {
         console.log('handleVideoEnd triggered');
         setIsOpeningAnimation(false);
-        // Start revealing cards: update currentRevealIndex every second
-        const intervalId = setInterval(() => {
-            setCurrentRevealIndex((prev) => {
-                if (prev >= openedCards.length) {
-                    clearInterval(intervalId);
-                    return prev;
-                }
-                console.log(`Revealing card index ${prev}`);
-                return prev + 1;
-            });
-        }, 1000);
+        setCurrentRevealIndex(openedCards.length);
     };
 
     // Flip card on click: if the card is still face down, flip it up
