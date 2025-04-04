@@ -21,8 +21,6 @@
 
   background-image: 
     var(--galaxy),
-    url(''),
-    url(''), 
     repeating-linear-gradient(
       82deg, 
       rgb(219, 204, 86) calc(var(--space)*1), 
