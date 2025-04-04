@@ -112,7 +112,6 @@ const AdminCataloguePage = ({ user }) => {
                 find cards by name, and click on the rarity buttons below to preview each
                 card in a different style.
             </p>
-            <RainbowHoloSquare />
 
             <div className="filters-container">
                 {/* Search Box */}
