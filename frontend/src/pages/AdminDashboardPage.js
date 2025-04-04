@@ -147,6 +147,10 @@ const AdminDashboardPage = ({ user }) => {
         if (openedCards.length > 0) {
             setRevealedCards((prev) => {
                 const updated = [...prev];
+                // Ensure updated array has the same length as openedCards
+                while (updated.length < openedCards.length) {
+                    updated.push(false);
+                }
                 for (let i = 0; i < openedCards.length; i++) {
                     updated[i] = i < currentRevealIndex;
                 }
