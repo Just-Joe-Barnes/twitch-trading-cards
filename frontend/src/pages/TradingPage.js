@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createTrade, searchUsers, fetchWithAuth } from "../utils/api";
 import BaseCard from "../components/BaseCard";
-import '../styles/TradingDashboard.css';
-// import "../styles/TradingPage.css";
+import "../styles/TradingPage.css";
 import { rarities } from "../constants/rarities";
 
 const TradingPage = ({ userId }) => {
@@ -153,7 +152,7 @@ const TradingPage = ({ userId }) => {
     };
 
     return (
-        <div className="td-section">
+        <div className="tp-trading-container">
             <h1>Trading</h1>
             <p className="tp-trading-info">
                 Welcome to the trading system! You can trade up to 3 cards and/or up to 10 packs with other users.
@@ -175,14 +174,14 @@ const TradingPage = ({ userId }) => {
 
             {showTradeForm && (
                 <>
-                    <div className="td-user-search">
+                    <div className="tp-user-search">
                         <input
                             type="text"
                             placeholder="Search user to trade with..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
-                        <ul className="td-user-suggestions">
+                        <ul className="tp-suggestions">
                             {userSuggestions.map((user) => (
                                 <li key={user._id} onClick={() => handleUserSelect(user.username)}>
                                     {user.username}
@@ -192,8 +191,8 @@ const TradingPage = ({ userId }) => {
                     </div>
 
                     {selectedUser && (
-                        <div className="td-trade-interface">
-                            <div className="td-trade-preview-control">
+                        <div className="tp-trade-interface">
+                            <div className="tp-trade-preview-control">
                                 <button
                                     className="tp-toggle-preview-button"
                                     onClick={() => setShowTradePreview(!showTradePreview)}
@@ -203,10 +202,10 @@ const TradingPage = ({ userId }) => {
                             </div>
 
                             {showTradePreview && (
-                                <div className="td-trade-preview">
-                                    <div className="td-section">
+                                <div className="tp-trade-preview">
+                                    <div className="tp-offer-section">
                                         <h3>Your Offer</h3>
-                                        <div className="td-cards-horizontal">
+                                        <div className="tp-cards-horizontal">
                                             {tradeOffer.map((card) => (
                                                 <div
                                                     key={card._id}
@@ -225,7 +224,7 @@ const TradingPage = ({ userId }) => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="td-pack-control">
+                                        <div className="tp-pack-control">
                                             <label>Packs: </label>
                                             <input
                                                 type="number"
@@ -239,9 +238,9 @@ const TradingPage = ({ userId }) => {
                                         </div>
                                     </div>
 
-                                    <div className="td-section">
+                                    <div className="tp-request-section">
                                         <h3>Your Request</h3>
-                                        <div className="td-cards-horizontal">
+                                        <div className="tp-cards-horizontal">
                                             {tradeRequest.map((card) => (
                                                 <div
                                                     key={card._id}
@@ -260,7 +259,7 @@ const TradingPage = ({ userId }) => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="td-pack-control">
+                                        <div className="tp-pack-control">
                                             <label>Packs: </label>
                                             <input
                                                 type="number"
@@ -276,10 +275,10 @@ const TradingPage = ({ userId }) => {
                                 </div>
                             )}
 
-                            <div className="td-collections-wrapper">
-                                <div className="td-section">
-                                    <h3 className="td-collection-header">Your Collection</h3>
-                                    <div className="td-filters">
+                            <div className="tp-collections-wrapper">
+                                <div className="tp-collection-panel">
+                                    <h3 className="tp-collection-header">Your Collection</h3>
+                                    <div className="tp-filters">
                                         <input
                                             type="text"
                                             placeholder="Search your collection..."
@@ -304,7 +303,7 @@ const TradingPage = ({ userId }) => {
                                             <option value="desc">Descending</option>
                                         </select>
                                     </div>
-                                    <div className="td-cards-grid">
+                                    <div className="tp-cards-grid">
                                         {applyFilters(userCollection, leftSearch, leftRarity, leftSort, leftSortDir).map((card) => (
                                             <div
                                                 key={card._id}
@@ -324,9 +323,9 @@ const TradingPage = ({ userId }) => {
                                     </div>
                                 </div>
 
-                                <div className="td-section">
-                                    <h3 className="td-collection-header">{selectedUser}'s Collection</h3>
-                                    <div className="td-filters">
+                                <div className="tp-collection-panel">
+                                    <h3 className="tp-collection-header">{selectedUser}'s Collection</h3>
+                                    <div className="tp-filters">
                                         <input
                                             type="text"
                                             placeholder={`Search ${selectedUser}'s collection...`}
@@ -351,7 +350,7 @@ const TradingPage = ({ userId }) => {
                                             <option value="desc">Descending</option>
                                         </select>
                                     </div>
-                                    <div className="td-cards-grid">
+                                    <div className="tp-cards-grid">
                                         {applyFilters(recipientCollection, rightSearch, rightRarity, rightSort, rightSortDir).map((card) => (
                                             <div
                                                 key={card._id}
@@ -372,7 +371,7 @@ const TradingPage = ({ userId }) => {
                                 </div>
                             </div>
 
-                            <button className="td-submit-button" onClick={handleSubmit}>
+                            <button className="tp-submit-button" onClick={handleSubmit}>
                                 Confirm Trade
                             </button>
                         </div>

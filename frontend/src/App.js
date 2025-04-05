@@ -9,7 +9,6 @@ import Navbar from './components/Navbar';
 import ProfilePage from './pages/ProfilePage';
 import TradingPage from './pages/TradingPage';
 import PendingTrades from './pages/PendingTrades';
-import TradingDashboard from './pages/TradingDashboard';
 import CataloguePage from './pages/CataloguePage';
 import LoadingSpinner from './components/LoadingSpinner';
 import MarketPage from './pages/MarketPage';
@@ -94,10 +93,6 @@ const App = () => {
                 <Route
                     path="/admin-dashboard"
                     element={user?.isAdmin ? <AdminDashboardPage user={user} /> : <Navigate to="/login" />}
-                />
-                <Route
-                    path="/trading-dashboard"
-                    element={user?.isAdmin ? <TradingDashboard /> : <Navigate to="/login" />}
                 />
                 <Route path="/profile/:username" element={<ProfilePage />} />
                 <Route
