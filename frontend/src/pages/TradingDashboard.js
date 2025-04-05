@@ -9,9 +9,9 @@ const TradingDashboard = () => {
   const [activeTab, setActiveTab] = useState('pending');
 
   return (
-    <div className="trading-dashboard-container">
+    <div className="td-container">
       <h1>Trading Dashboard</h1>
-      <div className="tab-buttons">
+      <div className="td-tab-buttons">
         <button
           className={activeTab === 'pending' ? 'active' : ''}
           onClick={() => setActiveTab('pending')}
@@ -26,7 +26,7 @@ const TradingDashboard = () => {
         </button>
       </div>
 
-      <div className="tab-content">
+      <div className="td-tab-content">
         {activeTab === 'pending' && <PendingTrades />}
         {activeTab === 'create' && <TradingPage />}
       </div>

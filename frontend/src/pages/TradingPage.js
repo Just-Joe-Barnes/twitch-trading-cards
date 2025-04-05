@@ -152,7 +152,7 @@ const TradingPage = ({ userId }) => {
     };
 
     return (
-        <div className="tp-trading-container">
+        <div className="td-section">
             <h1>Trading</h1>
             <p className="tp-trading-info">
                 Welcome to the trading system! You can trade up to 3 cards and/or up to 10 packs with other users.
@@ -174,14 +174,14 @@ const TradingPage = ({ userId }) => {
 
             {showTradeForm && (
                 <>
-                    <div className="tp-user-search">
+                    <div className="td-user-search">
                         <input
                             type="text"
                             placeholder="Search user to trade with..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
-                        <ul className="tp-suggestions">
+                        <ul className="td-user-suggestions">
                             {userSuggestions.map((user) => (
                                 <li key={user._id} onClick={() => handleUserSelect(user.username)}>
                                     {user.username}
@@ -191,8 +191,8 @@ const TradingPage = ({ userId }) => {
                     </div>
 
                     {selectedUser && (
-                        <div className="tp-trade-interface">
-                            <div className="tp-trade-preview-control">
+                        <div className="td-trade-interface">
+                            <div className="td-trade-preview-control">
                                 <button
                                     className="tp-toggle-preview-button"
                                     onClick={() => setShowTradePreview(!showTradePreview)}
@@ -202,10 +202,10 @@ const TradingPage = ({ userId }) => {
                             </div>
 
                             {showTradePreview && (
-                                <div className="tp-trade-preview">
-                                    <div className="tp-offer-section">
+                                <div className="td-trade-preview">
+                                    <div className="td-section">
                                         <h3>Your Offer</h3>
-                                        <div className="tp-cards-horizontal">
+                                        <div className="td-cards-horizontal">
                                             {tradeOffer.map((card) => (
                                                 <div
                                                     key={card._id}
@@ -224,7 +224,7 @@ const TradingPage = ({ userId }) => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="tp-pack-control">
+                                        <div className="td-pack-control">
                                             <label>Packs: </label>
                                             <input
                                                 type="number"
@@ -238,9 +238,9 @@ const TradingPage = ({ userId }) => {
                                         </div>
                                     </div>
 
-                                    <div className="tp-request-section">
+                                    <div className="td-section">
                                         <h3>Your Request</h3>
-                                        <div className="tp-cards-horizontal">
+                                        <div className="td-cards-horizontal">
                                             {tradeRequest.map((card) => (
                                                 <div
                                                     key={card._id}
@@ -259,7 +259,7 @@ const TradingPage = ({ userId }) => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="tp-pack-control">
+                                        <div className="td-pack-control">
                                             <label>Packs: </label>
                                             <input
                                                 type="number"
@@ -275,10 +275,10 @@ const TradingPage = ({ userId }) => {
                                 </div>
                             )}
 
-                            <div className="tp-collections-wrapper">
-                                <div className="tp-collection-panel">
-                                    <h3 className="tp-collection-header">Your Collection</h3>
-                                    <div className="tp-filters">
+                            <div className="td-collections-wrapper">
+                                <div className="td-section">
+                                    <h3 className="td-collection-header">Your Collection</h3>
+                                    <div className="td-filters">
                                         <input
                                             type="text"
                                             placeholder="Search your collection..."
@@ -303,7 +303,7 @@ const TradingPage = ({ userId }) => {
                                             <option value="desc">Descending</option>
                                         </select>
                                     </div>
-                                    <div className="tp-cards-grid">
+                                    <div className="td-cards-grid">
                                         {applyFilters(userCollection, leftSearch, leftRarity, leftSort, leftSortDir).map((card) => (
                                             <div
                                                 key={card._id}
@@ -323,9 +323,9 @@ const TradingPage = ({ userId }) => {
                                     </div>
                                 </div>
 
-                                <div className="tp-collection-panel">
-                                    <h3 className="tp-collection-header">{selectedUser}'s Collection</h3>
-                                    <div className="tp-filters">
+                                <div className="td-section">
+                                    <h3 className="td-collection-header">{selectedUser}'s Collection</h3>
+                                    <div className="td-filters">
                                         <input
                                             type="text"
                                             placeholder={`Search ${selectedUser}'s collection...`}
@@ -350,7 +350,7 @@ const TradingPage = ({ userId }) => {
                                             <option value="desc">Descending</option>
                                         </select>
                                     </div>
-                                    <div className="tp-cards-grid">
+                                    <div className="td-cards-grid">
                                         {applyFilters(recipientCollection, rightSearch, rightRarity, rightSort, rightSortDir).map((card) => (
                                             <div
                                                 key={card._id}
@@ -371,7 +371,7 @@ const TradingPage = ({ userId }) => {
                                 </div>
                             </div>
 
-                            <button className="tp-submit-button" onClick={handleSubmit}>
+                            <button className="td-submit-button" onClick={handleSubmit}>
                                 Confirm Trade
                             </button>
                         </div>
