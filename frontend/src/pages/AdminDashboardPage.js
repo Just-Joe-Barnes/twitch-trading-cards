@@ -147,14 +147,17 @@ const AdminDashboardPage = ({ user }) => {
 
     // Helper to reveal cards one by one with delay
     const revealAllCards = async (count) => {
+        console.log('Starting sequential reveal of', count, 'cards');
         for (let i = 0; i < count; i++) {
             setRevealedCards((prev) => {
                 const updated = [...prev];
                 updated[i] = true;
+                console.log('Revealed card index', i);
                 return updated;
             });
             await new Promise((resolve) => setTimeout(resolve, 300));
         }
+        console.log('Finished sequential reveal');
     };
 
     // When the video ends, reveal all cards if cards are loaded
