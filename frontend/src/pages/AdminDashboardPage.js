@@ -159,11 +159,21 @@ const AdminDashboardPage = ({ user }) => {
         }
     }, [currentRevealIndex, openedCards]);
 
-    // When the video ends, reveal all cards immediately
+    // When the video ends, start a sequential reveal using setInterval
     const handleVideoEnd = () => {
         console.log('handleVideoEnd triggered');
         setIsOpeningAnimation(false);
-        setCurrentRevealIndex(openedCards.length);
+        // Start revealing cards: update currentRevealIndex every second
+        const intervalId = setInterval(() => {
+            setCurrentRevealIndex((prev) => {
+                if (prev >= openedCards.length) {
+                    clearInterval(intervalId);
+                    return prev;
+                }
+                console.log(`Revealing card index ${prev}`);
+                return prev + 1;
+            });
+        }, 1000);
     };
 
     // Flip card on click: if the card is still face down, flip it up
@@ -291,11 +301,11 @@ const AdminDashboardPage = ({ user }) => {
                     <div className="cards-container">
                         {openedCards.map((card, i) => {
                             const revealClass = revealedCards[i] ? 'revealed' : '';
-                            // const flipClass = faceDownCards[i] ? 'face-down' : 'face-up';
+                            const flipClass = faceDownCards[i] ? 'face-down' : 'face-up';
                             return (
                                 <div
                                     key={i}
-                                    className={`card-wrapper ${revealClass}`} // Removed flipClass
+                                    className={`card-wrapper ${revealClass} ${flipClass}`}
                                     style={{ '--rarity-color': getRarityColor(card.rarity) }}
                                     onClick={() => handleFlipCard(i)}
                                 >
