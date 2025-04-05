@@ -24,8 +24,17 @@ export const fetchWithAuth = async (endpoint, options = {}) => {
                 localStorage.removeItem("token");
                 window.location.href = "/login";
             }
-            console.error("[API] HTTP error:", response.status, response.statusText);
-            throw new Error(`HTTP error! Status: ${response.status}`);
+            let errorMessage = `HTTP error! Status: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                if (errorData?.message) {
+                    errorMessage = errorData.message;
+                }
+            } catch (e) {
+                // Ignore JSON parse errors, keep default message
+            }
+            console.error("[API] HTTP error:", response.status, response.statusText, errorMessage);
+            throw new Error(errorMessage);
         }
 
         return response.json();
