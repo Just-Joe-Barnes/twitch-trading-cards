@@ -112,29 +112,43 @@ const updateTradeStatus = async (req, res) => {
             sender.packs = sender.packs - trade.offeredPacks + trade.requestedPacks;
             recipient.packs = recipient.packs - trade.requestedPacks + trade.offeredPacks;
 
-            // Transfer offered cards: remove from sender, add to recipient
+            // Move cards to escrow before transfer
             const offeredCardsDetails = sender.cards.filter(card =>
                 trade.offeredItems.some(itemId => itemId.equals(card._id))
             );
+            const requestedCardsDetails = recipient.cards.filter(card =>
+                trade.requestedItems.some(itemId => itemId.equals(card._id))
+            );
+
+            // Mark all involved cards as 'escrow'
+            offeredCardsDetails.forEach(card => {
+                card.status = 'escrow';
+            });
+            requestedCardsDetails.forEach(card => {
+                card.status = 'escrow';
+            });
+
+            await sender.save({ session });
+            await recipient.save({ session });
+
+            // Transfer ownership after escrow
             offeredCardsDetails.forEach(card => {
                 const index = sender.cards.findIndex(c => c._id.toString() === card._id.toString());
                 if (index !== -1) {
-                    const card = sender.cards.splice(index, 1)[0];
-                    recipient.cards.push(card);
+                    const cardObj = sender.cards.splice(index, 1)[0];
+                    cardObj.status = 'available';
+                    recipient.cards.push(cardObj);
                 } else {
                     console.warn(`Offered card with ID ${card._id} not found in sender's collection.`);
                 }
             });
 
-            // Transfer requested cards: remove from recipient, add to sender
-            const requestedCardsDetails = recipient.cards.filter(card =>
-                trade.requestedItems.some(itemId => itemId.equals(card._id))
-            );
             requestedCardsDetails.forEach(card => {
                 const index = recipient.cards.findIndex(c => c._id.toString() === card._id.toString());
                 if (index !== -1) {
-                    const card = recipient.cards.splice(index, 1)[0];
-                    sender.cards.push(card);
+                    const cardObj = recipient.cards.splice(index, 1)[0];
+                    cardObj.status = 'available';
+                    sender.cards.push(cardObj);
                 } else {
                     console.warn(`Requested card with ID ${card._id} not found in recipient's collection.`);
                 }

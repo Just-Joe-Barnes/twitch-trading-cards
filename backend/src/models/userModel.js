@@ -7,7 +7,7 @@ const cardSchema = new mongoose.Schema({
     imageUrl: String,
     flavorText: String,
     acquiredAt: { type: Date, default: Date.now }, // Track when the card was acquired
-    status: { type: String, enum: ['available', 'pending'], default: 'available' } // Card status
+status: { type: String, enum: ['available', 'pending', 'escrow'], default: 'available' } // Card status
 });
 
 // Notification schema
