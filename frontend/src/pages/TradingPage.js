@@ -131,7 +131,6 @@ const TradingPage = ({ userId }) => {
         }
 
         const tradePayload = {
-            senderId: loggedInUser._id,
             recipient: selectedUser,
             offeredItems: tradeOffer.map((item) => item._id),
             requestedItems: tradeRequest.map((item) => item._id),
