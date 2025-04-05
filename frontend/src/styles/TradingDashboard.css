@@ -1,0 +1,123 @@
+.trading-dashboard-container {
+  padding: 20px;
+  color: #f0f0f0;
+  background-color: #121212;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+.trading-dashboard-container h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #ffcc00;
+}
+
+.tab-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tab-buttons button {
+  flex: 1;
+  padding: 12px 20px;
+  background-color: #222;
+  border: 1px solid #444;
+  border-radius: 6px;
+  color: #ccc;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab-buttons button:hover {
+  background-color: #333;
+  color: #fff;
+}
+
+.tab-buttons button.active {
+  background-color: #ffcc00;
+  color: #000;
+  font-weight: bold;
+  border-color: #ffcc00;
+}
+
+.tab-content {
+  background-color: #1c1c1c;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
+}
+
+.trade-card, .trade-section, .tp-trade-interface {
+  background-color: #222;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.trade-card:hover {
+  background-color: #2a2a2a;
+}
+
+.trade-header {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.trade-buttons-inline button {
+  margin-right: 10px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.trade-buttons-inline button.accept-button {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.trade-buttons-inline button.reject-button {
+  background-color: #f44336;
+  color: #fff;
+}
+
+.trade-buttons-inline button.cancel-button {
+  background-color: #ff9800;
+  color: #fff;
+}
+
+.trade-buttons-inline button:hover {
+  opacity: 0.8;
+}
+
+.cards-grid, .tp-cards-grid, .tp-cards-horizontal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tp-submit-button {
+  background-color: #ffcc00;
+  color: #000;
+  font-weight: bold;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: 0.3s;
+}
+
+.tp-submit-button:hover {
+  background-color: #e6b800;
+}
+
+@media (max-width: 768px) {
+  .tab-buttons {
+    flex-direction: column;
+  }
+}
