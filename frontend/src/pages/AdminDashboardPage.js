@@ -21,6 +21,7 @@ const AdminDashboardPage = ({ user }) => {
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
     const [packAnimationDone, setPackAnimationDone] = useState(false);
+    const [cardsLoaded, setCardsLoaded] = useState(false);
 
     // Cards state
     const [openedCards, setOpenedCards] = useState([]);
@@ -107,6 +108,7 @@ const AdminDashboardPage = ({ user }) => {
         if (!selectedUser) return;
         // Reset reveal index for new pack
         setPackAnimationDone(false);
+        setCardsLoaded(false);
         // Force remount video by updating packCounter
         setPackCounter((prev) => prev + 1);
         setLoading(true);
@@ -125,6 +127,7 @@ const AdminDashboardPage = ({ user }) => {
             setOpenedCards(newCards);
             setRevealedCards(Array(newCards.length).fill(false));
             setFaceDownCards(Array(newCards.length).fill(true));
+            setCardsLoaded(true);
 
             // Decrement the user's pack count
             setUsers((prev) =>
@@ -165,15 +168,6 @@ const AdminDashboardPage = ({ user }) => {
         console.log('handleVideoEnd triggered');
         setIsOpeningAnimation(false);
         setPackAnimationDone(true);
-        if (openedCards.length > 0) {
-            if (document.readyState === 'complete') {
-                revealAllCards(openedCards.length);
-            } else {
-                window.addEventListener('load', () => {
-                    revealAllCards(openedCards.length);
-                }, { once: true });
-            }
-        }
     };
 
     // Flip card on click: if the card is still face down, flip it up
@@ -193,7 +187,22 @@ const AdminDashboardPage = ({ user }) => {
         setRevealedCards([]);
         setFaceDownCards([]);
         setIsOpeningAnimation(false);
+        setPackAnimationDone(false);
+        setCardsLoaded(false);
     };
+
+    // When both animation and cards are ready, reveal cards
+    useEffect(() => {
+        if (packAnimationDone && cardsLoaded && openedCards.length > 0) {
+            if (document.readyState === 'complete') {
+                revealAllCards(openedCards.length);
+            } else {
+                window.addEventListener('load', () => {
+                    revealAllCards(openedCards.length);
+                }, { once: true });
+            }
+        }
+    }, [packAnimationDone, cardsLoaded, openedCards.length]);
 
     const handleFilterChange = (filter) => {
         setActiveFilter(filter);
