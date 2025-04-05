@@ -29,8 +29,6 @@ const AdminDashboardPage = ({ user }) => {
     // faceDownCards: true = card is face down; false = flipped up
     const [faceDownCards, setFaceDownCards] = useState([]);
 
-    // currentRevealIndex controls how many cards are revealed
-    const [currentRevealIndex, setCurrentRevealIndex] = useState(0);
     // Pack counter forces remounting of the video element each time
     const [packCounter, setPackCounter] = useState(0);
 
