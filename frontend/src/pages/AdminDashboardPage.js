@@ -291,11 +291,11 @@ const AdminDashboardPage = ({ user }) => {
                     <div className="cards-container">
                         {openedCards.map((card, i) => {
                             const revealClass = revealedCards[i] ? 'revealed' : '';
-                            const flipClass = faceDownCards[i] ? 'face-down' : 'face-up';
+                            // const flipClass = faceDownCards[i] ? 'face-down' : 'face-up';
                             return (
                                 <div
                                     key={i}
-                                    className={`card-wrapper ${revealClass} ${flipClass}`}
+                                    className={`card-wrapper ${revealClass}`} // Removed flipClass
                                     style={{ '--rarity-color': getRarityColor(card.rarity) }}
                                     onClick={() => handleFlipCard(i)}
                                 >
