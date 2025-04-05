@@ -1,4 +1,4 @@
-.trading-dashboard-container {
+.td-container {
   padding: 30px;
   background-color: #121212;
   color: #e0e0e0;
@@ -6,19 +6,19 @@
   font-family: 'Segoe UI', Tahoma, sans-serif;
 }
 
-.trading-dashboard-container h1 {
+.td-container h1 {
   font-size: 2.2rem;
   margin-bottom: 30px;
   color: #e0e0e0;
 }
 
-.tab-buttons {
+.td-tab-buttons {
   display: flex;
   gap: 15px;
   margin-bottom: 30px;
 }
 
-.tab-buttons button {
+.td-tab-buttons button {
   flex: 1;
   padding: 15px 25px;
   background-color: #1e1e1e;
@@ -31,25 +31,25 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-.tab-buttons button:hover {
+.td-tab-buttons button:hover {
   background-color: #2a2a2a;
   color: #fff;
 }
 
-.tab-buttons button.active {
+.td-tab-buttons button.active {
   background-color: #333;
   color: #fff;
   font-weight: bold;
   box-shadow: 0 6px 15px rgba(0,0,0,0.5);
 }
 
-.tab-content {
+.td-tab-content {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.trade-card, .tp-trade-interface, .trade-section {
+.td-trade-card, .td-trade-interface, .td-trade-section {
   background-color: #1e1e1e;
   border-radius: 16px;
   padding: 20px;
@@ -57,21 +57,21 @@
   transition: 0.3s;
 }
 
-.trade-card:hover, .tp-trade-interface:hover {
+.td-trade-card:hover, .td-trade-interface:hover {
   background-color: #242424;
 }
 
-.trade-header {
+.td-trade-header {
   font-size: 1.2rem;
   font-weight: 600;
   margin-bottom: 15px;
 }
 
-.trade-buttons-inline {
+.td-trade-buttons-inline {
   margin-top: 15px;
 }
 
-.trade-buttons-inline button {
+.td-trade-buttons-inline button {
   margin-right: 12px;
   padding: 10px 16px;
   border: none;
@@ -80,26 +80,26 @@
   transition: 0.2s;
 }
 
-.trade-buttons-inline button.accept-button {
+.td-trade-buttons-inline button.accept-button {
   background-color: #4caf50;
   color: #fff;
 }
 
-.trade-buttons-inline button.reject-button {
+.td-trade-buttons-inline button.reject-button {
   background-color: #f44336;
   color: #fff;
 }
 
-.trade-buttons-inline button.cancel-button {
+.td-trade-buttons-inline button.cancel-button {
   background-color: #ff9800;
   color: #fff;
 }
 
-.trade-buttons-inline button:hover {
+.td-trade-buttons-inline button:hover {
   opacity: 0.85;
 }
 
-.cards-grid, .tp-cards-grid, .tp-cards-horizontal {
+.td-cards-grid, .td-cards-horizontal {
   display: flex;
   overflow-x: auto;
   scroll-behavior: smooth;
@@ -108,30 +108,27 @@
   padding-bottom: 10px;
 }
 
-.cards-grid::-webkit-scrollbar,
-.tp-cards-grid::-webkit-scrollbar,
-.tp-cards-horizontal::-webkit-scrollbar {
+.td-cards-grid::-webkit-scrollbar,
+.td-cards-horizontal::-webkit-scrollbar {
   height: 8px;
 }
 
-.cards-grid::-webkit-scrollbar-thumb,
-.tp-cards-grid::-webkit-scrollbar-thumb,
-.tp-cards-horizontal::-webkit-scrollbar-thumb {
+.td-cards-grid::-webkit-scrollbar-thumb,
+.td-cards-horizontal::-webkit-scrollbar-thumb {
   background: #444;
   border-radius: 4px;
 }
 
-.cards-grid::-webkit-scrollbar-track,
-.tp-cards-grid::-webkit-scrollbar-track,
-.tp-cards-horizontal::-webkit-scrollbar-track {
+.td-cards-grid::-webkit-scrollbar-track,
+.td-cards-horizontal::-webkit-scrollbar-track {
   background: #222;
 }
 
-.carousel-container {
+.td-carousel-container {
   position: relative;
 }
 
-.carousel-arrow {
+.td-carousel-arrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -147,19 +144,19 @@
   transition: 0.3s;
 }
 
-.carousel-arrow:hover {
+.td-carousel-arrow:hover {
   background-color: rgba(80,80,80,0.9);
 }
 
-.carousel-arrow.left {
+.td-carousel-arrow.left {
   left: -20px;
 }
 
-.carousel-arrow.right {
+.td-carousel-arrow.right {
   right: -20px;
 }
 
-.tp-section {
+.td-section {
   background-color: #1e1e1e;
   border-radius: 16px;
   padding: 25px;
@@ -167,22 +164,22 @@
   box-shadow: 0 6px 20px rgba(0,0,0,0.4);
 }
 
-.tp-section h3 {
+.td-section h3 {
   font-size: 1.5rem;
   margin-bottom: 15px;
   color: #ccc;
 }
 
-.tp-section label {
+.td-section label {
   font-weight: 500;
   margin-right: 10px;
 }
 
-.tp-pack-control {
+.td-pack-control {
   margin-top: 15px;
 }
 
-.tp-pack-control input {
+.td-pack-control input {
   width: 80px;
   padding: 8px;
   border-radius: 8px;
@@ -192,12 +189,12 @@
   font-size: 1rem;
 }
 
-.tp-user-search {
+.td-user-search {
   margin-bottom: 25px;
   text-align: center;
 }
 
-.tp-user-search input {
+.td-user-search input {
   width: 60%;
   max-width: 400px;
   padding: 12px;
@@ -209,7 +206,7 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-.tp-user-search ul {
+.td-user-search ul {
   list-style: none;
   padding: 0;
   margin-top: 10px;
@@ -221,21 +218,21 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-.tp-user-search li {
+.td-user-search li {
   padding: 10px;
   cursor: pointer;
   border-bottom: 1px solid #333;
 }
 
-.tp-user-search li:hover {
+.td-user-search li:hover {
   background-color: #333;
 }
 
-.tp-user-search li:last-child {
+.td-user-search li:last-child {
   border-bottom: none;
 }
 
-.tp-submit-button {
+.td-submit-button {
   background-color: #444;
   color: #fff;
   font-weight: 600;
@@ -248,12 +245,12 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-.tp-submit-button:hover {
+.td-submit-button:hover {
   background-color: #555;
 }
 
 @media (max-width: 768px) {
-  .tab-buttons {
+  .td-tab-buttons {
     flex-direction: column;
   }
 }
