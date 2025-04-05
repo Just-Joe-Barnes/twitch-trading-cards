@@ -1,76 +1,81 @@
 .trading-dashboard-container {
-  padding: 20px;
-  color: #f0f0f0;
+  padding: 30px;
   background-color: #121212;
+  color: #e0e0e0;
   min-height: 100vh;
   font-family: 'Segoe UI', Tahoma, sans-serif;
 }
 
 .trading-dashboard-container h1 {
-  font-size: 2rem;
-  margin-bottom: 20px;
-  color: #ffcc00;
+  font-size: 2.2rem;
+  margin-bottom: 30px;
+  color: #e0e0e0;
 }
 
 .tab-buttons {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 15px;
+  margin-bottom: 30px;
 }
 
 .tab-buttons button {
   flex: 1;
-  padding: 12px 20px;
-  background-color: #222;
-  border: 1px solid #444;
-  border-radius: 6px;
+  padding: 15px 25px;
+  background-color: #1e1e1e;
+  border: none;
+  border-radius: 12px;
   color: #ccc;
-  font-size: 1rem;
+  font-size: 1.1rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 .tab-buttons button:hover {
-  background-color: #333;
+  background-color: #2a2a2a;
   color: #fff;
 }
 
 .tab-buttons button.active {
-  background-color: #ffcc00;
-  color: #000;
+  background-color: #333;
+  color: #fff;
   font-weight: bold;
-  border-color: #ffcc00;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.5);
 }
 
 .tab-content {
-  background-color: #1c1c1c;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.trade-card, .tp-trade-interface, .trade-section {
+  background-color: #1e1e1e;
+  border-radius: 16px;
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.5);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  transition: 0.3s;
 }
 
-.trade-card, .trade-section, .tp-trade-interface {
-  background-color: #222;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.3);
-}
-
-.trade-card:hover {
-  background-color: #2a2a2a;
+.trade-card:hover, .tp-trade-interface:hover {
+  background-color: #242424;
 }
 
 .trade-header {
-  font-weight: bold;
-  margin-bottom: 10px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.trade-buttons-inline {
+  margin-top: 15px;
 }
 
 .trade-buttons-inline button {
-  margin-right: 10px;
-  padding: 8px 12px;
+  margin-right: 12px;
+  padding: 10px 16px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   transition: 0.2s;
 }
@@ -91,29 +96,31 @@
 }
 
 .trade-buttons-inline button:hover {
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 .cards-grid, .tp-cards-grid, .tp-cards-horizontal {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 15px;
+  margin-top: 10px;
 }
 
 .tp-submit-button {
-  background-color: #ffcc00;
-  color: #000;
-  font-weight: bold;
-  padding: 12px 20px;
+  background-color: #444;
+  color: #fff;
+  font-weight: 600;
+  padding: 14px 24px;
   border: none;
-  border-radius: 6px;
+  border-radius: 12px;
   cursor: pointer;
-  margin-top: 20px;
+  margin-top: 25px;
   transition: 0.3s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 .tp-submit-button:hover {
-  background-color: #e6b800;
+  background-color: #555;
 }
 
 @media (max-width: 768px) {
