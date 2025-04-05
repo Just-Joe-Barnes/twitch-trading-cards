@@ -256,25 +256,14 @@
     overflow: visible;
     background-color: var(--surface-darker);
     border-radius: var(--border-radius);
-    opacity: 0;
+    opacity: 0; /* Hidden by default */
     transform: translateY(20px);
 }
 
-.opened-cards .card-wrapper.revealed {
+.opened-cards .card-wrapper.visible {
     opacity: 1 !important;
     transform: translateY(0) !important;
-    animation: fadeInUp 0.6s ease forwards !important;
-}
-
-@keyframes fadeInUp {
-    0% {
-        opacity: 0 !important;
-        transform: translateY(20px) !important;
-    }
-    100% {
-        opacity: 1 !important;
-        transform: translateY(0) !important;
-    }
+    transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
 

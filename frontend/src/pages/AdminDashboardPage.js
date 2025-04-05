@@ -290,13 +290,13 @@ const AdminDashboardPage = ({ user }) => {
                     <h2>Opened Cards</h2>
                     <div className="cards-container">
                         {openedCards.map((card, i) => {
-                            const revealClass = revealedCards[i] ? 'revealed' : '';
+                            const visibleClass = revealedCards[i] ? 'visible' : '';
                             const flipClass = faceDownCards[i] ? 'face-down' : 'face-up';
                             return (
                                 <div
                                     key={i}
-                                    className={`card-wrapper ${revealClass} ${flipClass}`}
-                                    style={{ '--rarity-color': getRarityColor(card.rarity), animationDelay: `${i * 0.2}s` }}
+                                    className={`card-wrapper ${visibleClass} ${flipClass}`}
+                                    style={{ '--rarity-color': getRarityColor(card.rarity), transitionDelay: `${i * 0.2}s` }}
                                     onClick={() => handleFlipCard(i)}
                                 >
                                     <div className="card-content">
