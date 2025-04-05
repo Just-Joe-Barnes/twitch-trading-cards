@@ -166,7 +166,13 @@ const AdminDashboardPage = ({ user }) => {
         setIsOpeningAnimation(false);
         setPackAnimationDone(true);
         if (openedCards.length > 0) {
-            revealAllCards(openedCards.length);
+            if (document.readyState === 'complete') {
+                revealAllCards(openedCards.length);
+            } else {
+                window.addEventListener('load', () => {
+                    revealAllCards(openedCards.length);
+                }, { once: true });
+            }
         }
     };
 
