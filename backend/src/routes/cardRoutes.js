@@ -5,6 +5,60 @@ const { protect } = require('../middleware/authMiddleware');
 const Card = require('../models/cardModel');
 const User = require('../models/userModel'); // Needed for some endpoints
 
+// General paginated card list with optional filters
+// GET /api/cards?search=&rarity=&sort=&page=&limit=
+router.get('/', async (req, res) => {
+    try {
+        const {
+            search = '',
+            rarity = '',
+            sort = '',
+            page = 1,
+            limit = 50,
+        } = req.query;
+
+        const query = {};
+
+        if (search) {
+            query.name = { $regex: search, $options: 'i' };
+        }
+
+        if (rarity) {
+            query['rarities.rarity'] = rarity;
+        }
+
+        let sortOption = {};
+        if (sort) {
+            // Example: sort=name or sort=-name
+            const direction = sort.startsWith('-') ? -1 : 1;
+            const field = sort.replace(/^-/, '');
+            sortOption[field] = direction;
+        } else {
+            sortOption = { name: 1 }; // default sort by name ascending
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const [cards, totalCards] = await Promise.all([
+            Card.find(query)
+                .sort(sortOption)
+                .skip(skip)
+                .limit(parseInt(limit)),
+            Card.countDocuments(query),
+        ]);
+
+        res.status(200).json({
+            cards,
+            totalCards,
+            page: parseInt(page),
+            limit: parseInt(limit),
+        });
+    } catch (error) {
+        console.error('Error fetching cards:', error.message);
+        res.status(500).json({ message: 'Failed to fetch cards', error: error.message });
+    }
+});
+
 // NEW: Search route placed first so it isn't masked by dynamic routes
 // GET /api/cards/search?name=...
 router.get('/search', async (req, res) => {
