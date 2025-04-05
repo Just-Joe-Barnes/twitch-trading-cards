@@ -289,7 +289,7 @@ const AdminDashboardPage = ({ user }) => {
                                 <div
                                     key={i}
                                     className={`card-wrapper ${revealClass} ${flipClass}`}
-                                    style={{ '--rarity-color': getRarityColor(card.rarity), transitionDelay: `${i * 0.2}s` }}
+                                    style={{ '--rarity-color': getRarityColor(card.rarity), animationDelay: `${i * 0.2}s` }}
                                     onClick={() => handleFlipCard(i)}
                                 >
                                     <div className="card-content">
