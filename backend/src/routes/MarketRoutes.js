@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const { protect } = require('../middleware/authMiddleware');
+const { sensitiveLimiter } = require('../middleware/rateLimiter');
 const { sendNotificationToUser } = require('../../notificationService');
 
 router.post('/listings', protect, sensitiveLimiter, async (req, res) => {
