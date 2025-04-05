@@ -20,6 +20,7 @@ const AdminDashboardPage = ({ user }) => {
     // Loading & animation states
     const [loading, setLoading] = useState(true);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
+    const [packAnimationDone, setPackAnimationDone] = useState(false);
 
     // Cards state
     const [openedCards, setOpenedCards] = useState([]);
@@ -108,6 +109,7 @@ const AdminDashboardPage = ({ user }) => {
         if (!selectedUser) return;
         // Reset reveal index for new pack
         setCurrentRevealIndex(0);
+        setPackAnimationDone(false);
         // Force remount video by updating packCounter
         setPackCounter((prev) => prev + 1);
         setLoading(true);
@@ -124,7 +126,7 @@ const AdminDashboardPage = ({ user }) => {
             const { newCards } = res;
             console.log('New cards:', newCards);
             setOpenedCards(newCards);
-            setRevealedCards(Array(newCards.length).fill(false)); // Hide all cards initially
+            setRevealedCards(Array(newCards.length).fill(false));
             setFaceDownCards(Array(newCards.length).fill(true));
 
             // Decrement the user's pack count
@@ -133,6 +135,11 @@ const AdminDashboardPage = ({ user }) => {
                     u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
                 )
             );
+
+            // If animation already done, reveal cards now
+            if (packAnimationDone) {
+                revealAllCards(newCards.length);
+            }
         } catch (err) {
             console.error('Error opening pack:', err);
             setIsOpeningAnimation(false);
@@ -159,11 +166,19 @@ const AdminDashboardPage = ({ user }) => {
         }
     }, [currentRevealIndex, openedCards]);
 
-    // When the video ends, reveal all cards immediately
+    // Helper to reveal all cards
+    const revealAllCards = (count) => {
+        setCurrentRevealIndex(count);
+    };
+
+    // When the video ends, reveal all cards if cards are loaded
     const handleVideoEnd = () => {
         console.log('handleVideoEnd triggered');
         setIsOpeningAnimation(false);
-        setCurrentRevealIndex(openedCards.length);
+        setPackAnimationDone(true);
+        if (openedCards.length > 0) {
+            revealAllCards(openedCards.length);
+        }
     };
 
     // Flip card on click: if the card is still face down, flip it up
