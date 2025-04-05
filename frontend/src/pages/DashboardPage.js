@@ -20,7 +20,7 @@ const DashboardPage = () => {
             setPackCount(userPacks?.packs || 0);
         } catch (err) {
             console.error('Error fetching user data:', err.message);
-            setError('Failed to load dashboard data. Please try again.');
+            setError(err.message || 'Failed to load dashboard data. Please try again.');
         } finally {
             setLoading(false);
         }
