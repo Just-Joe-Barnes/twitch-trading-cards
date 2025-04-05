@@ -145,9 +145,16 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // Helper to reveal all cards
-    const revealAllCards = (count) => {
-        setRevealedCards(Array(count).fill(true));
+    // Helper to reveal cards one by one with delay
+    const revealAllCards = async (count) => {
+        for (let i = 0; i < count; i++) {
+            setRevealedCards((prev) => {
+                const updated = [...prev];
+                updated[i] = true;
+                return updated;
+            });
+            await new Promise((resolve) => setTimeout(resolve, 300));
+        }
     };
 
     // When the video ends, reveal all cards if cards are loaded
