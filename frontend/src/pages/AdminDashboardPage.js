@@ -148,27 +148,9 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // When currentRevealIndex changes, update revealedCards so that all cards
-    // with index < currentRevealIndex are marked as revealed.
-    useEffect(() => {
-        if (openedCards.length > 0) {
-            setRevealedCards((prev) => {
-                const updated = [...prev];
-                // Ensure updated array has the same length as openedCards
-                while (updated.length < openedCards.length) {
-                    updated.push(false);
-                }
-                for (let i = 0; i < openedCards.length; i++) {
-                    updated[i] = i < currentRevealIndex;
-                }
-                return updated;
-            });
-        }
-    }, [currentRevealIndex, openedCards]);
-
     // Helper to reveal all cards
     const revealAllCards = (count) => {
-        setCurrentRevealIndex(count);
+        setRevealedCards(Array(count).fill(true));
     };
 
     // When the video ends, reveal all cards if cards are loaded
