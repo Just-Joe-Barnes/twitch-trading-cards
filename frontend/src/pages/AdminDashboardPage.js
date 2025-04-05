@@ -124,7 +124,7 @@ const AdminDashboardPage = ({ user }) => {
             const { newCards } = res;
             console.log('New cards:', newCards);
             setOpenedCards(newCards);
-            setRevealedCards(Array(newCards.length).fill(true)); // Reveal all cards initially
+            setRevealedCards(Array(newCards.length).fill(false)); // Hide all cards initially
             setFaceDownCards(Array(newCards.length).fill(true));
 
             // Decrement the user's pack count
