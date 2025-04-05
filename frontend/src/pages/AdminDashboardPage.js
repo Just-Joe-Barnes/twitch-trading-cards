@@ -106,7 +106,6 @@ const AdminDashboardPage = ({ user }) => {
     const openPackForUser = async () => {
         if (!selectedUser) return;
         // Reset reveal index for new pack
-        setCurrentRevealIndex(0);
         setPackAnimationDone(false);
         // Force remount video by updating packCounter
         setPackCounter((prev) => prev + 1);
@@ -178,7 +177,6 @@ const AdminDashboardPage = ({ user }) => {
         setRevealedCards([]);
         setFaceDownCards([]);
         setIsOpeningAnimation(false);
-        setCurrentRevealIndex(0);
     };
 
     const handleFilterChange = (filter) => {
