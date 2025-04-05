@@ -56,7 +56,7 @@
 .users-with-packs {
     grid-column: 1 / 2;
     background: var(--surface-dark);
-    padding: 1rem;
+    padding: 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     max-height: 320px;
@@ -72,10 +72,14 @@
         padding-bottom: 0.5rem;
     }
 
+.users-search {
+    margin-bottom: 1rem;
+}
+
 .users-filter {
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .users-filter button {
@@ -101,7 +105,7 @@
 
     .users-table th,
     .users-table td {
-        padding: 0.25rem 0.5rem;
+        padding: 0.5rem 0.75rem;
     }
 
     .users-table th {
