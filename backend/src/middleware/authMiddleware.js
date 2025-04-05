@@ -28,6 +28,10 @@ const protect = async (req, res, next) => {
             req.isAdmin = req.user.isAdmin; // Attach admin status
             console.log('[AUTH VALIDATE] User validated:', req.user.username);
 
+            // Update lastActive timestamp on every authenticated request
+            req.user.lastActive = new Date();
+            await req.user.save();
+
             next(); // Proceed to the next middleware or route
         } catch (error) {
             console.error('[AUTH VALIDATE] Token error:', error.message);
