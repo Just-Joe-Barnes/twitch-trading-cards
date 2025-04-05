@@ -1,3 +1,6 @@
+const express = require('express');
+const router = express.Router();
+
 const { sendNotificationToUser } = require('../../notificationService');
 
 router.post('/listings', protect, sensitiveLimiter, async (req, res) => {
