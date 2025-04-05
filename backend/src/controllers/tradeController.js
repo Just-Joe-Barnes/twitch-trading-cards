@@ -1,150 +1,59 @@
+const Joi = require('joi');
 const mongoose = require('mongoose');
 const Trade = require('../models/tradeModel');
 const User = require('../models/userModel');
 const MarketListing = require('../models/MarketListing');
 const { createNotification } = require('../helpers/notificationHelper');
+const { sendNotificationToUser } = require('../../notificationService');
+const { logAudit } = require('../helpers/auditLogger');
+const tradeService = require('../services/tradeService');
 
 // Create a new trade
 const createTrade = async (req, res) => {
-    console.log('Trade creation endpoint hit!');
+  const tradeSchema = Joi.object({
+    recipient: Joi.alternatives().try(Joi.string().required(), Joi.string().hex().length(24).required()),
+    offeredItems: Joi.array().items(Joi.string().hex().length(24)).required(),
+    requestedItems: Joi.array().items(Joi.string().hex().length(24)).required(),
+    offeredPacks: Joi.number().min(0).required(),
+    requestedPacks: Joi.number().min(0).required()
+  });
 
-    // Instead of trusting senderId from body, always use token-based ID
-    const senderId = req.userId;
-    const { recipient, offeredItems, requestedItems, offeredPacks, requestedPacks } = req.body;
-    console.log('Trade data received:', req.body);
+  const { error } = tradeSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ popupMessage: 'Invalid trade data: ' + error.details[0].message });
+  }
 
-    try {
-        // 1) Check if sender and recipient are the same
-        if (senderId === recipient) {
-            console.log("Trade failed: User cannot trade with themselves.");
-            return res.status(400).json({ popupMessage: "You cannot create a trade with yourself." });
-        }
+  const senderId = req.userId;
+  const { recipient, offeredItems, requestedItems, offeredPacks, requestedPacks } = req.body;
 
-        // 2) Check the sender from token
-        const sender = await User.findById(senderId);
-        if (!sender) {
-            console.log("Sender not found:", senderId);
-            return res.status(404).json({ popupMessage: "Sender not found" });
-        }
+  logAudit('Trade Create Attempt', { senderId, body: req.body });
 
-        // 3) Check the recipient
-        let recipientUser;
-        if (mongoose.Types.ObjectId.isValid(recipient)) {
-            // If the client gave a userId
-            recipientUser = await User.findById(recipient);
-        } else {
-            // If the client gave a username
-            recipientUser = await User.findOne({ username: recipient });
-        }
-        if (!recipientUser) {
-            console.log("Recipient not found:", recipient);
-            return res.status(404).json({ popupMessage: "Recipient not found" });
-        }
+  const result = await tradeService.createTrade(senderId, { recipient, offeredItems, requestedItems, offeredPacks, requestedPacks });
 
-        // 4) Validate pack availability
-        if (offeredPacks > sender.packs) {
-            return res.status(400).json({
-                popupMessage: `Trade failed: You only have ${sender.packs} pack(s), but tried to offer ${offeredPacks}.`
-            });
-        }
-        if (requestedPacks > recipientUser.packs) {
-            return res.status(400).json({
-                popupMessage: `Trade failed: Recipient only has ${recipientUser.packs} pack(s), but you requested ${requestedPacks}.`
-            });
-        }
+  if (!result.success) {
+    return res.status(result.status || 500).json({ popupMessage: result.message });
+  }
 
-        // 5) Check the user actually owns offeredItems
-        const offeredCardsDetails = sender.cards.filter(card =>
-            offeredItems.includes(card._id.toString())
-        );
-        if (offeredItems.length !== offeredCardsDetails.length) {
-            return res.status(400).json({
-                popupMessage: "You are attempting to trade card(s) you do not own."
-            });
-        }
-
-        // 6) Check that the recipient owns each requestedItem
-        const requestedCardsDetails = recipientUser.cards.filter(card =>
-            requestedItems.includes(card._id.toString())
-        );
-        if (requestedItems.length !== requestedCardsDetails.length) {
-            return res.status(400).json({
-                popupMessage: "You requested card(s) the recipient does not own."
-            });
-        }
-
-        // 6.5) Check if any of the cards are already pending
-        const pendingOfferedCards = offeredCardsDetails.filter(card => card.status === 'pending');
-        const pendingRequestedCards = requestedCardsDetails.filter(card => card.status === 'pending');
-
-        if (pendingOfferedCards.length > 0 || pendingRequestedCards.length > 0) {
-            return res.status(400).json({
-                popupMessage: "One or more cards in this trade are currently pending in another trade or market listing."
-            });
-        }
-
-        // 7) If there's truly nothing being traded, reject
-        if (
-            offeredCardsDetails.length === 0 &&
-            requestedCardsDetails.length === 0 &&
-            offeredPacks === 0 &&
-            requestedPacks === 0
-        ) {
-            return res.status(400).json({
-                popupMessage: "No valid trade data. Neither side is offering anything."
-            });
-        }
-
-        // 8) Save the trade
-        const trade = new Trade({
-            sender: sender._id,
-            recipient: recipientUser._id,
-            offeredItems: offeredCardsDetails.map(card => card._id),
-            requestedItems: requestedCardsDetails.map(card => card._id),
-            offeredPacks,
-            requestedPacks,
-            status: 'pending'
-        });
-
-        await trade.save();
-        console.log('Trade saved successfully:', trade);
-
-        // Mark cards as pending in the sender's collection
-        await User.updateOne(
-            { _id: sender._id, "cards._id": { $in: offeredCardsDetails.map(c => c._id) } },
-            { $set: { "cards.$[element].status": 'pending' } },
-            { arrayFilters: [{ "element._id": { $in: offeredCardsDetails.map(c => c._id) } }] }
-        );
-
-        // Mark cards as pending in the recipient's collection
-        await User.updateOne(
-            { _id: recipientUser._id, "cards._id": { $in: requestedCardsDetails.map(c => c._id) } },
-            { $set: { "cards.$[element].status": 'pending' } },
-            { arrayFilters: [{ "element._id": { $in: requestedCardsDetails.map(c => c._id) } }] }
-        );
-
-        // Debug log before sending notification
-        console.log('Sending trade offer notification to recipient:', recipientUser._id, 'from sender:', sender.username, 'for trade:', trade._id);
-
-        await createNotification(recipientUser._id, {
-            type: 'Trade Offer Received',
-            message: `You have received a trade offer from ${sender.username}.`,
-            link: `/trades/pending`
-        });
-
-        res.status(201).json(trade);
-    } catch (err) {
-        console.error("Error creating trade:", err);
-        res.status(500).json({ popupMessage: err.message });
-    }
+  return res.status(201).json(result.trade);
 };
 
+// The rest of the functions remain unchanged for now
 // Update trade status (accept, reject, or cancel)
 const updateTradeStatus = async (req, res) => {
     const { tradeId } = req.params;
     const { status } = req.body;
 
+    const statusSchema = Joi.object({
+        status: Joi.string().valid('accepted', 'rejected', 'cancelled').required()
+    });
+    const { error } = statusSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ message: 'Invalid status update: ' + error.details[0].message });
+    }
+
     console.log(`[Trade Status Update] Received request to ${status} trade with ID: ${tradeId}`);
+
+    logAudit('Trade Status Update Attempt', { userId: req.userId, tradeId, newStatus: status });
 
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -311,13 +220,28 @@ const updateTradeStatus = async (req, res) => {
                 message: `Your trade offer to ${recipient.username} has been accepted.`,
                 link: `/trades/pending`
             });
+            sendNotificationToUser(sender._id, {
+                type: 'Trade Update',
+                message: `Your trade offer to ${recipient.username} has been accepted.`,
+                link: `/trades/pending`
+            });
             await createNotification(recipient._id, {
+                type: 'Trade Update',
+                message: `You have accepted a trade offer from ${sender.username}.`,
+                link: `/trades/pending`
+            });
+            sendNotificationToUser(recipient._id, {
                 type: 'Trade Update',
                 message: `You have accepted a trade offer from ${sender.username}.`,
                 link: `/trades/pending`
             });
         } else if (status === 'rejected') {
             await createNotification(sender._id, {
+                type: 'Trade Update',
+                message: `Your trade offer to ${recipient.username} has been rejected.`,
+                link: `/trades/pending`
+            });
+            sendNotificationToUser(sender._id, {
                 type: 'Trade Update',
                 message: `Your trade offer to ${recipient.username} has been rejected.`,
                 link: `/trades/pending`
@@ -329,14 +253,26 @@ const updateTradeStatus = async (req, res) => {
                     message: `The trade offer from ${sender.username} has been cancelled.`,
                     link: `/trades/pending`
                 });
+                sendNotificationToUser(recipient._id, {
+                    type: 'Trade Update',
+                    message: `The trade offer from ${sender.username} has been cancelled.`,
+                    link: `/trades/pending`
+                });
             } else {
                 await createNotification(sender._id, {
                     type: 'Trade Update',
                     message: `Your trade offer to ${recipient.username} has been cancelled.`,
                     link: `/trades/pending`
                 });
+                sendNotificationToUser(sender._id, {
+                    type: 'Trade Update',
+                    message: `Your trade offer to ${recipient.username} has been cancelled.`,
+                    link: `/trades/pending`
+                });
             }
         }
+
+        logAudit('Trade Status Updated', { tradeId: trade._id, newStatus: status, userId: req.userId });
 
         res.status(200).json({ message: `Trade ${status} successfully`, trade });
     } catch (error) {
@@ -418,8 +354,8 @@ const getTradesForUser = async (req, res) => {
 };
 
 module.exports = {
-    createTrade,
-    getTradesForUser,
-    getPendingTrades,
-    updateTradeStatus
+  createTrade,
+  getTradesForUser,
+  getPendingTrades,
+  updateTradeStatus
 };

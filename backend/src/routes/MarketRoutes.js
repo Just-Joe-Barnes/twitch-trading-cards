@@ -1,19 +1,23 @@
-// src/routes/MarketRoutes.js
-const express = require('express');
-const router = express.Router();
-const mongoose = require('mongoose');
-const MarketListing = require('../models/MarketListing');
-const User = require('../models/userModel');
-const { protect } = require('../middleware/authMiddleware');
-const { createNotification } = require('../helpers/notificationHelper');
+const { sendNotificationToUser } = require('../../notificationService');
 
-// POST /api/market/listings - Create a new market listing.
-router.post('/listings', protect, async (req, res) => {
+router.post('/listings', protect, sensitiveLimiter, async (req, res) => {
     try {
-        const { card } = req.body;
-        if (!card || !card.name || !card.imageUrl || !card.rarity || !card.mintNumber) {
-            return res.status(400).json({ message: 'Invalid card data' });
+        const cardSchema = Joi.object({
+            name: Joi.string().required(),
+            imageUrl: Joi.string().uri().required(),
+            rarity: Joi.string().required(),
+            mintNumber: Joi.number().integer().min(0).required(),
+            flavorText: Joi.string().allow('', null)
+        });
+
+        const { error } = cardSchema.validate(req.body.card);
+        if (error) {
+            return res.status(400).json({ message: 'Invalid card data: ' + error.details[0].message });
         }
+
+        logAudit('Market Listing Create Attempt', { userId: req.user._id, body: req.body });
+
+        const { card } = req.body;
 
         // Check if the card is already pending
         const user = await User.findById(req.user._id);
@@ -52,6 +56,15 @@ router.post('/listings', protect, async (req, res) => {
         );
 
         const savedListing = await newListing.save();
+        logAudit('Market Listing Created', { listingId: savedListing._id, userId: req.user._id });
+
+        // Optionally notify the owner (self) about listing creation
+        sendNotificationToUser(req.user._id, {
+            type: 'Listing Created',
+            message: 'Your card has been listed on the market.',
+            link: `/market/listings/${savedListing._id}`
+        });
+
         res.status(201).json(savedListing);
     } catch (error) {
         console.error('Error creating market listing:', error);
@@ -100,8 +113,29 @@ router.get('/listings/:id', protect, async (req, res) => {
 });
 
 // POST /api/market/listings/:id/offers - Make an offer on a listing.
-router.post('/listings/:id/offers', protect, async (req, res) => {
+router.post('/listings/:id/offers', protect, sensitiveLimiter, async (req, res) => {
     try {
+        const offerSchema = Joi.object({
+            message: Joi.string().allow('', null),
+            offeredCards: Joi.array().items(
+                Joi.object({
+                    name: Joi.string().required(),
+                    imageUrl: Joi.string().uri().required(),
+                    rarity: Joi.string().required(),
+                    mintNumber: Joi.number().integer().min(0).required(),
+                    flavorText: Joi.string().allow('', null)
+                })
+            ).required(),
+            offeredPacks: Joi.number().min(0).required()
+        });
+
+        const { error } = offerSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ message: 'Invalid offer data: ' + error.details[0].message });
+        }
+
+        logAudit('Market Offer Create Attempt', { userId: req.user._id, listingId: req.params.id, body: req.body });
+
         const listingId = req.params.id;
         const { message, offeredCards, offeredPacks } = req.body;
 
@@ -159,6 +193,13 @@ router.post('/listings/:id/offers', protect, async (req, res) => {
             message: `You have received a new offer on your market listing.`,
             link: `/market/listings/${listing._id}`
         });
+        sendNotificationToUser(listing.owner, {
+            type: 'New Market Offer',
+            message: `You have received a new offer on your market listing.`,
+            link: `/market/listings/${listing._id}`
+        });
+
+        logAudit('Market Offer Created', { listingId: listing._id, offererId: req.user._id });
 
         res.status(200).json({ message: 'Offer submitted successfully' });
     } catch (error) {
@@ -168,7 +209,9 @@ router.post('/listings/:id/offers', protect, async (req, res) => {
 });
 
 // PUT /api/market/listings/:id/offers/:offerId/accept - Accept an offer (listing owner only)
-router.put('/listings/:id/offers/:offerId/accept', protect, async (req, res) => {
+router.put('/listings/:id/offers/:offerId/accept', protect, sensitiveLimiter, async (req, res) => {
+    logAudit('Market Offer Accept Attempt', { userId: req.user._id, listingId: req.params.id, offerId: req.params.offerId });
+
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
@@ -280,11 +323,23 @@ router.put('/listings/:id/offers/:offerId/accept', protect, async (req, res) => 
             message: `Your listing has been sold to ${buyer.username}.`,
             link: `/market/listings/${listing._id}`
         });
+        sendNotificationToUser(seller._id, {
+            type: 'Listing Update',
+            message: `Your listing has been sold to ${buyer.username}.`,
+            link: `/market/listings/${listing._id}`
+        });
         await createNotification(buyer._id, {
             type: 'Listing Update',
             message: `Your offer on the listing has been accepted.`,
             link: `/market/listings/${listing._id}`
         });
+        sendNotificationToUser(buyer._id, {
+            type: 'Listing Update',
+            message: `Your offer on the listing has been accepted.`,
+            link: `/market/listings/${listing._id}`
+        });
+
+        logAudit('Market Offer Accepted', { listingId: listing._id, offerId: req.params.offerId, sellerId: seller._id, buyerId: buyer._id });
 
         res.status(200).json({ message: "Offer accepted, card transferred, and listing sold." });
     } catch (error) {

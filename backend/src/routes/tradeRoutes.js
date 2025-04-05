@@ -1,8 +1,10 @@
 // routes/tradeRoutes.js
+// routes/tradeRoutes.js
 const express = require('express');
 const router = express.Router();
 const tradeController = require('../controllers/tradeController');
 const { protect } = require('../middleware/authMiddleware');
+const { sensitiveLimiter } = require('../middleware/rateLimiter');
 
 // Helper to ensure user can only view their own trades (unless admin)
 function canViewUserTrades(req, res, next) {
@@ -13,7 +15,7 @@ function canViewUserTrades(req, res, next) {
 }
 
 // Create a new trade
-router.post('/', protect, tradeController.createTrade);
+router.post('/', protect, sensitiveLimiter, tradeController.createTrade);
 
 // Get all trades for a user
 router.get('/:userId', protect, canViewUserTrades, tradeController.getTradesForUser);
@@ -22,6 +24,6 @@ router.get('/:userId', protect, canViewUserTrades, tradeController.getTradesForU
 router.get('/:userId/pending', protect, canViewUserTrades, tradeController.getPendingTrades);
 
 // Update trade status (accept, reject, cancel)
-router.put('/:tradeId/status', protect, tradeController.updateTradeStatus);
+router.put('/:tradeId/status', protect, sensitiveLimiter, tradeController.updateTradeStatus);
 
 module.exports = router;
