@@ -3,6 +3,7 @@ import TradingPage from './TradingPage';
 import PendingTrades from './PendingTrades';
 import '../styles/TradingPage.css';
 import '../styles/PendingTrades.css';
+import '../styles/TradingDashboard.css';
 
 const TradingDashboard = () => {
   const [activeTab, setActiveTab] = useState('pending');
