@@ -120,6 +120,11 @@ const Navbar = ({ isAdmin }) => {
                                 Admin Actions
                             </NavLink>
                         </li>
+                        <li>
+                            <NavLink to="/trading-dashboard" className="nav-link">
+                                Trading Dashboard
+                            </NavLink>
+                        </li>
                     </>
                 )}
                 <li>

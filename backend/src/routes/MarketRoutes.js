@@ -4,6 +4,7 @@ const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const { sensitiveLimiter } = require('../middleware/rateLimiter');
 const { sendNotificationToUser } = require('../../notificationService');
+const marketService = require('../services/marketService');
 
 router.post('/listings', protect, sensitiveLimiter, async (req, res) => {
     try {
@@ -215,144 +216,30 @@ router.post('/listings/:id/offers', protect, sensitiveLimiter, async (req, res) 
 
 // PUT /api/market/listings/:id/offers/:offerId/accept - Accept an offer (listing owner only)
 router.put('/listings/:id/offers/:offerId/accept', protect, sensitiveLimiter, async (req, res) => {
-    logAudit('Market Offer Accept Attempt', { userId: req.user._id, listingId: req.params.id, offerId: req.params.offerId });
+  logAudit('Market Offer Accept Attempt', { userId: req.user._id, listingId: req.params.id, offerId: req.params.offerId });
 
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    try {
-        const listing = await MarketListing.findById(req.params.id).session(session);
-        if (!listing) {
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(404).json({ message: 'Listing not found' });
-        }
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-        // Ensure the listing is still active.
-        if (listing.status !== 'active') {
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(400).json({ message: 'This listing is no longer active.' });
-        }
+  try {
+    const result = await marketService.acceptOffer(req.params.id, req.params.offerId, req.user._id.toString(), session);
 
-        if (listing.owner.toString() !== req.user._id.toString()) {
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(403).json({ message: 'You do not have permission to accept offers on this listing.' });
-        }
-        const offer = listing.offers.id(req.params.offerId);
-        if (!offer) {
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(404).json({ message: 'Offer not found' });
-        }
-        const seller = await User.findById(listing.owner).session(session);
-        const buyer = await User.findById(offer.offerer).session(session);
-        if (!seller || !buyer) {
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(404).json({ message: 'Seller or Buyer not found' });
-        }
-
-        if (buyer.packs < offer.offeredPacks) {
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(400).json({ message: "Buyer does not have enough packs" });
-        }
-
-        // Adjust packs: buyer loses offeredPacks, seller gains them.
-        buyer.packs -= offer.offeredPacks;
-        seller.packs += offer.offeredPacks;
-
-        // --- BEGIN CARD TRANSFER LOGIC ---
-        // Find the index of the card being sold in the seller's collection
-        const cardIndexInSeller = seller.cards.findIndex(
-            c => c.name === listing.card.name && c.mintNumber === listing.card.mintNumber
-        );
-
-        if (cardIndexInSeller === -1) {
-            // This should ideally not happen if the listing was created correctly, but handle defensively
-            await session.abortTransaction();
-            session.endSession();
-            console.error(`[Accept Offer Error] Listed card (${listing.card.name} #${listing.card.mintNumber}) not found in seller's (${seller.username}) collection.`);
-            return res.status(400).json({ message: "Listed card not found in seller's collection. Cannot complete sale." });
-        }
-
-        // Remove the card from the seller's collection
-        const [cardToTransfer] = seller.cards.splice(cardIndexInSeller, 1);
-
-        // Add the card to the buyer's collection
-        buyer.cards.push(cardToTransfer);
-        // --- END CARD TRANSFER LOGIC ---
-
-        // Mark the card as available in the buyer's collection
-        await User.updateOne(
-            { _id: buyer._id, "cards._id": cardToTransfer._id },
-            { $set: { "cards.$[element].status": 'available' } },
-            { arrayFilters: [{ "element._id": cardToTransfer._id }] }
-        ).session(session);
-
-        await seller.save({ session });
-        await buyer.save({ session });
-
-        listing.status = 'sold';
-        listing.offers = [];
-
-        // Remove the listing
-        await listing.deleteOne({ session });
-
-        // Cancel any other listings for the same card
-        await MarketListing.updateMany(
-            {
-                _id: { $ne: listing._id },
-                status: 'active',
-                "card.name": listing.card.name,
-                "card.mintNumber": listing.card.mintNumber
-            },
-            { $set: { status: 'cancelled', cancellationReason: 'Card sold in another listing' } },
-            { session }
-        );
-
-        // Mark the card as available in the seller's collection
-        await User.updateOne(
-            { _id: seller._id, "cards._id": cardToTransfer._id },
-            { $set: { "cards.$[element].status": 'available' } },
-            { arrayFilters: [{ "element._id": cardToTransfer._id }] }
-        ).session(session);
-
-        await session.commitTransaction();
-        session.endSession();
-
-        // Send notifications for listing update on offer acceptance
-        await createNotification(seller._id, {
-            type: 'Listing Update',
-            message: `Your listing has been sold to ${buyer.username}.`,
-            link: `/market/listings/${listing._id}`
-        });
-        sendNotificationToUser(seller._id, {
-            type: 'Listing Update',
-            message: `Your listing has been sold to ${buyer.username}.`,
-            link: `/market/listings/${listing._id}`
-        });
-        await createNotification(buyer._id, {
-            type: 'Listing Update',
-            message: `Your offer on the listing has been accepted.`,
-            link: `/market/listings/${listing._id}`
-        });
-        sendNotificationToUser(buyer._id, {
-            type: 'Listing Update',
-            message: `Your offer on the listing has been accepted.`,
-            link: `/market/listings/${listing._id}`
-        });
-
-        logAudit('Market Offer Accepted', { listingId: listing._id, offerId: req.params.offerId, sellerId: seller._id, buyerId: buyer._id });
-
-        res.status(200).json({ message: "Offer accepted, card transferred, and listing sold." });
-    } catch (error) {
-        console.error('Error accepting offer:', error);
-        await session.abortTransaction();
-        session.endSession();
-        res.status(500).json({ message: 'Failed to accept offer', error: error.message });
+    if (!result.success) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(result.status || 500).json({ message: result.message });
     }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(200).json({ message: 'Offer accepted, card transferred, and listing sold.' });
+  } catch (error) {
+    console.error('Error accepting offer:', error);
+    await session.abortTransaction();
+    session.endSession();
+    res.status(500).json({ message: 'Failed to accept offer', error: error.message });
+  }
 });
 
 // DELETE /api/market/listings/:id/offers/self - Cancel (delete) your own offer

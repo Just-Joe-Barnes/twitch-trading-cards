@@ -173,32 +173,38 @@ const updateTradeStatus = async (req, res) => {
 
             // Cleanup conflicting trades involving traded cards
             const tradedCardIds = [...trade.offeredItems, ...trade.requestedItems];
-            await Trade.updateMany(
-                {
+
+            await Trade.bulkWrite([
+              {
+                updateMany: {
+                  filter: {
                     _id: { $ne: trade._id },
                     status: 'pending',
                     $or: [
-                        { offeredItems: { $in: tradedCardIds } },
-                        { requestedItems: { $in: tradedCardIds } }
+                      { offeredItems: { $in: tradedCardIds } },
+                      { requestedItems: { $in: tradedCardIds } }
                     ]
-                },
-                {
+                  },
+                  update: {
                     $set: { status: 'cancelled', cancellationReason: 'Card traded in another transaction' }
-                },
-                { session }
-            );
+                  }
+                }
+              }
+            ], { session });
 
-            // Cancel any active market listings for the traded cards
-            await MarketListing.updateMany(
-                {
+            await MarketListing.bulkWrite([
+              {
+                updateMany: {
+                  filter: {
                     "card._id": { $in: tradedCardIds },
                     status: 'active'
-                },
-                {
+                  },
+                  update: {
                     $set: { status: 'cancelled', cancellationReason: 'Card traded in another transaction' }
-                },
-                { session }
-            );
+                  }
+                }
+              }
+            ], { session });
         } else if (status === 'rejected' || status === 'cancelled') {
             const offeredCardIds = trade.offeredItems;
             const requestedCardIds = trade.requestedItems;
