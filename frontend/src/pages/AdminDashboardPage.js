@@ -48,26 +48,37 @@ const AdminDashboardPage = ({ user }) => {
     };
     const getRarityColor = (rarity) => cardRarities[rarity] || '#fff';
 
-    // On mount: verify admin & fetch users with packs
-    useEffect(() => {
+    // Fetch users with packs
+    const fetchData = async () => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
             navigate('/login');
             return;
         }
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                const activeMinutesParam = activeFilter === 'active' ? '&activeMinutes=15' : '';
-                const data = await fetchWithAuth(`/api/admin/users-activity?${activeMinutesParam}`);
-                setUsers(data || []);
-            } catch (err) {
-                console.error('Error fetching users with activity:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
+        setLoading(true);
+        try {
+            const activeMinutesParam = activeFilter === 'active' ? '&activeMinutes=15' : '';
+            const data = await fetchWithAuth(`/api/admin/users-activity?${activeMinutesParam}`);
+            setUsers(data || []);
+        } catch (err) {
+            console.error('Error fetching users with activity:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // On mount and when filter changes, fetch once
+    useEffect(() => {
         fetchData();
+    }, [user, navigate, activeFilter]);
+
+    // Poll every 10 seconds for updates
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            fetchData();
+        }, 10000); // 10 seconds
+
+        return () => clearInterval(intervalId);
     }, [user, navigate, activeFilter]);
 
     // Filter users by search query
