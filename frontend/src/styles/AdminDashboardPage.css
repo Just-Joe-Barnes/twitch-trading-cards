@@ -261,19 +261,19 @@
 }
 
 .opened-cards .card-wrapper.revealed {
-    opacity: 1;
-    transform: translateY(0);
-    animation: fadeInUp 0.6s ease forwards;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    animation: fadeInUp 0.6s ease forwards !important;
 }
 
 @keyframes fadeInUp {
     0% {
-        opacity: 0;
-        transform: translateY(20px);
+        opacity: 0 !important;
+        transform: translateY(20px) !important;
     }
     100% {
-        opacity: 1;
-        transform: translateY(0);
+        opacity: 1 !important;
+        transform: translateY(0) !important;
     }
 }
 
