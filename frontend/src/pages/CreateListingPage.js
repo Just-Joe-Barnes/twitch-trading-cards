@@ -139,15 +139,15 @@ const CreateListingPage = () => {
             });
 
             if (res.ok) {
-                alert('Card listed on the market successfully!');
+                window.showToast('Card listed on the market successfully!', 'success');
                 navigate('/market');
             } else {
                 const errorData = await res.json();
-                alert(`Error: ${errorData.message}`);
+                window.showToast(`Error: ${errorData.message}`, 'error');
             }
         } catch (error) {
             console.error('Error listing card:', error);
-            alert('Error listing card');
+            window.showToast('Error listing card', 'error');
         } finally {
             setIsSubmitting(false);
         }

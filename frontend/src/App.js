@@ -15,6 +15,7 @@ import MarketPage from './pages/MarketPage';
 import CreateListingPage from './pages/CreateListingPage';
 import MarketListingDetails from './pages/MarketListingDetails';
 import AdminActions from './pages/AdminActions';
+import Toast from './components/Toast';
 
 import 'normalize.css';
 
@@ -23,6 +24,20 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 const App = () => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [toasts, setToasts] = useState([]);
+
+    const showToast = (message, type = 'info') => {
+        const id = Date.now();
+        setToasts((prev) => [...prev, { id, message, type }]);
+    };
+
+    const removeToast = (id) => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+    };
+
+    useEffect(() => {
+        window.showToast = showToast;
+    }, []);
 
     useEffect(() => {
         const handleTokenFromURL = () => {
@@ -77,44 +92,54 @@ const App = () => {
     }
 
     return (
-        <Router>
-            {user && <Navbar isAdmin={user?.isAdmin} />}
-            <Routes>
-                <Route path="/login" element={<LoginPage />} />
-                <Route
-                    path="/dashboard"
-                    element={user ? <DashboardPage user={user} /> : <Navigate to="/login" />}
+        <>
+            <Router>
+                {user && <Navbar isAdmin={user?.isAdmin} />}
+                <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route
+                        path="/dashboard"
+                        element={user ? <DashboardPage user={user} /> : <Navigate to="/login" />}
+                    />
+                    <Route path="/collection/:username" element={<CollectionPage />} />
+                    <Route
+                        path="/collection"
+                        element={user ? <CollectionPage user={user} /> : <Navigate to="/login" />}
+                    />
+                    <Route
+                        path="/admin-dashboard"
+                        element={user?.isAdmin ? <AdminDashboardPage user={user} /> : <Navigate to="/login" />}
+                    />
+                    <Route path="/profile/:username" element={<ProfilePage />} />
+                    <Route
+                        path="/trading"
+                        element={user ? <TradingPage userId={user._id} /> : <Navigate to="/login" />}
+                    />
+                    <Route
+                        path="/trades/pending"
+                        element={user ? <PendingTrades userId={user._id} /> : <Navigate to="/login" />}
+                    />
+                    <Route
+                        path="/admin/actions"
+                        element={user?.isAdmin ? <AdminActions user={user} /> : <Navigate to="/login" />}
+                    />
+                    <Route path="/catalogue" element={<CataloguePage />} />
+                    <Route path="/market" element={<MarketPage />} />
+                    <Route path="/market/create" element={<CreateListingPage />} />
+                    <Route path="/market/listing/:id" element={<MarketListingDetails />} />
+                    <Route path="/" element={<Navigate to="/dashboard" />} />
+                    <Route path="*" element={<Navigate to="/login" />} />
+                </Routes>
+            </Router>
+            {toasts.map((toast) => (
+                <Toast
+                    key={toast.id}
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => removeToast(toast.id)}
                 />
-                <Route path="/collection/:username" element={<CollectionPage />} />
-                <Route
-                    path="/collection"
-                    element={user ? <CollectionPage user={user} /> : <Navigate to="/login" />}
-                />
-                <Route
-                    path="/admin-dashboard"
-                    element={user?.isAdmin ? <AdminDashboardPage user={user} /> : <Navigate to="/login" />}
-                />
-                <Route path="/profile/:username" element={<ProfilePage />} />
-                <Route
-                    path="/trading"
-                    element={user ? <TradingPage userId={user._id} /> : <Navigate to="/login" />}
-                />
-                <Route
-                    path="/trades/pending"
-                    element={user ? <PendingTrades userId={user._id} /> : <Navigate to="/login" />}
-                />
-                <Route
-                    path="/admin/actions"
-                    element={user?.isAdmin ? <AdminActions user={user} /> : <Navigate to="/login" />}
-                />
-                <Route path="/catalogue" element={<CataloguePage />} />
-                <Route path="/market" element={<MarketPage />} />
-                <Route path="/market/create" element={<CreateListingPage />} />
-                <Route path="/market/listing/:id" element={<MarketListingDetails />} />
-                <Route path="/" element={<Navigate to="/dashboard" />} />
-                <Route path="*" element={<Navigate to="/login" />} />
-            </Routes>
-        </Router>
+            ))}
+        </>
     );
 };
 

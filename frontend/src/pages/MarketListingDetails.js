@@ -155,12 +155,12 @@ const MarketListingDetails = () => {
                 method: 'PUT',
             });
             if (res.message) {
-                alert('Offer accepted. Listing is now sold.');
+                window.showToast('Offer accepted. Listing is now sold.', 'success');
                 navigate('/market');
             }
         } catch (error) {
             console.error('Error accepting offer:', error);
-            alert('Error accepting offer.');
+            window.showToast('Error accepting offer.', 'error');
         }
     };
 
@@ -170,13 +170,13 @@ const MarketListingDetails = () => {
                 method: 'DELETE',
             });
             if (res.message) {
-                alert('Offer rejected.');
+                window.showToast('Offer rejected.', 'success');
                 const updated = await fetchWithAuth(`/api/market/listings/${id}`);
                 setListing(updated);
             }
         } catch (error) {
             console.error('Error rejecting offer:', error);
-            alert('Error rejecting offer.');
+            window.showToast('Error rejecting offer.', 'error');
         }
     };
 
@@ -186,13 +186,13 @@ const MarketListingDetails = () => {
                 method: 'DELETE',
             });
             if (res.message) {
-                alert('Offer cancelled.');
+                window.showToast('Offer cancelled.', 'success');
                 const updated = await fetchWithAuth(`/api/market/listings/${id}`);
                 setListing(updated);
             }
         } catch (error) {
             console.error('Error cancelling offer:', error);
-            alert('Error cancelling offer.');
+            window.showToast('Error cancelling offer.', 'error');
         }
     };
 

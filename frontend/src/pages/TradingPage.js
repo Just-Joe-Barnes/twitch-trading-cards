@@ -114,19 +114,19 @@ const TradingPage = ({ userId }) => {
 
     const handleSubmit = async () => {
         if (!selectedUser) {
-            alert("Select a user first!");
+            window.showToast("Select a user first!", "warning");
             return;
         }
         if (!tradeOffer.length && !offeredPacks) {
-            alert("Add items to offer!");
+            window.showToast("Add items to offer!", "warning");
             return;
         }
         if (!tradeRequest.length && !requestedPacks) {
-            alert("Add items to request!");
+            window.showToast("Add items to request!", "warning");
             return;
         }
         if (!loggedInUser?._id) {
-            alert("User authentication error!");
+            window.showToast("User authentication error!", "error");
             return;
         }
 
@@ -140,14 +140,14 @@ const TradingPage = ({ userId }) => {
 
         try {
             await createTrade(tradePayload);
-            alert("Trade submitted successfully!");
+            window.showToast("Trade submitted successfully!", "success");
             setTradeOffer([]);
             setTradeRequest([]);
             setOfferedPacks(0);
             setRequestedPacks(0);
         } catch (error) {
             console.error("Error creating trade:", error);
-            alert(`Error creating trade: ${error.message}`);
+            window.showToast(`Error creating trade: ${error.message}`, "error");
         }
     };
 

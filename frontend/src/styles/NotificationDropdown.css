@@ -48,22 +48,28 @@
 }
 
 .notification-item {
-    padding: 10px;
+    padding: 1rem;
     border-bottom: 1px solid var(--border-dark);
     display: flex;
     justify-content: space-between;
     align-items: center;
     color: var(--text-primary);
+    font-size: 1rem;
+    transition: background-color 0.2s ease;
 }
 
-    .notification-item a {
-        text-decoration: none;
-        color: inherit;
-    }
+.notification-item:hover {
+    background-color: var(--surface-darker);
+}
 
-    .notification-item.unread {
-        font-weight: bold;
-    }
+.notification-item a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.notification-item.unread {
+    font-weight: bold;
+}
 
 .delete-notification {
     background: none;

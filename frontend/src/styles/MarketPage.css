@@ -79,23 +79,28 @@
 
 .listings-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Exactly 3 columns per row */
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
 }
 
 .listing-card {
     background: var(--surface-dark);
     border: 1px solid var(--border-dark);
-    border-radius: 12px;
-    padding: 1rem;
+    border-radius: 16px;
+    padding: 1.5rem;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-    .listing-card:hover {
-        border-color: var(--brand-primary);
-        box-shadow: 0 4px 24px rgba(219, 136, 219, 0.1);
-    }
+.listing-card:hover {
+    border-color: var(--brand-primary);
+    box-shadow: 0 8px 24px rgba(219, 136, 219, 0.2);
+    transform: translateY(-4px) scale(1.02);
+}
 
 .listing-card-content {
     display: flex;
