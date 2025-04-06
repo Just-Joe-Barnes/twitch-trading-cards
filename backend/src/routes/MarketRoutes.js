@@ -14,7 +14,7 @@ router.post('/listings', protect, sensitiveLimiter, async (req, res) => {
     try {
         const cardSchema = Joi.object({
             name: Joi.string().required(),
-            imageUrl: Joi.string().uri().required(),
+            imageUrl: Joi.string().required(),
             rarity: Joi.string().required(),
             mintNumber: Joi.number().integer().min(0).required(),
             flavorText: Joi.string().allow('', null)

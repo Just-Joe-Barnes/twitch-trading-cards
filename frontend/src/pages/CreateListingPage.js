@@ -123,15 +123,10 @@ const CreateListingPage = () => {
             delete cardToSend.updatedAt; // if present
 
             if (cardToSend.imageUrl && cardToSend.imageUrl.startsWith('/')) {
-                // Keep relative path to avoid CORS issues
-                // do nothing
+                const baseUrl = window.location.origin;
+                cardToSend.imageUrl = baseUrl + cardToSend.imageUrl;
             } else if (cardToSend.imageUrl && cardToSend.imageUrl.startsWith('http')) {
-                try {
-                    const url = new URL(cardToSend.imageUrl);
-                    cardToSend.imageUrl = url.pathname;
-                } catch (e) {
-                    // leave as is if invalid URL
-                }
+                // leave as is
             }
 
             const res = await fetch(`${API_BASE_URL}/api/market/listings`, {
