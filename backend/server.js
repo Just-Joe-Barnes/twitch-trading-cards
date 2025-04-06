@@ -21,6 +21,7 @@ const testNotificationRoutes = require('./src/routes/testNotificationRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
 
 const app = express();
+app.set('trust proxy', 1);
 const server = http.createServer(app); // Create HTTP server for Socket.io
 
 // Use an environment variable (e.g., CLIENT_URL) with a fallback to localhost
