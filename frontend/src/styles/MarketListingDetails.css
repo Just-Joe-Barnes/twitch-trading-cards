@@ -132,11 +132,6 @@
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-        .market-user-collection-grid .market-card-wrapper:hover {
-            transform: translateY(-4px);
-            border-color: var(--brand-primary);
-            box-shadow: 0 4px 16px rgba(219, 136, 219, 0.2);
-        }
 
         .market-user-collection-grid .market-card-wrapper.selected {
             border: 2px solid var(--brand-primary);
