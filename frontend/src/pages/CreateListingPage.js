@@ -124,7 +124,7 @@ const CreateListingPage = () => {
 
             if (cardToSend.imageUrl && cardToSend.imageUrl.startsWith('/')) {
                 // Keep relative path to avoid CORS issues
-                cardToSend.imageUrl = cardToSend.imageUrl;
+                // do nothing
             } else if (cardToSend.imageUrl && cardToSend.imageUrl.startsWith('http')) {
                 try {
                     const url = new URL(cardToSend.imageUrl);
