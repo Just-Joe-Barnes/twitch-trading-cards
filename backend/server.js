@@ -6,7 +6,15 @@ const session = require('express-session');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
 const http = require('http'); // Use http for Socket.io compatibility
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
+
+// Ensure logs directory exists
+const logsDir = path.join(__dirname, 'logs');
+if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+}
 
 const authRoutes = require('./src/routes/authRoutes');
 const packRoutes = require('./src/routes/packRoutes');
