@@ -28,11 +28,12 @@ const checkAndGrantAchievements = async (user) => {
     achievements.push({ name: 'Seller II', description: 'Created 50 listings' });
   }
 
-  // Packs opened
-  if (user.openedPacks >= 10 && !user.achievements.some(a => a.name === 'Opener I')) {
+  // Packs opened (retroactive)
+  const openedPacksCount = user.openedPacks || 0;
+  if (openedPacksCount >= 10 && !user.achievements.some(a => a.name === 'Opener I')) {
     achievements.push({ name: 'Opener I', description: 'Opened 10 packs' });
   }
-  if (user.openedPacks >= 50 && !user.achievements.some(a => a.name === 'Opener II')) {
+  if (openedPacksCount >= 50 && !user.achievements.some(a => a.name === 'Opener II')) {
     achievements.push({ name: 'Opener II', description: 'Opened 50 packs' });
   }
 
