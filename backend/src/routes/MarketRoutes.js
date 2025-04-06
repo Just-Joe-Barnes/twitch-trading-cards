@@ -66,6 +66,7 @@ router.post('/listings', protect, sensitiveLimiter, async (req, res) => {
         );
 
         const savedListing = await newListing.save();
+        console.log('Saved listing card imageUrl:', savedListing.card?.imageUrl);
         logAudit('Market Listing Created', { listingId: savedListing._id, userId: req.user._id });
 
         // Optionally notify the owner (self) about listing creation
