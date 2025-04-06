@@ -49,10 +49,12 @@ router.get('/:userId/collection', protect, async (req, res) => {
         if (!req.isAdmin && req.params.userId !== req.userId) {
             return res
                 .status(403)
-                .json({ message: 'You do not have permission to view this user’s collection.' });
+                .json({ message: 'You do not have permission to view this userï¿½s collection.' });
         }
 
-        const user = await User.findById(req.params.userId).select('cards packs');
+        const user = await User.findById(req.params.userId)
+            .select('cards packs')
+            .populate('cards');
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
