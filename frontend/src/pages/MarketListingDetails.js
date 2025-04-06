@@ -26,26 +26,21 @@ const MarketListingDetails = () => {
     const [listing, setListing] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Offer form states
     const [offerMessage, setOfferMessage] = useState('');
     const [offeredPacks, setOfferedPacks] = useState('');
     const [offerError, setOfferError] = useState('');
     const [offerSuccess, setOfferSuccess] = useState('');
 
-    // Logged-in user's data
     const [userPacks, setUserPacks] = useState(0);
     const [userCollection, setUserCollection] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
 
-    // Collection filters
     const [search, setSearch] = useState('');
     const [rarityFilter, setRarityFilter] = useState('');
     const [filteredCollection, setFilteredCollection] = useState([]);
 
-    // Selected cards for the offer
     const [selectedOfferedCards, setSelectedOfferedCards] = useState([]);
 
-    // 1) Fetch market listing details
     useEffect(() => {
         const fetchListing = async () => {
             try {
@@ -60,7 +55,6 @@ const MarketListingDetails = () => {
         fetchListing();
     }, [id]);
 
-    // 2) Fetch logged-in user's profile & collection
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -76,7 +70,6 @@ const MarketListingDetails = () => {
         fetchUserData();
     }, []);
 
-    // 3) Filter the user's collection based on search & rarity
     useEffect(() => {
         let filtered = [...userCollection];
         if (search) {
@@ -102,7 +95,6 @@ const MarketListingDetails = () => {
         }
     };
 
-    // Submit the offer (only if user is not the owner)
     const handleOfferSubmit = async (e) => {
         e.preventDefault();
         setOfferError('');
@@ -113,7 +105,6 @@ const MarketListingDetails = () => {
             return;
         }
         try {
-            // Map selected cards to objects with required fields.
             const mappedCards = selectedOfferedCards.map(card => ({
                 name: card.name,
                 imageUrl: card.imageUrl,
@@ -145,7 +136,6 @@ const MarketListingDetails = () => {
         }
     };
 
-    // Cancel listing (only for owner)
     const handleCancelListing = async () => {
         try {
             const res = await fetchWithAuth(`/api/market/listings/${id}`, {
@@ -159,7 +149,6 @@ const MarketListingDetails = () => {
         }
     };
 
-    // Accept an offer
     const handleAcceptOffer = async (offerId) => {
         try {
             const res = await fetchWithAuth(`/api/market/listings/${id}/offers/${offerId}/accept`, {
@@ -175,7 +164,6 @@ const MarketListingDetails = () => {
         }
     };
 
-    // Reject an offer (for listing owner)
     const handleRejectOffer = async (offerId) => {
         try {
             const res = await fetchWithAuth(`/api/market/listings/${id}/offers/${offerId}`, {
@@ -192,7 +180,6 @@ const MarketListingDetails = () => {
         }
     };
 
-    // Cancel your own offer (for offerer)
     const handleCancelOffer = async (offerId) => {
         try {
             const res = await fetchWithAuth(`/api/market/listings/${id}/offers/self`, {
@@ -264,7 +251,7 @@ const MarketListingDetails = () => {
                             />
                         </div>
 
-                        <div className="offer-cards-section">
+                        <div className="market-offer-cards-section">
                             <h3>Offer Cards</h3>
                             <div className="filters">
                                 <input
@@ -285,13 +272,13 @@ const MarketListingDetails = () => {
                                     ))}
                                 </select>
                             </div>
-                            <div className="user-collection-grid">
+                            <div className="market-user-collection-grid">
                                 {filteredCollection.map((card) => {
                                     const isSelected = selectedOfferedCards.some(c => c._id === card._id);
                                     return (
                                         <div
                                             key={card._id}
-                                            className={`card-wrapper ${isSelected ? 'selected' : ''}`}
+                                            className={`market-card-wrapper ${isSelected ? 'selected' : ''}`}
                                             onClick={() => toggleCardSelection(card)}
                                         >
                                             <BaseCard
@@ -307,12 +294,12 @@ const MarketListingDetails = () => {
                             </div>
                         </div>
 
-                        <div className="selected-cards-panel">
+                        <div className="market-selected-cards-panel">
                             <h3>Selected Cards for Offer</h3>
-                            <div className="selected-cards-grid">
+                            <div className="market-selected-cards-grid">
                                 {selectedOfferedCards.length > 0 ? (
                                     selectedOfferedCards.map((card) => (
-                                        <div key={card._id} className="card-wrapper">
+                                        <div key={card._id} className="market-card-wrapper">
                                             <BaseCard
                                                 name={card.name}
                                                 image={card.imageUrl}

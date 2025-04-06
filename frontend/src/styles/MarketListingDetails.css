@@ -114,7 +114,7 @@
 }
 
 /* User Collection Grid */
-.user-collection-grid {
+.market-user-collection-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr); /* Exactly 4 columns */
     gap: 1.25rem;
@@ -124,7 +124,7 @@
     padding-right: 0.5rem;
 }
 
-    .user-collection-grid .card-wrapper {
+    .market-user-collection-grid .market-card-wrapper {
         cursor: pointer;
         border: 1px solid var(--border-dark);
         border-radius: 8px;
@@ -132,29 +132,29 @@
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-        .user-collection-grid .card-wrapper:hover {
+        .market-user-collection-grid .market-card-wrapper:hover {
             transform: translateY(-4px);
             border-color: var(--brand-primary);
             box-shadow: 0 4px 16px rgba(219, 136, 219, 0.2);
         }
 
-        .user-collection-grid .card-wrapper.selected {
+        .market-user-collection-grid .market-card-wrapper.selected {
             border: 2px solid var(--brand-primary);
         }
 
 /* Selected Cards Panel */
-.selected-cards-panel {
+.market-selected-cards-panel {
     margin-top: 2rem;
     padding: 1rem;
     background: var(--surface-darker);
     border-radius: 8px;
 }
 
-    .selected-cards-panel h3 {
+    .market-selected-cards-panel h3 {
         margin: 0 0 1rem;
     }
 
-.selected-cards-grid {
+.market-selected-cards-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr); /* 4 columns for selected cards */
     gap: 1.25rem;
