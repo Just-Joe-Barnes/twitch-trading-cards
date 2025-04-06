@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import CollectionPage from './pages/CollectionPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
+import AdminPacksPage from './pages/AdminPacksPage';
 import Navbar from './components/Navbar';
 import ProfilePage from './pages/ProfilePage';
 import TradingPage from './pages/TradingPage';
