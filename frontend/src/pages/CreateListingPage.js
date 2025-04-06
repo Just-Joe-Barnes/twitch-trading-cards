@@ -10,12 +10,12 @@ import "../styles/CreateListingPage.css";
   CreateListingPage:
   - Fetches the logged-in user's collection.
   - Provides filtering and sorting options:
-      • Search by card name.
-      • Filter by rarity.
-      • Sort by name, mint number, rarity, or acquisition date.
+      ï¿½ Search by card name.
+      ï¿½ Filter by rarity.
+      ï¿½ Sort by name, mint number, rarity, or acquisition date.
   - Displays the collection in a fixed grid:
-      • 4 cards per row.
-      • Fixed container height (showing about 2 rows; vertical scrolling if more).
+      ï¿½ 4 cards per row.
+      ï¿½ Fixed container height (showing about 2 rows; vertical scrolling if more).
   - The collection container appears above a listing preview container.
   - An instructional paragraph explains the page.
   - When a card is selected, it is highlighted and a listing preview appears.
@@ -110,13 +110,19 @@ const CreateListingPage = () => {
         if (!selectedCard) return;
         setIsSubmitting(true);
         try {
+            const cardToSend = { ...selectedCard };
+
+            if (cardToSend.imageUrl && cardToSend.imageUrl.startsWith('/')) {
+                cardToSend.imageUrl = 'https://neds-decks.netlify.app' + cardToSend.imageUrl;
+            }
+
             const res = await fetch(`${API_BASE_URL}/api/market/listings`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
-                body: JSON.stringify({ card: selectedCard }),
+                body: JSON.stringify({ card: cardToSend }),
             });
 
             if (res.ok) {
