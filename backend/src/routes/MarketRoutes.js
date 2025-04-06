@@ -1,5 +1,6 @@
 const express = require('express');
 const Joi = require('joi');
+const { logAudit } = require('../helpers/auditLogger');
 const router = express.Router();
 
 const { protect } = require('../middleware/authMiddleware');
