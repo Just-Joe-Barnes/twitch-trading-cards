@@ -92,12 +92,21 @@ const ProfilePage = () => {
                         <span>{openedPacks}</span>
                     </div>
                     <div className="stat">
-                        <div>XP</div>
-                        <span>{xp}</span>
-                    </div>
-                    <div className="stat">
                         <div>Level</div>
                         <span>{level}</span>
+                    </div>
+                    <div className="stat">
+                        <div>XP</div>
+                        <span>{xp % 100} / 100</span>
+                        <div style={{ background: '#333', borderRadius: '8px', overflow: 'hidden', marginTop: '0.5rem' }}>
+                            <div style={{
+                                width: `${(xp % 100)}%`,
+                                background: '#db88db',
+                                height: '10px',
+                                transition: 'width 0.3s ease'
+                            }}></div>
+                        </div>
+                        <small>Earn XP by opening packs, trading, and listing cards.</small>
                     </div>
                 </div>
                 <h3>Achievements</h3>
