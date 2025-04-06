@@ -5,6 +5,7 @@ const { protect } = require('../middleware/authMiddleware');
 const { sensitiveLimiter } = require('../middleware/rateLimiter');
 const { sendNotificationToUser } = require('../../notificationService');
 const marketService = require('../services/marketService');
+const MarketListing = require('../models/MarketListing');
 
 router.post('/listings', protect, sensitiveLimiter, async (req, res) => {
     try {
