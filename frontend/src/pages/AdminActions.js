@@ -250,6 +250,90 @@ const AdminActions = () => {
                     </div>
                 </section>
             </div>
+
+            {/* User Profile Viewer */}
+            <section className="aa-panel">
+                <h2>User Profile</h2>
+                <input
+                    type="text"
+                    placeholder="Search username..."
+                    value={selectedUser}
+                    onChange={(e) => setSelectedUser(e.target.value)}
+                />
+                {selectedUserObj && (
+                    <div className="user-profile-info">
+                        <p><strong>Username:</strong> {selectedUserObj.username}</p>
+                        <p><strong>Packs:</strong> {selectedUserObj.packs}</p>
+                        <p><strong>XP:</strong> {selectedUserObj.xp || 0}</p>
+                        <p><strong>Level:</strong> {selectedUserObj.level || 1}</p>
+                        <h4>Achievements:</h4>
+                        <ul>
+                            {(selectedUserObj.achievements || []).map((a, idx) => (
+                                <li key={idx}>
+                                    <strong>{a.name}</strong>: {a.description}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+            </section>
+
+            {/* Card Availability Editor */}
+            <section className="aa-panel">
+                <h2>Card Availability</h2>
+                {selectedCardDetails && (
+                    <div className="card-availability-editor">
+                        <p><strong>{selectedCardDetails.name}</strong></p>
+                        <label>Available From (ISO):</label>
+                        <input
+                            type="text"
+                            value={selectedCardDetails.availableFrom || ''}
+                            onChange={(e) => setSelectedCardDetails({ ...selectedCardDetails, availableFrom: e.target.value })}
+                        />
+                        <label>Available To (ISO):</label>
+                        <input
+                            type="text"
+                            value={selectedCardDetails.availableTo || ''}
+                            onChange={(e) => setSelectedCardDetails({ ...selectedCardDetails, availableTo: e.target.value })}
+                        />
+                        <label>Series:</label>
+                        <input
+                            type="text"
+                            value={selectedCardDetails.series || ''}
+                            onChange={(e) => setSelectedCardDetails({ ...selectedCardDetails, series: e.target.value })}
+                        />
+                        <button
+                            onClick={async () => {
+                                try {
+                                    await fetchWithAuth('/api/admin/update-card-availability', {
+                                        method: 'POST',
+                                        body: JSON.stringify({
+                                            cardId: selectedCardDetails._id,
+                                            availableFrom: selectedCardDetails.availableFrom,
+                                            availableTo: selectedCardDetails.availableTo,
+                                            series: selectedCardDetails.series,
+                                        }),
+                                    });
+                                    window.showToast('Card availability updated', 'success');
+                                } catch {
+                                    window.showToast('Error updating card availability', 'error');
+                                }
+                            }}
+                        >
+                            Save Availability
+                        </button>
+                    </div>
+                )}
+            </section>
+
+            {/* Link to Pack Management */}
+            <section className="aa-panel">
+                <h2>Pack Management</h2>
+                <button onClick={() => window.location.href = '/admin/packs'}>
+                    Go to Pack Management
+                </button>
+            </section>
+
             {status && <p className="aa-status-message">{status}</p>}
         </div>
     );
