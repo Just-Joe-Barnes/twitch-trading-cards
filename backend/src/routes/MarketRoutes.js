@@ -98,6 +98,8 @@ router.get('/listings', protect, async (req, res) => {
         res.status(200).json({ listings, total, page, pages });
     } catch (error) {
         console.error('Error fetching market listings:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
         res.status(500).json({ message: 'Server error fetching listings' });
     }
 });
