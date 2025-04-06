@@ -21,32 +21,32 @@ const ProfilePage = () => {
     const navigate = useNavigate();
     const { username: routeUsername } = useParams();
 
+    const [xp, setXp] = useState(0);
+    const [level, setLevel] = useState(1);
+    const [achievements, setAchievements] = useState([]);
+
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
                 let profile;
                 if (routeUsername) {
-                    // Fetch profile for the specified username.
                     profile = await fetchUserProfileByUsername(routeUsername);
                 } else {
-                    // Otherwise, fetch the logged-in user's profile.
                     profile = await fetchUserProfile();
                 }
                 setUsername(profile.username || 'User');
-                // Set opened packs from profile
                 setOpenedPacks(profile.openedPacks || 0);
+                setXp(profile.xp || 0);
+                setLevel(profile.level || 1);
+                setAchievements(profile.achievements || []);
 
                 let tempFeatured = profile.featuredCards || [];
                 if (profile._id) {
-                    // Fetch collection data using the profile _id
                     const collectionData = await fetchUserCollection(profile._id);
-                    // Update total cards count
                     setCollectionCount(collectionData.cards ? collectionData.cards.length : 0);
-                    // Update current packs from collection data
                     setCurrentPacks(collectionData.packs || 0);
 
                     if (collectionData.cards) {
-                        // Filter out any featured card that is no longer in the collection.
                         tempFeatured = tempFeatured.filter((card) =>
                             collectionData.cards.some((c) => c._id.toString() === card._id.toString())
                         );
@@ -91,7 +91,23 @@ const ProfilePage = () => {
                         <div>Opened Packs</div>
                         <span>{openedPacks}</span>
                     </div>
+                    <div className="stat">
+                        <div>XP</div>
+                        <span>{xp}</span>
+                    </div>
+                    <div className="stat">
+                        <div>Level</div>
+                        <span>{level}</span>
+                    </div>
                 </div>
+                <h3>Achievements</h3>
+                <ul>
+                    {achievements.map((a, idx) => (
+                        <li key={idx}>
+                            <strong>{a.name}</strong>: {a.description}
+                        </li>
+                    ))}
+                </ul>
             </div>
 
             <div className="featured-cards-container">

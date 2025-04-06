@@ -39,6 +39,15 @@ const checkAndGrantAchievements = async (user) => {
   if (achievements.length > 0) {
     user.achievements.push(...achievements.map(a => ({ ...a, dateEarned: new Date() })));
     await user.save();
+
+    const { sendNotificationToUser } = require('../../notificationService');
+    for (const a of achievements) {
+      sendNotificationToUser(user._id, {
+        type: 'Achievement Unlocked',
+        message: `You unlocked "${a.name}"!`,
+        link: '/profile',
+      });
+    }
   }
 };
 
