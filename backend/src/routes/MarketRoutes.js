@@ -199,7 +199,7 @@ router.post('/listings/:id/offers', protect, sensitiveLimiter, async (req, res) 
         await listing.save();
 
         // Send notification to the listing owner: New Market Offer
-        await createNotification(listing.owner, {
+        await sendNotificationToUser(listing.owner, {
             type: 'New Market Offer',
             message: `You have received a new offer on your market listing.`,
             link: `/market/listings/${listing._id}`
@@ -283,7 +283,7 @@ router.delete('/listings/:id/offers/self', protect, async (req, res) => {
         await listing.save();
 
         // Notify listing owner that an offer was cancelled.
-        await createNotification(listing.owner, {
+        await sendNotificationToUser(listing.owner, {
             type: 'Listing Update',
             message: `An offer on your listing has been cancelled.`,
             link: `/market/listings/${listing._id}`
@@ -323,7 +323,7 @@ router.delete('/listings/:id/offers/:offerId', protect, async (req, res) => {
         await listing.save();
 
         // Notify the offerer that their offer was rejected.
-        await createNotification(offererId, {
+        await sendNotificationToUser(offererId, {
             type: 'Listing Update',
             message: `Your offer on the listing has been rejected.`,
             link: `/market/listings/${listing._id}`
