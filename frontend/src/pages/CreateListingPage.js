@@ -112,9 +112,15 @@ const CreateListingPage = () => {
         try {
             const cardToSend = { ...selectedCard };
 
-            // Remove _id and status to satisfy backend validation
+            // Remove forbidden fields to satisfy backend validation
             delete cardToSend._id;
             delete cardToSend.status;
+            delete cardToSend.acquiredAt;
+            delete cardToSend.__v;
+            delete cardToSend.owner; // if present
+            delete cardToSend.offers; // if present
+            delete cardToSend.createdAt; // if present
+            delete cardToSend.updatedAt; // if present
 
             if (cardToSend.imageUrl && cardToSend.imageUrl.startsWith('/')) {
                 cardToSend.imageUrl = 'https://neds-decks.netlify.app' + cardToSend.imageUrl;
