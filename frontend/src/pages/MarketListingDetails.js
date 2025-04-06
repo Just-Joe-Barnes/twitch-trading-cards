@@ -107,7 +107,7 @@ const MarketListingDetails = () => {
         try {
             const mappedCards = selectedOfferedCards.map(card => ({
                 name: card.name,
-                imageUrl: card.imageUrl,
+                imageUrl: card.imageUrl?.startsWith('http') ? card.imageUrl : `${window.location.origin}${card.imageUrl.startsWith('/') ? '' : '/'}${card.imageUrl}`,
                 rarity: card.rarity || (card.rarities && card.rarities[0]?.rarity) || '',
                 mintNumber: card.mintNumber != null ? card.mintNumber : 0,
                 flavorText: card.flavorText || ''
