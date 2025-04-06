@@ -6,7 +6,7 @@ const Card = require('../models/cardModel');
 const getUserProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select(
-            'username email isAdmin packs openedPacks featuredCards cards twitchProfilePic'
+            'username email isAdmin packs openedPacks featuredCards cards twitchProfilePic xp level achievements'
         );
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -18,12 +18,12 @@ const getUserProfile = async (req, res) => {
     }
 };
 
-// Get profile by username (for viewing other users’ profiles)
+// Get profile by username (for viewing other usersï¿½ profiles)
 const getProfileByUsername = async (req, res) => {
     try {
         const { username } = req.params;
         const user = await User.findOne({ username }).select(
-            'username email isAdmin openedPacks featuredCards cards twitchProfilePic'
+            'username email isAdmin openedPacks featuredCards cards twitchProfilePic xp level achievements'
         );
         if (!user) {
             return res.status(404).json({ message: 'User not found' });

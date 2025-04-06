@@ -38,6 +38,9 @@ const checkAndGrantAchievements = async (user) => {
   }
 
   if (achievements.length > 0) {
+    console.log(`Granting ${achievements.length} achievements to user ${user.username}`);
+    achievements.forEach(a => console.log(`- ${a.name}`));
+
     user.achievements.push(...achievements.map(a => ({ ...a, dateEarned: new Date() })));
     await user.save();
 
@@ -49,6 +52,8 @@ const checkAndGrantAchievements = async (user) => {
         link: '/profile',
       });
     }
+  } else {
+    console.log(`No new achievements for user ${user.username}`);
   }
 };
 
