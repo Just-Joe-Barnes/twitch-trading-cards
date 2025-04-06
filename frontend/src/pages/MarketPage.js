@@ -140,7 +140,7 @@ const MarketPage = () => {
                     <p>No listings found.</p>
                 )}
             </div>
-            <div className="pagination-controls" style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+            <div className="market-pagination" style={{ marginTop: '1.5rem', textAlign: 'center' }}>
                 <button onClick={handlePreviousPage} disabled={currentPage === 1}>
                     Previous
                 </button>
