@@ -13,6 +13,9 @@ const cardSchema = new mongoose.Schema({
     flavorText: { type: String },
     modifier: { type: mongoose.Schema.Types.ObjectId, ref: 'Modifier' },
     rarities: [raritySchema], // Nest rarities as an array of objects
+    availableFrom: { type: Date, default: null },
+    availableTo: { type: Date, default: null },
+    series: { type: String, default: 'Base' },
 });
 
 const Card = mongoose.model('Card', cardSchema);

@@ -125,4 +125,150 @@ router.get('/users-activity', protect, adminOnly, async (req, res) => {
     }
 });
 
+/**
+ * Grant a specific card to a user
+ * POST /api/admin/grant-card
+ * Body: { userId, cardId, rarity, mintNumber }
+ */
+router.post('/grant-card', protect, adminOnly, async (req, res) => {
+    const { userId, cardId, rarity, mintNumber } = req.body;
+    if (!userId || !cardId || !rarity || mintNumber == null) {
+        return res.status(400).json({ message: 'userId, cardId, rarity, and mintNumber are required.' });
+    }
+    try {
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const Card = require('../models/cardModel');
+        const cardDoc = await Card.findById(cardId);
+        if (!cardDoc) return res.status(404).json({ message: 'Card not found' });
+
+        const rarityObj = cardDoc.rarities.find(r => r.rarity === rarity);
+        if (!rarityObj) return res.status(400).json({ message: 'Invalid rarity for this card' });
+
+        // Check mint number availability
+        if (!rarityObj.availableMintNumbers.includes(mintNumber)) {
+            return res.status(400).json({ message: 'Mint number not available' });
+        }
+
+        // Remove mint number from available list and decrement remaining copies
+        rarityObj.availableMintNumbers = rarityObj.availableMintNumbers.filter(n => n !== mintNumber);
+        rarityObj.remainingCopies -= 1;
+        await cardDoc.save();
+
+        // Add card to user
+        user.cards.push({
+            name: cardDoc.name,
+            imageUrl: cardDoc.imageUrl,
+            flavorText: cardDoc.flavorText,
+            rarity,
+            mintNumber,
+            acquiredAt: new Date(),
+            status: 'available',
+        });
+        await user.save();
+
+        res.json({ message: 'Card granted successfully' });
+    } catch (error) {
+        console.error('Error granting card:', error);
+        res.status(500).json({ message: 'Failed to grant card' });
+    }
+});
+
+/**
+ * Update card availability window and series
+ * POST /api/admin/update-card-availability
+ * Body: { cardId, availableFrom, availableTo, series }
+ */
+router.post('/update-card-availability', protect, adminOnly, async (req, res) => {
+    const { cardId, availableFrom, availableTo, series } = req.body;
+    if (!cardId) {
+        return res.status(400).json({ message: 'cardId is required.' });
+    }
+    try {
+        const Card = require('../models/cardModel');
+        const card = await Card.findById(cardId);
+        if (!card) return res.status(404).json({ message: 'Card not found' });
+
+        if (availableFrom !== undefined) card.availableFrom = availableFrom ? new Date(availableFrom) : null;
+        if (availableTo !== undefined) card.availableTo = availableTo ? new Date(availableTo) : null;
+        if (series !== undefined) card.series = series;
+
+        await card.save();
+        res.json({ message: 'Card availability updated successfully' });
+    } catch (error) {
+        console.error('Error updating card availability:', error);
+        res.status(500).json({ message: 'Failed to update card availability' });
+    }
+});
+
+/**
+ * Create or update a pack type
+ * POST /api/admin/upsert-pack
+ * Body: { packId (optional), type, series, availableFrom, availableTo, cardPool }
+ */
+router.post('/upsert-pack', protect, adminOnly, async (req, res) => {
+    const { packId, type, series, availableFrom, availableTo, cardPool } = req.body;
+    try {
+        const Pack = require('../models/packModel');
+        let pack;
+        if (packId) {
+            pack = await Pack.findById(packId);
+            if (!pack) return res.status(404).json({ message: 'Pack not found' });
+        } else {
+            pack = new Pack({ userId: null, isOpened: false, cards: [] });
+        }
+
+        if (type !== undefined) pack.type = type;
+        if (series !== undefined) pack.series = series;
+        if (availableFrom !== undefined) pack.availableFrom = availableFrom ? new Date(availableFrom) : null;
+        if (availableTo !== undefined) pack.availableTo = availableTo ? new Date(availableTo) : null;
+        if (cardPool !== undefined) pack.cardPool = cardPool;
+
+        await pack.save();
+        res.json({ message: 'Pack saved successfully', pack });
+    } catch (error) {
+        console.error('Error saving pack:', error);
+        res.status(500).json({ message: 'Failed to save pack' });
+    }
+});
+
+/**
+ * Grant a pack to a user
+ * POST /api/admin/grant-pack
+ * Body: { userId, packId }
+ */
+router.post('/grant-pack', protect, adminOnly, async (req, res) => {
+    const { userId, packId } = req.body;
+    if (!userId || !packId) {
+        return res.status(400).json({ message: 'userId and packId are required.' });
+    }
+    try {
+        const Pack = require('../models/packModel');
+        const pack = await Pack.findById(packId);
+        if (!pack) return res.status(404).json({ message: 'Pack not found' });
+
+        const User = require('../models/userModel');
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const userPack = new Pack({
+            userId: user._id,
+            isOpened: false,
+            type: pack.type,
+            series: pack.series,
+            availableFrom: pack.availableFrom,
+            availableTo: pack.availableTo,
+            cardPool: pack.cardPool,
+            cards: [],
+        });
+        await userPack.save();
+
+        res.json({ message: 'Pack granted to user successfully' });
+    } catch (error) {
+        console.error('Error granting pack:', error);
+        res.status(500).json({ message: 'Failed to grant pack' });
+    }
+});
+
 module.exports = router;

@@ -6,6 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { Link } from 'react-router-dom';
 import { rarities } from '../constants/rarities';
 import '../styles/MarketPage.css';
+import { io } from 'socket.io-client';
 
 const MarketPage = () => {
     const [listings, setListings] = useState([]);
@@ -37,7 +38,23 @@ const MarketPage = () => {
 
     useEffect(() => {
         fetchListings(currentPage);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
+        const socket = io(process.env.REACT_APP_API_URL || 'http://localhost:5000', {
+            transports: ['websocket'],
+        });
+
+        socket.on('connect', () => {
+            console.log('Connected to Socket.io server');
+        });
+
+        socket.on('market:newListing', (newListing) => {
+            console.log('Received new listing:', newListing);
+            setListings((prev) => [newListing, ...prev]);
+        });
+
+        return () => {
+            socket.disconnect();
+        };
     }, []);
 
     const filteredListings = listings.filter((listing) => {

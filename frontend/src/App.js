@@ -110,6 +110,10 @@ const App = () => {
                         path="/admin-dashboard"
                         element={user?.isAdmin ? <AdminDashboardPage user={user} /> : <Navigate to="/login" />}
                     />
+                    <Route
+                        path="/admin/packs"
+                        element={user?.isAdmin ? <AdminPacksPage /> : <Navigate to="/login" />}
+                    />
                     <Route path="/profile/:username" element={<ProfilePage />} />
                     <Route
                         path="/trading"

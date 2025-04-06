@@ -41,7 +41,18 @@ const userSchema = new mongoose.Schema({
     notifications: [notificationSchema], // NEW: Notifications for the user
     firstLogin: { type: Boolean, default: false },
     isAdmin: { type: Boolean, default: false },
-    lastActive: { type: Date } // Last active in chat
+    lastActive: { type: Date }, // Last active in chat
+
+    // Gamification fields
+    xp: { type: Number, default: 0 },
+    level: { type: Number, default: 1 },
+    achievements: [
+        {
+            name: String,
+            description: String,
+            dateEarned: { type: Date, default: Date.now }
+        }
+    ]
 });
 
 const User = mongoose.model('User', userSchema);

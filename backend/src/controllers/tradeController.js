@@ -67,6 +67,10 @@ const updateTradeStatus = async (req, res) => {
             return res.status(404).json({ message: "Trade not found" });
         }
 
+        const { checkAndGrantAchievements } = require('../helpers/achievementHelper');
+        await checkAndGrantAchievements(sender);
+        await checkAndGrantAchievements(recipient);
+
         // Fetch both sender and recipient for notifications
         const sender = await User.findById(trade.sender).session(session);
         const recipient = await User.findById(trade.recipient).session(session);
@@ -227,6 +231,16 @@ const updateTradeStatus = async (req, res) => {
         // Update trade status for accepted, rejected, or cancelled
         trade.status = status;
         await trade.save({ session });
+
+        // Award XP if trade accepted
+        if (status === 'accepted') {
+            sender.xp = (sender.xp || 0) + 20;
+            recipient.xp = (recipient.xp || 0) + 20;
+            sender.level = Math.floor(sender.xp / 100) + 1;
+            recipient.level = Math.floor(recipient.xp / 100) + 1;
+            await sender.save({ session });
+            await recipient.save({ session });
+        }
 
         await session.commitTransaction();
         session.endSession();

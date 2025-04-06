@@ -93,6 +93,18 @@ async function acceptOffer(listingId, offerId, userId, session) {
     link: `/market/listings/${listing._id}`
   });
 
+  // Award XP
+  seller.xp = (seller.xp || 0) + 15;
+  buyer.xp = (buyer.xp || 0) + 15;
+  seller.level = Math.floor(seller.xp / 100) + 1;
+  buyer.level = Math.floor(buyer.xp / 100) + 1;
+  await seller.save({ session });
+  await buyer.save({ session });
+
+  const { checkAndGrantAchievements } = require('../helpers/achievementHelper');
+  await checkAndGrantAchievements(seller);
+  await checkAndGrantAchievements(buyer);
+
   logAudit('Market Offer Accepted', { listingId, offerId, sellerId: seller._id, buyerId: buyer._id });
 
   return { success: true };

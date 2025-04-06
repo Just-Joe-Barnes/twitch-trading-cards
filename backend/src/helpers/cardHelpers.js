@@ -34,12 +34,22 @@ const generateCardWithProbability = async () => {
             const selectedRarity = pickRarity();
 
             // Use aggregation to randomly select a card with the desired rarity and available copies
+            const now = new Date();
             const cards = await Card.aggregate([
                 {
                     $match: {
                         'rarities.rarity': selectedRarity,
                         'rarities.remainingCopies': { $gt: 0 },
-                        'rarities.availableMintNumbers.0': { $exists: true } // ensure at least one available mint number
+                        'rarities.availableMintNumbers.0': { $exists: true },
+                        $or: [
+                            { availableFrom: null },
+                            { availableFrom: { $lte: now } }
+                        ],
+                        $or: [
+                            { availableTo: null },
+                            { availableTo: { $gte: now } }
+                        ]
+                        // Optionally add series filter here
                     }
                 },
                 { $sample: { size: 1 } }

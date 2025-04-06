@@ -69,12 +69,26 @@ router.post('/listings', protect, sensitiveLimiter, async (req, res) => {
         console.log('Saved listing card imageUrl:', savedListing.card?.imageUrl);
         logAudit('Market Listing Created', { listingId: savedListing._id, userId: req.user._id });
 
+        // Emit real-time event for new listing
+        const { getSocketInstance } = require('../../notificationService');
+        const io = getSocketInstance && getSocketInstance();
+        if (io) {
+            io.emit('market:newListing', savedListing);
+        }
+
         // Optionally notify the owner (self) about listing creation
         sendNotificationToUser(req.user._id, {
             type: 'Listing Created',
             message: 'Your card has been listed on the market.',
             link: `/market/listings/${savedListing._id}`
         });
+
+        // Award XP for creating a listing
+        if (user) {
+            user.xp = (user.xp || 0) + 5;
+            user.level = Math.floor(user.xp / 100) + 1;
+            await user.save();
+        }
 
         res.status(201).json(savedListing);
     } catch (error) {
