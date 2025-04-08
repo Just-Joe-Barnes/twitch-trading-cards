@@ -83,12 +83,7 @@ router.post('/listings', protect, sensitiveLimiter, async (req, res) => {
             link: `/market/listings/${savedListing._id}`
         });
 
-        // Award XP for creating a listing
-        if (user) {
-            user.xp = (user.xp || 0) + 5;
-            user.level = Math.floor(user.xp / 100) + 1;
-            await user.save();
-        }
+        // No XP for just creating a listing
 
         res.status(201).json(savedListing);
     } catch (error) {

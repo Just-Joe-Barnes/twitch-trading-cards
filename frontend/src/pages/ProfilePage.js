@@ -95,7 +95,7 @@ const ProfilePage = () => {
                         <div>Level</div>
                         <span>{level}</span>
                     </div>
-                    <div className="stat" data-tooltip="Earn XP by opening packs, trading, and listing cards.">
+                    <div className="stat" data-tooltip="Earn XP by opening packs, completing trades, and selling cards.">
                         <div>XP</div>
                         <span>{xp % 100} / 100</span>
                         <div className="xp-bar-container">
