@@ -97,6 +97,11 @@ const openPacksForUser = async (req, res) => {
 
         user.packs -= 1;
         user.openedPacks += 1;
+
+        // Award XP for admin opening pack
+        user.xp = (user.xp || 0) + 10;
+        user.level = Math.floor(user.xp / 100) + 1;
+
         user.cards.push(...newCards);
         await user.save();
 
