@@ -109,9 +109,11 @@ const ProfilePage = () => {
                     {achievements.length === 0 && <p>No achievements yet.</p>}
 
                     {[
-                        { name: 'XP 100', description: 'Earned 100 XP' },
-                        { name: 'XP 500', description: 'Earned 500 XP' },
-                        { name: 'XP 1000', description: 'Earned 1000 XP' },
+                        { name: 'Level 1', description: 'Reached Level 1' },
+                        { name: 'Level 5', description: 'Reached Level 5' },
+                        { name: 'Level 10', description: 'Reached Level 10' },
+                        { name: 'Level 20', description: 'Reached Level 20' },
+                        { name: 'Level 50', description: 'Reached Level 50' },
                         { name: 'Trader I', description: 'Completed 10 trades' },
                         { name: 'Trader II', description: 'Completed 50 trades' },
                         { name: 'Seller I', description: 'Created 10 listings' },

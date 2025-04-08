@@ -1,15 +1,21 @@
 const checkAndGrantAchievements = async (user) => {
   const achievements = [];
 
-  // XP milestones
-  if (user.xp >= 100 && !user.achievements.some(a => a.name === 'XP 100')) {
-    achievements.push({ name: 'XP 100', description: 'Earned 100 XP' });
+  // Level milestones
+  if (user.level >= 1 && !user.achievements.some(a => a.name === 'Level 1')) {
+    achievements.push({ name: 'Level 1', description: 'Reached Level 1' });
   }
-  if (user.xp >= 500 && !user.achievements.some(a => a.name === 'XP 500')) {
-    achievements.push({ name: 'XP 500', description: 'Earned 500 XP' });
+  if (user.level >= 5 && !user.achievements.some(a => a.name === 'Level 5')) {
+    achievements.push({ name: 'Level 5', description: 'Reached Level 5' });
   }
-  if (user.xp >= 1000 && !user.achievements.some(a => a.name === 'XP 1000')) {
-    achievements.push({ name: 'XP 1000', description: 'Earned 1000 XP' });
+  if (user.level >= 10 && !user.achievements.some(a => a.name === 'Level 10')) {
+    achievements.push({ name: 'Level 10', description: 'Reached Level 10' });
+  }
+  if (user.level >= 20 && !user.achievements.some(a => a.name === 'Level 20')) {
+    achievements.push({ name: 'Level 20', description: 'Reached Level 20' });
+  }
+  if (user.level >= 50 && !user.achievements.some(a => a.name === 'Level 50')) {
+    achievements.push({ name: 'Level 50', description: 'Reached Level 50' });
   }
 
   // Trades completed
