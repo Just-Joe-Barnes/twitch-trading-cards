@@ -68,6 +68,32 @@ body {
     margin: 0 auto;
 }
 
+.achievements-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+    justify-items: center;
+}
+
+.achievement-badge {
+    background: var(--surface-darker);
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    border: 1px solid var(--border-dark);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    cursor: default;
+    text-align: center;
+}
+
+.achievement-badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
     .profile-overview h2 {
         font-size: 1.75rem;
         margin-bottom: 1rem;
