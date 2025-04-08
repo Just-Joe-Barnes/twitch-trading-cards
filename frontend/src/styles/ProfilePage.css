@@ -75,6 +75,7 @@ body {
 
     .profile-overview .stats {
         display: flex;
+        flex-wrap: wrap;
         justify-content: center;
         gap: 2rem;
         font-size: 1.1rem;
@@ -84,13 +85,37 @@ body {
         display: flex;
         flex-direction: column;
         align-items: center;
+        position: relative;
+        cursor: pointer;
     }
 
-        .profile-overview .stat span {
-            font-weight: bold;
-            margin-top: 0.5rem;
-            color: var(--brand-secondary);
-        }
+    .profile-overview .stat span {
+        font-weight: bold;
+        margin-top: 0.5rem;
+        color: var(--brand-secondary);
+    }
+
+    .profile-overview .stat::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 120%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.8);
+        color: #fff;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+        z-index: 10;
+    }
+
+    .profile-overview .stat:hover::after {
+        opacity: 1;
+    }
 
 /* Featured Cards Container styled as a card */
 .featured-cards-container {
