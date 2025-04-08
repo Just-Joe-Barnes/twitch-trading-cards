@@ -95,23 +95,24 @@ const ProfilePage = () => {
                         <div>Level</div>
                         <span>{level}</span>
                     </div>
-                    <div className="stat">
+                    <div className="stat" data-tooltip="Earn XP by opening packs, trading, and listing cards.">
                         <div>XP</div>
                         <span>{xp % 100} / 100</span>
                         <div className="xp-bar-container">
                             <div className="xp-bar-fill" style={{ width: `${(xp % 100)}%` }}></div>
                         </div>
-                        <small style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>Earn XP by opening packs, trading, and listing cards.</small>
                     </div>
                 </div>
+
                 <h3>Achievements</h3>
-                <ul>
+                <div className="achievements-container">
+                    {achievements.length === 0 && <p>No achievements yet.</p>}
                     {achievements.map((a, idx) => (
-                        <li key={idx}>
-                            <strong>{a.name}</strong>: {a.description}
-                        </li>
+                        <div key={idx} className="achievement-badge" title={a.description}>
+                            <span>{a.name}</span>
+                        </div>
                     ))}
-                </ul>
+                </div>
             </div>
 
             <div className="featured-cards-container">
