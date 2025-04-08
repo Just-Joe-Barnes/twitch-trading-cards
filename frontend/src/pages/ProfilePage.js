@@ -79,34 +79,29 @@ const ProfilePage = () => {
             <div className="profile-overview">
                 <h2>Profile Overview</h2>
                 <div className="stats">
-                    <div className="stat">
+                    <div className="stat" data-tooltip="Total number of cards you own">
                         <div>Total Cards</div>
                         <span>{collectionCount}</span>
                     </div>
-                    <div className="stat">
+                    <div className="stat" data-tooltip="Unopened packs you currently have">
                         <div>Current Packs</div>
                         <span>{currentPacks}</span>
                     </div>
-                    <div className="stat">
+                    <div className="stat" data-tooltip="Total packs you have opened">
                         <div>Opened Packs</div>
                         <span>{openedPacks}</span>
                     </div>
-                    <div className="stat">
+                    <div className="stat" data-tooltip="Your current level">
                         <div>Level</div>
                         <span>{level}</span>
                     </div>
                     <div className="stat">
                         <div>XP</div>
                         <span>{xp % 100} / 100</span>
-                        <div style={{ background: '#333', borderRadius: '8px', overflow: 'hidden', marginTop: '0.5rem' }}>
-                            <div style={{
-                                width: `${(xp % 100)}%`,
-                                background: '#db88db',
-                                height: '10px',
-                                transition: 'width 0.3s ease'
-                            }}></div>
+                        <div className="xp-bar-container">
+                            <div className="xp-bar-fill" style={{ width: `${(xp % 100)}%` }}></div>
                         </div>
-                        <small>Earn XP by opening packs, trading, and listing cards.</small>
+                        <small style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>Earn XP by opening packs, trading, and listing cards.</small>
                     </div>
                 </div>
                 <h3>Achievements</h3>
