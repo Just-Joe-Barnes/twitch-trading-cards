@@ -87,15 +87,27 @@ body {
         align-items: center;
         position: relative;
         cursor: pointer;
+        background: var(--surface-darker);
+        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        min-width: 120px;
+    }
+
+    .profile-overview .stat:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
     }
 
     .profile-overview .stat span {
         font-weight: bold;
         margin-top: 0.5rem;
         color: var(--brand-secondary);
+        font-size: 1.2rem;
     }
 
-    .profile-overview .stat::after {
+    .profile-overview .stat[data-tooltip]:hover::after {
         content: attr(data-tooltip);
         position: absolute;
         bottom: 120%;
@@ -107,14 +119,31 @@ body {
         border-radius: 8px;
         font-size: 0.9rem;
         white-space: nowrap;
-        opacity: 0;
+        opacity: 1;
         pointer-events: none;
-        transition: opacity 0.3s ease;
         z-index: 10;
+        transition: opacity 0.3s ease;
     }
 
-    .profile-overview .stat:hover::after {
-        opacity: 1;
+    .profile-overview .stat[data-tooltip]::after {
+        opacity: 0;
+    }
+
+    /* XP progress bar */
+    .xp-bar-container {
+        width: 100%;
+        max-width: 200px;
+        height: 12px;
+        background: #333;
+        border-radius: 6px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+
+    .xp-bar-fill {
+        height: 100%;
+        background: var(--brand-primary);
+        transition: width 0.3s ease;
     }
 
 /* Featured Cards Container styled as a card */
