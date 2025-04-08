@@ -107,11 +107,30 @@ const ProfilePage = () => {
                 <h3>Achievements</h3>
                 <div className="achievements-container">
                     {achievements.length === 0 && <p>No achievements yet.</p>}
-                    {achievements.map((a, idx) => (
-                        <div key={idx} className="achievement-badge" title={a.description}>
-                            <span>{a.name}</span>
-                        </div>
-                    ))}
+
+                    {[
+                        { name: 'XP 100', description: 'Earned 100 XP' },
+                        { name: 'XP 500', description: 'Earned 500 XP' },
+                        { name: 'XP 1000', description: 'Earned 1000 XP' },
+                        { name: 'Trader I', description: 'Completed 10 trades' },
+                        { name: 'Trader II', description: 'Completed 50 trades' },
+                        { name: 'Seller I', description: 'Created 10 listings' },
+                        { name: 'Seller II', description: 'Created 50 listings' },
+                        { name: 'Opener I', description: 'Opened 10 packs' },
+                        { name: 'Opener II', description: 'Opened 50 packs' },
+                    ].map((ach, idx) => {
+                        const unlocked = achievements.some(a => a.name === ach.name);
+                        return (
+                            <div
+                                key={idx}
+                                className="achievement-badge"
+                                title={ach.description}
+                                style={{ opacity: unlocked ? 1 : 0.4 }}
+                            >
+                                <span>{ach.name}</span>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
