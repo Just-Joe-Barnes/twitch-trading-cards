@@ -79,27 +79,23 @@ const ProfilePage = () => {
             <div className="profile-overview">
                 <h2>Profile Overview</h2>
                 <div className="stats">
-                    <div className="stat tooltip">
+                    <div className="stat">
                         <div>Total Cards</div>
                         <span>{collectionCount}</span>
-                        <span className="tooltiptext">The total number of cards in your collection.</span>
                     </div>
-                    <div className="stat tooltip">
+                    <div className="stat">
                         <div>Current Packs</div>
                         <span>{currentPacks}</span>
-                        <span className="tooltiptext">Unopened packs you currently own.</span>
                     </div>
-                    <div className="stat tooltip">
+                    <div className="stat">
                         <div>Opened Packs</div>
                         <span>{openedPacks}</span>
-                        <span className="tooltiptext">Total packs you have opened.</span>
                     </div>
-                    <div className="stat tooltip">
+                    <div className="stat">
                         <div>Level</div>
                         <span>{level}</span>
-                        <span className="tooltiptext">Your current level based on XP.</span>
                     </div>
-                    <div className="stat tooltip">
+                    <div className="stat">
                         <div>XP</div>
                         <span>{xp % 100} / 100</span>
                         <div style={{ background: '#333', borderRadius: '8px', overflow: 'hidden', marginTop: '0.5rem' }}>
@@ -110,7 +106,7 @@ const ProfilePage = () => {
                                 transition: 'width 0.3s ease'
                             }}></div>
                         </div>
-                        <span className="tooltiptext">Earn XP by opening packs, trading, and listing cards.</span>
+                        <small>Earn XP by opening packs, trading, and listing cards.</small>
                     </div>
                 </div>
                 <h3>Achievements</h3>
