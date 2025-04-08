@@ -281,6 +281,27 @@ const AdminActions = () => {
             {/* Card Availability Editor */}
             <section className="aa-panel">
                 <h2>Card Availability</h2>
+
+                <input
+                    type="text"
+                    placeholder="Search card name..."
+                    value={cardSearchQuery}
+                    onChange={handleCardSearchInput}
+                />
+                {cardSearchResults.length > 0 && (
+                    <ul className="search-dropdown">
+                        {cardSearchResults.map(card => (
+                            <li
+                                key={card._id}
+                                className="search-result-item"
+                                onMouseDown={() => handleSelectCard(card)}
+                            >
+                                {card.name}
+                            </li>
+                        ))}
+                    </ul>
+                )}
+
                 {selectedCardDetails && (
                     <div className="card-availability-editor">
                         <p><strong>{selectedCardDetails.name}</strong></p>
