@@ -360,12 +360,10 @@ const AdminActions = () => {
                 )}
             </section>
 
-            {/* Link to Pack Management */}
+            {/* Pack Management Panel */}
             <section className="aa-panel">
                 <h2>Pack Management</h2>
-                <button onClick={() => window.location.href = '/admin/packs'}>
-                    Go to Pack Management
-                </button>
+                <p>Coming soon: Inline pack management UI here.</p>
             </section>
 
             {status && <p className="aa-status-message">{status}</p>}
