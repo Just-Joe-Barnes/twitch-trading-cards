@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchWithAuth } from '../utils/api';
+import BaseCard from '../components/BaseCard';
 import '../styles/AdminDashboardPage.css';
 
 const AdminPacksPage = () => {
@@ -10,10 +11,7 @@ const AdminPacksPage = () => {
   const [selectedCardIds, setSelectedCardIds] = useState([]);
   const [form, setForm] = useState({
     packId: '',
-    type: '',
-    series: '',
-    availableFrom: '',
-    availableTo: '',
+    name: '',
   });
 
   const fetchPacks = async () => {
@@ -56,7 +54,7 @@ const AdminPacksPage = () => {
     }
     const lower = term.toLowerCase();
     const filtered = allCards.filter(c => c.name.toLowerCase().includes(lower) && !selectedCardIds.includes(c._id));
-    setSuggestions(filtered.slice(0, 10)); // limit suggestions
+    setSuggestions(filtered.slice(0, 10));
   };
 
   const handleSelectCard = (card) => {
@@ -72,7 +70,8 @@ const AdminPacksPage = () => {
   const handleSave = async () => {
     try {
       const payload = {
-        ...form,
+        packId: form.packId,
+        name: form.name,
         cardPool: selectedCardIds,
       };
 
@@ -91,10 +90,7 @@ const AdminPacksPage = () => {
   const handleLoadPack = (pack) => {
     setForm({
       packId: pack._id,
-      type: pack.type || '',
-      series: pack.series || '',
-      availableFrom: pack.availableFrom ? new Date(pack.availableFrom).toISOString().slice(0, 16) : '',
-      availableTo: pack.availableTo ? new Date(pack.availableTo).toISOString().slice(0, 16) : '',
+      name: pack.name || '',
     });
     setSelectedCardIds(pack.cardPool || []);
   };
@@ -104,12 +100,9 @@ const AdminPacksPage = () => {
       <h1>Admin Pack Management</h1>
 
       <div className="section">
-        <h2>Create / Update Pack Type</h2>
+        <h2>Create / Update Pack</h2>
         <input name="packId" placeholder="Pack ID (leave blank to create new)" value={form.packId} onChange={handleChange} />
-        <input name="type" placeholder="Type (e.g., Base, Event, Premium)" value={form.type} onChange={handleChange} />
-        <input name="series" placeholder="Series (e.g., Series 1)" value={form.series} onChange={handleChange} />
-        <input name="availableFrom" placeholder="Available From (ISO date)" value={form.availableFrom} onChange={handleChange} />
-        <input name="availableTo" placeholder="Available To (ISO date)" value={form.availableTo} onChange={handleChange} />
+        <input name="name" placeholder="Pack Name" value={form.name} onChange={handleChange} />
 
         <h3>Add Cards by Name</h3>
         <input
@@ -132,9 +125,13 @@ const AdminPacksPage = () => {
           {selectedCardIds.map(id => {
             const card = allCards.find(c => c._id === id);
             return card ? (
-              <div key={id} style={{ display: 'inline-block', margin: '5px', border: '1px solid #ccc', padding: '5px' }}>
-                <img src={card.imageUrl} alt={card.name} style={{ width: '60px', height: '80px', display: 'block' }} />
-                <span>{card.name}</span>
+              <div key={id} style={{ display: 'inline-block', margin: '5px' }}>
+                <BaseCard
+                  name={card.name}
+                  image={card.imageUrl}
+                  rarity={card.rarities?.[0]?.rarity}
+                  description={card.flavorText}
+                />
                 <button onClick={() => handleRemoveCard(id)}>Remove</button>
               </div>
             ) : null;
@@ -149,7 +146,7 @@ const AdminPacksPage = () => {
         <ul>
           {packs.map((pack) => (
             <li key={pack._id} style={{ cursor: 'pointer' }} onClick={() => handleLoadPack(pack)}>
-              <strong>{pack.type}</strong> - {pack.series} - {pack._id}
+              <strong>{pack.name}</strong> - {pack._id}
             </li>
           ))}
         </ul>
