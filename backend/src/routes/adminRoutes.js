@@ -349,7 +349,7 @@ const path = require('path');
 
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
-    cb(null, 'backend/public/images/cards');
+    cb(null, 'backend/public/uploads/cards');
   },
   filename: function(req, file, cb) {
     const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
@@ -362,7 +362,7 @@ router.post('/upload', protect, adminOnly, upload.single('image'), (req, res) =>
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded' });
   }
-  const imageUrl = `/images/cards/${req.file.filename}`;
+  const imageUrl = `/uploads/cards/${req.file.filename}`;
   res.json({ imageUrl });
 });
 
