@@ -123,7 +123,9 @@
     position: absolute;
     top: 100%;
     left: 0;
-    width: 100%;
+    max-width: 250px;
+    min-width: 200px;
+    width: auto;
     max-height: 200px;
     overflow-y: auto;
     background-color: var(--surface-dark);
