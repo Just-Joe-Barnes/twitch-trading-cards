@@ -166,7 +166,32 @@ const AdminActions = () => {
                             type="text"
                             value={newCardImage}
                             onChange={(e) => setNewCardImage(e.target.value)}
-                            placeholder="Enter image URL"
+                            placeholder="Enter image URL or upload below"
+                        />
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                                const file = e.target.files[0];
+                                if (!file) return;
+                                const formData = new FormData();
+                                formData.append('image', file);
+                                try {
+                                    const res = await fetch('/api/admin/upload', {
+                                        method: 'POST',
+                                        body: formData,
+                                    });
+                                    const data = await res.json();
+                                    if (data.imageUrl) {
+                                        setNewCardImage(data.imageUrl);
+                                        window.showToast('Image uploaded', 'success');
+                                    } else {
+                                        window.showToast('Upload failed', 'error');
+                                    }
+                                } catch {
+                                    window.showToast('Upload error', 'error');
+                                }
+                            }}
                         />
                     </div>
 

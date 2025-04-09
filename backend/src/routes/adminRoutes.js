@@ -342,4 +342,26 @@ router.post('/cards', protect, adminOnly, async (req, res) => {
   }
 });
 
+const multer = require('multer');
+const path = require('path');
+
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, 'backend/public/images/cards');
+  },
+  filename: function(req, file, cb) {
+    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
+    cb(null, uniqueName);
+  }
+});
+const upload = multer({ storage });
+
+router.post('/upload', protect, adminOnly, upload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No file uploaded' });
+  }
+  const imageUrl = `/images/cards/${req.file.filename}`;
+  res.json({ imageUrl });
+});
+
 module.exports = router;
