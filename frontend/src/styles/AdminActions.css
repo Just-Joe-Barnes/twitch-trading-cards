@@ -1,3 +1,180 @@
+/* Admin Actions Page */
+.aa-admin-actions-page {
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #1a1a1a;
+    color: #f5f5dc;
+    min-height: 100vh;
+}
+
+.page-title {
+    text-align: center;
+    margin-top: 80px;
+    margin-bottom: 40px;
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.aa-admin-panels {
+    display: flex;
+    gap: 3rem;
+    flex-wrap: wrap;
+}
+
+.aa-panel {
+    flex: 1;
+    min-width: 320px;
+    padding: 30px;
+    background: var(--surface-dark);
+    border: 1px solid var(--border-dark);
+    border-radius: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Form styling */
+.aa-admin-actions-form,
+.aa-admin-packs-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.aa-form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.aa-form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.aa-form-group input,
+.aa-form-group textarea,
+.aa-form-group select {
+    padding: 1rem;
+    border: 1px solid var(--border-dark);
+    border-radius: 8px;
+    background: var(--surface-darker);
+    color: #f5f5dc;
+    font-size: 1rem;
+}
+
+.aa-form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Button styling */
+.aa-admin-actions-form button,
+.aa-admin-packs-form button,
+.aa-reset-button {
+    align-self: center;
+    padding: 1rem 2rem;
+    background: var(--brand-primary);
+    color: var(--background-dark);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: background 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.aa-admin-actions-form button:hover,
+.aa-admin-packs-form button:hover,
+.aa-reset-button:hover {
+    background: var(--brand-secondary);
+    transform: scale(1.05);
+}
+
+/* Status message */
+.aa-status-message {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--brand-primary);
+}
+
+/* Search bar */
+.search-bar {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border: 1px solid var(--brand-primary);
+    border-radius: 0.5rem;
+    background-color: var(--surface-darker);
+    color: #f5f5dc;
+    width: 250px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.search-bar:focus {
+    outline: none;
+    border-color: var(--brand-secondary);
+}
+
+.search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: var(--surface-dark);
+    border: 1px solid var(--brand-primary);
+    border-radius: 0.5rem;
+    z-index: 9999;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+
+.search-result-item {
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    color: #f5f5dc;
+}
+
+.search-result-item:hover {
+    background-color: var(--brand-primary);
+    color: #f5f5dc;
+}
+
+/* User packs info */
+.user-packs-info {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    color: var(--brand-secondary);
+}
+
+/* Card details */
+.card-details {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--surface-darker);
+    border: 1px solid var(--border-dark);
+    border-radius: 8px;
+}
+
+.card-details h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.4rem;
+}
+
+.rarity-info {
+    font-size: 1rem;
+    margin: 0.25rem 0;
+    color: var(--brand-secondary);
+}
+
 /* Card Availability Editor */
 .card-availability-editor {
   display: flex;
