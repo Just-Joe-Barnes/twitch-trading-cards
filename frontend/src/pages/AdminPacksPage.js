@@ -101,8 +101,17 @@ const AdminPacksPage = () => {
 
       <div className="section">
         <h2>Create / Update Pack</h2>
-        <input name="packId" placeholder="Pack ID (leave blank to create new)" value={form.packId} onChange={handleChange} />
+        <input name="packId" placeholder="Leave blank to create a new pack" value={form.packId} onChange={handleChange} />
         <input name="name" placeholder="Pack Name" value={form.name} onChange={handleChange} />
+
+        <button
+          onClick={() => {
+            setForm({ packId: '', name: '' });
+            setSelectedCardIds([]);
+          }}
+        >
+          New Pack
+        </button>
 
         <h3>Add Cards by Name</h3>
         <input
@@ -138,7 +147,7 @@ const AdminPacksPage = () => {
           })}
         </div>
 
-        <button onClick={handleSave}>Save Pack</button>
+        <button onClick={handleSave}>Save / Create Pack</button>
       </div>
 
       <div className="section">
