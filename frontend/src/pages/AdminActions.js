@@ -10,6 +10,9 @@ const AdminActions = () => {
     const [newCardTitle, setNewCardTitle] = useState('');
     const [newCardFlavor, setNewCardFlavor] = useState('');
     const [newCardImage, setNewCardImage] = useState('');
+    const [alwaysAvailable, setAlwaysAvailable] = useState(true);
+    const [availableFrom, setAvailableFrom] = useState('');
+    const [availableTo, setAvailableTo] = useState('');
 
     // Notification panel state
     const [notificationType, setNotificationType] = useState('');
@@ -195,6 +198,38 @@ const AdminActions = () => {
                         />
                     </div>
 
+                    <div className="aa-form-group">
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={alwaysAvailable}
+                            onChange={(e) => setAlwaysAvailable(e.target.checked)}
+                          />
+                          Always Available
+                        </label>
+                    </div>
+
+                    {!alwaysAvailable && (
+                      <>
+                        <div className="aa-form-group">
+                          <label>Available From:</label>
+                          <input
+                            type="datetime-local"
+                            value={availableFrom}
+                            onChange={(e) => setAvailableFrom(e.target.value)}
+                          />
+                        </div>
+                        <div className="aa-form-group">
+                          <label>Available To:</label>
+                          <input
+                            type="datetime-local"
+                            value={availableTo}
+                            onChange={(e) => setAvailableTo(e.target.value)}
+                          />
+                        </div>
+                      </>
+                    )}
+
                     <button
                         onClick={async () => {
                             try {
@@ -210,7 +245,9 @@ const AdminActions = () => {
                                         name: newCardTitle,
                                         flavorText: newCardFlavor,
                                         imageUrl: newCardImage,
-                                        rarities: defaultRarities
+                                        rarities: defaultRarities,
+                                        availableFrom: alwaysAvailable ? null : availableFrom || null,
+                                        availableTo: alwaysAvailable ? null : availableTo || null
                                     }),
                                 });
                                 window.showToast('Card created successfully', 'success');
