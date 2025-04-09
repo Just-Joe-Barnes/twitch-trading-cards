@@ -133,6 +133,131 @@ const AdminActions = () => {
         <div className="aa-admin-actions-page">
             <h1 className="page-title">Admin Actions</h1>
             <div className="aa-admin-panels">
+
+            {/* Create New Card Panel */}
+            <section className="aa-panel">
+                <h2>Create New Card</h2>
+                <div className="aa-admin-actions-form">
+                    <div className="aa-form-group">
+                        <label>Card Title:</label>
+                        <input
+                            type="text"
+                            value={newCardTitle}
+                            onChange={(e) => setNewCardTitle(e.target.value)}
+                            placeholder="Enter card title"
+                        />
+                    </div>
+                    <div className="aa-form-group">
+                        <label>Flavor Text:</label>
+                        <textarea
+                            value={newCardFlavor}
+                            onChange={(e) => setNewCardFlavor(e.target.value)}
+                            placeholder="Enter flavor text"
+                        />
+                    </div>
+                    <div className="aa-form-group">
+                        <label>Image URL:</label>
+                        <input
+                            type="text"
+                            value={newCardImage}
+                            onChange={(e) => setNewCardImage(e.target.value)}
+                            placeholder="Enter image URL"
+                        />
+                    </div>
+
+                    <h3>Rarities</h3>
+                    {newCardRarities.map((rarity, idx) => (
+                      <div key={idx} style={{ border: '1px solid var(--border-dark)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
+                        <div className="aa-form-group">
+                          <label>Rarity Name:</label>
+                          <input
+                            type="text"
+                            value={rarity.rarity}
+                            onChange={(e) => {
+                              const updated = [...newCardRarities];
+                              updated[idx].rarity = e.target.value;
+                              setNewCardRarities(updated);
+                            }}
+                          />
+                        </div>
+                        <div className="aa-form-group">
+                          <label>Remaining Copies:</label>
+                          <input
+                            type="number"
+                            value={rarity.remainingCopies}
+                            onChange={(e) => {
+                              const updated = [...newCardRarities];
+                              updated[idx].remainingCopies = parseInt(e.target.value) || 0;
+                              setNewCardRarities(updated);
+                            }}
+                          />
+                        </div>
+                        <div className="aa-form-group">
+                          <label>Mint Numbers (comma separated):</label>
+                          <input
+                            type="text"
+                            value={rarity.availableMintNumbers}
+                            onChange={(e) => {
+                              const updated = [...newCardRarities];
+                              updated[idx].availableMintNumbers = e.target.value;
+                              setNewCardRarities(updated);
+                            }}
+                          />
+                        </div>
+                        <button
+                          onClick={() => {
+                            const updated = newCardRarities.filter((_, i) => i !== idx);
+                            setNewCardRarities(updated);
+                          }}
+                        >
+                          Remove Rarity
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => setNewCardRarities([...newCardRarities, { rarity: '', remainingCopies: 0, availableMintNumbers: '' }])}
+                    >
+                      Add Rarity
+                    </button>
+
+                    <button
+                        onClick={async () => {
+                            try {
+                                await fetchWithAuth('/api/admin/cards', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        name: newCardTitle,
+                                        flavorText: newCardFlavor,
+                                        imageUrl: newCardImage,
+                                        rarities: newCardRarities.map(r => ({
+                                          rarity: r.rarity,
+                                          remainingCopies: r.remainingCopies,
+                                          availableMintNumbers: r.availableMintNumbers.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n))
+                                        }))
+                                    }),
+                                });
+                                window.showToast('Card created successfully', 'success');
+                                setNewCardTitle('');
+                                setNewCardFlavor('');
+                                setNewCardImage('');
+                                setNewCardRarities([]);
+                            } catch {
+                                window.showToast('Error creating card', 'error');
+                            }
+                        }}
+                    >
+                        Save Card
+                    </button>
+                    <h3>Live Preview</h3>
+                    <BaseCard
+                        name={newCardTitle}
+                        description={newCardFlavor}
+                        image={newCardImage}
+                        rarity="Common"
+                    />
+                </div>
+            </section>
                 {/* Notification Panel */}
                 <section className="aa-panel">
                     <h2>Send Notification</h2>

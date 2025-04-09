@@ -322,4 +322,24 @@ router.delete('/packs/:packId', protect, adminOnly, async (req, res) => {
   }
 });
 
+router.post('/cards', protect, adminOnly, async (req, res) => {
+  try {
+    const Card = require('../models/cardModel');
+    const { name, flavorText, imageUrl } = req.body;
+
+    const newCard = new Card({
+      name,
+      flavorText,
+      imageUrl,
+      rarities: [], // Extend to accept rarities if needed
+    });
+
+    await newCard.save();
+    res.json({ message: 'Card created successfully', card: newCard });
+  } catch (error) {
+    console.error('Error creating card:', error);
+    res.status(500).json({ message: 'Failed to create card' });
+  }
+});
+
 module.exports = router;
