@@ -4,8 +4,10 @@ import '../styles/AdminDashboardPage.css';
 
 const AdminPacksPage = () => {
   const [packs, setPacks] = useState([]);
-  const [groupedCards, setGroupedCards] = useState({});
-  const [selectedCards, setSelectedCards] = useState({});
+  const [allCards, setAllCards] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [selectedCardIds, setSelectedCardIds] = useState([]);
   const [form, setForm] = useState({
     packId: '',
     type: '',
@@ -26,7 +28,11 @@ const AdminPacksPage = () => {
   const fetchCards = async () => {
     try {
       const res = await fetchWithAuth('/api/admin/cards');
-      setGroupedCards(res.groupedCards || {});
+      const all = [];
+      Object.values(res.groupedCards || {}).forEach(cards => {
+        all.push(...cards);
+      });
+      setAllCards(all);
     } catch (error) {
       console.error('Error fetching cards:', error);
     }
@@ -41,24 +47,33 @@ const AdminPacksPage = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleCardToggle = (rarity, cardId) => {
-    setSelectedCards((prev) => {
-      const current = prev[rarity] || [];
-      if (current.includes(cardId)) {
-        return { ...prev, [rarity]: current.filter((id) => id !== cardId) };
-      } else {
-        return { ...prev, [rarity]: [...current, cardId] };
-      }
-    });
+  const handleSearchChange = (e) => {
+    const term = e.target.value;
+    setSearchTerm(term);
+    if (!term) {
+      setSuggestions([]);
+      return;
+    }
+    const lower = term.toLowerCase();
+    const filtered = allCards.filter(c => c.name.toLowerCase().includes(lower) && !selectedCardIds.includes(c._id));
+    setSuggestions(filtered.slice(0, 10)); // limit suggestions
+  };
+
+  const handleSelectCard = (card) => {
+    setSelectedCardIds(prev => [...prev, card._id]);
+    setSearchTerm('');
+    setSuggestions([]);
+  };
+
+  const handleRemoveCard = (cardId) => {
+    setSelectedCardIds(prev => prev.filter(id => id !== cardId));
   };
 
   const handleSave = async () => {
     try {
-      const cardPool = Object.values(selectedCards).flat();
-
       const payload = {
         ...form,
-        cardPool,
+        cardPool: selectedCardIds,
       };
 
       const res = await fetchWithAuth('/api/admin/upsert-pack', {
@@ -81,15 +96,7 @@ const AdminPacksPage = () => {
       availableFrom: pack.availableFrom ? new Date(pack.availableFrom).toISOString().slice(0, 16) : '',
       availableTo: pack.availableTo ? new Date(pack.availableTo).toISOString().slice(0, 16) : '',
     });
-
-    // Map flat cardPool array to rarity groups
-    const newSelected = {};
-    Object.entries(groupedCards).forEach(([rarity, cards]) => {
-      newSelected[rarity] = cards
-        .filter((card) => (pack.cardPool || []).includes(card._id))
-        .map((card) => card._id);
-    });
-    setSelectedCards(newSelected);
+    setSelectedCardIds(pack.cardPool || []);
   };
 
   return (
@@ -104,26 +111,35 @@ const AdminPacksPage = () => {
         <input name="availableFrom" placeholder="Available From (ISO date)" value={form.availableFrom} onChange={handleChange} />
         <input name="availableTo" placeholder="Available To (ISO date)" value={form.availableTo} onChange={handleChange} />
 
-        <h3>Select Cards by Rarity</h3>
-        {Object.keys(groupedCards).length === 0 && <p>Loading cards...</p>}
-        {Object.entries(groupedCards).map(([rarity, cards]) => (
-          <div key={rarity} className="rarity-group">
-            <h4>{rarity}</h4>
-            <div className="card-list">
-              {cards.map((card) => (
-                <label key={card._id} style={{ display: 'inline-block', margin: '5px' }}>
-                  <input
-                    type="checkbox"
-                    checked={(selectedCards[rarity] || []).includes(card._id)}
-                    onChange={() => handleCardToggle(rarity, card._id)}
-                  />
-                  <img src={card.imageUrl} alt={card.name} style={{ width: '60px', height: '80px', display: 'block' }} />
-                  <span>{card.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        ))}
+        <h3>Add Cards by Name</h3>
+        <input
+          type="text"
+          placeholder="Search cards..."
+          value={searchTerm}
+          onChange={handleSearchChange}
+        />
+        {suggestions.length > 0 && (
+          <ul className="suggestions-list">
+            {suggestions.map(card => (
+              <li key={card._id} onClick={() => handleSelectCard(card)} style={{ cursor: 'pointer' }}>
+                <img src={card.imageUrl} alt={card.name} style={{ width: '40px', verticalAlign: 'middle' }} /> {card.name}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="selected-cards">
+          {selectedCardIds.map(id => {
+            const card = allCards.find(c => c._id === id);
+            return card ? (
+              <div key={id} style={{ display: 'inline-block', margin: '5px', border: '1px solid #ccc', padding: '5px' }}>
+                <img src={card.imageUrl} alt={card.name} style={{ width: '60px', height: '80px', display: 'block' }} />
+                <span>{card.name}</span>
+                <button onClick={() => handleRemoveCard(id)}>Remove</button>
+              </div>
+            ) : null;
+          })}
+        </div>
 
         <button onClick={handleSave}>Save Pack</button>
       </div>
