@@ -137,10 +137,10 @@ const AdminActions = () => {
     return (
         <div className="aa-admin-actions-page">
             <h1 className="page-title">Admin Actions</h1>
-            <div className="aa-admin-panels">
+            <div className="aa-admin-panels" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
 
             {/* Create New Card Panel */}
-            <section className="aa-panel">
+            <section className="aa-panel" style={{ gridColumn: 'span 3' }}>
                 <h2>Create New Card</h2>
                 <div className="aa-admin-actions-form">
                     <div className="aa-form-group">
