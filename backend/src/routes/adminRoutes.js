@@ -307,4 +307,19 @@ router.get('/cards', async (req, res) => {
   }
 });
 
+router.delete('/packs/:packId', protect, adminOnly, async (req, res) => {
+  try {
+    const Pack = require('../models/packModel');
+    const pack = await Pack.findById(req.params.packId);
+    if (!pack) {
+      return res.status(404).json({ message: 'Pack not found' });
+    }
+    await pack.deleteOne();
+    res.json({ message: 'Pack deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting pack:', error);
+    res.status(500).json({ message: 'Failed to delete pack' });
+  }
+});
+
 module.exports = router;

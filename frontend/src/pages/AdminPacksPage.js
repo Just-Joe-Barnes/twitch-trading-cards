@@ -156,11 +156,47 @@ const AdminPacksPage = () => {
 {packs.map((pack) => (
             <li
               key={pack._id}
-              style={{ cursor: 'pointer', marginBottom: '8px' }}
+              style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                background: 'var(--surface-dark)', 
+                padding: '0.75rem 1rem', 
+                borderRadius: '8px', 
+                marginBottom: '8px',
+                cursor: 'pointer'
+              }}
               onClick={() => handleLoadPack(pack)}
             >
-              <strong>{pack.name || 'Unnamed Pack'}</strong>
-              <div style={{ fontSize: '0.8em', color: '#888' }}>{pack._id}</div>
+              <div>
+                <strong>{pack.name || 'Unnamed Pack'}</strong>
+                <div style={{ fontSize: '0.8em', color: '#888' }}>{pack._id}</div>
+              </div>
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  if (!window.confirm('Delete this pack?')) return;
+                  try {
+                    await fetchWithAuth(`/api/admin/packs/${pack._id}`, { method: 'DELETE' });
+                    window.showToast('Pack deleted', 'success');
+                    fetchPacks();
+                  } catch (err) {
+                    console.error('Error deleting pack:', err);
+                    window.showToast('Error deleting pack', 'error');
+                  }
+                }}
+                style={{
+                  background: '#e32232',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '0.4rem 0.8rem',
+                  cursor: 'pointer',
+                  marginLeft: '1rem'
+                }}
+              >
+                Delete
+              </button>
             </li>
           ))}
         </ul>
