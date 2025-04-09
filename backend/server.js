@@ -10,10 +10,17 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
+
 // Ensure logs directory exists
 const logsDir = path.join(__dirname, 'logs');
 if (!fs.existsSync(logsDir)) {
     fs.mkdirSync(logsDir, { recursive: true });
+}
+
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, 'public/uploads/cards');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 const authRoutes = require('./src/routes/authRoutes');
