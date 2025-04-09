@@ -6,6 +6,12 @@ import BaseCard from '../components/BaseCard';
 import '../styles/AdminActions.css';
 
 const AdminActions = () => {
+    // New Card creation state
+    const [newCardTitle, setNewCardTitle] = useState('');
+    const [newCardFlavor, setNewCardFlavor] = useState('');
+    const [newCardImage, setNewCardImage] = useState('');
+    const [newCardRarities, setNewCardRarities] = useState([]);
+
     // Notification panel state
     const [notificationType, setNotificationType] = useState('');
     const [message, setMessage] = useState('');
