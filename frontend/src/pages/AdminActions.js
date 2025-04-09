@@ -10,7 +10,6 @@ const AdminActions = () => {
     const [newCardTitle, setNewCardTitle] = useState('');
     const [newCardFlavor, setNewCardFlavor] = useState('');
     const [newCardImage, setNewCardImage] = useState('');
-    const [newCardRarities, setNewCardRarities] = useState([]);
 
     // Notification panel state
     const [notificationType, setNotificationType] = useState('');
