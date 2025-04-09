@@ -325,13 +325,15 @@ router.delete('/packs/:packId', protect, adminOnly, async (req, res) => {
 router.post('/cards', protect, adminOnly, async (req, res) => {
   try {
     const Card = require('../models/cardModel');
-    const { name, flavorText, imageUrl } = req.body;
+    const { name, flavorText, imageUrl, availableFrom, availableTo, rarities } = req.body;
 
     const newCard = new Card({
       name,
       flavorText,
       imageUrl,
-      rarities: [], // Extend to accept rarities if needed
+      availableFrom: availableFrom ? new Date(availableFrom) : null,
+      availableTo: availableTo ? new Date(availableTo) : null,
+      rarities: rarities || [],
     });
 
     await newCard.save();
