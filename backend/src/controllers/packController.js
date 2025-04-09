@@ -72,6 +72,8 @@ const getAllPacks = async (req, res) => {
 const openPacksForUser = async (req, res) => {
     try {
         const { userId } = req.params;
+        const { templateId } = req.body;
+
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -80,8 +82,48 @@ const openPacksForUser = async (req, res) => {
             return res.status(400).json({ message: 'No unopened packs available for this user' });
         }
 
-        // Generate a pack of 5 cards ensuring at least one is Rare or above.
-        const newCards = await generatePack(5);
+        let newCards = [];
+
+        if (templateId) {
+            const templatePack = await Pack.findById(templateId);
+            if (!templatePack) {
+                return res.status(404).json({ message: 'Pack template not found' });
+            }
+
+            const Card = require('../models/cardModel');
+            const now = new Date();
+            const poolCards = await Card.find({
+                _id: { $in: templatePack.cardPool },
+                $or: [
+                    { availableFrom: null },
+                    { availableFrom: { $lte: now } }
+                ],
+                $or: [
+                    { availableTo: null },
+                    { availableTo: { $gte: now } }
+                ]
+            });
+
+            for (let i = 0; i < 5; i++) {
+                if (poolCards.length === 0) break;
+                const randomIndex = Math.floor(Math.random() * poolCards.length);
+                const cardDoc = poolCards[randomIndex];
+                const rarityObj = cardDoc.rarities[0]; // Simplified, pick first rarity
+                newCards.push({
+                    name: cardDoc.name,
+                    imageUrl: cardDoc.imageUrl,
+                    flavorText: cardDoc.flavorText,
+                    rarity: rarityObj.rarity,
+                    mintNumber: 0, // or generate mint number logic
+                });
+            }
+        }
+
+        if (!newCards.length) {
+            // fallback to global pool
+            newCards = await generatePack(5);
+        }
+
         if (!newCards || !newCards.length) {
             return res.status(500).json({ message: 'Failed to generate cards for the pack' });
         }
