@@ -74,7 +74,7 @@ const AdminDashboardPage = ({ user }) => {
     const fetchPackTemplates = async () => {
         try {
             const res = await fetchWithAuth('/api/admin/packs');
-            const templates = (res.packs || []).filter(p => !p.userId);
+            const templates = (res.packs || []).filter(p => Array.isArray(p.cardPool) && p.cardPool.length > 0);
             setPackTemplates(templates);
         } catch (err) {
             console.error('Error fetching pack templates:', err);
