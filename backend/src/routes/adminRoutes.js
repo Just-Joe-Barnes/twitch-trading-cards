@@ -272,6 +272,17 @@ router.post('/grant-pack', protect, adminOnly, async (req, res) => {
 });
 
 const Card = require('../models/cardModel');
+const Pack = require('../models/packModel');
+
+router.get('/packs', async (req, res) => {
+  try {
+    const packs = await Pack.find();
+    res.json({ packs });
+  } catch (error) {
+    console.error('Error fetching packs:', error);
+    res.status(500).json({ message: 'Failed to fetch packs' });
+  }
+});
 
 router.get('/cards', async (req, res) => {
   try {
