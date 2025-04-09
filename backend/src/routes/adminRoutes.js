@@ -271,4 +271,32 @@ router.post('/grant-pack', protect, adminOnly, async (req, res) => {
     }
 });
 
+const Card = require('../models/cardModel');
+
+router.get('/cards', async (req, res) => {
+  try {
+    const cards = await Card.find();
+
+    // Group cards by rarity
+    const grouped = {};
+
+    cards.forEach(card => {
+      if (Array.isArray(card.rarities)) {
+        card.rarities.forEach(rarityObj => {
+          const rarity = rarityObj.rarity;
+          if (!grouped[rarity]) {
+            grouped[rarity] = [];
+          }
+          grouped[rarity].push(card);
+        });
+      }
+    });
+
+    res.json({ groupedCards: grouped });
+  } catch (error) {
+    console.error('Error fetching cards:', error);
+    res.status(500).json({ message: 'Failed to fetch cards' });
+  }
+});
+
 module.exports = router;

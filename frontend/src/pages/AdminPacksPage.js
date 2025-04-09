@@ -4,13 +4,14 @@ import '../styles/AdminDashboardPage.css';
 
 const AdminPacksPage = () => {
   const [packs, setPacks] = useState([]);
+  const [groupedCards, setGroupedCards] = useState({});
+  const [selectedCards, setSelectedCards] = useState({});
   const [form, setForm] = useState({
     packId: '',
     type: '',
     series: '',
     availableFrom: '',
     availableTo: '',
-    cardPool: '',
   });
 
   const fetchPacks = async () => {
@@ -22,20 +23,44 @@ const AdminPacksPage = () => {
     }
   };
 
+  const fetchCards = async () => {
+    try {
+      const res = await fetchWithAuth('/api/admin/cards');
+      setGroupedCards(res.groupedCards || {});
+    } catch (error) {
+      console.error('Error fetching cards:', error);
+    }
+  };
+
   useEffect(() => {
     fetchPacks();
+    fetchCards();
   }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleCardToggle = (rarity, cardId) => {
+    setSelectedCards((prev) => {
+      const current = prev[rarity] || [];
+      if (current.includes(cardId)) {
+        return { ...prev, [rarity]: current.filter((id) => id !== cardId) };
+      } else {
+        return { ...prev, [rarity]: [...current, cardId] };
+      }
+    });
+  };
+
   const handleSave = async () => {
     try {
+      const cardPool = Object.values(selectedCards).flat();
+
       const payload = {
         ...form,
-        cardPool: form.cardPool.split(',').map(s => s.trim()).filter(Boolean),
+        cardPool,
       };
+
       const res = await fetchWithAuth('/api/admin/upsert-pack', {
         method: 'POST',
         body: JSON.stringify(payload),
@@ -46,6 +71,25 @@ const AdminPacksPage = () => {
       console.error('Error saving pack:', error);
       window.showToast('Error saving pack', 'error');
     }
+  };
+
+  const handleLoadPack = (pack) => {
+    setForm({
+      packId: pack._id,
+      type: pack.type || '',
+      series: pack.series || '',
+      availableFrom: pack.availableFrom ? new Date(pack.availableFrom).toISOString().slice(0, 16) : '',
+      availableTo: pack.availableTo ? new Date(pack.availableTo).toISOString().slice(0, 16) : '',
+    });
+
+    // Map flat cardPool array to rarity groups
+    const newSelected = {};
+    Object.entries(groupedCards).forEach(([rarity, cards]) => {
+      newSelected[rarity] = cards
+        .filter((card) => (pack.cardPool || []).includes(card._id))
+        .map((card) => card._id);
+    });
+    setSelectedCards(newSelected);
   };
 
   return (
@@ -59,15 +103,36 @@ const AdminPacksPage = () => {
         <input name="series" placeholder="Series (e.g., Series 1)" value={form.series} onChange={handleChange} />
         <input name="availableFrom" placeholder="Available From (ISO date)" value={form.availableFrom} onChange={handleChange} />
         <input name="availableTo" placeholder="Available To (ISO date)" value={form.availableTo} onChange={handleChange} />
-        <textarea name="cardPool" placeholder="Card IDs (comma separated)" value={form.cardPool} onChange={handleChange} />
+
+        <h3>Select Cards by Rarity</h3>
+        {Object.keys(groupedCards).length === 0 && <p>Loading cards...</p>}
+        {Object.entries(groupedCards).map(([rarity, cards]) => (
+          <div key={rarity} className="rarity-group">
+            <h4>{rarity}</h4>
+            <div className="card-list">
+              {cards.map((card) => (
+                <label key={card._id} style={{ display: 'inline-block', margin: '5px' }}>
+                  <input
+                    type="checkbox"
+                    checked={(selectedCards[rarity] || []).includes(card._id)}
+                    onChange={() => handleCardToggle(rarity, card._id)}
+                  />
+                  <img src={card.imageUrl} alt={card.name} style={{ width: '60px', height: '80px', display: 'block' }} />
+                  <span>{card.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
+
         <button onClick={handleSave}>Save Pack</button>
       </div>
 
       <div className="section">
-        <h2>Existing Packs</h2>
+        <h2>Existing Packs (Click to Edit)</h2>
         <ul>
           {packs.map((pack) => (
-            <li key={pack._id}>
+            <li key={pack._id} style={{ cursor: 'pointer' }} onClick={() => handleLoadPack(pack)}>
               <strong>{pack.type}</strong> - {pack.series} - {pack._id}
             </li>
           ))}
