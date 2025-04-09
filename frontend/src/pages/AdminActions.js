@@ -22,17 +22,6 @@ const AdminActions = () => {
 
     // Pack management state
 
-    useEffect(() => {
-        const fetchPacks = async () => {
-            try {
-                const res = await fetchWithAuth('/api/admin/packs');
-                setPacks(res.packs || []);
-            } catch {
-                console.error('Error fetching packs');
-            }
-        };
-        fetchPacks();
-    }, []);
 
     const navigate = useNavigate();
 
