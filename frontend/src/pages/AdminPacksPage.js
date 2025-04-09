@@ -144,9 +144,14 @@ const AdminPacksPage = () => {
       <div className="section">
         <h2>Existing Packs (Click to Edit)</h2>
         <ul>
-          {packs.map((pack) => (
-            <li key={pack._id} style={{ cursor: 'pointer' }} onClick={() => handleLoadPack(pack)}>
-              <strong>{pack.name}</strong> - {pack._id}
+{packs.map((pack) => (
+            <li
+              key={pack._id}
+              style={{ cursor: 'pointer', marginBottom: '8px' }}
+              onClick={() => handleLoadPack(pack)}
+            >
+              <strong>{pack.name || 'Unnamed Pack'}</strong>
+              <div style={{ fontSize: '0.8em', color: '#888' }}>{pack._id}</div>
             </li>
           ))}
         </ul>

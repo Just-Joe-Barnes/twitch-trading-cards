@@ -203,12 +203,12 @@ router.post('/update-card-availability', protect, adminOnly, async (req, res) =>
 });
 
 /**
- * Create or update a pack type
+ * Create or update a pack
  * POST /api/admin/upsert-pack
- * Body: { packId (optional), type, series, availableFrom, availableTo, cardPool }
+ * Body: { packId (optional), name, cardPool }
  */
 router.post('/upsert-pack', protect, adminOnly, async (req, res) => {
-    const { packId, type, series, availableFrom, availableTo, cardPool } = req.body;
+    const { packId, name, cardPool } = req.body;
     try {
         const Pack = require('../models/packModel');
         let pack;
@@ -219,10 +219,7 @@ router.post('/upsert-pack', protect, adminOnly, async (req, res) => {
             pack = new Pack({ userId: null, isOpened: false, cards: [] });
         }
 
-        if (type !== undefined) pack.type = type;
-        if (series !== undefined) pack.series = series;
-        if (availableFrom !== undefined) pack.availableFrom = availableFrom ? new Date(availableFrom) : null;
-        if (availableTo !== undefined) pack.availableTo = availableTo ? new Date(availableTo) : null;
+        if (name !== undefined) pack.name = name;
         if (cardPool !== undefined) pack.cardPool = cardPool;
 
         await pack.save();
