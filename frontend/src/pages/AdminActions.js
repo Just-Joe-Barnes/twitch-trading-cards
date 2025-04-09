@@ -234,9 +234,9 @@ const AdminActions = () => {
                         onClick={async () => {
                             try {
                                 const defaultRarities = [
-                                  { rarity: 'Common', remainingCopies: 1000, availableMintNumbers: Array.from({length: 1000}, (_, i) => i + 1) },
-                                  { rarity: 'Rare', remainingCopies: 100, availableMintNumbers: Array.from({length: 100}, (_, i) => i + 1) },
-                                  { rarity: 'Epic', remainingCopies: 10, availableMintNumbers: Array.from({length: 10}, (_, i) => i + 1) },
+                                  { rarity: 'Common', totalCopies: 1000, remainingCopies: 1000, availableMintNumbers: Array.from({length: 1000}, (_, i) => i + 1) },
+                                  { rarity: 'Rare', totalCopies: 100, remainingCopies: 100, availableMintNumbers: Array.from({length: 100}, (_, i) => i + 1) },
+                                  { rarity: 'Epic', totalCopies: 10, remainingCopies: 10, availableMintNumbers: Array.from({length: 10}, (_, i) => i + 1) },
                                 ];
                                 await fetchWithAuth('/api/admin/cards', {
                                     method: 'POST',
