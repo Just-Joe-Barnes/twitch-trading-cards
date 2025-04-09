@@ -20,6 +20,28 @@ const AdminActions = () => {
     const [cardSearchResults, setCardSearchResults] = useState([]);
     const [selectedCardDetails, setSelectedCardDetails] = useState(null);
 
+    // Pack management state
+    const [packs, setPacks] = useState([]);
+    const [newPack, setNewPack] = useState({
+        name: '',
+        series: '',
+        availableFrom: '',
+        availableTo: '',
+        cardPool: '',
+    });
+
+    useEffect(() => {
+        const fetchPacks = async () => {
+            try {
+                const res = await fetchWithAuth('/api/admin/packs');
+                setPacks(res.packs || []);
+            } catch {
+                console.error('Error fetching packs');
+            }
+        };
+        fetchPacks();
+    }, []);
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -363,7 +385,77 @@ const AdminActions = () => {
             {/* Pack Management Panel */}
             <section className="aa-panel">
                 <h2>Pack Management</h2>
-                <p>Coming soon: Inline pack management UI here.</p>
+
+                <div className="aa-form-group">
+                    <label>Pack Name:</label>
+                    <input
+                        type="text"
+                        value={newPack.name}
+                        onChange={(e) => setNewPack({ ...newPack, name: e.target.value })}
+                    />
+                </div>
+                <div className="aa-form-group">
+                    <label>Series:</label>
+                    <input
+                        type="text"
+                        value={newPack.series}
+                        onChange={(e) => setNewPack({ ...newPack, series: e.target.value })}
+                    />
+                </div>
+                <div className="aa-form-group">
+                    <label>Available From:</label>
+                    <input
+                        type="datetime-local"
+                        value={newPack.availableFrom}
+                        onChange={(e) => setNewPack({ ...newPack, availableFrom: e.target.value })}
+                    />
+                </div>
+                <div className="aa-form-group">
+                    <label>Available To:</label>
+                    <input
+                        type="datetime-local"
+                        value={newPack.availableTo}
+                        onChange={(e) => setNewPack({ ...newPack, availableTo: e.target.value })}
+                    />
+                </div>
+                <div className="aa-form-group">
+                    <label>Card Pool (comma-separated card IDs):</label>
+                    <textarea
+                        value={newPack.cardPool}
+                        onChange={(e) => setNewPack({ ...newPack, cardPool: e.target.value })}
+                    />
+                </div>
+                <button
+                    onClick={async () => {
+                        try {
+                            await fetchWithAuth('/api/admin/upsert-pack', {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    name: newPack.name,
+                                    series: newPack.series,
+                                    availableFrom: newPack.availableFrom,
+                                    availableTo: newPack.availableTo,
+                                    cardPool: newPack.cardPool.split(',').map(s => s.trim()),
+                                }),
+                            });
+                            window.showToast('Pack saved', 'success');
+                        } catch {
+                            window.showToast('Error saving pack', 'error');
+                        }
+                    }}
+                >
+                    Save Pack
+                </button>
+
+                <h3 style={{ marginTop: '2rem' }}>Existing Packs</h3>
+                {packs.map((pack) => (
+                    <div key={pack._id} style={{ border: '1px solid var(--border-dark)', borderRadius: '8px', padding: '1rem', marginBottom: '1rem' }}>
+                        <strong>{pack.name}</strong> (Series: {pack.series})<br />
+                        From: {pack.availableFrom}<br />
+                        To: {pack.availableTo}<br />
+                        Cards: {pack.cardPool?.join(', ')}
+                    </div>
+                ))}
             </section>
 
             {status && <p className="aa-status-message">{status}</p>}
