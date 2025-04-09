@@ -164,4 +164,120 @@ const generatePack = async (packSize = 5) => {
     return pack;
 };
 
-module.exports = { generateCardWithProbability, pickRarity, generatePack };
+const generateCardFromPool = async (poolIds) => {
+    while (true) {
+        try {
+            const selectedRarity = pickRarity();
+
+            const now = new Date();
+            const cards = await Card.aggregate([
+                {
+                    $match: {
+                        _id: { $in: poolIds },
+                        'rarities.rarity': selectedRarity,
+                        'rarities.remainingCopies': { $gt: 0 },
+                        'rarities.availableMintNumbers.0': { $exists: true },
+                        $or: [
+                            { availableFrom: null },
+                            { availableFrom: { $lte: now } }
+                        ],
+                        $or: [
+                            { availableTo: null },
+                            { availableTo: { $gte: now } }
+                        ]
+                    }
+                },
+                { $sample: { size: 1 } }
+            ]);
+
+            if (!cards || cards.length === 0) {
+                console.warn(`[generateCardFromPool] No cards found for rarity ${selectedRarity} in pool. Retrying...`);
+                continue;
+            }
+
+            const selectedCard = cards[0];
+            const rarityObj = selectedCard.rarities.find(r => r.rarity === selectedRarity);
+            if (!rarityObj || rarityObj.remainingCopies <= 0 || !rarityObj.availableMintNumbers.length) {
+                console.warn(`[generateCardFromPool] No valid rarity data for ${selectedRarity} in card ${selectedCard.name}. Retrying...`);
+                continue;
+            }
+
+            const randomIndex = Math.floor(Math.random() * rarityObj.availableMintNumbers.length);
+            const mintNumber = rarityObj.availableMintNumbers[randomIndex];
+
+            const duplicate = await User.findOne({
+                $or: [
+                    { cards: { $elemMatch: { name: selectedCard.name, rarity: selectedRarity, mintNumber } } },
+                    { openedCards: { $elemMatch: { name: selectedCard.name, rarity: selectedRarity, mintNumber } } }
+                ]
+            });
+            if (duplicate) {
+                console.warn(`[generateCardFromPool] Duplicate card detected. Retrying...`);
+                continue;
+            }
+
+            const updatedCard = await Card.findOneAndUpdate(
+                {
+                    _id: selectedCard._id,
+                    'rarities.rarity': selectedRarity,
+                    'rarities.remainingCopies': { $gt: 0 }
+                },
+                {
+                    $inc: { 'rarities.$.remainingCopies': -1 },
+                    $pull: { 'rarities.$.availableMintNumbers': mintNumber }
+                },
+                { new: true }
+            );
+
+            if (!updatedCard) {
+                console.warn(`[generateCardFromPool] Failed to update card ${selectedCard.name}. Retrying...`);
+                continue;
+            }
+
+            return {
+                name: selectedCard.name,
+                rarity: selectedRarity,
+                mintNumber,
+                imageUrl: selectedCard.imageUrl,
+                flavorText: selectedCard.flavorText || 'No flavor text available',
+            };
+        } catch (error) {
+            console.error('[generateCardFromPool] Error:', error.message);
+        }
+    }
+};
+
+const generateRareCardFromPool = async (poolIds) => {
+    while (true) {
+        const card = await generateCardFromPool(poolIds);
+        if (card && isRareOrAbove(card.rarity)) {
+            return card;
+        }
+        console.warn(`[generateRareCardFromPool] Generated card is not Rare or above. Retrying...`);
+    }
+};
+
+const generatePackFromPool = async (poolIds, packSize = 5) => {
+    const pack = [];
+    while (pack.length < packSize) {
+        const card = await generateCardFromPool(poolIds);
+        if (card) {
+            pack.push(card);
+        }
+    }
+    if (!pack.some(card => isRareOrAbove(card.rarity))) {
+        const rareCard = await generateRareCardFromPool(poolIds);
+        if (rareCard) {
+            pack[0] = rareCard;
+        }
+    }
+    return pack;
+};
+
+module.exports = {
+    generateCardWithProbability,
+    pickRarity,
+    generatePack,
+    generateCardFromPool,
+    generatePackFromPool
+};

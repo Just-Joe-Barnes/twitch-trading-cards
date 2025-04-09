@@ -90,33 +90,8 @@ const openPacksForUser = async (req, res) => {
                 return res.status(404).json({ message: 'Pack template not found' });
             }
 
-            const Card = require('../models/cardModel');
-            const now = new Date();
-            const poolCards = await Card.find({
-                _id: { $in: templatePack.cardPool },
-                $or: [
-                    { availableFrom: null },
-                    { availableFrom: { $lte: now } }
-                ],
-                $or: [
-                    { availableTo: null },
-                    { availableTo: { $gte: now } }
-                ]
-            });
-
-            for (let i = 0; i < 5; i++) {
-                if (poolCards.length === 0) break;
-                const randomIndex = Math.floor(Math.random() * poolCards.length);
-                const cardDoc = poolCards[randomIndex];
-                const rarityObj = cardDoc.rarities[0]; // Simplified, pick first rarity
-                newCards.push({
-                    name: cardDoc.name,
-                    imageUrl: cardDoc.imageUrl,
-                    flavorText: cardDoc.flavorText,
-                    rarity: rarityObj.rarity,
-                    mintNumber: 0, // or generate mint number logic
-                });
-            }
+            const { generatePackFromPool } = require('../helpers/cardHelpers');
+            newCards = await generatePackFromPool(templatePack.cardPool, 5);
         }
 
         if (!newCards.length) {
