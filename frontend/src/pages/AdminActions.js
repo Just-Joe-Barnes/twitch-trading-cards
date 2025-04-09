@@ -259,12 +259,30 @@ const AdminActions = () => {
             {/* User Profile Viewer */}
             <section className="aa-panel">
                 <h2>User Profile</h2>
-                <input
-                    type="text"
-                    placeholder="Search username..."
-                    value={selectedUser}
-                    onChange={(e) => setSelectedUser(e.target.value)}
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                      type="text"
+                      placeholder="Search username..."
+                      value={selectedUser}
+                      onChange={(e) => setSelectedUser(e.target.value)}
+                      className="search-bar"
+                      onFocus={() => setUserDropdownVisible(true)}
+                      onBlur={() => setTimeout(() => setUserDropdownVisible(false), 150)}
+                  />
+                  {isUserDropdownVisible && selectedUser && filteredUsers.length > 0 && (
+                      <ul className="search-dropdown">
+                          {filteredUsers.map(u => (
+                              <li
+                                  key={u._id}
+                                  className="search-result-item"
+                                  onMouseDown={() => setSelectedUser(u.username)}
+                              >
+                                  {u.username}
+                              </li>
+                          ))}
+                      </ul>
+                  )}
+                </div>
                 {selectedUserObj && (
                     <div className="user-profile-info">
                         <p><strong>Username:</strong> {selectedUserObj.username}</p>
@@ -287,25 +305,28 @@ const AdminActions = () => {
             <section className="aa-panel">
                 <h2>Card Availability</h2>
 
-                <input
-                    type="text"
-                    placeholder="Search card name..."
-                    value={cardSearchQuery}
-                    onChange={handleCardSearchInput}
-                />
-                {cardSearchResults.length > 0 && (
-                    <ul className="search-dropdown">
-                        {cardSearchResults.map(card => (
-                            <li
-                                key={card._id}
-                                className="search-result-item"
-                                onMouseDown={() => handleSelectCard(card)}
-                            >
-                                {card.name}
-                            </li>
-                        ))}
-                    </ul>
-                )}
+                <div style={{ position: 'relative' }}>
+                  <input
+                      type="text"
+                      placeholder="Search card name..."
+                      value={cardSearchQuery}
+                      onChange={handleCardSearchInput}
+                      className="search-bar"
+                  />
+                  {cardSearchResults.length > 0 && (
+                      <ul className="search-dropdown">
+                          {cardSearchResults.map(card => (
+                              <li
+                                  key={card._id}
+                                  className="search-result-item"
+                                  onMouseDown={() => handleSelectCard(card)}
+                              >
+                                  {card.name}
+                              </li>
+                          ))}
+                      </ul>
+                  )}
+                </div>
 
                 {selectedCardDetails && (
                     <div className="card-availability-editor" style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', marginTop: '1rem' }}>
