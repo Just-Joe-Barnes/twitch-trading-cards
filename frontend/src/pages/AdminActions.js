@@ -171,64 +171,14 @@ const AdminActions = () => {
                         />
                     </div>
 
-                    <h3>Rarities</h3>
-                    {newCardRarities.map((rarity, idx) => (
-                      <div key={idx} style={{ border: '1px solid var(--border-dark)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
-                        <div className="aa-form-group">
-                          <label>Rarity Name:</label>
-                          <input
-                            type="text"
-                            value={rarity.rarity}
-                            onChange={(e) => {
-                              const updated = [...newCardRarities];
-                              updated[idx].rarity = e.target.value;
-                              setNewCardRarities(updated);
-                            }}
-                          />
-                        </div>
-                        <div className="aa-form-group">
-                          <label>Remaining Copies:</label>
-                          <input
-                            type="number"
-                            value={rarity.remainingCopies}
-                            onChange={(e) => {
-                              const updated = [...newCardRarities];
-                              updated[idx].remainingCopies = parseInt(e.target.value) || 0;
-                              setNewCardRarities(updated);
-                            }}
-                          />
-                        </div>
-                        <div className="aa-form-group">
-                          <label>Mint Numbers (comma separated):</label>
-                          <input
-                            type="text"
-                            value={rarity.availableMintNumbers}
-                            onChange={(e) => {
-                              const updated = [...newCardRarities];
-                              updated[idx].availableMintNumbers = e.target.value;
-                              setNewCardRarities(updated);
-                            }}
-                          />
-                        </div>
-                        <button
-                          onClick={() => {
-                            const updated = newCardRarities.filter((_, i) => i !== idx);
-                            setNewCardRarities(updated);
-                          }}
-                        >
-                          Remove Rarity
-                        </button>
-                      </div>
-                    ))}
-                    <button
-                      onClick={() => setNewCardRarities([...newCardRarities, { rarity: '', remainingCopies: 0, availableMintNumbers: '' }])}
-                    >
-                      Add Rarity
-                    </button>
-
                     <button
                         onClick={async () => {
                             try {
+                                const defaultRarities = [
+                                  { rarity: 'Common', remainingCopies: 1000, availableMintNumbers: Array.from({length: 1000}, (_, i) => i + 1) },
+                                  { rarity: 'Rare', remainingCopies: 100, availableMintNumbers: Array.from({length: 100}, (_, i) => i + 1) },
+                                  { rarity: 'Epic', remainingCopies: 10, availableMintNumbers: Array.from({length: 10}, (_, i) => i + 1) },
+                                ];
                                 await fetchWithAuth('/api/admin/cards', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
@@ -236,18 +186,13 @@ const AdminActions = () => {
                                         name: newCardTitle,
                                         flavorText: newCardFlavor,
                                         imageUrl: newCardImage,
-                                        rarities: newCardRarities.map(r => ({
-                                          rarity: r.rarity,
-                                          remainingCopies: r.remainingCopies,
-                                          availableMintNumbers: r.availableMintNumbers.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n))
-                                        }))
+                                        rarities: defaultRarities
                                     }),
                                 });
                                 window.showToast('Card created successfully', 'success');
                                 setNewCardTitle('');
                                 setNewCardFlavor('');
                                 setNewCardImage('');
-                                setNewCardRarities([]);
                             } catch {
                                 window.showToast('Error creating card', 'error');
                             }
