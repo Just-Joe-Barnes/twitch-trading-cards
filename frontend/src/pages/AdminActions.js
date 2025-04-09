@@ -386,6 +386,28 @@ const AdminActions = () => {
             <section className="aa-panel">
                 <h2>Pack Management</h2>
 
+                <button
+                    onClick={async () => {
+                        try {
+                            const res = await fetchWithAuth('/api/cards');
+                            const allCards = res.cards || [];
+                            const allCardIds = allCards.map(c => c._id);
+                            setNewPack({
+                                name: 'Series 1',
+                                series: 'Series 1',
+                                availableFrom: '',
+                                availableTo: '',
+                                cardPool: allCardIds.join(', '),
+                            });
+                            window.showToast('Loaded all cards into Series 1 pack', 'success');
+                        } catch {
+                            window.showToast('Error loading cards', 'error');
+                        }
+                    }}
+                >
+                    Load All Cards into Series 1 Pack
+                </button>
+
                 <div className="aa-form-group">
                     <label>Pack Name:</label>
                     <input
