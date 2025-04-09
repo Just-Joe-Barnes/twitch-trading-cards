@@ -21,14 +21,6 @@ const AdminActions = () => {
     const [selectedCardDetails, setSelectedCardDetails] = useState(null);
 
     // Pack management state
-    const [packs, setPacks] = useState([]);
-    const [newPack, setNewPack] = useState({
-        name: '',
-        series: '',
-        availableFrom: '',
-        availableTo: '',
-        cardPool: '',
-    });
 
     useEffect(() => {
         const fetchPacks = async () => {
