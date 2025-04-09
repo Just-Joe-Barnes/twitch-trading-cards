@@ -255,6 +255,7 @@ const AdminActions = () => {
                 </section>
             </div>
 
+            <div className="aa-admin-panels">
             {/* User Profile Viewer */}
             <section className="aa-panel">
                 <h2>User Profile</h2>
@@ -369,6 +370,7 @@ const AdminActions = () => {
                 <p>For full pack management with card search and multi-select, please use the dedicated Pack Management page:</p>
                 <a href="/admin/packs" className="aa-button">Go to Pack Management</a>
             </section>
+            </div>
 
             {status && <p className="aa-status-message">{status}</p>}
         </div>
