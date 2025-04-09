@@ -303,46 +303,58 @@ const AdminActions = () => {
                 )}
 
                 {selectedCardDetails && (
-                    <div className="card-availability-editor">
-                        <p><strong>{selectedCardDetails.name}</strong></p>
-                        <label>Available From (ISO):</label>
-                        <input
-                            type="text"
-                            value={selectedCardDetails.availableFrom || ''}
-                            onChange={(e) => setSelectedCardDetails({ ...selectedCardDetails, availableFrom: e.target.value })}
-                        />
-                        <label>Available To (ISO):</label>
-                        <input
-                            type="text"
-                            value={selectedCardDetails.availableTo || ''}
-                            onChange={(e) => setSelectedCardDetails({ ...selectedCardDetails, availableTo: e.target.value })}
-                        />
-                        <label>Series:</label>
-                        <input
-                            type="text"
-                            value={selectedCardDetails.series || ''}
-                            onChange={(e) => setSelectedCardDetails({ ...selectedCardDetails, series: e.target.value })}
-                        />
-                        <button
-                            onClick={async () => {
-                                try {
-                                    await fetchWithAuth('/api/admin/update-card-availability', {
-                                        method: 'POST',
-                                        body: JSON.stringify({
-                                            cardId: selectedCardDetails._id,
-                                            availableFrom: selectedCardDetails.availableFrom,
-                                            availableTo: selectedCardDetails.availableTo,
-                                            series: selectedCardDetails.series,
-                                        }),
-                                    });
-                                    window.showToast('Card availability updated', 'success');
-                                } catch {
-                                    window.showToast('Error updating card availability', 'error');
-                                }
-                            }}
-                        >
-                            Save Availability
-                        </button>
+                    <div className="card-availability-editor" style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', marginTop: '1rem' }}>
+                        <div style={{ flex: '1 1 300px', minWidth: '300px' }}>
+                            <h3>{selectedCardDetails.name}</h3>
+                            <label>Available From:</label>
+                            <input
+                                type="datetime-local"
+                                value={selectedCardDetails.availableFrom ? new Date(selectedCardDetails.availableFrom).toISOString().slice(0, 16) : ''}
+                                onChange={(e) => setSelectedCardDetails({ ...selectedCardDetails, availableFrom: e.target.value })}
+                            />
+                            <label>Available To:</label>
+                            <input
+                                type="datetime-local"
+                                value={selectedCardDetails.availableTo ? new Date(selectedCardDetails.availableTo).toISOString().slice(0, 16) : ''}
+                                onChange={(e) => setSelectedCardDetails({ ...selectedCardDetails, availableTo: e.target.value })}
+                            />
+                            <label>Series:</label>
+                            <input
+                                type="text"
+                                value={selectedCardDetails.series || ''}
+                                onChange={(e) => setSelectedCardDetails({ ...selectedCardDetails, series: e.target.value })}
+                            />
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        await fetchWithAuth('/api/admin/update-card-availability', {
+                                            method: 'POST',
+                                            body: JSON.stringify({
+                                                cardId: selectedCardDetails._id,
+                                                availableFrom: selectedCardDetails.availableFrom,
+                                                availableTo: selectedCardDetails.availableTo,
+                                                series: selectedCardDetails.series,
+                                            }),
+                                        });
+                                        window.showToast('Card availability updated', 'success');
+                                    } catch {
+                                        window.showToast('Error updating card availability', 'error');
+                                    }
+                                }}
+                            >
+                                Save Availability
+                            </button>
+                        </div>
+                        <div style={{ flex: '1 1 300px', minWidth: '300px' }}>
+                            <h3>Card Preview</h3>
+                            <BaseCard
+                                name={selectedCardDetails.name}
+                                image={selectedCardDetails.imageUrl}
+                                rarity={selectedCardDetails.rarity || (selectedCardDetails.rarities && selectedCardDetails.rarities[0]?.rarity)}
+                                description={selectedCardDetails.flavorText}
+                                mintNumber={selectedCardDetails.mintNumber}
+                            />
+                        </div>
                     </div>
                 )}
             </section>
