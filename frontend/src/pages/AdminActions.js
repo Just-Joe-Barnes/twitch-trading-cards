@@ -182,6 +182,9 @@ const AdminActions = () => {
                                 try {
                                     const res = await fetch('https://neds-decks.onrender.com/api/admin/upload', {
                                         method: 'POST',
+                                        headers: {
+                                          'Authorization': 'Bearer ' + localStorage.getItem('token')
+                                        },
                                         body: formData,
                                     });
                                     const data = await res.json();
