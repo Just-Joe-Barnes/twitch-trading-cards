@@ -389,6 +389,36 @@ const AdminActions = () => {
                                         <strong>{r.rarity}:</strong> {r.remainingCopies} copies remaining
                                     </div>
                                 ))}
+                                <button
+                                    onClick={async () => {
+                                        if (!window.confirm('Delete this card?')) return;
+                                        try {
+                                            await fetch(`https://neds-decks.onrender.com/api/admin/cards/${selectedCardDetails._id}`, {
+                                                method: 'DELETE',
+                                                headers: {
+                                                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                                                }
+                                            });
+                                            window.showToast('Card deleted', 'success');
+                                            setSelectedCardDetails(null);
+                                            setCardSearchQuery('');
+                                            setCardSearchResults([]);
+                                        } catch {
+                                            window.showToast('Error deleting card', 'error');
+                                        }
+                                    }}
+                                    style={{
+                                        marginTop: '1rem',
+                                        backgroundColor: '#e32232',
+                                        color: '#fff',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        padding: '0.5rem 1rem',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Delete Card
+                                </button>
                             </div>
                         )}
                     </div>

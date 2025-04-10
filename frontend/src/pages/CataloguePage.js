@@ -186,6 +186,7 @@ const CataloguePage = () => {
                                         Ends in: {days}d {hours}h {minutes}m {seconds}s
                                     </div>
                                 )}
+                                
                             </div>
                         );
                     })
