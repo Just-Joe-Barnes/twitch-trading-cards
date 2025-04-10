@@ -544,7 +544,7 @@ const AdminActions = () => {
                     Add Note
                   </button>
                 </div>
-                <ul style={{ listStyle: 'none', padding: 0 }}>
+                <ul style={{ listStyle: 'none', padding: 0, maxHeight: '240px', overflowY: 'auto' }}>
                   {devNotes.map((note, idx) => (
                     <li key={idx} style={{ marginBottom: '1rem', background: 'var(--surface-darker)', padding: '1rem', borderRadius: '8px' }}>
                       {note}
