@@ -366,4 +366,19 @@ router.post('/upload', protect, adminOnly, upload.single('image'), (req, res) =>
   res.json({ imageUrl });
 });
 
+router.delete('/cards/:cardId', protect, adminOnly, async (req, res) => {
+  try {
+    const Card = require('../models/cardModel');
+    const card = await Card.findById(req.params.cardId);
+    if (!card) {
+      return res.status(404).json({ message: 'Card not found' });
+    }
+    await card.deleteOne();
+    res.json({ message: 'Card deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting card:', error);
+    res.status(500).json({ message: 'Failed to delete card' });
+  }
+});
+
 module.exports = router;

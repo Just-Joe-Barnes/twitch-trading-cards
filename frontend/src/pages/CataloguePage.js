@@ -164,7 +164,7 @@ const CataloguePage = () => {
                         const days = timeLeft ? Math.floor(timeLeft / (1000 * 60 * 60 * 24)) : null;
 
                         return (
-                            <div key={card._id} className="catalogue-card">
+                            <div key={card._id} className="catalogue-card" style={{ position: 'relative' }}>
                                 <BaseCard
                                     name={card.name}
                                     image={card.imageUrl}
@@ -173,7 +173,16 @@ const CataloguePage = () => {
                                     mintNumber={card.mintNumber}
                                 />
                                 {to && timeLeft > 0 && (
-                                    <div style={{ color: 'red', marginTop: '0.5rem' }}>
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '5px',
+                                        left: '5px',
+                                        backgroundColor: 'rgba(0,0,0,0.7)',
+                                        color: '#fff',
+                                        padding: '4px 6px',
+                                        borderRadius: '6px',
+                                        fontSize: '0.8rem'
+                                    }}>
                                         Ends in: {days}d {hours}h {minutes}m {seconds}s
                                     </div>
                                 )}
