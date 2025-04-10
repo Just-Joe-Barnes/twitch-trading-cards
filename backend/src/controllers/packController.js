@@ -90,8 +90,24 @@ const openPacksForUser = async (req, res) => {
                 return res.status(404).json({ message: 'Pack template not found' });
             }
 
+            const Card = require('../models/cardModel');
+            const now = new Date();
+            const poolCards = await Card.find({
+                _id: { $in: templatePack.cardPool },
+                $or: [
+                    { availableFrom: null },
+                    { availableFrom: { $lte: now } }
+                ],
+                $or: [
+                    { availableTo: null },
+                    { availableTo: { $gte: now } }
+                ]
+            });
+
+            const filteredIds = poolCards.map(c => c._id);
+
             const { generatePackFromPool } = require('../helpers/cardHelpers');
-            newCards = await generatePackFromPool(templatePack.cardPool, 5);
+            newCards = await generatePackFromPool(filteredIds, 5);
         }
 
         if (!newCards.length) {
