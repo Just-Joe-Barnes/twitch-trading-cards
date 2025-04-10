@@ -158,7 +158,7 @@ const AdminActions = () => {
             <div className="aa-admin-panels" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
 
             {/* Create New Card Panel */}
-            <section className="aa-panel" style={{ gridColumn: 'span 3' }}>
+            <section className="aa-panel" style={{ gridColumn: '1 / -1' }}>
                 <h2>Create New Card</h2>
                 <div className="aa-admin-actions-form" style={{ display: 'flex', flexDirection: 'row', gap: '2rem', alignItems: 'flex-start' }}>
                     <div style={{ flex: 1 }}>
@@ -297,6 +297,9 @@ const AdminActions = () => {
                     </div>
                 </div>
             </section>
+
+            <div className="aa-admin-panels" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
+
                 {/* Notification Panel */}
                 <section className="aa-panel">
                     <h2>Send Notification</h2>
@@ -463,7 +466,9 @@ const AdminActions = () => {
                 </section>
             </div>
 
-            <div className="aa-admin-panels">
+            </div>
+
+            <div className="aa-admin-panels" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
             {/* User Profile Viewer */}
             <section className="aa-panel">
                 <h2>User Profile</h2>
