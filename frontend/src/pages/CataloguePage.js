@@ -29,6 +29,15 @@ const CataloguePage = () => {
     const [sortOption, setSortOption] = useState('name');
     const [sortOrder, setSortOrder] = useState('asc');
 
+    const [now, setNow] = useState(new Date());
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setNow(new Date());
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
     // Fetch all cards
     const fetchCatalogue = async () => {
         try {
@@ -62,8 +71,7 @@ const CataloguePage = () => {
         setSortOrder(e.target.value);
     };
 
-    const now = new Date();
-
+    
     const limitedCards = cards.filter(card =>
         card.availableFrom || card.availableTo
     );
@@ -165,28 +173,29 @@ const CataloguePage = () => {
 
                         return (
                             <div key={card._id} className="catalogue-card" style={{ position: 'relative' }}>
-                                <BaseCard
-                                    name={card.name}
-                                    image={card.imageUrl}
-                                    description={card.flavorText}
-                                    rarity={selectedRarity}
-                                    mintNumber={card.mintNumber}
-                                />
-                                {to && timeLeft > 0 && (
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '5px',
-                                        left: '5px',
-                                        backgroundColor: 'rgba(0,0,0,0.7)',
-                                        color: '#fff',
-                                        padding: '4px 6px',
-                                        borderRadius: '6px',
-                                        fontSize: '0.8rem'
-                                    }}>
-                                        Ends in: {days}d {hours}h {minutes}m {seconds}s
-                                    </div>
-                                )}
-                                
+                                <div style={{ position: 'relative' }}>
+                                    <BaseCard
+                                        name={card.name}
+                                        image={card.imageUrl}
+                                        description={card.flavorText}
+                                        rarity={selectedRarity}
+                                        mintNumber={card.mintNumber}
+                                    />
+                                    {to && timeLeft > 0 && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '5px',
+                                            left: '5px',
+                                            backgroundColor: 'rgba(0,0,0,0.7)',
+                                            color: '#fff',
+                                            padding: '4px 6px',
+                                            borderRadius: '6px',
+                                            fontSize: '0.8rem'
+                                        }}>
+                                            Ends in: {days}d {hours}h {minutes}m {seconds}s
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         );
                     })
@@ -209,24 +218,26 @@ const CataloguePage = () => {
 
                         return (
                             <div key={card._id} className="catalogue-card" style={{ position: 'relative' }}>
-                                <BaseCard
-                                    name={card.name}
-                                    image={card.imageUrl}
-                                    description={card.flavorText}
-                                    rarity={selectedRarity}
-                                    mintNumber={card.mintNumber}
-                                />
-                                <div style={{
-                                    position: 'absolute',
-                                    top: '5px',
-                                    left: '5px',
-                                    backgroundColor: 'rgba(0,0,0,0.7)',
-                                    color: '#fff',
-                                    padding: '4px 6px',
-                                    borderRadius: '6px',
-                                    fontSize: '0.8rem'
-                                }}>
-                                    {status}
+                                <div style={{ position: 'relative' }}>
+                                    <BaseCard
+                                        name={card.name}
+                                        image={card.imageUrl}
+                                        description={card.flavorText}
+                                        rarity={selectedRarity}
+                                        mintNumber={card.mintNumber}
+                                    />
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '5px',
+                                        left: '5px',
+                                        backgroundColor: 'rgba(0,0,0,0.7)',
+                                        color: '#fff',
+                                        padding: '4px 6px',
+                                        borderRadius: '6px',
+                                        fontSize: '0.8rem'
+                                    }}>
+                                        {status}
+                                    </div>
                                 </div>
                             </div>
                         );
