@@ -514,6 +514,50 @@ const AdminActions = () => {
                 )}
             </section>
 
+            {/* Dev Notes To-Do List */}
+            <section className="aa-panel">
+              <h2>Dev Notes</h2>
+              <div className="aa-admin-actions-form">
+                <div className="aa-form-group">
+                  <label>Add Note:</label>
+                  <input
+                    type="text"
+                    value={newNote}
+                    onChange={(e) => setNewNote(e.target.value)}
+                    placeholder="Enter a note..."
+                  />
+                  <button
+                    onClick={() => {
+                      if (!newNote.trim()) return;
+                      const updated = [...devNotes, newNote.trim()];
+                      setDevNotes(updated);
+                      localStorage.setItem('devNotes', JSON.stringify(updated));
+                      setNewNote('');
+                    }}
+                  >
+                    Add Note
+                  </button>
+                </div>
+                <ul style={{ listStyle: 'none', padding: 0 }}>
+                  {devNotes.map((note, idx) => (
+                    <li key={idx} style={{ marginBottom: '1rem', background: 'var(--surface-darker)', padding: '1rem', borderRadius: '8px' }}>
+                      {note}
+                      <button
+                        onClick={() => {
+                          const updated = devNotes.filter((_, i) => i !== idx);
+                          setDevNotes(updated);
+                          localStorage.setItem('devNotes', JSON.stringify(updated));
+                        }}
+                        style={{ marginLeft: '1rem', background: '#e32232', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.3rem 0.6rem', cursor: 'pointer' }}
+                      >
+                        Delete
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+
             {/* Card Availability Editor */}
             <section className="aa-panel">
                 <h2>Card Availability</h2>
