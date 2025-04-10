@@ -62,8 +62,23 @@ const CataloguePage = () => {
         setSortOrder(e.target.value);
     };
 
-    // Filter then sort
-    const filteredCards = cards.filter((card) =>
+    const now = new Date();
+
+    const limitedCards = cards.filter(card =>
+        card.availableFrom || card.availableTo
+    );
+
+    const alwaysAvailableCards = cards.filter(card =>
+        !card.availableFrom && !card.availableTo
+    );
+
+    const activeLimitedCards = limitedCards.filter(card => {
+        const from = card.availableFrom ? new Date(card.availableFrom) : null;
+        const to = card.availableTo ? new Date(card.availableTo) : null;
+        return (!from || from <= now) && (!to || to >= now);
+    });
+
+    const filteredCards = alwaysAvailableCards.filter((card) =>
         card.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -137,6 +152,72 @@ const CataloguePage = () => {
                 </div>
             </div>
 
+            <h2>Limited Time Cards</h2>
+            <div className="catalogue-grid">
+                {activeLimitedCards.length > 0 ? (
+                    activeLimitedCards.map((card) => {
+                        const to = card.availableTo ? new Date(card.availableTo) : null;
+                        const timeLeft = to ? to - now : null;
+                        const seconds = timeLeft ? Math.floor(timeLeft / 1000) % 60 : null;
+                        const minutes = timeLeft ? Math.floor(timeLeft / (1000 * 60)) % 60 : null;
+                        const hours = timeLeft ? Math.floor(timeLeft / (1000 * 60 * 60)) % 24 : null;
+                        const days = timeLeft ? Math.floor(timeLeft / (1000 * 60 * 60 * 24)) : null;
+
+                        return (
+                            <div key={card._id} className="catalogue-card">
+                                <BaseCard
+                                    name={card.name}
+                                    image={card.imageUrl}
+                                    description={card.flavorText}
+                                    rarity={selectedRarity}
+                                    mintNumber={card.mintNumber}
+                                />
+                                {to && timeLeft > 0 && (
+                                    <div style={{ color: 'red', marginTop: '0.5rem' }}>
+                                        Ends in: {days}d {hours}h {minutes}m {seconds}s
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })
+                ) : (
+                    <div>No limited time cards currently available.</div>
+                )}
+            </div>
+
+            <h2>All Limited Cards (Past, Present, Future)</h2>
+            <div className="catalogue-grid">
+                {limitedCards.length > 0 ? (
+                    limitedCards.map((card) => {
+                        const from = card.availableFrom ? new Date(card.availableFrom) : null;
+                        const to = card.availableTo ? new Date(card.availableTo) : null;
+                        const now = new Date();
+                        let status = 'Always Available';
+                        if (from && now < from) status = 'Upcoming';
+                        else if (to && now > to) status = 'Expired';
+                        else status = 'Active';
+
+                        return (
+                            <div key={card._id} className="catalogue-card">
+                                <BaseCard
+                                    name={card.name}
+                                    image={card.imageUrl}
+                                    description={card.flavorText}
+                                    rarity={selectedRarity}
+                                    mintNumber={card.mintNumber}
+                                />
+                                <div style={{ marginTop: '0.5rem', color: 'orange' }}>
+                                    Status: {status}
+                                </div>
+                            </div>
+                        );
+                    })
+                ) : (
+                    <div>No limited cards found.</div>
+                )}
+            </div>
+
+            <h2>All Cards</h2>
             <div className="catalogue-grid">
                 {sortedCards.length > 0 ? (
                     sortedCards.map((card) => (
