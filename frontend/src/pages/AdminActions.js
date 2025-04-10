@@ -6,6 +6,8 @@ import BaseCard from '../components/BaseCard';
 import '../styles/AdminActions.css';
 
 const AdminActions = () => {
+    const [isAdmin, setIsAdmin] = useState(false);
+
     // New Card creation state
     const [newCardTitle, setNewCardTitle] = useState('');
     const [newCardFlavor, setNewCardFlavor] = useState('');
@@ -37,7 +39,11 @@ const AdminActions = () => {
         const checkAdmin = async () => {
             try {
                 const profile = await fetchUserProfile();
-                if (!profile.isAdmin) navigate('/');
+                if (!profile.isAdmin) {
+                    navigate('/');
+                } else {
+                    setIsAdmin(true);
+                }
             } catch {
                 navigate('/');
             }
@@ -137,6 +143,14 @@ const AdminActions = () => {
         setCardSearchResults([]);
     };
 
+    if (!isAdmin) {
+        return <div style={{ padding: '2rem', color: '#fff' }}>Not authorized</div>;
+    }
+
+    if (!users.length) {
+        return <div style={{ padding: '2rem', color: '#fff' }}>Loading...</div>;
+    }
+
     return (
         <div className="aa-admin-actions-page">
             <h1 className="page-title">Admin Actions</h1>
@@ -227,7 +241,10 @@ const AdminActions = () => {
                     )}
 
                     <button
+                        disabled={loading}
                         onClick={async () => {
+                            setStatus('');
+                            setLoading(true);
                             try {
                                 const defaultRarities = [
   { rarity: 'Basic', totalCopies: 1000, remainingCopies: 1000, availableMintNumbers: Array.from({ length: 1000 }, (_, i) => i + 1) },
@@ -259,10 +276,12 @@ const AdminActions = () => {
                                 setNewCardImage('');
                             } catch {
                                 window.showToast('Error creating card', 'error');
+                            } finally {
+                                setLoading(false);
                             }
                         }}
                     >
-                        Save Card
+                        {loading ? 'Saving...' : 'Save Card'}
                     </button>
                     </div>
 
@@ -302,7 +321,9 @@ const AdminActions = () => {
                                 required
                             />
                         </div>
-                        <button type="submit">Send Notification</button>
+                        <button type="submit" disabled={loading}>
+                            {loading ? 'Sending...' : 'Send Notification'}
+                        </button>
                     </form>
                 </section>
 
@@ -351,9 +372,20 @@ const AdminActions = () => {
                                 required
                             />
                         </div>
-                        <button type="submit">Give Packs</button>
-                        <button type="button" className="aa-reset-button" onClick={handleResetAllPacks}>
-                            Reset All Packs to 6
+                        <button type="submit" disabled={loading}>
+                            {loading ? 'Giving...' : 'Give Packs'}
+                        </button>
+                        <button type="button" className="aa-reset-button" disabled={loading} onClick={async () => {
+                            const confirmed = window.confirm('Are you sure you want to reset ALL users\' packs to 6? This cannot be undone.');
+                            if (!confirmed) return;
+                            setLoading(true);
+                            try {
+                                await handleResetAllPacks();
+                            } finally {
+                                setLoading(false);
+                            }
+                        }}>
+                            {loading ? 'Resetting...' : 'Reset All Packs to 6'}
                         </button>
                     </form>
                 </section>
@@ -395,7 +427,8 @@ const AdminActions = () => {
                                 ))}
                                 <button
                                     onClick={async () => {
-                                        if (!window.confirm('Delete this card?')) return;
+                                        const confirmed = window.confirm('Are you sure you want to delete this card? This cannot be undone.');
+                                        if (!confirmed) return;
                                         try {
                                             await fetch(`https://neds-decks.onrender.com/api/admin/cards/${selectedCardDetails._id}`, {
                                                 method: 'DELETE',
@@ -403,7 +436,7 @@ const AdminActions = () => {
                                                     'Authorization': 'Bearer ' + localStorage.getItem('token')
                                                 }
                                             });
-                                            window.showToast('Card deleted', 'success');
+                                            window.showToast('Card deleted successfully', 'success');
                                             setSelectedCardDetails(null);
                                             setCardSearchQuery('');
                                             setCardSearchResults([]);
@@ -525,7 +558,9 @@ const AdminActions = () => {
                                 onChange={(e) => setSelectedCardDetails({ ...selectedCardDetails, series: e.target.value })}
                             />
                             <button
+                                disabled={loading}
                                 onClick={async () => {
+                                    setLoading(true);
                                     try {
                                         await fetchWithAuth('/api/admin/update-card-availability', {
                                             method: 'POST',
@@ -539,10 +574,12 @@ const AdminActions = () => {
                                         window.showToast('Card availability updated', 'success');
                                     } catch {
                                         window.showToast('Error updating card availability', 'error');
+                                    } finally {
+                                        setLoading(false);
                                     }
                                 }}
                             >
-                                Save Availability
+                                {loading ? 'Saving...' : 'Save Availability'}
                             </button>
                         </div>
                         <div style={{ flex: '1 1 300px', minWidth: '300px' }}>
