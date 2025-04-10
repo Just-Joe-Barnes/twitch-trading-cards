@@ -117,10 +117,14 @@
 
 /* Grid layout for catalogue cards */
 .catalogue-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    margin-bottom: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: flex-start;
+}
+
+.catalogue-card {
+    position: relative;
 }
 
 .catalogue-card {
