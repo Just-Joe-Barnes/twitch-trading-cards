@@ -19,7 +19,7 @@
 
 .aa-admin-panels {
     display: flex;
-    gap: 3rem;
+    gap: 5rem;
     flex-wrap: wrap;
 }
 
