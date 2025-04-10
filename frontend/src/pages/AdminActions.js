@@ -7,6 +7,7 @@ import '../styles/AdminActions.css';
 
 const AdminActions = () => {
     const [isAdmin, setIsAdmin] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     // New Card creation state
     const [newCardTitle, setNewCardTitle] = useState('');
