@@ -9,6 +9,12 @@ const AdminActions = () => {
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    const [newNote, setNewNote] = useState('');
+    const [devNotes, setDevNotes] = useState(() => {
+      const saved = localStorage.getItem('devNotes');
+      return saved ? JSON.parse(saved) : [];
+    });
+
     // New Card creation state
     const [newCardTitle, setNewCardTitle] = useState('');
     const [newCardFlavor, setNewCardFlavor] = useState('');
