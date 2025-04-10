@@ -173,7 +173,7 @@ const AdminActions = () => {
                                 const file = e.target.files[0];
                                 if (!file) return;
                                 const formData = new FormData();
-                                formData.append('image', file);
+                                formData.append('file', file);
                                 try {
                                     formData.append('upload_preset', 'unsigned_preset');
                                     const res = await fetch('https://api.cloudinary.com/v1_1/dtnrd3xcy/image/upload', {
