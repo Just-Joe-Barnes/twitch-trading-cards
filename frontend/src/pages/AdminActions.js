@@ -145,7 +145,8 @@ const AdminActions = () => {
             {/* Create New Card Panel */}
             <section className="aa-panel" style={{ gridColumn: 'span 3' }}>
                 <h2>Create New Card</h2>
-                <div className="aa-admin-actions-form">
+                <div className="aa-admin-actions-form" style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
+                    <div style={{ flex: 1 }}>
                     <div className="aa-form-group">
                         <label>Card Title:</label>
                         <input
@@ -217,7 +218,7 @@ const AdminActions = () => {
                         <div className="aa-form-group">
                           <label>Available From:</label>
                           <input
-                            type="datetime-local"
+                            type="date"
                             value={availableFrom}
                             onChange={(e) => setAvailableFrom(e.target.value)}
                           />
@@ -225,7 +226,7 @@ const AdminActions = () => {
                         <div className="aa-form-group">
                           <label>Available To:</label>
                           <input
-                            type="datetime-local"
+                            type="date"
                             value={availableTo}
                             onChange={(e) => setAvailableTo(e.target.value)}
                           />
@@ -271,13 +272,17 @@ const AdminActions = () => {
                     >
                         Save Card
                     </button>
-                    <h3>Live Preview</h3>
-                    <BaseCard
-                        name={newCardTitle}
-                        description={newCardFlavor}
-                        image={newCardImage}
-                        rarity="Common"
-                    />
+                    </div>
+
+                    <div style={{ flex: 1 }}>
+                        <h3>Live Preview</h3>
+                        <BaseCard
+                            name={newCardTitle}
+                            description={newCardFlavor}
+                            image={newCardImage}
+                            rarity="Common"
+                        />
+                    </div>
                 </div>
             </section>
                 {/* Notification Panel */}
