@@ -208,7 +208,7 @@ const CataloguePage = () => {
                         else status = 'Active';
 
                         return (
-                            <div key={card._id} className="catalogue-card">
+                            <div key={card._id} className="catalogue-card" style={{ position: 'relative' }}>
                                 <BaseCard
                                     name={card.name}
                                     image={card.imageUrl}
@@ -216,8 +216,17 @@ const CataloguePage = () => {
                                     rarity={selectedRarity}
                                     mintNumber={card.mintNumber}
                                 />
-                                <div style={{ marginTop: '0.5rem', color: 'orange' }}>
-                                    Status: {status}
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '5px',
+                                    left: '5px',
+                                    backgroundColor: 'rgba(0,0,0,0.7)',
+                                    color: '#fff',
+                                    padding: '4px 6px',
+                                    borderRadius: '6px',
+                                    fontSize: '0.8rem'
+                                }}>
+                                    {status}
                                 </div>
                             </div>
                         );
