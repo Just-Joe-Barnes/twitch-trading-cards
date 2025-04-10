@@ -18,9 +18,10 @@
 }
 
 .aa-admin-panels {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 5rem;
-    flex-wrap: wrap;
+    align-items: start;
 }
 
 .aa-panel {
