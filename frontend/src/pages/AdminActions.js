@@ -237,10 +237,17 @@ const AdminActions = () => {
                         onClick={async () => {
                             try {
                                 const defaultRarities = [
-                                  { rarity: 'Common', totalCopies: 1000, remainingCopies: 1000, availableMintNumbers: Array.from({length: 1000}, (_, i) => i + 1) },
-                                  { rarity: 'Rare', totalCopies: 100, remainingCopies: 100, availableMintNumbers: Array.from({length: 100}, (_, i) => i + 1) },
-                                  { rarity: 'Epic', totalCopies: 10, remainingCopies: 10, availableMintNumbers: Array.from({length: 10}, (_, i) => i + 1) },
-                                ];
+  { rarity: 'Basic', totalCopies: 1000, remainingCopies: 1000, availableMintNumbers: Array.from({ length: 1000 }, (_, i) => i + 1) },
+  { rarity: 'Common', totalCopies: 800, remainingCopies: 800, availableMintNumbers: Array.from({ length: 800 }, (_, i) => i + 1) },
+  { rarity: 'Standard', totalCopies: 600, remainingCopies: 600, availableMintNumbers: Array.from({ length: 600 }, (_, i) => i + 1) },
+  { rarity: 'Uncommon', totalCopies: 400, remainingCopies: 400, availableMintNumbers: Array.from({ length: 400 }, (_, i) => i + 1) },
+  { rarity: 'Rare', totalCopies: 300, remainingCopies: 300, availableMintNumbers: Array.from({ length: 300 }, (_, i) => i + 1) },
+  { rarity: 'Epic', totalCopies: 200, remainingCopies: 200, availableMintNumbers: Array.from({ length: 200 }, (_, i) => i + 1) },
+  { rarity: 'Legendary', totalCopies: 100, remainingCopies: 100, availableMintNumbers: Array.from({ length: 100 }, (_, i) => i + 1) },
+  { rarity: 'Mythic', totalCopies: 50, remainingCopies: 50, availableMintNumbers: Array.from({ length: 50 }, (_, i) => i + 1) },
+  { rarity: 'Unique', totalCopies: 10, remainingCopies: 10, availableMintNumbers: Array.from({ length: 10 }, (_, i) => i + 1) },
+  { rarity: 'Divine', totalCopies: 1, remainingCopies: 1, availableMintNumbers: [1] }
+];
                                 await fetchWithAuth('/api/admin/cards', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
