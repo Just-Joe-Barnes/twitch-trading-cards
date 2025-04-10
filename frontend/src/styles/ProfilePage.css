@@ -256,3 +256,8 @@ body {
         padding: 0.5rem 1rem;
     }
 }
+
+.profile-overview,
+.profile-overview * {
+    cursor: default !important;
+}

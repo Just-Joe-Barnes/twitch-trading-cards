@@ -183,6 +183,11 @@
     color: var(--brand-secondary);
 }
 
+.user-profile-info,
+.user-profile-info * {
+    cursor: default !important;
+}
+
 /* Card Availability Editor */
 .card-availability-editor {
   display: flex;
