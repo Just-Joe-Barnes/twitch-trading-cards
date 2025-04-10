@@ -145,7 +145,7 @@ const AdminActions = () => {
             {/* Create New Card Panel */}
             <section className="aa-panel" style={{ gridColumn: 'span 3' }}>
                 <h2>Create New Card</h2>
-                <div className="aa-admin-actions-form" style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
+                <div className="aa-admin-actions-form" style={{ display: 'flex', flexDirection: 'row', gap: '2rem', alignItems: 'flex-start' }}>
                     <div style={{ flex: 1 }}>
                     <div className="aa-form-group">
                         <label>Card Title:</label>
