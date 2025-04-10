@@ -167,7 +167,7 @@ const CataloguePage = () => {
                             <div key={card._id} className="catalogue-card" style={{ position: 'relative' }}>
                                 <BaseCard
                                     name={card.name}
-                                    image={card.imageUrl?.startsWith('http') ? card.imageUrl : 'https://neds-decks.onrender.com' + card.imageUrl}
+                                    image={card.imageUrl}
                                     description={card.flavorText}
                                     rarity={selectedRarity}
                                     mintNumber={card.mintNumber}
