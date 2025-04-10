@@ -182,20 +182,20 @@ const AdminActions = () => {
                                 formData.append('image', file);
                                 try {
                                     formData.append('upload_preset', 'unsigned_preset');
-                                const res = await fetch('https://api.cloudinary.com/v1_1/dtnrd3xcy/image/upload', {
-                                    method: 'POST',
-                                    body: formData,
-                                });
-                                const data = await res.json();
-                                if (data.secure_url) {
-                                    setNewCardImage(data.secure_url);
-                                    window.showToast('Image uploaded', 'success');
-                                } else {
-                                    window.showToast('Upload failed', 'error');
+                                    const res = await fetch('https://api.cloudinary.com/v1_1/dtnrd3xcy/image/upload', {
+                                        method: 'POST',
+                                        body: formData,
+                                    });
+                                    const data = await res.json();
+                                    if (data.secure_url) {
+                                        setNewCardImage(data.secure_url);
+                                        window.showToast('Image uploaded', 'success');
+                                    } else {
+                                        window.showToast('Upload failed', 'error');
+                                    }
+                                } catch {
+                                    window.showToast('Upload error', 'error');
                                 }
-                            }
-                            catch {
-                                window.showToast('Upload error', 'error');
                             }}
                         />
                     </div>
