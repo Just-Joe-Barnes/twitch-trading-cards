@@ -165,13 +165,7 @@ const AdminActions = () => {
                         />
                     </div>
                     <div className="aa-form-group">
-                        <label>Image URL:</label>
-                        <input
-                            type="text"
-                            value={newCardImage}
-                            onChange={(e) => setNewCardImage(e.target.value)}
-                            placeholder="Enter image URL or upload below"
-                        />
+                        <label>Upload Image:</label>
                         <input
                             type="file"
                             accept="image/*"
