@@ -255,7 +255,7 @@ const AdminActions = () => {
                                     body: JSON.stringify({
                                         name: newCardTitle,
                                         flavorText: newCardFlavor,
-                                        imageUrl: newCardImage,
+                                        imageUrl: newCardImage.startsWith('http') ? newCardImage : 'https://neds-decks.onrender.com' + newCardImage,
                                         rarities: defaultRarities,
                                         availableFrom: alwaysAvailable ? null : availableFrom || null,
                                         availableTo: alwaysAvailable ? null : availableTo || null
