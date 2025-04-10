@@ -1,15 +1,15 @@
-/* App.css */
+.navbar-search-container {
+  position: relative;
+  display: inline-block;
+}
 
-:root {
-    --font-family: 'Inter', sans-serif;
-    --font-size-base: 16px;
-    --font-size-large: 18px;
-    --font-size-small: 14px;
-
-    --color-bg: #0a0a0a;
-    --color-surface: #1a1a1a;
-    --color-surface-light: #2a2a2a;
-    --color-primary: #db88db;
+.navbar-search-container .search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+}
     --color-secondary: #88cddb;
     --color-text: rgba(255, 255, 255, 0.95);
     --color-text-muted: rgba(255, 255, 255, 0.6);

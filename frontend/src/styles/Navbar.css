@@ -40,8 +40,12 @@
     flex: 1;
     display: flex;
     justify-content: center;
-    position: relative;
     z-index: 10;
+}
+
+.search-wrapper {
+    position: relative;
+    width: 250px;
 }
 
 .search-bar {

@@ -61,30 +61,32 @@ const Navbar = ({ isAdmin }) => {
             </div>
 
             <div className="navbar-search">
-                <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                    placeholder="Search for users..."
-                    className="search-bar"
-                />
-                {isDropdownVisible && (
-                    <ul className="search-dropdown">
-                        {searchResults.length > 0 ? (
-                            searchResults.map((user) => (
-                                <li
-                                    key={user._id}
-                                    onClick={() => handleSearchSelect(user.username)}
-                                    className="search-result-item"
-                                >
-                                    {user.username}
-                                </li>
-                            ))
-                        ) : (
-                            <li className="no-results">No users found</li>
-                        )}
-                    </ul>
-                )}
+                <div className="search-wrapper">
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        placeholder="Search for users..."
+                        className="search-bar"
+                    />
+                    {isDropdownVisible && (
+                        <ul className="search-dropdown">
+                            {searchResults.length > 0 ? (
+                                searchResults.map((user) => (
+                                    <li
+                                        key={user._id}
+                                        onClick={() => handleSearchSelect(user.username)}
+                                        className="search-result-item"
+                                    >
+                                        {user.username}
+                                    </li>
+                                ))
+                            ) : (
+                                <li className="no-results">No users found</li>
+                            )}
+                        </ul>
+                    )}
+                </div>
             </div>
 
             <ul className="navbar-links">
