@@ -26,11 +26,15 @@
 .aa-panel {
     flex: 1;
     min-width: 320px;
+    min-height: 400px;
     padding: 30px;
     background: var(--surface-dark);
     border: 1px solid var(--border-dark);
     border-radius: 16px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 /* Form styling */
