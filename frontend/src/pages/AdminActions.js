@@ -189,7 +189,7 @@ const AdminActions = () => {
                                     });
                                     const data = await res.json();
                                     if (data.imageUrl) {
-                                        setNewCardImage(data.imageUrl);
+                                        setNewCardImage('https://neds-decks.onrender.com' + data.imageUrl);
                                         window.showToast('Image uploaded', 'success');
                                     } else {
                                         window.showToast('Upload failed', 'error');
