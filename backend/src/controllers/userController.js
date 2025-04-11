@@ -4,16 +4,25 @@ const Card = require('../models/cardModel');
 
 // Get logged-in user's profile (using token)
 const getUserProfile = async (req, res) => {
+    const start = process.hrtime();
     try {
+        const dbStart = process.hrtime();
         const user = await User.findById(req.user._id).select(
             'username email isAdmin packs openedPacks featuredCards cards twitchProfilePic xp level achievements'
         );
+        const dbEnd = process.hrtime(dbStart);
+        console.log(`[PERF] [getUserProfile] DB query took ${dbEnd[0] * 1000 + dbEnd[1] / 1e6} ms`);
         if (!user) {
+            const total = process.hrtime(start);
+            console.log(`[PERF] [getUserProfile] TOTAL (user not found): ${total[0] * 1000 + total[1] / 1e6} ms`);
             return res.status(404).json({ message: 'User not found' });
         }
+        const total = process.hrtime(start);
+        console.log(`[PERF] [getUserProfile] TOTAL: ${total[0] * 1000 + total[1] / 1e6} ms`);
         res.status(200).json(user);
     } catch (error) {
-        console.error('Error fetching user profile:', error.message);
+        const total = process.hrtime(start);
+        console.error(`[PERF] [getUserProfile] ERROR after ${total[0] * 1000 + total[1] / 1e6} ms:`, error.message);
         res.status(500).json({ message: 'Server error' });
     }
 };

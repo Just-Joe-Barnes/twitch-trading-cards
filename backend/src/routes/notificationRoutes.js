@@ -7,11 +7,18 @@ const { protect } = require('../middleware/authMiddleware');
 
 // GET all notifications for the logged-in user
 router.get('/', protect, async (req, res) => {
+    const start = process.hrtime();
     try {
+        const dbStart = process.hrtime();
         const user = await User.findById(req.user.id).select('notifications');
+        const dbEnd = process.hrtime(dbStart);
+        console.log(`[PERF] [notifications] DB query took ${dbEnd[0] * 1000 + dbEnd[1] / 1e6} ms`);
+        const total = process.hrtime(start);
+        console.log(`[PERF] [notifications] TOTAL: ${total[0] * 1000 + total[1] / 1e6} ms`);
         res.status(200).json(user.notifications);
     } catch (error) {
-        console.error('Error fetching notifications:', error.message);
+        const total = process.hrtime(start);
+        console.error(`[PERF] [notifications] ERROR after ${total[0] * 1000 + total[1] / 1e6} ms:`, error.message);
         res.status(500).json({ message: 'Error fetching notifications' });
     }
 });

@@ -78,10 +78,18 @@ router.post('/notifications', protect, adminOnly, async (req, res) => {
 
 // GET list of users (id + username + packs)
 router.get('/users', protect, adminOnly, async (req, res) => {
+    const start = process.hrtime();
     try {
+        const dbStart = process.hrtime();
         const users = await User.find({}, 'username packs');
+        const dbEnd = process.hrtime(dbStart);
+        console.log(`[PERF] [admin/users] DB query took ${dbEnd[0] * 1000 + dbEnd[1] / 1e6} ms`);
+        const total = process.hrtime(start);
+        console.log(`[PERF] [admin/users] TOTAL: ${total[0] * 1000 + total[1] / 1e6} ms`);
         res.json(users);
     } catch (err) {
+        const total = process.hrtime(start);
+        console.error(`[PERF] [admin/users] ERROR after ${total[0] * 1000 + total[1] / 1e6} ms:`, err);
         res.status(500).json({ error: 'Failed to fetch users.' });
     }
 });
