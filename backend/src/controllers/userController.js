@@ -56,7 +56,7 @@ const getFeaturedCards = async (req, res) => {
             user.featuredCards.map(async (featuredCard) => {
                 const cardDoc = await Card.findOne({ name: featuredCard.name });
                 return {
-                    ...featuredCard.toObject(),
+                    ...featuredCard,
                     flavorText: cardDoc?.flavorText || 'No description available',
                 };
             })
