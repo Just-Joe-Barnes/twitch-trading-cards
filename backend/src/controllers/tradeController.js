@@ -67,14 +67,21 @@ const updateTradeStatus = async (req, res) => {
             return res.status(404).json({ message: "Trade not found" });
         }
 
+        // Fetch both sender and recipient first
+        const sender = await User.findById(trade.sender).session(session);
+        const recipient = await User.findById(trade.recipient).session(session);
+        if (!sender || !recipient) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(404).json({ message: "Sender or Recipient not found" });
+        }
+
+        // Now call achievements check
         const { checkAndGrantAchievements } = require('../helpers/achievementHelper');
         await checkAndGrantAchievements(sender);
         await checkAndGrantAchievements(recipient);
 
-        // Fetch both sender and recipient for notifications
-        const sender = await User.findById(trade.sender).session(session);
-        const recipient = await User.findById(trade.recipient).session(session);
-        if (!sender || !recipient) {
+        if (!sender || !recipient) { // This check is now redundant but kept for safety, can be removed later if desired
             await session.abortTransaction();
             session.endSession();
             return res.status(404).json({ message: "Sender or Recipient not found" });
