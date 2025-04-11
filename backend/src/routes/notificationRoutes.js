@@ -10,7 +10,10 @@ router.get('/', protect, async (req, res) => {
     const start = process.hrtime();
     try {
         const dbStart = process.hrtime();
-        const user = await User.findById(req.user.id).select('notifications');
+        // Only return the most recent 20 notifications, as a plain object
+        const user = await User.findById(req.user.id)
+            .select({ notifications: { $slice: -20 } })
+            .lean();
         const dbEnd = process.hrtime(dbStart);
         console.log(`[PERF] [notifications] DB query took ${dbEnd[0] * 1000 + dbEnd[1] / 1e6} ms`);
         const total = process.hrtime(start);

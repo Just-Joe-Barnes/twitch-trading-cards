@@ -81,7 +81,7 @@ router.get('/users', protect, adminOnly, async (req, res) => {
     const start = process.hrtime();
     try {
         const dbStart = process.hrtime();
-        const users = await User.find({}, 'username packs');
+        const users = await User.find({}, 'username packs').lean();
         const dbEnd = process.hrtime(dbStart);
         console.log(`[PERF] [admin/users] DB query took ${dbEnd[0] * 1000 + dbEnd[1] / 1e6} ms`);
         const total = process.hrtime(start);

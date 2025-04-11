@@ -9,7 +9,7 @@ const getUserProfile = async (req, res) => {
         const dbStart = process.hrtime();
         const user = await User.findById(req.user._id).select(
             'username email isAdmin packs openedPacks featuredCards cards twitchProfilePic xp level achievements'
-        );
+        ).lean();
         const dbEnd = process.hrtime(dbStart);
         console.log(`[PERF] [getUserProfile] DB query took ${dbEnd[0] * 1000 + dbEnd[1] / 1e6} ms`);
         if (!user) {
@@ -33,7 +33,7 @@ const getProfileByUsername = async (req, res) => {
         const { username } = req.params;
         const user = await User.findOne({ username }).select(
             'username email isAdmin openedPacks featuredCards cards twitchProfilePic xp level achievements'
-        );
+        ).lean();
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -47,7 +47,7 @@ const getProfileByUsername = async (req, res) => {
 // Get featured cards for logged-in user
 const getFeaturedCards = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id).select('featuredCards');
+        const user = await User.findById(req.user._id).select('featuredCards').lean();
         if (!user) {
             return res.status(404).json({ message: 'User not found.' });
         }
@@ -124,7 +124,7 @@ const searchUsers = async (req, res) => {
         }
         const users = await User.find({
             username: { $regex: query, $options: 'i' },
-        }).select('username');
+        }).select('username').lean();
         res.status(200).json(users);
     } catch (error) {
         console.error('[User Search] Error:', error.message);
