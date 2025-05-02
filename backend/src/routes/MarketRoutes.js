@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const Joi = require('joi');
 const { logAudit } = require('../helpers/auditLogger');
 const User = require('../models/userModel');
