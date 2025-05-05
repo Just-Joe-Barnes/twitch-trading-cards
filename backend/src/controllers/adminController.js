@@ -6,10 +6,16 @@ const getAdminDashboardData = async (req, res) => {
 const updateCard = async (req, res) => {
   try {
     const { name, flavorText } = req.body;
+    const cardId = req.params.cardId;
+
+    console.log(`Updating card with ID: ${cardId}`);
+    console.log(`Request body: ${JSON.stringify(req.body)}`);
+
     const Card = require('../models/cardModel');
-    const card = await Card.findById(req.params.cardId);
+    const card = await Card.findById(cardId);
+
     if (!card) {
-      return res.status(404).json({ message: 'Card not found' });
+      return res.status(404).json({ message: `Card with ID ${cardId} not found` });
     }
 
     card.name = name || card.name;
@@ -19,7 +25,7 @@ const updateCard = async (req, res) => {
     res.json({ message: 'Card updated successfully', card });
   } catch (error) {
     console.error('Error updating card:', error);
-    res.status(500).json({ message: 'Failed to update card' });
+    res.status(500).json({ message: 'Failed to update card', error: error.message });
   }
 };
 

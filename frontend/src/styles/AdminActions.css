@@ -235,3 +235,27 @@
   background: var(--brand-secondary);
   transform: scale(1.05);
 }
+
+.aa-admin-actions-page .edit-card-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: var(--surface-dark);
+    color: var(--brand-primary);
+    border: 1px solid var(--border-dark);
+    border-radius: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: background 0.3s ease, transform 0.2s ease;
+    text-decoration: none;
+    min-height: 100px;
+    text-align: center;
+}
+
+.aa-admin-actions-page .edit-card-button:hover {
+    background: var(--brand-primary);
+    color: var(--background-dark);
+    transform: scale(1.05);
+}

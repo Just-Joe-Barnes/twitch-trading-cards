@@ -161,7 +161,7 @@ const AdminActions = () => {
     return (
         <div className="aa-admin-actions-page">
             <h1 className="page-title">Admin Actions</h1>
-            <Link to="/admin/cards/654321">Edit Card</Link>
+            <Link to="/admin/cards/654321" className="edit-card-button">Edit Card</Link>
             <div className="aa-admin-panels" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
 
             {/* Create New Card Panel */}
