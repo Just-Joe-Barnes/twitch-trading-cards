@@ -16,6 +16,7 @@ import MarketPage from './pages/MarketPage';
 import CreateListingPage from './pages/CreateListingPage';
 import MarketListingDetails from './pages/MarketListingDetails';
 import AdminActions from './pages/AdminActions';
+import CardEditor from './components/CardEditor';
 import Toast from './components/Toast';
 
 import 'normalize.css';
@@ -132,6 +133,7 @@ const App = () => {
                     <Route path="/market" element={<MarketPage />} />
                     <Route path="/market/create" element={<CreateListingPage />} />
                     <Route path="/market/listing/:id" element={<MarketListingDetails />} />
+                    <Route path="/admin/cards/:id" element={<CardEditor />} />
                     <Route path="/" element={<Navigate to="/dashboard" />} />
                     <Route path="*" element={<Navigate to="/login" />} />
                 </Routes>
