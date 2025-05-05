@@ -67,10 +67,13 @@ router.get('/search', async (req, res) => {
         return res.status(400).json({ message: 'Name query parameter is required.' });
     }
     try {
+        console.log('Searching for cards with name:', name);
         // Search for cards where the name matches (case-insensitive)
         const cards = await Card.find({ name: { $regex: name, $options: 'i' } });
+        console.log('Search results:', cards);
         res.status(200).json({ cards });
     } catch (err) {
+        console.error('Error searching cards:', err);
         res.status(500).json({ message: 'Failed to search cards', error: err.message });
     }
 });
