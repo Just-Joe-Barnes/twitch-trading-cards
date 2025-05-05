@@ -67,6 +67,11 @@ const EditCardTool = () => {
 };
 
 const AdminActions = () => {
+    const [newNote, setNewNote] = useState('');
+    const [devNotes, setDevNotes] = useState(() => {
+      const storedNotes = localStorage.getItem('devNotes');
+      return storedNotes ? JSON.parse(storedNotes) : [];
+    });
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(false);
 
