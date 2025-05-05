@@ -8,17 +8,21 @@ const CardEditor = () => {
   const [name, setName] = useState('');
   const [flavorText, setFlavorText] = useState('');
 
-  useEffect(() => {
+ useEffect(() => {
     const fetchCard = async () => {
       try {
-        const response = await fetch(`/api/cards/${id}`);
+        const response = await fetch(`/api/cards/search?name=${id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch card');
         }
         const data = await response.json();
-        setCard(data);
-        setName(data.name);
-        setFlavorText(data.flavorText);
+        if (data.cards && data.cards.length > 0) {
+          setCard(data.cards[0]);
+          setName(data.cards[0].name);
+          setFlavorText(data.cards[0].flavorText);
+        } else {
+          throw new Error('Card not found');
+        }
       } catch (error) {
         console.error('Error fetching card:', error);
       }
