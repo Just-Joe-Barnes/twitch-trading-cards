@@ -1,6 +1,6 @@
 // src/pages/AdminActions.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useCallback } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { fetchUserProfile, fetchWithAuth, searchCardsByName } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import '../styles/AdminActions.css';
