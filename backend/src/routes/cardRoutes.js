@@ -138,7 +138,22 @@ router.get('/collection', protect, async (req, res) => {
     }
 });
 
+router.get('/search', async (req, res) => {
+    const { name } = req.query;
+    if (!name) {
+        return res.status(400).json({ message: 'Name query parameter is required.' });
+    }
+    try {
+        // Search for cards where the name matches (case-insensitive)
+        const cards = await Card.find({ name: { $regex: name, $options: 'i' } });
+        res.status(200).json({ cards });
+    } catch (err) {
+        res.status(500).json({ message: 'Failed to search cards', error: err.message });
+    }
+});
+
 // Dynamic route for a single card must come last to prevent conflict with /search
+// GET /api/cards/search?name=...
 router.get('/:cardId', protect, async (req, res) => {
     try {
         const user = await User.findById(req.user._id).populate('cards');
