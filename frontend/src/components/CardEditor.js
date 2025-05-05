@@ -15,6 +15,14 @@ const CardEditor = () => {
         if (!response.ok) {
           throw new Error('Failed to fetch card');
         }
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          console.error('Error fetching card: Invalid content type:', contentType);
+          setCard(null);
+          return;
+        }
+
         const data = await response.json();
         if (data.cards && data.cards.length > 0) {
           setCard(data.cards[0]);
