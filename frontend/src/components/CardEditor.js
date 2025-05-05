@@ -86,7 +86,12 @@ const CardEditor = () => {
       </div>
       <button onClick={handleSave}>Save</button>
       <h3>Preview</h3>
-      <BaseCard card={card} />
+      <BaseCard
+        name={card.name}
+        image={card.imageUrl}
+        description={card.flavorText}
+        rarity="Common" // Default rarity
+      />
     </div>
   );
 };
