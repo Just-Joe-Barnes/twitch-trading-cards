@@ -116,20 +116,35 @@
         }
 
 /* Grid layout for catalogue cards */
-.catalogue-card > * {
-    transform: scale(0.35);    /* 35% of the original size */
-    transform-origin: top center;
-    margin: 0 !important;
-    padding: 0 !important;
-    box-sizing: border-box;
-    /* Prevents overflow issues */
-    max-width: unset;
-}
-
-.catalogue-card {
-    min-height: 80px;  /* Ensures the row/grid doesn't collapse */
+.catalogue-page .catalogue-card {
     padding: 0 !important;
     margin: 0 !important;
+    display: flex;
     justify-content: center;
     align-items: flex-start;
+    min-height: unset;
+    max-width: 120px;
+    width: 100%;
+    height: auto;
+}
+
+/* Force all card children smaller (assuming .base-card as root for BaseCard) */
+.catalogue-page .catalogue-card > * {
+    width: 110px !important;
+    min-width: 0 !important;
+    max-width: 110px !important;
+    height: auto !important;
+    font-size: 0.7rem !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+    transition: none !important;
+}
+
+/* Kill hover scaling on small cards in catalogue */
+.catalogue-page .catalogue-card > *:hover,
+.catalogue-page .catalogue-card > *:focus {
+    transform: none !important;
+    box-shadow: 0 0 12px var(--brand-primary, #db88db);
+    z-index: 2;
 }
