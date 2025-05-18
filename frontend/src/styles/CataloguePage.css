@@ -116,20 +116,23 @@
     box-shadow: 0 0 10px var(--brand-secondary);
 }
 
-/* Grid for cards - the columns match the scaled card's width! */
+/* FLEX WRAPPING CATALOGUE GRID! */
 .catalogue-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 14px;
     margin-bottom: 40px;
-    justify-items: center;
+    justify-content: flex-start;
+    align-items: flex-start;
 }
 .catalogue-card {
-    /* The actual width/height are handled inline in JS, so just reset here */
+    /* Sizing handled inline via JS */
     margin: 0 !important;
     padding: 0 !important;
     background: none !important;
     box-shadow: none !important;
+    /* Prevent stretching in some flex layouts */
+    flex: 0 0 auto;
 }
 
 /* Responsive breakpoints */
@@ -141,7 +144,6 @@
     .catalogue-grid {
         gap: 10px;
         margin-bottom: 22px;
-        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
     }
     .search-box input {
         max-width: 320px;
@@ -175,7 +177,6 @@
     .catalogue-grid {
         gap: 6px;
         margin-bottom: 12px;
-        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
     }
     .catalogue-card {
         padding: 0 2px;
@@ -205,7 +206,6 @@
     .catalogue-grid {
         gap: 3px;
         margin-bottom: 6px;
-        grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
     }
     .search-box input {
         max-width: 98vw;
