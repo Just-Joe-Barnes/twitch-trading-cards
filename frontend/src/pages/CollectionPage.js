@@ -261,12 +261,13 @@ const CollectionPage = ({
             style={{
                 width: `${CARD_WIDTH * cardScale}px`,
                 height: `${CARD_HEIGHT * cardScale}px`,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'flex-start',
                 margin: 0,
                 padding: 0,
+                boxSizing: 'border-box',
                 position: 'relative',
+                display: 'flex',
+                alignItems: 'stretch',
+                justifyContent: 'center',
                 flex: '0 0 auto',
             }}
             onClick={() => handleClick(card)}
@@ -275,13 +276,11 @@ const CollectionPage = ({
             <div
                 style={{
                     transform: `scale(${cardScale})`,
-                    transformOrigin: 'top center',
+                    transformOrigin: 'top left',
                     width: `${CARD_WIDTH}px`,
                     height: `${CARD_HEIGHT}px`,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'flex-start',
-                    position: 'relative',
+                    pointerEvents: "auto",
+                    display: 'block'
                 }}
             >
                 {isFeatured && <div className="cp-featured-badge">Featured</div>}
