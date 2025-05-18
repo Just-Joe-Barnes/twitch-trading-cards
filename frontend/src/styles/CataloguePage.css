@@ -116,14 +116,20 @@
         }
 
 /* Grid layout for catalogue cards */
-.catalogue-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    margin-bottom: 40px;
+.catalogue-card > * {
+    transform: scale(0.35);    /* 35% of the original size */
+    transform-origin: top center;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box;
+    /* Prevents overflow issues */
+    max-width: unset;
 }
 
 .catalogue-card {
-    display: flex;
+    min-height: 80px;  /* Ensures the row/grid doesn't collapse */
+    padding: 0 !important;
+    margin: 0 !important;
     justify-content: center;
+    align-items: flex-start;
 }
