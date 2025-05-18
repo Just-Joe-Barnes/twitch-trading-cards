@@ -123,6 +123,18 @@
     /* No fixed width/height here. Let the card's own CSS control aspect and sizing. */
 }
 
+.catalogue-grid .catalogue-card > * {
+    width: 110px !important;
+    min-width: 0 !important;
+    max-width: 110px !important;
+    height: auto !important;
+    font-size: 0.72rem !important;
+    box-sizing: border-box;
+    /* Maintain aspect ratio for the card's content */
+    aspect-ratio: 5/7;
+    transition: none !important;
+}
+
 /* ----------- MOBILE BREAKPOINTS ----------- */
 
 @media (max-width: 1024px) {
@@ -207,5 +219,20 @@
     .sort-box select {
         font-size: 0.92rem;
         padding: 4px;
+    }
+}
+
+@media (max-width: 900px) {
+    .catalogue-grid .catalogue-card > * {
+        width: 85px !important;
+        max-width: 85px !important;
+        font-size: 0.58rem !important;
+    }
+}
+@media (max-width: 600px) {
+    .catalogue-grid .catalogue-card > * {
+        width: 66px !important;
+        max-width: 66px !important;
+        font-size: 0.48rem !important;
     }
 }
