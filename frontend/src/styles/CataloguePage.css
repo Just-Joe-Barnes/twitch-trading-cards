@@ -1,11 +1,22 @@
+:root {
+    --brand-primary: #db88db;
+    --brand-secondary: #88cddb;
+    --background-dark: #0a0a0a;
+    --surface-dark: #1a1a1a;
+    --surface-darker: #141414;
+    --text-primary: rgba(255, 255, 255, 0.95);
+    --border-dark: rgba(255, 255, 255, 0.12);
+}
+
 /* Overall page container */
 .catalogue-page {
     padding: 40px 20px;
     max-width: 1800px;
     margin: 0 auto;
     color: #f5f5dc;
-    background-color: #1a1a1a;
+    background-color: var(--surface-dark);
     min-height: 100vh;
+    box-sizing: border-box;
 }
 
 .catalogue-page h1 {
@@ -24,7 +35,7 @@
     color: #f5f5dc;
 }
 
-/* Container for filters arranged in a column */
+/* Filters Column */
 .filters-container {
     display: flex;
     flex-direction: column;
@@ -32,9 +43,9 @@
     justify-content: center;
     align-items: center;
     margin-bottom: 30px;
+    width: 100%;
 }
 
-/* Search box styling */
 .search-box {
     width: 100%;
     display: flex;
@@ -55,10 +66,9 @@
 }
 .search-box input:focus {
     outline: none;
-    box-shadow: 0 0 10px #88cddb;
+    box-shadow: 0 0 10px var(--brand-secondary);
 }
 
-/* Rarity selector buttons */
 .rarity-selector {
     display: flex;
     gap: 10px;
@@ -81,11 +91,12 @@
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
 }
 
-/* Sort box styling */
 .sort-box {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 .sort-box label {
     font-size: 1rem;
@@ -103,10 +114,10 @@
 }
 .sort-box select:focus {
     outline: none;
-    box-shadow: 0 0 10px #88cddb;
+    box-shadow: 0 0 10px var(--brand-secondary);
 }
 
-/* Grid layout for catalogue cards - RESPONSIVE AND DENSE */
+/* Grid for cards */
 .catalogue-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
@@ -120,19 +131,49 @@
     align-items: flex-start;
     padding: 0 !important;
     margin: 0 !important;
-    /* No fixed width/height here. Let the card's own CSS control aspect and sizing. */
 }
 
-.catalogue-grid .catalogue-card > * {
-    width: 110px !important;
+/* ---------------------- */
+/* CATALOGUE-ONLY COMPACT CARD STYLES */
+/* These styles make all cards in the catalogue grid small, tight, and keep 3D/hover working */
+
+.catalogue-grid .card-container {
+    width: 90px !important;
+    height: 135px !important;
     min-width: 0 !important;
-    max-width: 110px !important;
-    height: auto !important;
-    font-size: 0.72rem !important;
+    min-height: 0 !important;
+    font-size: 0.5rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
     box-sizing: border-box;
-    /* Maintain aspect ratio for the card's content */
-    aspect-ratio: 5/7;
-    transition: none !important;
+    /* Don't allow overflow to break layout */
+    overflow: hidden;
+}
+
+.catalogue-grid .card-artwork {
+    height: 40px !important;
+    min-height: 0 !important;
+    max-width: 80px !important;
+}
+.catalogue-grid .card-name,
+.catalogue-grid .card-description,
+.catalogue-grid .card-mint {
+    font-size: 0.6rem !important;
+    margin-bottom: 2px !important;
+    margin-top: 2px !important;
+    padding: 2px 2px !important;
+}
+.catalogue-grid .card-border {
+    padding: 1px !important;
+    border-width: 2px !important;
+}
+
+/* Keep hover effects like 3d rotation but prevent scale-up */
+.catalogue-grid .card-container:hover,
+.catalogue-grid .card-container:focus {
+    /* Remove any scale; only keep 3D tilt if present in your JS */
+    transform: perspective(400px) rotateY(var(--tilt-x, 0deg)) rotateX(var(--tilt-y, 0deg));
+    z-index: 2;
 }
 
 /* ----------- MOBILE BREAKPOINTS ----------- */
@@ -149,6 +190,30 @@
     }
     .search-box input {
         max-width: 320px;
+    }
+}
+
+@media (max-width: 900px) {
+    .catalogue-grid .card-container {
+        width: 72px !important;
+        height: 108px !important;
+        font-size: 0.43rem !important;
+    }
+    .catalogue-grid .card-artwork {
+        height: 30px !important;
+        max-width: 62px !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .catalogue-grid .card-container {
+        width: 54px !important;
+        height: 81px !important;
+        font-size: 0.34rem !important;
+    }
+    .catalogue-grid .card-artwork {
+        height: 20px !important;
+        max-width: 42px !important;
     }
 }
 
@@ -179,7 +244,7 @@
     .catalogue-grid {
         gap: 6px;
         margin-bottom: 12px;
-        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
     }
     .catalogue-card {
         padding: 0 2px;
@@ -209,7 +274,7 @@
     .catalogue-grid {
         gap: 3px;
         margin-bottom: 6px;
-        grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(54px, 1fr));
     }
     .search-box input {
         max-width: 98vw;
@@ -219,20 +284,5 @@
     .sort-box select {
         font-size: 0.92rem;
         padding: 4px;
-    }
-}
-
-@media (max-width: 900px) {
-    .catalogue-grid .catalogue-card > * {
-        width: 85px !important;
-        max-width: 85px !important;
-        font-size: 0.58rem !important;
-    }
-}
-@media (max-width: 600px) {
-    .catalogue-grid .catalogue-card > * {
-        width: 66px !important;
-        max-width: 66px !important;
-        font-size: 0.48rem !important;
     }
 }
