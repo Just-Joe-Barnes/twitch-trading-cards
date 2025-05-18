@@ -35,7 +35,6 @@
     color: #f5f5dc;
 }
 
-/* Filters Column */
 .filters-container {
     display: flex;
     flex-direction: column;
@@ -120,7 +119,7 @@
 /* Grid for cards */
 .catalogue-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
     gap: 10px;
     margin-bottom: 40px;
     justify-items: center;
@@ -129,13 +128,11 @@
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    /* Card size/scale is now handled by React inline styles, not here */
     margin: 0 !important;
     padding: 0 !important;
 }
 
-/* ----------- MOBILE BREAKPOINTS ----------- */
-
+/* Responsive breakpoints */
 @media (max-width: 1024px) {
     .catalogue-page {
         padding: 24px 6px;
