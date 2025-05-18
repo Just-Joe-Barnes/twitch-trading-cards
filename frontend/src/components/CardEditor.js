@@ -63,7 +63,13 @@ const CardEditor = () => {
   };
 
   if (!card) {
-    return <div>Loading...</div>;
+    return (
+      <div>
+        <h2>Edit Card</h2>
+        <div>Loading...</div>
+        <div>Error: Could not load card data. Please try again later.</div>
+      </div>
+    );
   }
 
   return (

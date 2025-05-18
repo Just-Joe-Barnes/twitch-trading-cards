@@ -11,29 +11,13 @@ const Navbar = ({ isAdmin }) => {
     const [searchResults, setSearchResults] = useState([]);
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
     const [loggedInUser, setLoggedInUser] = useState({});
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-    // Close menu on navigation
-    useEffect(() => {
-        const handleRouteChange = () => setMobileMenuOpen(false);
-        window.addEventListener('popstate', handleRouteChange);
-        return () => window.removeEventListener('popstate', handleRouteChange);
-    }, []);
-
-    // Prevent background scroll when menu open
-    useEffect(() => {
-        if (mobileMenuOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
-    }, [mobileMenuOpen]);
 
     // Fetch logged-in user data including profile picture
     useEffect(() => {
         const fetchUsername = async () => {
             try {
                 const profile = await fetchUserProfile();
+                console.log('Fetched profile:', profile);
                 setLoggedInUser(profile);
             } catch (error) {
                 console.error('Error fetching user profile:', error.message);
@@ -68,24 +52,7 @@ const Navbar = ({ isAdmin }) => {
         setSearchQuery('');
         setIsDropdownVisible(false);
         navigate(`/profile/${username}`);
-        setMobileMenuOpen(false);
     };
-
-    // All links used in both desktop and mobile menus
-    const links = [
-        { to: '/dashboard', label: 'Dashboard' },
-        { to: `/collection/${loggedInUser.username || ''}`, label: 'Collection' },
-        { to: `/profile/${loggedInUser.username || ''}`, label: 'My Profile' },
-        { to: '/trading', label: 'Trading' },
-        ...(isAdmin
-            ? [
-                  { to: '/admin-dashboard', label: 'Admin Dashboard' },
-                  { to: '/admin/actions', label: 'Admin Actions' },
-              ]
-            : []),
-        { to: '/market', label: 'Market' },
-        { to: '/catalogue', label: 'Catalogue' },
-    ];
 
     return (
         <nav className="navbar">
@@ -122,30 +89,51 @@ const Navbar = ({ isAdmin }) => {
                 </div>
             </div>
 
-            {/* Hamburger for mobile */}
-            <button
-                className="navbar-hamburger"
-                onClick={() => setMobileMenuOpen((open) => !open)}
-                aria-label="Toggle menu"
-            >
-                <span />
-                <span />
-                <span />
-            </button>
-
-            {/* Desktop links */}
             <ul className="navbar-links">
-                {links.map((link) => (
-                    <li key={link.to}>
-                        <NavLink
-                            to={link.to}
-                            className="nav-link"
-                            onClick={() => setMobileMenuOpen(false)}
-                        >
-                            {link.label}
-                        </NavLink>
-                    </li>
-                ))}
+                <li>
+                    <NavLink to="/dashboard" className="nav-link">
+                        Dashboard
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink to={`/collection/${loggedInUser.username}`} className="nav-link">
+                        Collection
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink to={`/profile/${loggedInUser.username}`} className="nav-link">
+                        My Profile
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink to="/trading" className="nav-link">
+                        Trading
+                    </NavLink>
+                </li>
+                {isAdmin && (
+                    <>
+                        <li>
+                            <NavLink to="/admin-dashboard" className="nav-link">
+                                Admin Dashboard
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink to="/admin/actions" className="nav-link">
+                                Admin Actions
+                            </NavLink>
+                        </li>
+                    </>
+                )}
+                <li>
+                    <NavLink to="/market" className="nav-link">
+                        Market
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink to="/catalogue" className="nav-link">
+                        Catalogue
+                    </NavLink>
+                </li>
                 <li>
                     <button className="logout-button" onClick={handleLogout}>
                         Logout
@@ -153,33 +141,7 @@ const Navbar = ({ isAdmin }) => {
                 </li>
             </ul>
 
-            {/* Mobile overlay */}
-            {mobileMenuOpen && (
-                <div className="navbar-mobile-overlay" onClick={() => setMobileMenuOpen(false)}>
-                    <ul
-                        className="navbar-mobile-links"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {links.map((link) => (
-                            <li key={link.to}>
-                                <NavLink
-                                    to={link.to}
-                                    className="nav-link"
-                                    onClick={() => setMobileMenuOpen(false)}
-                                >
-                                    {link.label}
-                                </NavLink>
-                            </li>
-                        ))}
-                        <li>
-                            <button className="logout-button" onClick={handleLogout}>
-                                Logout
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-            )}
-
+            {/* Render NotificationDropdown only when loggedInUser._id is available */}
             {loggedInUser._id && (
                 <div className="navbar-notifications">
                     <NotificationDropdown

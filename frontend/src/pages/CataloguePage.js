@@ -1,7 +1,8 @@
+// src/pages/CataloguePage.js
 import React, { useState, useEffect } from 'react';
 import { fetchCards } from '../utils/api';
 import BaseCard from '../components/BaseCard';
-import LoadingSpinner from '../components/LoadingSpinner';
+import LoadingSpinner from '../components/LoadingSpinner'; // Import spinner component
 import '../styles/CataloguePage.css';
 
 const rarityData = [
@@ -17,26 +18,23 @@ const rarityData = [
     { name: 'Divine', color: 'white' },
 ];
 
-// Card scaling
-const CARD_WIDTH = 300;
-const CARD_HEIGHT = 450;
-const SCALE = 0.5;
-const FLEX_CELL_WIDTH = `${CARD_WIDTH * SCALE}px`;
-const FLEX_CELL_HEIGHT = `${CARD_HEIGHT * SCALE}px`;
-
 const CataloguePage = () => {
     const [cards, setCards] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    // Search, rarity, and sorting states
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedRarity, setSelectedRarity] = useState('Basic');
     const [sortOption, setSortOption] = useState('name');
     const [sortOrder, setSortOrder] = useState('asc');
+
     const [now, setNow] = useState(new Date());
 
     useEffect(() => {
-        const interval = setInterval(() => setNow(new Date()), 1000);
+        const interval = setInterval(() => {
+            setNow(new Date());
+        }, 1000);
         return () => clearInterval(interval);
     }, []);
 
@@ -46,6 +44,7 @@ const CataloguePage = () => {
             const response = await fetchCards({});
             setCards(response.cards);
         } catch (err) {
+            console.error('Error fetching cards:', err.message);
             setError('Failed to load cards.');
         } finally {
             setLoading(false);
@@ -56,11 +55,23 @@ const CataloguePage = () => {
         fetchCatalogue();
     }, []);
 
-    const handleSearchChange = (e) => setSearchQuery(e.target.value);
-    const handleRarityChange = (rarityName) => setSelectedRarity(rarityName);
-    const handleSortChange = (e) => setSortOption(e.target.value);
-    const handleSortOrderChange = (e) => setSortOrder(e.target.value);
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+    };
 
+    const handleRarityChange = (rarityName) => {
+        setSelectedRarity(rarityName);
+    };
+
+    const handleSortChange = (e) => {
+        setSortOption(e.target.value);
+    };
+
+    const handleSortOrderChange = (e) => {
+        setSortOrder(e.target.value);
+    };
+
+    
     const limitedCards = cards.filter(card =>
         card.availableFrom || card.availableTo
     );
@@ -91,46 +102,6 @@ const CataloguePage = () => {
     if (loading) return <LoadingSpinner />;
     if (error) return <div className="catalogue-page">{error}</div>;
 
-    // --- CARD WRAPPER ---
-    const renderScaledCard = (card, extraOverlay = null) => (
-        <div
-            className="catalogue-card"
-            style={{
-                width: FLEX_CELL_WIDTH,
-                height: FLEX_CELL_HEIGHT,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'flex-start',
-                margin: 0,
-                padding: 0,
-                position: 'relative',
-                flex: '0 0 auto',
-            }}
-        >
-            <div
-                style={{
-                    transform: `scale(${SCALE})`,
-                    transformOrigin: 'top center',
-                    width: `${CARD_WIDTH}px`,
-                    height: `${CARD_HEIGHT}px`,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'flex-start',
-                    position: 'relative',
-                }}
-            >
-                <BaseCard
-                    name={card.name}
-                    image={card.imageUrl}
-                    description={card.flavorText}
-                    rarity={selectedRarity}
-                    mintNumber={card.mintNumber}
-                />
-                {extraOverlay}
-            </div>
-        </div>
-    );
-
     return (
         <div className="catalogue-page">
             <h1>Card Catalogue</h1>
@@ -154,7 +125,9 @@ const CataloguePage = () => {
                 {/* Rarity Selector */}
                 <div className="rarity-selector">
                     {rarityData.map((r) => {
+                        // If "Divine" is white, set text color to black for contrast.
                         const textColor = r.name === 'Divine' ? '#000' : '#fff';
+
                         return (
                             <button
                                 key={r.name}
@@ -163,8 +136,8 @@ const CataloguePage = () => {
                                 style={{
                                     backgroundColor: r.color,
                                     color: textColor,
-                                    padding: '8px 12px',
-                                    border: '2px solid #888',
+                                    padding: '8px 12px', // smaller buttons
+                                    border: '2px solid #888', // gray border
                                 }}
                             >
                                 {r.name}
@@ -179,6 +152,7 @@ const CataloguePage = () => {
                     <select id="sortField" value={sortOption} onChange={handleSortChange}>
                         <option value="name">Name</option>
                     </select>
+
                     <select id="sortOrder" value={sortOrder} onChange={handleSortOrderChange}>
                         <option value="asc">Ascending</option>
                         <option value="desc">Descending</option>
@@ -197,23 +171,33 @@ const CataloguePage = () => {
                         const hours = timeLeft ? Math.floor(timeLeft / (1000 * 60 * 60)) % 24 : null;
                         const days = timeLeft ? Math.floor(timeLeft / (1000 * 60 * 60 * 24)) : null;
 
-                        const overlay = (to && timeLeft > 0) ? (
-                            <div style={{
-                                position: 'absolute',
-                                top: '5px',
-                                left: '5px',
-                                backgroundColor: 'rgba(0,0,0,0.7)',
-                                color: '#fff',
-                                padding: '4px 6px',
-                                borderRadius: '6px',
-                                fontSize: '0.8rem',
-                                zIndex: 2,
-                            }}>
-                                Ends in: {days}d {hours}h {minutes}m {seconds}s
+                        return (
+                            <div key={card._id} className="catalogue-card" style={{ position: 'relative' }}>
+                                <div style={{ position: 'relative' }}>
+                                    <BaseCard
+                                        name={card.name}
+                                        image={card.imageUrl}
+                                        description={card.flavorText}
+                                        rarity={selectedRarity}
+                                        mintNumber={card.mintNumber}
+                                    />
+                                    {to && timeLeft > 0 && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '5px',
+                                            left: '5px',
+                                            backgroundColor: 'rgba(0,0,0,0.7)',
+                                            color: '#fff',
+                                            padding: '4px 6px',
+                                            borderRadius: '6px',
+                                            fontSize: '0.8rem'
+                                        }}>
+                                            Ends in: {days}d {hours}h {minutes}m {seconds}s
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        ) : null;
-
-                        return renderScaledCard(card, overlay);
+                        );
                     })
                 ) : (
                     <div>No limited time cards currently available.</div>
@@ -232,23 +216,31 @@ const CataloguePage = () => {
                         else if (to && now > to) status = 'Expired';
                         else status = 'Active';
 
-                        const overlay = (
-                            <div style={{
-                                position: 'absolute',
-                                top: '5px',
-                                left: '5px',
-                                backgroundColor: 'rgba(0,0,0,0.7)',
-                                color: '#fff',
-                                padding: '4px 6px',
-                                borderRadius: '6px',
-                                fontSize: '0.8rem',
-                                zIndex: 2,
-                            }}>
-                                {status}
+                        return (
+                            <div key={card._id} className="catalogue-card" style={{ position: 'relative' }}>
+                                <div style={{ position: 'relative' }}>
+                                    <BaseCard
+                                        name={card.name}
+                                        image={card.imageUrl}
+                                        description={card.flavorText}
+                                        rarity={selectedRarity}
+                                        mintNumber={card.mintNumber}
+                                    />
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '5px',
+                                        left: '5px',
+                                        backgroundColor: 'rgba(0,0,0,0.7)',
+                                        color: '#fff',
+                                        padding: '4px 6px',
+                                        borderRadius: '6px',
+                                        fontSize: '0.8rem'
+                                    }}>
+                                        {status}
+                                    </div>
+                                </div>
                             </div>
                         );
-
-                        return renderScaledCard(card, overlay);
                     })
                 ) : (
                     <div>No limited cards found.</div>
@@ -258,9 +250,17 @@ const CataloguePage = () => {
             <h2>All Cards</h2>
             <div className="catalogue-grid">
                 {sortedCards.length > 0 ? (
-                    sortedCards.map((card) =>
-                        renderScaledCard(card)
-                    )
+                    sortedCards.map((card) => (
+                        <div key={card._id} className="catalogue-card">
+                            <BaseCard
+                                name={card.name}
+                                image={card.imageUrl}
+                                description={card.flavorText}
+                                rarity={selectedRarity}
+                                mintNumber={card.mintNumber}
+                            />
+                        </div>
+                    ))
                 ) : (
                     <div>No cards found.</div>
                 )}

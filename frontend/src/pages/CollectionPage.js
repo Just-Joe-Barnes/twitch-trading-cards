@@ -1,3 +1,4 @@
+// src/pages/CollectionPage.js
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import {
@@ -24,9 +25,6 @@ const cardRarities = [
     { rarity: 'Divine', color: 'white' },
 ];
 
-const CARD_WIDTH = 300;
-const CARD_HEIGHT = 450;
-
 const CollectionPage = ({
     mode,
     onSelectItem,
@@ -39,10 +37,10 @@ const CollectionPage = ({
     const [allCards, setAllCards] = useState([]);
     const [filteredCards, setFilteredCards] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [totalPacks, setTotalPacks] = useState(0);
+    const [totalPacks, setTotalPacks] = useState(0); // new state for packs
 
-    // Card scale slider (default to 0.5 for catalogue match)
-    const defaultCardScale = 0.5;
+    // Card Container Scale Slider
+    const defaultCardScale = 1;
     const [cardScale, setCardScale] = useState(() => {
         const storedScale = localStorage.getItem("cardScale");
         return storedScale !== null ? parseFloat(storedScale) : defaultCardScale;
@@ -92,7 +90,7 @@ const CollectionPage = ({
                     if (data.cards) {
                         setAllCards(data.cards);
                         setFilteredCards(data.cards);
-                        setTotalPacks(data.packs || 0);
+                        setTotalPacks(data.packs || 0); // update total packs if provided
                     }
                 }
             } catch (error) {
@@ -122,16 +120,22 @@ const CollectionPage = ({
     // 4) Filter & sort cards
     useEffect(() => {
         let filtered = [...allCards];
+
+        // Search filter
         if (search) {
             filtered = filtered.filter((card) =>
                 card.name.toLowerCase().includes(search.toLowerCase())
             );
         }
+
+        // Rarity filter
         if (rarityFilter) {
             filtered = filtered.filter(
                 (card) => card.rarity.trim().toLowerCase() === rarityFilter.trim().toLowerCase()
             );
         }
+
+        // Sorting
         if (sortOption) {
             filtered.sort((a, b) => {
                 if (sortOption === 'mintNumber') {
@@ -158,15 +162,18 @@ const CollectionPage = ({
                 return 0;
             });
         }
+
+        // Show Featured Only
         if (showFeaturedOnly) {
             filtered = filtered.filter((card) =>
                 featuredCards.some((fc) => fc._id === card._id)
             );
         }
+
         setFilteredCards(filtered);
     }, [allCards, search, rarityFilter, sortOption, order, showFeaturedOnly, featuredCards]);
 
-    // Card selection and feature logic
+    // Single-click -> select card for deck builder
     const handleCardClick = (card) => {
         if (onSelectItem) {
             const alreadySelected = selectedItems.find((item) => item.itemId === card._id);
@@ -184,6 +191,7 @@ const CollectionPage = ({
         }
     };
 
+    // Toggle featured on the server
     const handleToggleFeatured = async (card) => {
         const isCurrentlyFeatured = featuredCards.some((fc) => fc._id === card._id);
         let newFeatured;
@@ -202,6 +210,7 @@ const CollectionPage = ({
         }
     };
 
+    // Double-click -> add/remove from featured
     const handleCardDoubleClick = async (card) => {
         if (!loggedInUser) return;
         const isCurrentlyFeatured = featuredCards.some((fc) => fc._id === card._id);
@@ -223,6 +232,7 @@ const CollectionPage = ({
         }
     };
 
+    // Distinguish single vs. double-click logic
     const handleClick = (card) => {
         if (clickTimerRef.current) return;
         clickTimerRef.current = setTimeout(() => {
@@ -238,6 +248,7 @@ const CollectionPage = ({
         handleCardDoubleClick(card);
     };
 
+    // Clear all featured cards
     const handleClearFeatured = async () => {
         try {
             await updateFeaturedCards([]);
@@ -252,54 +263,6 @@ const CollectionPage = ({
 
     if (loading) return <LoadingSpinner />;
 
-    // ---- CARD WRAPPER (flex cell and scaling) ----
-    const renderScaledCard = (card, isFeatured, isSelected) => (
-        <div
-            key={card._id}
-            id={`cp-card-${card._id}`}
-            className={`cp-card-item${isSelected ? ' cp-selected' : ''}`}
-            style={{
-                width: `${CARD_WIDTH * cardScale}px`,
-                height: `${CARD_HEIGHT * cardScale}px`,
-                margin: 0,
-                padding: 0,
-                boxSizing: 'border-box',
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'stretch',
-                justifyContent: 'center',
-                flex: '0 0 auto',
-            }}
-            onClick={() => handleClick(card)}
-            onDoubleClick={() => handleDoubleClick(card)}
-        >
-            <div
-                style={{
-                    transform: `scale(${cardScale})`,
-                    transformOrigin: 'top left',
-                    width: `${CARD_WIDTH}px`,
-                    height: `${CARD_HEIGHT}px`,
-                    pointerEvents: "auto",
-                    display: 'block'
-                }}
-            >
-                {isFeatured && <div className="cp-featured-badge">Featured</div>}
-                <BaseCard
-                    name={card.name}
-                    image={card.imageUrl}
-                    rarity={card.rarity}
-                    description={card.flavorText}
-                    mintNumber={card.mintNumber}
-                    maxMint={
-                        rarities.find(
-                            (r) => r.name.toLowerCase() === card.rarity.toLowerCase()
-                        )?.totalCopies || '???'
-                    }
-                />
-            </div>
-        </div>
-    );
-
     return (
         <div className="cp-page">
             {!hideHeader && (
@@ -312,6 +275,7 @@ const CollectionPage = ({
                 Double clicking a card again, or clicking the "Clear Featured Cards" button, will remove it.
             </p>
 
+            {/* New Top Section Container */}
             <div className="cp-top-section">
                 <div className="cp-row">
                     <div className="cp-filters-container">
@@ -394,6 +358,7 @@ const CollectionPage = ({
                 </div>
             </div>
 
+            {/* New Stats Container */}
             <div className="cp-stats-container">
                 <div className="cp-stats-item">
                     <h4>Total Cards</h4>
@@ -405,13 +370,35 @@ const CollectionPage = ({
                 </div>
             </div>
 
-            {/* FLEX GRID! */}
-            <div className="cp-cards-grid">
+            {/* Cards Grid (unchanged) */}
+            <div className="cp-cards-grid" style={{ "--card-scale": cardScale }}>
                 {filteredCards.length > 0 ? (
                     filteredCards.map((card) => {
                         const isFeatured = featuredCards.some((fc) => fc._id === card._id);
                         const isSelected = selectedItems.some((item) => item.itemId === card._id);
-                        return renderScaledCard(card, isFeatured, isSelected);
+                        return (
+                            <div
+                                key={card._id}
+                                id={`cp-card-${card._id}`}
+                                className={`cp-card-item ${isSelected ? 'cp-selected' : ''}`}
+                                onClick={() => handleClick(card)}
+                                onDoubleClick={() => handleDoubleClick(card)}
+                            >
+                                {isFeatured && <div className="cp-featured-badge">Featured</div>}
+                                <BaseCard
+                                    name={card.name}
+                                    image={card.imageUrl}
+                                    rarity={card.rarity}
+                                    description={card.flavorText}
+                                    mintNumber={card.mintNumber}
+                                    maxMint={
+                                        rarities.find(
+                                            (r) => r.name.toLowerCase() === card.rarity.toLowerCase()
+                                        )?.totalCopies || '???'
+                                    }
+                                />
+                            </div>
+                        );
                     })
                 ) : (
                     <p>No cards found.</p>

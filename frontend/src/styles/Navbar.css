@@ -13,7 +13,7 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 60px;
+    height: 60px; /* The navbar is 60px tall */
     display: flex;
     align-items: center;
     padding: 0 20px;
@@ -22,35 +22,32 @@
     z-index: 1000;
     box-sizing: border-box;
     font-family: 'Poppins', sans-serif;
-    gap: 0;
 }
 
+/* Logo Styling */
 .navbar-logo {
-    flex: 1 1 0;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-}
-.navbar-logo img {
-    height: 100%;
-    max-height: 60px;
-    width: auto;
-    object-fit: contain;
+    flex: 1;
 }
 
+    .navbar-logo h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        color: var(--text-primary);
+    }
+
+/* Search Bar Styling */
 .navbar-search {
-    flex: 2 1 0;
-    min-width: 0;
+    flex: 1;
     display: flex;
     justify-content: center;
     z-index: 10;
 }
+
 .search-wrapper {
     position: relative;
     width: 250px;
-    min-width: 0;
-    display: flex;
 }
+
 .search-bar {
     padding: 0.5rem 1rem;
     font-size: 1rem;
@@ -58,14 +55,16 @@
     border-radius: 0.5rem;
     background-color: var(--surface-darker);
     color: var(--text-primary);
-    width: 100%;
+    width: 250px;
     box-sizing: border-box;
     transition: all 0.3s ease;
 }
-.search-bar:focus {
-    outline: none;
-    border-color: var(--brand-secondary);
-}
+
+    .search-bar:focus {
+        outline: none;
+        border-color: var(--brand-secondary);
+    }
+
 .search-dropdown {
     position: absolute;
     top: 100%;
@@ -82,16 +81,19 @@
     padding: 0;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
 }
+
 .search-result-item {
     padding: 0.75rem;
     cursor: pointer;
     transition: background-color 0.2s ease;
     color: var(--text-primary);
 }
-.search-result-item:hover {
-    background-color: var(--brand-primary);
-    color: var(--text-primary);
-}
+
+    .search-result-item:hover {
+        background-color: var(--brand-primary);
+        color: var(--text-primary);
+    }
+
 .no-results {
     padding: 0.75rem;
     text-align: center;
@@ -99,36 +101,40 @@
     font-style: italic;
 }
 
+/* Navbar Links */
 .navbar-links {
-    flex: 2;
+    flex: 1;
     display: flex;
     justify-content: flex-end;
     list-style: none;
     margin: 0;
     padding: 0;
     gap: 20px;
-    align-items: center;
-    transition: none;
 }
 
-.navbar-links li {
-    font-size: 1rem;
-    white-space: nowrap;
-}
+    .navbar-links li {
+        font-size: 1rem;
+        white-space: nowrap;
+    }
+
 .nav-link {
     text-decoration: none;
     color: var(--text-primary);
     font-weight: 500;
     transition: color 0.3s ease, transform 0.3s ease;
 }
-.nav-link.active {
-    font-weight: bold;
-    color: var(--brand-primary);
-    transform: scale(1.1);
-}
-.nav-link:hover {
-    color: var(--brand-secondary);
-}
+
+    .nav-link.active {
+        font-weight: bold;
+        color: var(--brand-primary);
+        transform: scale(1.1);
+    }
+
+    .nav-link:hover {
+        color: var(--brand-secondary);
+    }
+
+/* Logout Button */
 .logout-button {
     background: none;
     border: none;
@@ -137,146 +143,44 @@
     cursor: pointer;
     transition: color 0.3s ease, transform 0.3s ease;
 }
-.logout-button:hover {
-    color: var(--brand-secondary);
-    transform: scale(1.1);
+
+    .logout-button:hover {
+        color: var(--brand-secondary);
+        transform: scale(1.1);
+    }
+
+/* New logo image styling */
+.navbar-logo img {
+    height: 100%; /* Fill the 60px navbar height */
+    max-height: 60px;
+    width: auto; /* Keep aspect ratio */
+    object-fit: contain;
 }
+
+/* Add this rule or update your existing .navbar-notifications */
 .navbar-notifications {
-    margin-left: 16px;
-    display: flex;
-    align-items: center;
-    min-width: 36px;
-    height: 36px;
+    margin-left: 20px;
 }
 
-/* Hamburger Styles */
-.navbar-hamburger {
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    width: 42px;
-    height: 42px;
-    background: none;
-    border: none;
-    z-index: 1010;
-    margin-left: 8px;
-}
-.navbar-hamburger span {
-    width: 28px;
-    height: 4px;
-    background: var(--brand-primary);
-    margin: 3px 0;
-    border-radius: 2px;
-    transition: all 0.3s cubic-bezier(.4,2,.5,.92);
-}
 
-/* Mobile Menu Overlay */
-.navbar-mobile-overlay {
-    display: none;
-    position: fixed;
-    top: 60px;
-    left: 0;
-    width: 100vw;
-    height: calc(100vh - 60px);
-    background: rgba(10,10,10,0.93);
-    z-index: 2000;
-}
-.navbar-mobile-links {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 18px;
-    padding: 36px 24px 24px 24px;
-}
-.navbar-mobile-links li,
-.navbar-mobile-links .nav-link,
-.navbar-mobile-links .logout-button {
-    font-size: 1.2rem;
-    width: 100%;
-    color: var(--text-primary);
-    background: none;
-    border: none;
-    text-align: left;
-    padding: 10px 0;
-}
-.navbar-mobile-links .nav-link.active {
-    color: var(--brand-primary);
-}
-.navbar-mobile-links .nav-link:hover,
-.navbar-mobile-links .logout-button:hover {
-    color: var(--brand-secondary);
-}
-
-/* RESPONSIVE FIXES */
-@media (max-width: 1024px) {
-    .navbar-search .search-wrapper {
-        width: 180px;
-    }
-    .search-bar {
-        width: 100%;
-        font-size: 0.98rem;
-    }
-}
-
+/* Responsive Adjustments */
 @media (max-width: 768px) {
-    .navbar {
-        padding: 0 6px;
-        gap: 4px;
-    }
-    .navbar-logo {
-        flex: 0 0 auto;
-        min-width: 44px;
-    }
-    .navbar-search {
-        flex: 1 1 0;
-        min-width: 0;
+    .navbar-links {
+        gap: 10px;
         justify-content: center;
     }
-    .search-wrapper {
-        width: 100px;
-        min-width: 0;
+
+    .navbar {
+        padding: 0 10px;
     }
-    .search-bar {
-        width: 100%;
-        min-width: 0;
-        font-size: 0.96rem;
-        padding: 0.4rem 0.6rem;
-    }
-    .navbar-hamburger {
-        display: flex;
-    }
-    .navbar-links {
-        display: none !important;
-    }
-    .navbar-mobile-overlay {
-        display: block;
-    }
-    .navbar-notifications {
-        margin-left: 4px;
-        min-width: 32px;
-        height: 32px;
+
+    .navbar-logo h1 {
+        font-size: 1.5rem;
     }
 }
 
 @media (max-width: 480px) {
-    .navbar {
-        height: 46px;
-    }
-    .navbar-logo img {
-        max-height: 46px;
-    }
-    .search-wrapper {
-        width: 64px;
-    }
     .search-bar {
         width: 100%;
-        font-size: 0.92rem;
-        padding: 0.3rem 0.4rem;
-    }
-    .navbar-mobile-links {
-        padding: 24px 8px 8px 16px;
-        gap: 10px;
     }
 }
