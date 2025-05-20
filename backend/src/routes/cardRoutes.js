@@ -4,6 +4,11 @@ const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const Card = require('../models/cardModel');
 const User = require('../models/userModel'); // Needed for some endpoints
+const cardController = require('../controllers/cardController');
+
+
+router.get('/availability', cardController.getCardAvailability);
+
 
 // General paginated card list with optional filters
 // GET /api/cards?search=&rarity=&sort=&page=&limit=

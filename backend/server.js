@@ -98,6 +98,7 @@ app.use('/api/test-notification', testNotificationRoutes); // Ensure this is cor
 app.use('/api/admin', adminRoutes);
 app.use('/api/modifiers', require('./src/routes/modifierRoutes'));
 
+
 // Default 404 handler (for any unmatched routes)
 app.use((req, res) => {
     res.status(404).json({ message: "Route not found" });
