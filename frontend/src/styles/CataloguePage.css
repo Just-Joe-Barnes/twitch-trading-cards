@@ -138,14 +138,14 @@
 .card-overlay-badge {
     position: absolute;
     background: rgba(44, 44, 44, 0.92);
-    color: #ffe082;
+    color: #cec7b1;
     border-radius: 6px;
     padding: 4px 9px;
     font-size: 1rem;
     font-family: inherit;
-    font-weight: bold;
+    font-weight: normal;
     z-index: 2;
-    box-shadow: 0 2px 8px #000c;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.308);
     letter-spacing: 0.01em;
 }
 
