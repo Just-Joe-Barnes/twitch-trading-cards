@@ -126,7 +126,15 @@
 .catalogue-card {
     display: flex;
     justify-content: center;
-    position: relative; /* Ensures badges overlay as intended */
+    position: relative;
+}
+
+.card-inner {
+    position: relative;
+    width: 320px; /* Match this to your card's intended width */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* Badge for remaining copies */

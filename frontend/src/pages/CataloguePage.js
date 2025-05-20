@@ -179,29 +179,31 @@ const CataloguePage = () => {
 
                         return (
                             <div key={card._id} className="catalogue-card">
-                                <BaseCard
-                                    name={card.name}
-                                    image={card.imageUrl}
-                                    description={card.flavorText}
-                                    rarity={selectedRarity}
-                                    mintNumber={card.mintNumber}
-                                />
-                                <RemainingBadge remaining={remaining} />
-                                {to && timeLeft > 0 && (
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '5px',
-                                        left: '5px',
-                                        backgroundColor: 'rgba(0,0,0,0.7)',
-                                        color: '#fff',
-                                        padding: '4px 6px',
-                                        borderRadius: '6px',
-                                        fontSize: '0.8rem',
-                                        zIndex: 2
-                                    }}>
-                                        Ends in: {days}d {hours}h {minutes}m {seconds}s
-                                    </div>
-                                )}
+                                <div className="card-inner">
+                                    <BaseCard
+                                        name={card.name}
+                                        image={card.imageUrl}
+                                        description={card.flavorText}
+                                        rarity={selectedRarity}
+                                        mintNumber={card.mintNumber}
+                                    />
+                                    <RemainingBadge remaining={remaining} />
+                                    {to && timeLeft > 0 && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '5px',
+                                            left: '5px',
+                                            backgroundColor: 'rgba(0,0,0,0.7)',
+                                            color: '#fff',
+                                            padding: '4px 6px',
+                                            borderRadius: '6px',
+                                            fontSize: '0.8rem',
+                                            zIndex: 2
+                                        }}>
+                                            Ends in: {days}d {hours}h {minutes}m {seconds}s
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         );
                     })
@@ -226,26 +228,28 @@ const CataloguePage = () => {
 
                         return (
                             <div key={card._id} className="catalogue-card">
-                                <BaseCard
-                                    name={card.name}
-                                    image={card.imageUrl}
-                                    description={card.flavorText}
-                                    rarity={selectedRarity}
-                                    mintNumber={card.mintNumber}
-                                />
-                                <RemainingBadge remaining={remaining} />
-                                <div style={{
-                                    position: 'absolute',
-                                    top: '5px',
-                                    left: '5px',
-                                    backgroundColor: 'rgba(0,0,0,0.7)',
-                                    color: '#fff',
-                                    padding: '4px 6px',
-                                    borderRadius: '6px',
-                                    fontSize: '0.8rem',
-                                    zIndex: 2
-                                }}>
-                                    {status}
+                                <div className="card-inner">
+                                    <BaseCard
+                                        name={card.name}
+                                        image={card.imageUrl}
+                                        description={card.flavorText}
+                                        rarity={selectedRarity}
+                                        mintNumber={card.mintNumber}
+                                    />
+                                    <RemainingBadge remaining={remaining} />
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '5px',
+                                        left: '5px',
+                                        backgroundColor: 'rgba(0,0,0,0.7)',
+                                        color: '#fff',
+                                        padding: '4px 6px',
+                                        borderRadius: '6px',
+                                        fontSize: '0.8rem',
+                                        zIndex: 2
+                                    }}>
+                                        {status}
+                                    </div>
                                 </div>
                             </div>
                         );
@@ -264,14 +268,16 @@ const CataloguePage = () => {
 
                         return (
                             <div key={card._id} className="catalogue-card">
-                                <BaseCard
-                                    name={card.name}
-                                    image={card.imageUrl}
-                                    description={card.flavorText}
-                                    rarity={selectedRarity}
-                                    mintNumber={card.mintNumber}
-                                />
-                                <RemainingBadge remaining={remaining} />
+                                <div className="card-inner">
+                                    <BaseCard
+                                        name={card.name}
+                                        image={card.imageUrl}
+                                        description={card.flavorText}
+                                        rarity={selectedRarity}
+                                        mintNumber={card.mintNumber}
+                                    />
+                                    <RemainingBadge remaining={remaining} />
+                                </div>
                             </div>
                         );
                     })
