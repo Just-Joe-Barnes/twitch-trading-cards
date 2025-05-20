@@ -18,7 +18,10 @@ const rarityData = [
     { name: 'Divine', color: 'white' },
 ];
 
-const API_AVAILABILITY_URL = '/api/cards/availability';
+const API_AVAILABILITY_URL =
+  process.env.NODE_ENV === 'production'
+    ? 'https://neds-decks.onrender.com/api/cards/availability'
+    : 'http://localhost:5000/api/cards/availability';
 
 const CataloguePage = () => {
     const [cards, setCards] = useState([]);
