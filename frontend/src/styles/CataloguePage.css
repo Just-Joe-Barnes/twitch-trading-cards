@@ -137,7 +137,7 @@
 /* Shared overlay badge style for all overlays */
 .card-overlay-badge {
     position: absolute;
-    background: rgba(44, 44, 44, 0.92);
+    background: rgba(0, 0, 0, 0.411);
     color: #cec7b1;
     border-radius: 6px;
     padding: 4px 9px;
@@ -145,7 +145,7 @@
     font-family: inherit;
     font-weight: normal;
     z-index: 2;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.308);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.082);
     letter-spacing: 0.01em;
 }
 
