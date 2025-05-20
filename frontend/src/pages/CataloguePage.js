@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchCards } from '../utils/api';
 import BaseCard from '../components/BaseCard';
-import LoadingSpinner from '../components/LoadingSpinner'; // Import spinner component
+import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/CataloguePage.css';
 
 const rarityData = [
@@ -18,25 +18,22 @@ const rarityData = [
     { name: 'Divine', color: 'white' },
 ];
 
+const API_AVAILABILITY_URL = '/api/cards/availability';
+
 const CataloguePage = () => {
     const [cards, setCards] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    // Availability state
+    const [availability, setAvailability] = useState([]);
 
     // Search, rarity, and sorting states
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedRarity, setSelectedRarity] = useState('Basic');
     const [sortOption, setSortOption] = useState('name');
     const [sortOrder, setSortOrder] = useState('asc');
-
     const [now, setNow] = useState(new Date());
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setNow(new Date());
-        }, 1000);
-        return () => clearInterval(interval);
-    }, []);
 
     // Fetch all cards
     const fetchCatalogue = async () => {
@@ -51,45 +48,59 @@ const CataloguePage = () => {
         }
     };
 
+    // Fetch availability data from backend
+    const fetchAvailability = async () => {
+        try {
+            const response = await fetch(API_AVAILABILITY_URL);
+            const data = await response.json();
+            setAvailability(data.availability);
+        } catch (err) {
+            console.error('Error fetching card availability:', err);
+        }
+    };
+
+    // Timer for limited cards countdown
     useEffect(() => {
-        fetchCatalogue();
+        const interval = setInterval(() => {
+            setNow(new Date());
+        }, 1000);
+        return () => clearInterval(interval);
     }, []);
 
-    const handleSearchChange = (e) => {
-        setSearchQuery(e.target.value);
+    // Fetch cards & availability on load
+    useEffect(() => {
+        fetchCatalogue();
+        fetchAvailability();
+    }, []);
+
+    const handleSearchChange = (e) => setSearchQuery(e.target.value);
+    const handleRarityChange = (rarityName) => setSelectedRarity(rarityName);
+    const handleSortChange = (e) => setSortOption(e.target.value);
+    const handleSortOrderChange = (e) => setSortOrder(e.target.value);
+
+    // Get remaining count for a card by name and rarity
+    const getRemaining = (cardName, rarity) => {
+        const found = availability.find(
+            (item) => item.name === cardName && item.rarity === rarity
+        );
+        return found ? found.remaining : null;
     };
 
-    const handleRarityChange = (rarityName) => {
-        setSelectedRarity(rarityName);
-    };
-
-    const handleSortChange = (e) => {
-        setSortOption(e.target.value);
-    };
-
-    const handleSortOrderChange = (e) => {
-        setSortOrder(e.target.value);
-    };
-
-    
+    // (Your card filtering logic unchanged)
     const limitedCards = cards.filter(card =>
         card.availableFrom || card.availableTo
     );
-
     const alwaysAvailableCards = cards.filter(card =>
         !card.availableFrom && !card.availableTo
     );
-
     const activeLimitedCards = limitedCards.filter(card => {
         const from = card.availableFrom ? new Date(card.availableFrom) : null;
         const to = card.availableTo ? new Date(card.availableTo) : null;
         return (!from || from <= now) && (!to || to >= now);
     });
-
     const filteredCards = alwaysAvailableCards.filter((card) =>
         card.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
     const sortedCards = [...filteredCards].sort((a, b) => {
         if (sortOption === 'name') {
             return sortOrder === 'asc'
@@ -101,6 +112,14 @@ const CataloguePage = () => {
 
     if (loading) return <LoadingSpinner />;
     if (error) return <div className="catalogue-page">{error}</div>;
+
+    // Display a badge or small box with the remaining count
+    const RemainingBadge = ({ remaining }) =>
+        remaining !== null && remaining !== undefined ? (
+            <div className="remaining-badge">
+                {remaining} remaining
+            </div>
+        ) : null;
 
     return (
         <div className="catalogue-page">
@@ -136,8 +155,8 @@ const CataloguePage = () => {
                                 style={{
                                     backgroundColor: r.color,
                                     color: textColor,
-                                    padding: '8px 12px', // smaller buttons
-                                    border: '2px solid #888', // gray border
+                                    padding: '8px 12px',
+                                    border: '2px solid #888',
                                 }}
                             >
                                 {r.name}
@@ -160,6 +179,7 @@ const CataloguePage = () => {
                 </div>
             </div>
 
+            {/* Limited Time Cards */}
             <h2>Limited Time Cards</h2>
             <div className="catalogue-grid">
                 {activeLimitedCards.length > 0 ? (
@@ -170,6 +190,8 @@ const CataloguePage = () => {
                         const minutes = timeLeft ? Math.floor(timeLeft / (1000 * 60)) % 60 : null;
                         const hours = timeLeft ? Math.floor(timeLeft / (1000 * 60 * 60)) % 24 : null;
                         const days = timeLeft ? Math.floor(timeLeft / (1000 * 60 * 60 * 24)) : null;
+                        // Remaining copies for current rarity
+                        const remaining = getRemaining(card.name, selectedRarity);
 
                         return (
                             <div key={card._id} className="catalogue-card" style={{ position: 'relative' }}>
@@ -181,6 +203,7 @@ const CataloguePage = () => {
                                         rarity={selectedRarity}
                                         mintNumber={card.mintNumber}
                                     />
+                                    <RemainingBadge remaining={remaining} />
                                     {to && timeLeft > 0 && (
                                         <div style={{
                                             position: 'absolute',
@@ -204,6 +227,7 @@ const CataloguePage = () => {
                 )}
             </div>
 
+            {/* All Limited Cards */}
             <h2>All Limited Cards (Past, Present, Future)</h2>
             <div className="catalogue-grid">
                 {limitedCards.length > 0 ? (
@@ -215,6 +239,8 @@ const CataloguePage = () => {
                         if (from && now < from) status = 'Upcoming';
                         else if (to && now > to) status = 'Expired';
                         else status = 'Active';
+                        // Remaining copies for current rarity
+                        const remaining = getRemaining(card.name, selectedRarity);
 
                         return (
                             <div key={card._id} className="catalogue-card" style={{ position: 'relative' }}>
@@ -226,6 +252,7 @@ const CataloguePage = () => {
                                         rarity={selectedRarity}
                                         mintNumber={card.mintNumber}
                                     />
+                                    <RemainingBadge remaining={remaining} />
                                     <div style={{
                                         position: 'absolute',
                                         top: '5px',
@@ -247,20 +274,27 @@ const CataloguePage = () => {
                 )}
             </div>
 
+            {/* All Cards */}
             <h2>All Cards</h2>
             <div className="catalogue-grid">
                 {sortedCards.length > 0 ? (
-                    sortedCards.map((card) => (
-                        <div key={card._id} className="catalogue-card">
-                            <BaseCard
-                                name={card.name}
-                                image={card.imageUrl}
-                                description={card.flavorText}
-                                rarity={selectedRarity}
-                                mintNumber={card.mintNumber}
-                            />
-                        </div>
-                    ))
+                    sortedCards.map((card) => {
+                        // Remaining copies for current rarity
+                        const remaining = getRemaining(card.name, selectedRarity);
+
+                        return (
+                            <div key={card._id} className="catalogue-card">
+                                <BaseCard
+                                    name={card.name}
+                                    image={card.imageUrl}
+                                    description={card.flavorText}
+                                    rarity={selectedRarity}
+                                    mintNumber={card.mintNumber}
+                                />
+                                <RemainingBadge remaining={remaining} />
+                            </div>
+                        );
+                    })
                 ) : (
                     <div>No cards found.</div>
                 )}

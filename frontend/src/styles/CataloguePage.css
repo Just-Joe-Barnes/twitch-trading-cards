@@ -127,3 +127,18 @@
     display: flex;
     justify-content: center;
 }
+
+/* Badge for remaining copies */
+.remaining-badge {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(44, 44, 44, 0.92);
+    color: #ffe082;
+    border-radius: 6px;
+    padding: 4px 9px;
+    font-size: 1rem;
+    font-weight: bold;
+    z-index: 2;
+    box-shadow: 0 2px 8px #000c;
+}
