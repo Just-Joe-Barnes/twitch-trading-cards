@@ -27,18 +27,21 @@ const CataloguePage = () => {
     const [cards, setCards] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-
-    // Availability state
     const [availability, setAvailability] = useState([]);
 
-    // Search, rarity, and sorting states
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedRarity, setSelectedRarity] = useState('Basic');
     const [sortOption, setSortOption] = useState('name');
     const [sortOrder, setSortOrder] = useState('asc');
     const [now, setNow] = useState(new Date());
 
-    // Fetch all cards
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setNow(new Date());
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
     const fetchCatalogue = async () => {
         try {
             const response = await fetchCards({});
@@ -51,7 +54,6 @@ const CataloguePage = () => {
         }
     };
 
-    // Fetch availability data from backend
     const fetchAvailability = async () => {
         try {
             const response = await fetch(API_AVAILABILITY_URL);
@@ -62,15 +64,6 @@ const CataloguePage = () => {
         }
     };
 
-    // Timer for limited cards countdown
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setNow(new Date());
-        }, 1000);
-        return () => clearInterval(interval);
-    }, []);
-
-    // Fetch cards & availability on load
     useEffect(() => {
         fetchCatalogue();
         fetchAvailability();
@@ -81,7 +74,6 @@ const CataloguePage = () => {
     const handleSortChange = (e) => setSortOption(e.target.value);
     const handleSortOrderChange = (e) => setSortOrder(e.target.value);
 
-    // Get remaining count for a card by name and rarity
     const getRemaining = (cardName, rarity) => {
         const found = availability.find(
             (item) => item.name === cardName && item.rarity === rarity
@@ -89,7 +81,6 @@ const CataloguePage = () => {
         return found ? found.remaining : null;
     };
 
-    // (Your card filtering logic unchanged)
     const limitedCards = cards.filter(card =>
         card.availableFrom || card.availableTo
     );
@@ -116,7 +107,6 @@ const CataloguePage = () => {
     if (loading) return <LoadingSpinner />;
     if (error) return <div className="catalogue-page">{error}</div>;
 
-    // Display a badge or small box with the remaining count
     const RemainingBadge = ({ remaining }) =>
         remaining !== null && remaining !== undefined ? (
             <div className="remaining-badge">
@@ -134,7 +124,6 @@ const CataloguePage = () => {
             </p>
 
             <div className="filters-container">
-                {/* Search Box */}
                 <div className="search-box">
                     <input
                         type="text"
@@ -143,13 +132,9 @@ const CataloguePage = () => {
                         placeholder="Search cards..."
                     />
                 </div>
-
-                {/* Rarity Selector */}
                 <div className="rarity-selector">
                     {rarityData.map((r) => {
-                        // If "Divine" is white, set text color to black for contrast.
                         const textColor = r.name === 'Divine' ? '#000' : '#fff';
-
                         return (
                             <button
                                 key={r.name}
@@ -167,14 +152,11 @@ const CataloguePage = () => {
                         );
                     })}
                 </div>
-
-                {/* Sort Section */}
                 <div className="sort-box">
                     <label htmlFor="sortField">Sort by:</label>
                     <select id="sortField" value={sortOption} onChange={handleSortChange}>
                         <option value="name">Name</option>
                     </select>
-
                     <select id="sortOrder" value={sortOrder} onChange={handleSortOrderChange}>
                         <option value="asc">Ascending</option>
                         <option value="desc">Descending</option>
@@ -193,35 +175,33 @@ const CataloguePage = () => {
                         const minutes = timeLeft ? Math.floor(timeLeft / (1000 * 60)) % 60 : null;
                         const hours = timeLeft ? Math.floor(timeLeft / (1000 * 60 * 60)) % 24 : null;
                         const days = timeLeft ? Math.floor(timeLeft / (1000 * 60 * 60 * 24)) : null;
-                        // Remaining copies for current rarity
                         const remaining = getRemaining(card.name, selectedRarity);
 
                         return (
-                            <div key={card._id} className="catalogue-card" style={{ position: 'relative' }}>
-                                <div style={{ position: 'relative' }}>
-                                    <BaseCard
-                                        name={card.name}
-                                        image={card.imageUrl}
-                                        description={card.flavorText}
-                                        rarity={selectedRarity}
-                                        mintNumber={card.mintNumber}
-                                    />
-                                    <RemainingBadge remaining={remaining} />
-                                    {to && timeLeft > 0 && (
-                                        <div style={{
-                                            position: 'absolute',
-                                            top: '5px',
-                                            left: '5px',
-                                            backgroundColor: 'rgba(0,0,0,0.7)',
-                                            color: '#fff',
-                                            padding: '4px 6px',
-                                            borderRadius: '6px',
-                                            fontSize: '0.8rem'
-                                        }}>
-                                            Ends in: {days}d {hours}h {minutes}m {seconds}s
-                                        </div>
-                                    )}
-                                </div>
+                            <div key={card._id} className="catalogue-card">
+                                <BaseCard
+                                    name={card.name}
+                                    image={card.imageUrl}
+                                    description={card.flavorText}
+                                    rarity={selectedRarity}
+                                    mintNumber={card.mintNumber}
+                                />
+                                <RemainingBadge remaining={remaining} />
+                                {to && timeLeft > 0 && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '5px',
+                                        left: '5px',
+                                        backgroundColor: 'rgba(0,0,0,0.7)',
+                                        color: '#fff',
+                                        padding: '4px 6px',
+                                        borderRadius: '6px',
+                                        fontSize: '0.8rem',
+                                        zIndex: 2
+                                    }}>
+                                        Ends in: {days}d {hours}h {minutes}m {seconds}s
+                                    </div>
+                                )}
                             </div>
                         );
                     })
@@ -242,32 +222,30 @@ const CataloguePage = () => {
                         if (from && now < from) status = 'Upcoming';
                         else if (to && now > to) status = 'Expired';
                         else status = 'Active';
-                        // Remaining copies for current rarity
                         const remaining = getRemaining(card.name, selectedRarity);
 
                         return (
-                            <div key={card._id} className="catalogue-card" style={{ position: 'relative' }}>
-                                <div style={{ position: 'relative' }}>
-                                    <BaseCard
-                                        name={card.name}
-                                        image={card.imageUrl}
-                                        description={card.flavorText}
-                                        rarity={selectedRarity}
-                                        mintNumber={card.mintNumber}
-                                    />
-                                    <RemainingBadge remaining={remaining} />
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '5px',
-                                        left: '5px',
-                                        backgroundColor: 'rgba(0,0,0,0.7)',
-                                        color: '#fff',
-                                        padding: '4px 6px',
-                                        borderRadius: '6px',
-                                        fontSize: '0.8rem'
-                                    }}>
-                                        {status}
-                                    </div>
+                            <div key={card._id} className="catalogue-card">
+                                <BaseCard
+                                    name={card.name}
+                                    image={card.imageUrl}
+                                    description={card.flavorText}
+                                    rarity={selectedRarity}
+                                    mintNumber={card.mintNumber}
+                                />
+                                <RemainingBadge remaining={remaining} />
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '5px',
+                                    left: '5px',
+                                    backgroundColor: 'rgba(0,0,0,0.7)',
+                                    color: '#fff',
+                                    padding: '4px 6px',
+                                    borderRadius: '6px',
+                                    fontSize: '0.8rem',
+                                    zIndex: 2
+                                }}>
+                                    {status}
                                 </div>
                             </div>
                         );
@@ -282,7 +260,6 @@ const CataloguePage = () => {
             <div className="catalogue-grid">
                 {sortedCards.length > 0 ? (
                     sortedCards.map((card) => {
-                        // Remaining copies for current rarity
                         const remaining = getRemaining(card.name, selectedRarity);
 
                         return (

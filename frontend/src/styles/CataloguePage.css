@@ -126,6 +126,7 @@
 .catalogue-card {
     display: flex;
     justify-content: center;
+    position: relative; /* Ensures badges overlay as intended */
 }
 
 /* Badge for remaining copies */
