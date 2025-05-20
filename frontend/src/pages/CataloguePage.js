@@ -109,7 +109,7 @@ const CataloguePage = () => {
 
     const RemainingBadge = ({ remaining }) =>
         remaining !== null && remaining !== undefined ? (
-            <div className="remaining-badge">
+            <div className="card-overlay-badge remaining-badge">
                 {remaining} remaining
             </div>
         ) : null;
@@ -189,17 +189,7 @@ const CataloguePage = () => {
                                     />
                                     <RemainingBadge remaining={remaining} />
                                     {to && timeLeft > 0 && (
-                                        <div style={{
-                                            position: 'absolute',
-                                            top: '5px',
-                                            left: '5px',
-                                            backgroundColor: 'rgba(0,0,0,0.7)',
-                                            color: '#fff',
-                                            padding: '4px 6px',
-                                            borderRadius: '6px',
-                                            fontSize: '0.8rem',
-                                            zIndex: 2
-                                        }}>
+                                        <div className="card-overlay-badge timeleft-badge">
                                             Ends in: {days}d {hours}h {minutes}m {seconds}s
                                         </div>
                                     )}
@@ -237,17 +227,7 @@ const CataloguePage = () => {
                                         mintNumber={card.mintNumber}
                                     />
                                     <RemainingBadge remaining={remaining} />
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '5px',
-                                        left: '5px',
-                                        backgroundColor: 'rgba(0,0,0,0.7)',
-                                        color: '#fff',
-                                        padding: '4px 6px',
-                                        borderRadius: '6px',
-                                        fontSize: '0.8rem',
-                                        zIndex: 2
-                                    }}>
+                                    <div className="card-overlay-badge timeleft-badge">
                                         {status}
                                     </div>
                                 </div>
