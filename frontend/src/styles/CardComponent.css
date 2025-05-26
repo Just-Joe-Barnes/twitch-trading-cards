@@ -363,6 +363,7 @@
     position: relative;
     transition: box-shadow 1s ease, border 1s ease;
     animation: pulse-border 2s infinite;
+    background:rgba(235, 152, 217, 0.8)
 }
 
 @keyframes pulse-border {
