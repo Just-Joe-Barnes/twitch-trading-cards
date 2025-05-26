@@ -465,70 +465,55 @@
 /**************************************
  * Unique Effects – Gothic & Moody
  **************************************/
-.card-container.unique {
-    position: relative;
-    overflow: hidden;
-    filter: grayscale(90%) contrast(2) brightness(1.2);
-    background: #444444;
+/* ── Unique Rarity: Two-Layer & Three-Band Invert Effect ── */
+
+/* Remove any old unique‐img filters */
+.card-container.unique .card-artwork img {
+  filter: none !important;
+  transition: none !important;
 }
 
-    .card-container.unique .neo-rain {
-        position: absolute;
-        inset: 0;
-        background: url('../assets/textures/neo-rain.gif') center 10% / cover no-repeat;
-        mix-blend-mode: overlay;
-        pointer-events: none;
-        z-index: 3;
-        opacity: 0.1;
-        transition: opacity 0.3s ease, transform 0.3s ease;
-    }
+/* Positioning for our two layers */
+.card-container.unique .card-artwork {
+  position: relative;
+  overflow: hidden;
+}
+.card-container.unique .card-artwork .grayscale,
+.card-container.unique .card-artwork .invertband {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  pointer-events: none;
+  user-select: none;
+}
 
-    .card-container.unique:hover .neo-rain {
-        opacity: 1;
-        transform: scale(1.05);
-    }
+/* Base layer: crisp, high-contrast B&W */
+.card-container.unique .card-artwork .grayscale {
+  z-index: 1;
+  filter: grayscale(1) contrast(3.3) brightness(1.12);
+}
 
-    .card-container.unique .unique-overlay {
-        position: absolute;
-        inset: 0;
-        background-image: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(20, 0, 30, 0.8)), linear-gradient(45deg, rgba(10, 0, 20, 0.3) 25%, transparent 75%), url('../assets/textures/noise.png');
-        background-blend-mode: multiply, overlay, soft-light;
-        background-size: cover, cover, cover;
-        background-repeat: no-repeat;
-        pointer-events: none;
-        z-index: 4;
-        opacity: 0.3;
-        transition: opacity 0.3s ease;
-    }
+/* Overlay: inverted & mask-driven */
+.card-container.unique .card-artwork .invertband {
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+  filter: grayscale(1) invert(1) contrast(3.3) brightness(1.12);
+  mask-image: none;
+  -webkit-mask-image: none;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-size: 100% 100%;
+  -webkit-mask-size: 100% 100%;
+}
 
-    .card-container.unique:hover .unique-overlay {
-        opacity: 0.5;
-    }
+/* (Optional fallback: show on pure CSS hover) */
+.card-container.unique:hover .card-artwork .invertband {
+  opacity: 1;
+}
 
-    /* Keep unique text background consistent (#444444) */
-    .card-container.unique .card-name,
-    .card-container.unique .card-description,
-    .card-container.unique .card-mint {
-        background: #444444;
-        transition: none;
-    }
-
-    .card-container.unique:hover .card-name,
-    .card-container.unique:hover .card-description,
-    .card-container.unique:hover .card-mint {
-        background: #444444;
-        text-shadow: 0 0 10px #c90a0a, 0 0 20px #c90a0a, 0 0 30px #c90a0a, 0 0 40px #c90a0a;
-        color: white;
-    }
-
-    .card-container.unique:hover .card-artwork img {
-        filter: grayscale(100%) contrast(2) brightness(1.5);
-    }
-
-    .card-container.unique:hover {
-        background: #444444;
-        box-shadow: 0 0 30px 10px rgba(255, 0, 0, 0.9);
-    }
 
 /**************************************
  * Divine Effects (Unchanged)
