@@ -218,8 +218,9 @@ const BaseCard = ({
                         <div className="card-mint">
                             <span className="mint-number">
                                 {mintNumber} /{' '}
-                                {rarities.find(r => r.name.toLowerCase() === rarity)?.totalCopies
-                                    || '???'}
+                                {rarities
+                                ?.find(r => r.name.toLowerCase() === rarity.toLowerCase())
+                                ?.totalCopies ?? '???'}
                             </span>
                         </div>
                     </div>
