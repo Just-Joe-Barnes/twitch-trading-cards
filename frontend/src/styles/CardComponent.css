@@ -530,27 +530,6 @@
         box-shadow: 0 0 30px 10px rgba(255, 0, 0, 0.9);
     }
 
-    /* === Unique Rarity Three-Band Invert Overlay === */
-.invert-band-overlay {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-    border-radius: 10px;
-    z-index: 9;
-    opacity: 0;
-    transition: opacity 0.22s;
-    filter: grayscale(1) invert(1) contrast(3.3) brightness(1.12);
-    mask-image: none;
-    -webkit-mask-image: none;
-    pointer-events: none;
-}
-
-.card-container.unique:hover .invert-band-overlay {
-    opacity: 1;
-}
-
-
 /**************************************
  * Divine Effects (Unchanged)
  **************************************/
@@ -700,29 +679,6 @@
         -webkit-text-stroke: 1px white;
         text-shadow: 1px 1px 5px black;
     }
-
-
-    /* ── Unique Rarity: Three-Band Invert Overlay ── */
-.invert-band-overlay {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-    border-radius: 10px;
-    z-index: 9;
-    opacity: 0;
-    transition: opacity 0.1s ease;
-    pointer-events: none;
-    /* Strong B/W invert filter */
-    filter: grayscale(1) invert(1) contrast(3.3) brightness(1.12);
-    /* Important: ensure the gradient mask covers the full element */
-    mask-image: none;
-    -webkit-mask-image: none;
-    mask-repeat: no-repeat;
-    -webkit-mask-repeat: no-repeat;
-    mask-size: 100% 100%;
-    -webkit-mask-size: 100% 100%;
-}
 
 /**************************************
  * End of File
