@@ -363,7 +363,7 @@
     position: relative;
     transition: box-shadow 1s ease, border 1s ease;
     animation: pulse-border 2s infinite;
-    background:rgba(235, 152, 217, 0.8)
+    background:#a24274;
 }
 
 @keyframes pulse-border {
@@ -374,6 +374,10 @@
     50% {
         box-shadow: 0 0 20px 4px rgba(255,105,180,0.8);
     }
+}
+
+.card-artwork.mythic {
+    border: 6px solid #d95898;
 }
 
 .card-container.mythic::before {
