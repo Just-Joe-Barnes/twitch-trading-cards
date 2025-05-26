@@ -16,14 +16,11 @@ const BaseCard = ({
 }) => {
     const cardRef = useRef(null);
     const [modifierData, setModifierData] = useState(null);
-    // Refs for lower rarity effects (unchanged)
     const glareRef = useRef(null);
     const holoRef = useRef(null);
-    // For other rarities, we keep the existing refs
     const holoVRef = useRef(null);
     const mythicCursorGradientRef = useRef(null);
     const divineArtworkRef = useRef(null);
-    // New ref for the description element so we can adjust its font size
     const descriptionRef = useRef(null);
     const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
 
@@ -43,13 +40,10 @@ const BaseCard = ({
         fetchModifier();
     }, [modifier]);
 
-    // useEffect to adjust the font size of the description so that it fits in 90px height.
     useEffect(() => {
         if (descriptionRef.current) {
-            // Reset to maximum font size first.
             descriptionRef.current.style.fontSize = '0.9rem';
             let fontSize = 0.9;
-            // While the content overflows the container and the font size is above the minimum...
             while (
                 descriptionRef.current.scrollHeight > descriptionRef.current.clientHeight &&
                 fontSize > 0.6
@@ -59,6 +53,66 @@ const BaseCard = ({
             }
         }
     }, [description]);
+
+    // === UNIQUE THREE-BAND INVERT EFFECT ===
+    useEffect(() => {
+        if (!cardRef.current) return;
+        if (rarity.toLowerCase() !== "unique") return;
+        const card = cardRef.current;
+        const artwork = card.querySelector(".card-artwork");
+        const overlay = artwork && artwork.querySelector(".invert-band-overlay");
+        if (!artwork || !overlay) return;
+
+        function clamp(val, min, max) {
+            return Math.max(min, Math.min(max, val));
+        }
+
+        function handleBandMask(e) {
+            const rect = artwork.getBoundingClientRect();
+            const percent = ((e.clientX - rect.left) / rect.width) * 100;
+            const bandWidth = 8;
+            const softEdge = 5;
+            const spread = 27;
+
+            const band1 = clamp(percent, 0, 100);
+            const band2 = clamp(percent - spread, 0, 100);
+            const band3 = clamp(percent + spread, 0, 100);
+
+            const stops = (center) => `
+                transparent ${center - bandWidth - softEdge}%,
+                white ${center - bandWidth}%,
+                white ${center + bandWidth}%,
+                transparent ${center + bandWidth + softEdge}%`;
+
+            const mask = `linear-gradient(60deg,
+                ${stops(band1)},
+                ${stops(band2)},
+                ${stops(band3)}
+            )`;
+
+            overlay.style.webkitMaskImage = overlay.style.maskImage = mask;
+            overlay.style.opacity = '1';
+        }
+
+        function onMouseMove(e) {
+            handleBandMask(e);
+        }
+        function onMouseLeave() {
+            if (overlay) {
+                overlay.style.opacity = '0';
+                overlay.style.webkitMaskImage = overlay.style.maskImage = 'none';
+            }
+        }
+
+        artwork.addEventListener("mousemove", onMouseMove);
+        artwork.addEventListener("mouseleave", onMouseLeave);
+
+        return () => {
+            artwork.removeEventListener("mousemove", onMouseMove);
+            artwork.removeEventListener("mouseleave", onMouseLeave);
+        };
+    }, [rarity, image]);
+    // === END UNIQUE THREE-BAND EFFECT ===
 
     const handleMouseMove = (e) => {
         const card = cardRef.current;
@@ -73,13 +127,11 @@ const BaseCard = ({
         const rotateY = ((x - halfW) / 10);
         card.style.transform = `perspective(700px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
 
-        // For rare, legendary, epic, and mythic cards, update custom properties for overlays
         if (["rare", "legendary", "epic", "mythic"].includes(rarity.toLowerCase())) {
             card.style.setProperty('--cursor-x', `${(x / rect.width) * 100}%`);
             card.style.setProperty('--cursor-y', `${(y / rect.height) * 100}%`);
         }
 
-        // For legendary cards, update lightning parallax properties
         if (rarity.toLowerCase() === 'legendary') {
             const lightningX = ((x / rect.width) * 10 - 5).toFixed(2) + '%';
             const lightningY = ((y / rect.height) * 10 - 5).toFixed(2) + '%';
@@ -87,7 +139,6 @@ const BaseCard = ({
             card.style.setProperty('--lightning-y', lightningY);
         }
 
-        // Lower rarity glare effect (basic/common/standard/uncommon)
         if (
             glareRef.current &&
             ["basic", "common", "standard", "uncommon"].includes(rarity.toLowerCase())
@@ -99,7 +150,6 @@ const BaseCard = ({
             glareRef.current.style.background = `radial-gradient(circle at ${glareX}% ${glareY}%, var(--glare-color, rgba(255,255,255,0.5)), rgba(255,255,255,0))`;
         }
 
-        // Rare holographic overlay (unchanged)
         if (holoRef.current && rarity.toLowerCase() === 'rare') {
             const gradientX = (x / rect.width) * 100;
             const gradientY = (y / rect.height) * 100;
@@ -107,7 +157,6 @@ const BaseCard = ({
             holoRef.current.style.opacity = '0.8';
         }
 
-        // Holo V effect (unchanged)
         if (holoVRef.current && rarity.toLowerCase() === 'holo-v') {
             const gradientX = (x / rect.width) * 100;
             const gradientY = (y / rect.height) * 100;
@@ -115,13 +164,11 @@ const BaseCard = ({
             holoVRef.current.style.opacity = '0.8';
         }
 
-        // Mythic cursor gradient (if applicable)
         if (mythicCursorGradientRef.current && rarity.toLowerCase() === 'mythic') {
             mythicCursorGradientRef.current.style.setProperty('--cursor-x', `${x}px`);
             mythicCursorGradientRef.current.style.setProperty('--cursor-y', `${y}px`);
         }
 
-        // Divine parallax effect (if applicable)
         if (divineArtworkRef.current && rarity.toLowerCase() === 'divine') {
             const moveX = (x - halfW) / 20;
             const moveY = (y - halfH) / 20;
@@ -214,6 +261,17 @@ const BaseCard = ({
                         <div className={`card-name ${modifierData?.name === 'Rainbow Holo' ? 'rainbow-holo' : ''}`}>{name}</div>
                         <div className="card-artwork">
                             <img src={image} alt={name} />
+                            {/* === UNIQUE THREE-BAND INVERT OVERLAY === */}
+                            {rarity.toLowerCase() === "unique" && (
+                                <img
+                                    src={image}
+                                    alt=""
+                                    className="invert-band-overlay"
+                                    draggable={false}
+                                    style={{ pointerEvents: "none", opacity: 0 }}
+                                />
+                            )}
+                            {/* === END UNIQUE OVERLAY === */}
                             {modifierData?.name === 'Rainbow Holo' && (
                                 <div
                                     className="rainbow-holo-image"
