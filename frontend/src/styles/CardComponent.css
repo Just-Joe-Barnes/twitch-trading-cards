@@ -495,7 +495,7 @@
     z-index: 2;
     opacity: 0;
     transition: opacity 0.1s ease;
-    filter: grayscale(1) invert(1) contrast(3.3) brightness(1.12);
+    filter: grayscale(0.7) invert(0) contrast(5) brightness(3);
     mask-image: none;
     -webkit-mask-image: none;
     mask-repeat: no-repeat;
