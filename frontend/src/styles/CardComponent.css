@@ -467,6 +467,12 @@
     mix-blend-mode: overlay;
 }
 
+.card-container.mythic::before,
+.card-container.mythic::after {
+  border-radius: inherit;
+}
+
+
 /**************************************
  * Unique Effects – Gothic & Moody
  **************************************/
