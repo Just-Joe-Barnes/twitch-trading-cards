@@ -475,6 +475,7 @@
 .card-container.unique .card-artwork {
     position: relative; /* ensure overlay stacks */
     overflow: hidden;
+    border-color: whitesmoke;
 }
 .card-container.unique .card-artwork .grayscale,
 .card-container.unique .card-artwork .invertband {
