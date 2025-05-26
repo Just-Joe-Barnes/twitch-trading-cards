@@ -465,53 +465,40 @@
 /**************************************
  * Unique Effects – Gothic & Moody
  **************************************/
-/* ── Unique Rarity: Two-Layer & Three-Band Invert Effect ── */
-
-/* Remove any old unique‐img filters */
-.card-container.unique .card-artwork img {
-  filter: none !important;
-  transition: none !important;
-}
-
-/* Positioning for our two layers */
+/* ── Unique Rarity: Two‐Layer + Three‐Band Invert Mask ── */
 .card-container.unique .card-artwork {
-  position: relative;
-  overflow: hidden;
+    position: relative; /* ensure overlay stacks */
+    overflow: hidden;
 }
 .card-container.unique .card-artwork .grayscale,
 .card-container.unique .card-artwork .invertband {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  border-radius: 10px;
-  pointer-events: none;
-  user-select: none;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+    pointer-events: none;
+    user-select: none;
 }
-
-/* Base layer: crisp, high-contrast B&W */
 .card-container.unique .card-artwork .grayscale {
-  z-index: 1;
-  filter: grayscale(1) contrast(3.3) brightness(1.12);
+    z-index: 1;
+    filter: grayscale(1) contrast(3.3) brightness(1.12);
 }
-
-/* Overlay: inverted & mask-driven */
 .card-container.unique .card-artwork .invertband {
-  z-index: 2;
-  opacity: 0;
-  transition: opacity 0.1s ease;
-  filter: grayscale(1) invert(1) contrast(3.3) brightness(1.12);
-  mask-image: none;
-  -webkit-mask-image: none;
-  mask-repeat: no-repeat;
-  -webkit-mask-repeat: no-repeat;
-  mask-size: 100% 100%;
-  -webkit-mask-size: 100% 100%;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+    filter: grayscale(1) invert(1) contrast(3.3) brightness(1.12);
+    mask-image: none;
+    -webkit-mask-image: none;
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+    mask-size: 100% 100%;
+    -webkit-mask-size: 100% 100%;
 }
-
-/* (Optional fallback: show on pure CSS hover) */
-.card-container.unique:hover .card-artwork .invertband {
-  opacity: 1;
+/* (Optional pure‐CSS fallback: fade in on hover) */
+.card-container.unique:hover .invertband {
+    opacity: 1;
 }
 
 
