@@ -503,24 +503,6 @@
     -webkit-mask-size: 100% 100%;
 }
 
-/* 1) Brighten the base layer so mid-tones aren’t swallowed by black: */
-.card-container.unique .card-artwork .grayscale {
-  filter: grayscale(1) contrast(3.3) brightness(1.35);
-  /* optionally add a touch of saturate for slightly more punch */
-  /* saturate(1.1) */
-}
-
-/* 2) Make the bands both brighter and “glowy”: */
-.card-container.unique .card-artwork .invertband {
-  /* bump brightness, pull up contrast so even deep shadows invert to bright */
-  filter: grayscale(1)
-          invert(1)
-          contrast(4)
-          brightness(1.8)
-          drop-shadow(0 0 8px rgba(255,255,255,0.6));
-  /* and use a blend-mode that *lightens* the underlying art */
-  mix-blend-mode: screen;
-}
 /* (Optional pure‐CSS fallback: fade in on hover) */
 .card-container.unique:hover .invertband {
     opacity: 1;
