@@ -288,8 +288,9 @@
 
 /* card-content forced 300x450 */
 .card-content {
-    width: 300px;
-    height: 450px;
+    width: 100%;
+    max-width: 300px;
+    aspect-ratio: 2 / 3;
     position: relative;
     perspective: 1000px;
     border: none !important;
@@ -470,4 +471,10 @@
 
 .suggestions-list li:hover {
   background: var(--surface-darker);
+}
+
+@media (max-width: 600px) {
+  .card-content {
+    max-width: 200px;
+  }
 }
