@@ -11,6 +11,7 @@ const Navbar = ({ isAdmin }) => {
     const [searchResults, setSearchResults] = useState([]);
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
     const [loggedInUser, setLoggedInUser] = useState({});
+    const [menuOpen, setMenuOpen] = useState(false);
 
     // Fetch logged-in user data including profile picture
     useEffect(() => {
@@ -29,6 +30,10 @@ const Navbar = ({ isAdmin }) => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         navigate('/login');
+    };
+
+    const toggleMenu = () => {
+        setMenuOpen(prev => !prev);
     };
 
     const handleSearchChange = async (e) => {
@@ -60,6 +65,17 @@ const Navbar = ({ isAdmin }) => {
                 <img src="/images/NedsDecksLogo.png" alt="Ned's Decks" />
             </div>
 
+            <button
+                className="burger-button"
+                aria-expanded={menuOpen}
+                aria-controls="primary-navigation"
+                onClick={toggleMenu}
+            >
+                <span className="burger-bar"></span>
+                <span className="burger-bar"></span>
+                <span className="burger-bar"></span>
+            </button>
+
             <div className="navbar-search">
                 <div className="search-wrapper">
                     <input
@@ -89,53 +105,94 @@ const Navbar = ({ isAdmin }) => {
                 </div>
             </div>
 
-            <ul className="navbar-links">
+            <ul
+                id="primary-navigation"
+                className={`navbar-links ${menuOpen ? 'open' : ''}`}
+            >
                 <li>
-                    <NavLink to="/dashboard" className="nav-link">
+                    <NavLink
+                        to="/dashboard"
+                        className="nav-link"
+                        onClick={() => setMenuOpen(false)}
+                    >
                         Dashboard
                     </NavLink>
                 </li>
                 <li>
-                    <NavLink to={`/collection/${loggedInUser.username}`} className="nav-link">
+                    <NavLink
+                        to={`/collection/${loggedInUser.username}`}
+                        className="nav-link"
+                        onClick={() => setMenuOpen(false)}
+                    >
                         Collection
                     </NavLink>
                 </li>
                 <li>
-                    <NavLink to={`/profile/${loggedInUser.username}`} className="nav-link">
+                    <NavLink
+                        to={`/profile/${loggedInUser.username}`}
+                        className="nav-link"
+                        onClick={() => setMenuOpen(false)}
+                    >
                         My Profile
                     </NavLink>
                 </li>
                 <li>
-                    <NavLink to="/trading" className="nav-link">
+                    <NavLink
+                        to="/trading"
+                        className="nav-link"
+                        onClick={() => setMenuOpen(false)}
+                    >
                         Trading
                     </NavLink>
                 </li>
                 {isAdmin && (
                     <>
                         <li>
-                            <NavLink to="/admin-dashboard" className="nav-link">
+                            <NavLink
+                                to="/admin-dashboard"
+                                className="nav-link"
+                                onClick={() => setMenuOpen(false)}
+                            >
                                 Admin Dashboard
                             </NavLink>
                         </li>
                         <li>
-                            <NavLink to="/admin/actions" className="nav-link">
+                            <NavLink
+                                to="/admin/actions"
+                                className="nav-link"
+                                onClick={() => setMenuOpen(false)}
+                            >
                                 Admin Actions
                             </NavLink>
                         </li>
                     </>
                 )}
                 <li>
-                    <NavLink to="/market" className="nav-link">
+                    <NavLink
+                        to="/market"
+                        className="nav-link"
+                        onClick={() => setMenuOpen(false)}
+                    >
                         Market
                     </NavLink>
                 </li>
                 <li>
-                    <NavLink to="/catalogue" className="nav-link">
+                    <NavLink
+                        to="/catalogue"
+                        className="nav-link"
+                        onClick={() => setMenuOpen(false)}
+                    >
                         Catalogue
                     </NavLink>
                 </li>
                 <li>
-                    <button className="logout-button" onClick={handleLogout}>
+                    <button
+                        className="logout-button"
+                        onClick={() => {
+                            setMenuOpen(false);
+                            handleLogout();
+                        }}
+                    >
                         Logout
                     </button>
                 </li>
