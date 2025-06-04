@@ -115,7 +115,7 @@
 /* Grid layout for catalogue cards */
 .catalogue-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 30px;
     margin-bottom: 40px;
 }
@@ -128,7 +128,8 @@
 
 .card-inner {
     position: relative;
-    width: 300px; /* Match this to your card's intended width */
+    width: 100%;
+    max-width: 300px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -158,4 +159,10 @@
 .timeleft-badge {
     top: 10px;
     left: 10px;
+}
+
+@media (max-width: 600px) {
+    .catalogue-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
 }
