@@ -248,7 +248,10 @@
 
 /* Card Preview Wrapper (for other sections) */
 .tp-card-preview-wrapper {
-    flex: 0 0 280px;
+    flex: 0 0 45%;
+    width: 100%;
+    max-width: 280px;
+    aspect-ratio: 2 / 3;
     position: relative;
     transition: var(--transition);
     border-radius: var(--border-radius);
@@ -412,5 +415,11 @@
 
     .tp-card-item {
         padding: 0.75rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .tp-card-preview-wrapper {
+        max-width: 200px;
     }
 }
