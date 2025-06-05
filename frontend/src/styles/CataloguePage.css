@@ -114,10 +114,16 @@
 
 /* Grid layout for catalogue cards */
 .cata-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    --cata-card-scale: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
     gap: 30px;
     margin-bottom: 40px;
+    width: calc(100% / var(--cata-card-scale));
+    transform: scale(var(--cata-card-scale));
+    transform-origin: top left;
 }
 
 .cata-card {
@@ -161,11 +167,26 @@
     left: 10px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 1200px) {
     .cata-grid {
-        grid-template-columns: repeat(4, 1fr);
+        --cata-card-scale: 0.85;
     }
-    .cata-card-inner .card-container {
-        width: 100%;
+}
+
+@media (max-width: 992px) {
+    .cata-grid {
+        --cata-card-scale: 0.75;
+    }
+}
+
+@media (max-width: 768px) {
+    .cata-grid {
+        --cata-card-scale: 0.65;
+    }
+}
+
+@media (max-width: 480px) {
+    .cata-grid {
+        --cata-card-scale: 0.55;
     }
 }
