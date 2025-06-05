@@ -61,10 +61,6 @@ const Navbar = ({ isAdmin }) => {
 
     return (
         <nav className="navbar">
-            <div className="navbar-logo">
-                <img src="/images/NedsDecksLogo.png" alt="Ned's Decks" />
-            </div>
-
             <button
                 className="burger-button"
                 aria-expanded={menuOpen}
@@ -75,6 +71,10 @@ const Navbar = ({ isAdmin }) => {
                 <span className="burger-bar"></span>
                 <span className="burger-bar"></span>
             </button>
+
+            <div className="navbar-logo">
+                <img src="/images/NedsDecksLogo.png" alt="Ned's Decks" />
+            </div>
 
             <div className="navbar-search">
                 <div className="search-wrapper">
