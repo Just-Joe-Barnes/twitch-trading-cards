@@ -18,5 +18,10 @@ const tradeSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Index commonly queried fields for faster lookups
+tradeSchema.index({ status: 1 });
+tradeSchema.index({ sender: 1 });
+tradeSchema.index({ recipient: 1 });
+
 const Trade = mongoose.model('Trade', tradeSchema);
 module.exports = Trade;
