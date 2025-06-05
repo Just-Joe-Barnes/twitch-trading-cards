@@ -78,10 +78,14 @@
     }
 
 .listings-grid {
+    --listing-card-scale: 1;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 2rem;
     margin-bottom: 3rem;
+    width: calc(100% / var(--listing-card-scale));
+    transform: scale(var(--listing-card-scale));
+    transform-origin: top left;
 }
 
 .listing-card {
@@ -164,10 +168,6 @@
 
 @media (max-width: 600px) {
     .listings-grid {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    }
-    .listing-card {
-        max-width: 200px;
-        flex-basis: 200px;
+        --listing-card-scale: 0.71;
     }
 }

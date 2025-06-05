@@ -288,13 +288,16 @@
 
 /* card-content forced 300x450 */
 .card-content {
-    width: 100%;
+    --card-scale: 1;
+    width: calc(100% / var(--card-scale));
     max-width: 300px;
     aspect-ratio: 2 / 3;
     position: relative;
     perspective: 1000px;
     border: none !important;
     overflow: visible !important;
+    transform: scale(var(--card-scale));
+    transform-origin: top left;
 }
 
 /* 3D flipping container */
@@ -475,6 +478,6 @@
 
 @media (max-width: 600px) {
   .card-content {
-    max-width: 200px;
+    --card-scale: 0.67;
   }
 }

@@ -672,14 +672,6 @@
         text-shadow: 1px 1px 5px black;
     }
 
-@media (max-width: 600px) {
-    .card-container {
-        max-width: 200px;
-    }
-    .card-artwork {
-        height: 50%;
-    }
-}
 
 /**************************************
  * End of File
