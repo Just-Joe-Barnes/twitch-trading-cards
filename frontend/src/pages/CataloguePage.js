@@ -105,26 +105,26 @@ const CataloguePage = () => {
     });
 
     if (loading) return <LoadingSpinner />;
-    if (error) return <div className="catalogue-page">{error}</div>;
+    if (error) return <div className="cata-page">{error}</div>;
 
     const RemainingBadge = ({ remaining }) =>
         remaining !== null && remaining !== undefined ? (
-            <div className="card-overlay-badge remaining-badge">
+            <div className="cata-overlay-badge cata-remaining-badge">
                 {remaining} remaining
             </div>
         ) : null;
 
     return (
-        <div className="catalogue-page">
+        <div className="cata-page">
             <h1>Card Catalogue</h1>
-            <p className="catalogue-description">
+            <p className="cata-description">
                 Explore our complete collection of trading cards. Use the search box to
                 find cards by name, and click on the rarity buttons below to preview each
                 card in a different style.
             </p>
 
-            <div className="filters-container">
-                <div className="search-box">
+            <div className="cata-filters-container">
+                <div className="cata-search-box">
                     <input
                         type="text"
                         value={searchQuery}
@@ -132,14 +132,14 @@ const CataloguePage = () => {
                         placeholder="Search cards..."
                     />
                 </div>
-                <div className="rarity-selector">
+                <div className="cata-rarity-selector">
                     {rarityData.map((r) => {
                         const textColor = r.name === 'Divine' ? '#000' : '#fff';
                         return (
                             <button
                                 key={r.name}
                                 onClick={() => handleRarityChange(r.name)}
-                                className={`rarity-button ${selectedRarity === r.name ? 'active' : ''}`}
+                                className={`cata-rarity-button ${selectedRarity === r.name ? 'active' : ''}`}
                                 style={{
                                     backgroundColor: r.color,
                                     color: textColor,
@@ -152,7 +152,7 @@ const CataloguePage = () => {
                         );
                     })}
                 </div>
-                <div className="sort-box">
+                <div className="cata-sort-box">
                     <label htmlFor="sortField">Sort by:</label>
                     <select id="sortField" value={sortOption} onChange={handleSortChange}>
                         <option value="name">Name</option>
@@ -166,7 +166,7 @@ const CataloguePage = () => {
 
             {/* Limited Time Cards */}
             <h2>Limited Time Cards</h2>
-            <div className="catalogue-grid">
+            <div className="cata-grid">
                 {activeLimitedCards.length > 0 ? (
                     activeLimitedCards.map((card) => {
                         const to = card.availableTo ? new Date(card.availableTo) : null;
@@ -178,8 +178,8 @@ const CataloguePage = () => {
                         const remaining = getRemaining(card.name, selectedRarity);
 
                         return (
-                            <div key={card._id} className="catalogue-card">
-                                <div className="card-inner">
+                            <div key={card._id} className="cata-card">
+                                <div className="cata-card-inner">
                                     <BaseCard
                                         name={card.name}
                                         image={card.imageUrl}
@@ -189,7 +189,7 @@ const CataloguePage = () => {
                                     />
                                     <RemainingBadge remaining={remaining} />
                                     {to && timeLeft > 0 && (
-                                        <div className="card-overlay-badge timeleft-badge">
+                                        <div className="cata-overlay-badge cata-timeleft-badge">
                                             Ends in: {days}d {hours}h {minutes}m {seconds}s
                                         </div>
                                     )}
@@ -204,7 +204,7 @@ const CataloguePage = () => {
 
             {/* All Limited Cards */}
             <h2>All Limited Cards (Past, Present, Future)</h2>
-            <div className="catalogue-grid">
+            <div className="cata-grid">
                 {limitedCards.length > 0 ? (
                     limitedCards.map((card) => {
                         const from = card.availableFrom ? new Date(card.availableFrom) : null;
@@ -217,8 +217,8 @@ const CataloguePage = () => {
                         const remaining = getRemaining(card.name, selectedRarity);
 
                         return (
-                            <div key={card._id} className="catalogue-card">
-                                <div className="card-inner">
+                            <div key={card._id} className="cata-card">
+                                <div className="cata-card-inner">
                                     <BaseCard
                                         name={card.name}
                                         image={card.imageUrl}
@@ -227,7 +227,7 @@ const CataloguePage = () => {
                                         mintNumber={card.mintNumber}
                                     />
                                     <RemainingBadge remaining={remaining} />
-                                    <div className="card-overlay-badge timeleft-badge">
+                                    <div className="cata-overlay-badge cata-timeleft-badge">
                                         {status}
                                     </div>
                                 </div>
@@ -241,14 +241,14 @@ const CataloguePage = () => {
 
             {/* All Cards */}
             <h2>All Cards</h2>
-            <div className="catalogue-grid">
+            <div className="cata-grid">
                 {sortedCards.length > 0 ? (
                     sortedCards.map((card) => {
                         const remaining = getRemaining(card.name, selectedRarity);
 
                         return (
-                            <div key={card._id} className="catalogue-card">
-                                <div className="card-inner">
+                            <div key={card._id} className="cata-card">
+                                <div className="cata-card-inner">
                                     <BaseCard
                                         name={card.name}
                                         image={card.imageUrl}
