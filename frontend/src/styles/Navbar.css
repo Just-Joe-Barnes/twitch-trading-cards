@@ -137,16 +137,6 @@
         color: var(--brand-secondary);
     }
 
-/* Logout Button */
-.logout-button {
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    font-size: 1rem;
-    cursor: pointer;
-    transition: color 0.3s ease, transform 0.3s ease;
-}
-
 /* Burger Button */
 .burger-button {
     display: none;
@@ -166,10 +156,6 @@
     background: var(--text-primary);
 }
 
-    .logout-button:hover {
-        color: var(--brand-secondary);
-        transform: scale(1.1);
-    }
 
 /* New logo image styling */
 .navbar-logo img {
@@ -182,6 +168,14 @@
 /* Add this rule or update your existing .navbar-notifications */
 .navbar-notifications {
     margin-left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.navbar-username {
+    color: var(--text-primary);
+    font-weight: 500;
 }
 
 
