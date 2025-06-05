@@ -115,9 +115,6 @@
         text-align: left;
     }
 
-    .users-table tr:hover {
-    }
-
     .users-table tr.selected {
         color: var(--text-primary);
     }

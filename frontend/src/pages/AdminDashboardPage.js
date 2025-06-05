@@ -12,10 +12,6 @@ const AdminDashboardPage = ({ user }) => {
     // User list state
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
-
-    // Pack templates
-    const [packTemplates, setPackTemplates] = useState([]);
-    const [selectedTemplateId, setSelectedTemplateId] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('all');
     const [sortColumn, setSortColumn] = useState(null);
@@ -71,20 +67,9 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    const fetchPackTemplates = async () => {
-        try {
-            const res = await fetchWithAuth('/api/admin/packs');
-            const templates = (res.packs || []).filter(p => Array.isArray(p.cardPool) && p.cardPool.length > 0);
-            setPackTemplates(templates);
-        } catch (err) {
-            console.error('Error fetching pack templates:', err);
-        }
-    };
-
     // On mount and when filter changes, fetch once
     useEffect(() => {
         fetchData();
-        fetchPackTemplates();
     }, [user, navigate, activeFilter]);
 
     // Poll every 10 seconds for updates
@@ -146,10 +131,7 @@ const AdminDashboardPage = ({ user }) => {
         try {
             const res = await fetchWithAuth(
                 `/api/packs/admin/openPacksForUser/${selectedUser._id}`,
-                {
-                    method: 'POST',
-                    body: JSON.stringify({ templateId: selectedTemplateId })
-                }
+                { method: 'POST' }
             );
             const { newCards } = res;
             console.log('New cards:', newCards);
@@ -309,23 +291,9 @@ const AdminDashboardPage = ({ user }) => {
                     {selectedUser && (
                         <>
                             <h2>Open Pack for {selectedUser.username}</h2>
-
-                            <select
-                                value={selectedTemplateId}
-                                onChange={(e) => setSelectedTemplateId(e.target.value)}
-                                style={{ marginBottom: '1rem', padding: '0.5rem', borderRadius: '8px' }}
-                            >
-                                <option value="">Select Pack Type</option>
-                                {packTemplates.map((pack) => (
-                                    <option key={pack._id} value={pack._id}>
-                                        {pack.name || 'Unnamed Pack'}
-                                    </option>
-                                ))}
-                            </select>
-
                             <button
                                 onClick={openPackForUser}
-                                disabled={loading || isOpeningAnimation || selectedUser.packs <= 0 || !selectedTemplateId}
+                                disabled={loading || isOpeningAnimation || selectedUser.packs <= 0}
                             >
                                 {loading ? 'Opening...' : 'Open Pack'}
                             </button>
