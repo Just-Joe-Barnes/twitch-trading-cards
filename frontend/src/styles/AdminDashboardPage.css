@@ -471,14 +471,4 @@
 
 .suggestions-list li:hover {
   background: var(--surface-darker);
-<<<<<<< HEAD
 }
-=======
-}
-
-@media (max-width: 600px) {
-  .card-content {
-    --card-scale: 0.67;
-  }
-}
->>>>>>> 109cb5ad4a7bfc832415a530f0e374f22b024834
