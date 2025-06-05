@@ -134,6 +134,16 @@
     max-height: 320px;
 }
 
+.pack-type-select {
+    padding: 0.5rem 1rem;
+    margin-bottom: 1rem;
+    background: var(--surface-darker);
+    color: var(--text-primary);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+}
+
     .selected-user-section h2 {
         font-size: 1.5rem;
         color: var(--text-primary);
