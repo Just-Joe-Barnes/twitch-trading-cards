@@ -332,7 +332,8 @@ const getPendingTrades = async (req, res) => {
             status: 'pending'
         })
             .populate('sender', 'username cards')
-            .populate('recipient', 'username cards');
+            .populate('recipient', 'username cards')
+            .lean();
 
         const enrichedTrades = pendingTrades.map(trade => {
             const senderData = trade.sender || { cards: [] };
@@ -367,7 +368,8 @@ const getTradesForUser = async (req, res) => {
             $or: [{ sender: userId }, { recipient: userId }]
         })
             .populate('sender', 'username cards')
-            .populate('recipient', 'username cards');
+            .populate('recipient', 'username cards')
+            .lean();
 
         const enrichedTrades = trades.map(trade => {
             const senderData = trade.sender || { cards: [] };

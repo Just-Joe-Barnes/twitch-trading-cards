@@ -34,4 +34,7 @@ const marketListingSchema = new mongoose.Schema({
   offers: [offerSchema]
 });
 
+// Index status for faster retrieval of active listings
+marketListingSchema.index({ status: 1 });
+
 module.exports = mongoose.model('MarketListing', marketListingSchema);

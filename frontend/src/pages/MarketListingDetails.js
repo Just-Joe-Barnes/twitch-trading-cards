@@ -121,6 +121,7 @@ const MarketListingDetails = () => {
                 }),
             });
             if (res.message === 'Offer submitted successfully') {
+                window.showToast('Offer submitted successfully!', 'success');
                 setOfferSuccess('Offer submitted successfully!');
                 setOfferMessage('');
                 setOfferedPacks('');
