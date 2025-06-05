@@ -1,5 +1,5 @@
 /* Overall page container */
-.catalogue-page {
+.cata-page {
     padding: 40px 20px;
     max-width: 1800px;
     margin: 0 auto;
@@ -8,7 +8,7 @@
     min-height: 100vh;
 }
 
-.catalogue-page h1 {
+.cata-page h1 {
     text-align: center;
     margin-top: 100px;
     margin-bottom: 10px;
@@ -17,7 +17,7 @@
     letter-spacing: 1px;
 }
 
-.catalogue-description {
+.cata-description {
     text-align: center;
     font-size: 1.2rem;
     margin-bottom: 30px;
@@ -25,7 +25,7 @@
 }
 
 /* Container for filters arranged in a column */
-.filters-container {
+.cata-filters-container {
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -35,13 +35,13 @@
 }
 
 /* Search box styling */
-.search-box {
+.cata-search-box {
     width: 100%;
     display: flex;
     justify-content: center;
 }
 
-.search-box input {
+.cata-search-box input {
     padding: 12px 16px;
     width: 100%;
     max-width: 500px;
@@ -54,13 +54,13 @@
     transition: box-shadow 0.3s ease;
 }
 
-.search-box input:focus {
+.cata-search-box input:focus {
     outline: none;
     box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 /* Rarity selector buttons */
-.rarity-selector {
+.cata-rarity-selector {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
@@ -68,35 +68,35 @@
     margin-top: 10px;
 }
 
-.rarity-button {
+.cata-rarity-button {
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
     font-size: 1rem;
 }
 
-.rarity-button:hover {
+.cata-rarity-button:hover {
     transform: scale(1.05);
     opacity: 0.9;
 }
 
-.rarity-button.active {
+.cata-rarity-button.active {
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
 }
 
 /* Sort box styling */
-.sort-box {
+.cata-sort-box {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.sort-box label {
+.cata-sort-box label {
     font-size: 1rem;
     color: #f5f5dc;
 }
 
-.sort-box select {
+.cata-sort-box select {
     padding: 10px;
     border: none;
     border-radius: 6px;
@@ -107,26 +107,26 @@
     transition: box-shadow 0.3s ease;
 }
 
-.sort-box select:focus {
+.cata-sort-box select:focus {
     outline: none;
     box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 /* Grid layout for catalogue cards */
-.catalogue-grid {
+.cata-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 30px;
     margin-bottom: 40px;
 }
 
-.catalogue-card {
+.cata-card {
     display: flex;
     justify-content: center;
     position: relative;
 }
 
-.card-inner {
+.cata-card-inner {
     position: relative;
     width: 100%;
     max-width: 300px;
@@ -136,7 +136,7 @@
 }
 
 /* Shared overlay badge style for all overlays */
-.card-overlay-badge {
+.cata-overlay-badge {
     position: absolute;
     background: rgba(0, 0, 0, 0.541);
     color: #d4d0c0;
@@ -151,18 +151,21 @@
 }
 
 /* Specific positions for each badge */
-.remaining-badge {
+.cata-remaining-badge {
     bottom: 10px;
     right: 10px;
 }
 
-.timeleft-badge {
+.cata-timeleft-badge {
     top: 10px;
     left: 10px;
 }
 
 @media (max-width: 600px) {
-    .catalogue-grid {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    .cata-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    .cata-card-inner .card-container {
+        width: 100%;
     }
 }
