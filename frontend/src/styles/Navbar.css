@@ -186,6 +186,12 @@
 @media (max-width: 768px) {
     .burger-button {
         display: flex;
+        order: -1;
+        margin-right: 0.5rem;
+    }
+
+    .navbar-logo {
+        flex: 0;
     }
 
     .navbar-links {
@@ -208,6 +214,14 @@
         padding: 0 10px;
     }
 
+    .navbar-search {
+        flex: 1;
+    }
+
+    .search-wrapper {
+        width: 100%;
+    }
+
     .navbar-logo h1 {
         font-size: 1.5rem;
     }
@@ -215,6 +229,9 @@
 
 @media (max-width: 480px) {
     .search-bar {
+        width: 100%;
+    }
+    .search-wrapper {
         width: 100%;
     }
 }
