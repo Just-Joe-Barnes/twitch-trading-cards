@@ -78,11 +78,10 @@
     }
 
 .listings-grid {
-    display: flex;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 2rem;
     margin-bottom: 3rem;
-    flex-wrap: wrap;
 }
 
 .listing-card {
@@ -95,7 +94,8 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    flex-grow: 1;
+    flex: 1 1 280px;
+    max-width: 280px;
 }
 
 .listing-card:hover {
@@ -160,4 +160,14 @@
     background-color: rgba(255, 255, 255, 0.2);
     color: rgba(255, 255, 255, 0.5);
     cursor: default;
+}
+
+@media (max-width: 600px) {
+    .listings-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+    .listing-card {
+        max-width: 200px;
+        flex-basis: 200px;
+    }
 }

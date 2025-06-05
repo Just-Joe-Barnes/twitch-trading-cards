@@ -654,7 +654,7 @@ const AdminActions = () => {
 
                 {selectedCardDetails && (
                     <div className="card-availability-editor" style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', marginTop: '1rem' }}>
-                        <div style={{ flex: '1 1 300px', minWidth: '300px' }}>
+                        <div style={{ flex: '1 1 45%', minWidth: '250px' }}>
                             <h3>{selectedCardDetails.name}</h3>
                             <label>Available From:</label>
                             <input
@@ -699,7 +699,7 @@ const AdminActions = () => {
                                 {loading ? 'Saving...' : 'Save Availability'}
                             </button>
                         </div>
-                        <div style={{ flex: '1 1 300px', minWidth: '300px' }}>
+                        <div style={{ flex: '1 1 45%', minWidth: '250px' }}>
                             <h3>Card Preview</h3>
                             <BaseCard
                                 name={selectedCardDetails.name}
