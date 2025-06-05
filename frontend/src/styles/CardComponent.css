@@ -30,7 +30,6 @@
     border: 8px solid;
     position: relative;
     z-index: 2;
-    width: 300px;
 }
 
 /* Updated Rarity Border Colors */
@@ -532,6 +531,10 @@
     overflow: hidden;
     animation: divine-glow 3s infinite alternate;
     filter: contrast(1.2) brightness(1.5);
+}
+
+.card-container.divine .card-border {
+    width: 300px;
 }
 
 @keyframes divine-glow {
