@@ -214,11 +214,32 @@ body {
 /* Featured Cards Section */
 .featured-cards {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 1.5rem;
-    overflow-x: auto;
-    scroll-behavior: smooth;
     padding-bottom: 1rem;
     text-align: left;
+    -webkit-overflow-scrolling: touch;
+}
+
+.featured-cards > * {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 768px) {
+    .featured-cards {
+        gap: 1rem;
+    }
+}
+
+.featured-cards > * {
+    flex: 1 1 250px;
+}
+
+@media (max-width: 768px) {
+    .featured-cards {
+        gap: 1rem;
+    }
 }
 
 /* View Collection Button */

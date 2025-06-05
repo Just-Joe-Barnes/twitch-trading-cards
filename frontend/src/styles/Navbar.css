@@ -26,7 +26,8 @@
 
 /* Logo Styling */
 .navbar-logo {
-    flex: 1;
+    flex: 0 0 auto;
+    margin-right: 1rem;
 }
 
     .navbar-logo h1 {
@@ -37,7 +38,7 @@
 
 /* Search Bar Styling */
 .navbar-search {
-    flex: 1;
+    flex: 1 1 auto;
     display: flex;
     justify-content: center;
     z-index: 10;
@@ -45,7 +46,7 @@
 
 .search-wrapper {
     position: relative;
-    width: 250px;
+    width: clamp(200px, 40vw, 600px);
 }
 
 .search-bar {
@@ -55,7 +56,7 @@
     border-radius: 0.5rem;
     background-color: var(--surface-darker);
     color: var(--text-primary);
-    width: 250px;
+    width: 100%;
     box-sizing: border-box;
     transition: all 0.3s ease;
 }
@@ -103,18 +104,20 @@
 
 /* Navbar Links */
 .navbar-links {
-    flex: 1;
+    flex: 2 1 auto;
     display: flex;
     justify-content: flex-end;
     list-style: none;
     margin: 0;
     padding: 0;
-    gap: 20px;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
     .navbar-links li {
         font-size: 1rem;
         white-space: nowrap;
+        flex: 0 1 auto;
     }
 
 .nav-link {
@@ -144,6 +147,25 @@
     transition: color 0.3s ease, transform 0.3s ease;
 }
 
+/* Burger Button */
+.burger-button {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 24px;
+    height: 18px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-right: 1rem;
+}
+
+.burger-bar {
+    width: 100%;
+    height: 3px;
+    background: var(--text-primary);
+}
+
     .logout-button:hover {
         color: var(--brand-secondary);
         transform: scale(1.1);
@@ -165,13 +187,42 @@
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
+    .burger-button {
+        display: flex;
+        order: -1;
+        margin-right: 0.5rem;
+    }
+
+    .navbar-logo {
+        flex: 0;
+    }
+
     .navbar-links {
+        position: absolute;
+        top: 60px;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        background: var(--surface-dark);
         gap: 10px;
-        justify-content: center;
+        padding: 1rem;
+        display: none;
+    }
+
+    .navbar-links.open {
+        display: flex;
     }
 
     .navbar {
         padding: 0 10px;
+    }
+
+    .navbar-search {
+        flex: 1;
+    }
+
+    .search-wrapper {
+        width: 100%;
     }
 
     .navbar-logo h1 {
@@ -181,6 +232,9 @@
 
 @media (max-width: 480px) {
     .search-bar {
+        width: 100%;
+    }
+    .search-wrapper {
         width: 100%;
     }
 }

@@ -285,12 +285,16 @@
 
 /* card-content forced 300x450 */
 .card-content {
-    width: 300px;
-    height: 450px;
+    --card-scale: 1;
+    width: calc(100% / var(--card-scale));
+    max-width: 300px;
+    aspect-ratio: 2 / 3;
     position: relative;
     perspective: 1000px;
     border: none !important;
     overflow: visible !important;
+    transform: scale(var(--card-scale));
+    transform-origin: top left;
 }
 
 /* 3D flipping container */
@@ -467,4 +471,14 @@
 
 .suggestions-list li:hover {
   background: var(--surface-darker);
+<<<<<<< HEAD
 }
+=======
+}
+
+@media (max-width: 600px) {
+  .card-content {
+    --card-scale: 0.67;
+  }
+}
+>>>>>>> 109cb5ad4a7bfc832415a530f0e374f22b024834

@@ -115,13 +115,17 @@
 
 /* User Collection Grid */
 .market-user-collection-grid {
+    --listing-card-scale: 1;
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* Exactly 4 columns */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.25rem;
     margin-top: 1rem;
     max-height: 800px;
     overflow-y: auto;
     padding-right: 0.5rem;
+    width: calc(100% / var(--listing-card-scale));
+    transform: scale(var(--listing-card-scale));
+    transform-origin: top left;
 }
 
     .market-user-collection-grid .market-card-wrapper {
@@ -148,13 +152,17 @@
     }
 
 .market-selected-cards-grid {
+    --listing-card-scale: 1;
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 columns for selected cards */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.25rem;
     margin-top: 1rem;
     max-height: 800px; /* Increased height for selected cards panel */
     overflow-y: auto;
     padding-right: 0.5rem;
+    width: calc(100% / var(--listing-card-scale));
+    transform: scale(var(--listing-card-scale));
+    transform-origin: top left;
 }
 
 /* Offers list styling */
@@ -211,17 +219,30 @@
 }
 
 .offered-cards-grid {
+    --listing-card-scale: 1;
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
     margin-top: 0.5rem;
+    width: calc(100% / var(--listing-card-scale));
+    transform: scale(var(--listing-card-scale));
+    transform-origin: top left;
 }
 
 .offered-card-item {
-    flex: 0 1 calc(25% - 1rem); /* Adjust for 4 cards per row */
+    flex: 1 1 250px;
+    max-width: 250px;
 }
 
 /* Fix invisible cards in market listing */
 .card-container.standard {
     opacity: 1 !important;
+}
+
+@media (max-width: 600px) {
+    .market-user-collection-grid,
+    .market-selected-cards-grid,
+    .offered-cards-grid {
+        --listing-card-scale: 0.8;
+    }
 }

@@ -248,11 +248,17 @@
 
 /* Card Preview Wrapper (for other sections) */
 .tp-card-preview-wrapper {
-    flex: 0 0 280px;
+    --tp-card-scale: 1;
+    flex: 0 0 45%;
+    width: calc(100% / var(--tp-card-scale));
+    max-width: 280px;
+    aspect-ratio: 2 / 3;
     position: relative;
     transition: var(--transition);
     border-radius: var(--border-radius);
     background: var(--surface-dark);
+    transform: scale(var(--tp-card-scale));
+    transform-origin: top left;
 }
 
     .tp-card-preview-wrapper:hover {
@@ -412,5 +418,11 @@
 
     .tp-card-item {
         padding: 0.75rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .tp-card-preview-wrapper {
+        --tp-card-scale: 0.71;
     }
 }
