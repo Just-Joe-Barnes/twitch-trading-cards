@@ -204,9 +204,10 @@ export const fetchTrades = async (userId) => {
 };
 
 // Fetch pending trades with status filtering
-export const fetchPendingTrades = async (userId, status = 'Pending') => {
+// Fetch pending trades for a user
+export const fetchPendingTrades = async (userId) => {
     try {
-        const response = await fetchWithAuth(`/api/trades/${userId}?status=${status}`);
+        const response = await fetchWithAuth(`/api/trades/${userId}/pending`);
         console.log("[API] Fetched Pending Trades:", response);
         return response;
     } catch (error) {

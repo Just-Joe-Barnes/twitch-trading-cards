@@ -347,7 +347,7 @@ const getPendingTrades = async (req, res) => {
             );
 
             return {
-                ...trade.toObject(),
+                ...trade,
                 offeredItems: offeredCards,
                 requestedItems: requestedCards
             };
@@ -383,7 +383,7 @@ const getTradesForUser = async (req, res) => {
             );
 
             return {
-                ...trade.toObject(),
+                ...trade,
                 offeredItems: offeredCards,
                 requestedItems: requestedCards
             };
