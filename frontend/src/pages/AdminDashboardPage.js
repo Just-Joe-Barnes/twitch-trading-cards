@@ -33,6 +33,10 @@ const AdminDashboardPage = ({ user }) => {
     // Pack counter forces remounting of the video element each time
     const [packCounter, setPackCounter] = useState(0);
 
+    // Pack types
+    const [packTypes, setPackTypes] = useState([]);
+    const [selectedPackTypeId, setSelectedPackTypeId] = useState('');
+
     // Rarity color mapping
     const cardRarities = {
         Basic: '#8D8D8D',
@@ -57,7 +61,7 @@ const AdminDashboardPage = ({ user }) => {
         }
         setLoading(true);
         try {
-            const activeMinutesParam = activeFilter === 'active' ? '&activeMinutes=15' : '';
+            const activeMinutesParam = activeFilter === 'active' ? '&activeMinutes=30' : '';
             const data = await fetchWithAuth(`/api/admin/users-activity?${activeMinutesParam}`);
             setUsers(data || []);
         } catch (err) {
@@ -67,10 +71,25 @@ const AdminDashboardPage = ({ user }) => {
         }
     };
 
-    // On mount and when filter changes, fetch once
+    // On mount fetch packs and when filter changes, fetch users once
     useEffect(() => {
         fetchData();
     }, [user, navigate, activeFilter]);
+
+    useEffect(() => {
+        const fetchPacks = async () => {
+            try {
+                const res = await fetchWithAuth('/api/admin/packs');
+                setPackTypes(res.packs || []);
+                if (res.packs && res.packs.length > 0 && !selectedPackTypeId) {
+                    setSelectedPackTypeId(res.packs[0]._id);
+                }
+            } catch (err) {
+                console.error('Error fetching packs:', err);
+            }
+        };
+        fetchPacks();
+    }, []);
 
     // Poll every 10 seconds for updates
     useEffect(() => {
@@ -131,7 +150,10 @@ const AdminDashboardPage = ({ user }) => {
         try {
             const res = await fetchWithAuth(
                 `/api/packs/admin/openPacksForUser/${selectedUser._id}`,
-                { method: 'POST' }
+                {
+                    method: 'POST',
+                    body: JSON.stringify({ templateId: selectedPackTypeId })
+                }
             );
             const { newCards } = res;
             console.log('New cards:', newCards);
@@ -259,7 +281,7 @@ const AdminDashboardPage = ({ user }) => {
                             className={activeFilter === 'active' ? 'active' : ''}
                             onClick={() => handleFilterChange('active')}
                         >
-                            Active in Last 15 Minutes
+                            Active in Last 30 Minutes
                         </button>
                     </div>
                     <table className="users-table">
@@ -291,6 +313,17 @@ const AdminDashboardPage = ({ user }) => {
                     {selectedUser && (
                         <>
                             <h2>Open Pack for {selectedUser.username}</h2>
+                            <select
+                                className="pack-type-select"
+                                value={selectedPackTypeId}
+                                onChange={(e) => setSelectedPackTypeId(e.target.value)}
+                            >
+                                {packTypes.map((p) => (
+                                    <option key={p._id} value={p._id}>
+                                        {p.name || p.type || 'Unnamed'}
+                                    </option>
+                                ))}
+                            </select>
                             <button
                                 onClick={openPackForUser}
                                 disabled={loading || isOpeningAnimation || selectedUser.packs <= 0}
