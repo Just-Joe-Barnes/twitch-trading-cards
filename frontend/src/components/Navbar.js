@@ -72,7 +72,7 @@ const Navbar = ({ isAdmin }) => {
                 <span className="burger-bar"></span>
             </button>
 
-            <div className="navbar-logo">
+            <div className="navbar-logo" onClick={() => navigate('/dashboard')} style={{cursor: 'pointer'}}>
                 <img src="/images/NedsDecksLogo.png" alt="Ned's Decks" />
             </div>
 
@@ -111,29 +111,11 @@ const Navbar = ({ isAdmin }) => {
             >
                 <li>
                     <NavLink
-                        to="/dashboard"
-                        className="nav-link"
-                        onClick={() => setMenuOpen(false)}
-                    >
-                        Dashboard
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink
                         to={`/collection/${loggedInUser.username}`}
                         className="nav-link"
                         onClick={() => setMenuOpen(false)}
                     >
                         Collection
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink
-                        to={`/profile/${loggedInUser.username}`}
-                        className="nav-link"
-                        onClick={() => setMenuOpen(false)}
-                    >
-                        My Profile
                     </NavLink>
                 </li>
                 <li>
@@ -185,25 +167,17 @@ const Navbar = ({ isAdmin }) => {
                         Catalogue
                     </NavLink>
                 </li>
-                <li>
-                    <button
-                        className="logout-button"
-                        onClick={() => {
-                            setMenuOpen(false);
-                            handleLogout();
-                        }}
-                    >
-                        Logout
-                    </button>
-                </li>
             </ul>
 
             {/* Render NotificationDropdown only when loggedInUser._id is available */}
             {loggedInUser._id && (
                 <div className="navbar-notifications">
+                    <span className="navbar-username">{loggedInUser.username}</span>
                     <NotificationDropdown
                         profilePic={loggedInUser.twitchProfilePic || '/images/defaultProfile.png'}
                         userId={loggedInUser._id}
+                        username={loggedInUser.username}
+                        onLogout={handleLogout}
                     />
                 </div>
             )}

@@ -5,7 +5,7 @@ import '../styles/NotificationDropdown.css';
 import { fetchWithAuth, API_BASE_URL } from '../utils/api';
 import io from 'socket.io-client';
 
-const NotificationDropdown = ({ profilePic, userId }) => {
+const NotificationDropdown = ({ profilePic, userId, username, onLogout }) => {
     const [notifications, setNotifications] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -114,6 +114,11 @@ const NotificationDropdown = ({ profilePic, userId }) => {
             </button>
             {isOpen && (
                 <div className="notification-menu">
+                    <div className="profile-actions">
+                        <Link to={`/profile/${username}`} onClick={() => setIsOpen(false)} className="profile-action">My Profile</Link>
+                        <button className="profile-action" onClick={() => { onLogout(); setIsOpen(false); }}>Logout</button>
+                    </div>
+                    <hr className="profile-divider" />
                     {notifications.length > 0 ? (
                         <>
                             <ul>
