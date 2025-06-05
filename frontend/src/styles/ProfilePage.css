@@ -219,6 +219,17 @@ body {
     scroll-behavior: smooth;
     padding-bottom: 1rem;
     text-align: left;
+    -webkit-overflow-scrolling: touch;
+}
+
+.featured-cards > * {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 768px) {
+    .featured-cards {
+        gap: 1rem;
+    }
 }
 
 /* View Collection Button */
