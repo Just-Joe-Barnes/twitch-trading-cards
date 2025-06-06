@@ -67,7 +67,7 @@ const PendingTrades = () => {
         navigate('/trading', {
             state: {
                 counterOffer: {
-                    selectedUser: trade.sender._id,
+                    selectedUser: trade.sender.username,
                     tradeOffer: trade.requestedItems,
                     tradeRequest: trade.offeredItems,
                     offeredPacks: trade.requestedPacks,
@@ -81,6 +81,12 @@ const PendingTrades = () => {
     const handleFilterChange = (e) => setFilter(e.target.value);
     const handleSortChange = (e) => setSortOrder(e.target.value);
 
+    const toggleTrade = (tradeId) => {
+        setExpandedTrades((prevState) => ({
+            ...prevState,
+            [tradeId]: !prevState[tradeId],
+        }));
+    };
 
     const filteredAndSortedTrades = pendingTrades
         .filter((trade) => {
@@ -131,19 +137,26 @@ const PendingTrades = () => {
                 <p className="no-trades">No pending trades.</p>
             ) : (
                 <div className="trades-grid">
-                    {filteredAndSortedTrades.map((trade) => {
-                        const isOutgoing = trade.sender._id === loggedInUser._id;
-                        const tradeStatusClass = `trade-card ${isOutgoing ? 'outgoing' : 'incoming'}`;
-                        return (
-                            <div key={trade._id} className={tradeStatusClass}>
-                                <div className="trade-header">
-                                    <div className="trade-header-info">
-                                        {isOutgoing ? 'Outgoing Trade to' : 'Incoming Trade from'}{' '}
-                                        <span>
-                                            {isOutgoing ? trade.recipient.username : trade.sender.username}
-                                        </span>
-                                    </div>
-                                    <div className="trade-buttons-inline">
+                {filteredAndSortedTrades.map((trade) => {
+                    const isOutgoing = trade.sender._id === loggedInUser._id;
+                    const tradeStatusClass = `trade-card ${isOutgoing ? 'outgoing' : 'incoming'}`;
+                    const isExpanded = expandedTrades[trade._id];
+
+                    return (
+                        <div
+                            key={trade._id}
+                            className={tradeStatusClass}
+                            onClick={() => toggleTrade(trade._id)}
+                        >
+                            <div className="trade-header">
+                                <div className="trade-header-info">
+                                    {isOutgoing ? 'Outgoing Trade' : 'Incoming Trade'}{' '}
+                                    <span>
+                                        with {isOutgoing ? trade.recipient.username : trade.sender.username}
+                                    </span>
+                                </div>
+                                {isExpanded && (
+                                    <div className="trade-buttons-inline" onClick={(e) => e.stopPropagation()}>
                                         {!isOutgoing ? (
                                             <>
                                                 <button
@@ -174,13 +187,15 @@ const PendingTrades = () => {
                                             </button>
                                         )}
                                     </div>
-                                </div>
+                                )}
+                            </div>
 
-                                <div className="trade-timestamp">
-                                    Created on: {new Date(trade.createdAt).toLocaleString()}
-                                </div>
+                            <div className="trade-timestamp">
+                                Created on: {new Date(trade.createdAt).toLocaleString()}
+                            </div>
 
-                                <div className="trade-columns">
+                            <div className={`trade-content-wrapper ${isExpanded ? 'expanded' : ''}`}>
+                                <div className="trade-content">
                                     <div className="trade-section">
                                         <h4>Offered Items</h4>
                                         <div className="cards-grid">
@@ -226,8 +241,9 @@ const PendingTrades = () => {
                                     </div>
                                 </div>
                             </div>
-                        );
-                    })}
+                        </div>
+                    );
+                })}
                 </div>
             )}
         </div>
