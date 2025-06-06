@@ -276,10 +276,6 @@ const CollectionPage = ({
 
             {/* New Top Section Container */}
             <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-gray-900 p-4 rounded-lg w-full">
-                        <h3 className="text-center mb-4 text-lg">Filters</h3>
-                        <div className="flex flex-wrap justify-center gap-4">
                             <input
                                 type="text"
                                 placeholder="Search by card name..."
@@ -322,6 +318,7 @@ const CollectionPage = ({
                             </select>
                         </div>
                     </div>
+
                     <div className="bg-gray-900 p-4 rounded-lg w-full">
                         <h3 className="text-center mb-4 text-lg">Featured Controls</h3>
                         <div className="flex items-center justify-center gap-4">
@@ -341,6 +338,7 @@ const CollectionPage = ({
                         </div>
                     </div>
                 </div>
+
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex flex-col items-center justify-center bg-gray-900 p-4 rounded-lg">
