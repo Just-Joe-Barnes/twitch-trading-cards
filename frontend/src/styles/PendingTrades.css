@@ -52,6 +52,13 @@
     justify-content: center;
 }
 
+/* Grid layout for trade tiles */
+.trades-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
     .filters input,
     .filters select {
         padding: 0.75rem 1rem;
@@ -126,10 +133,26 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
-        .trade-buttons-inline button:hover {
-            background-color: #722ebf;
-            transform: scale(1.05);
-        }
+    .trade-buttons-inline button:hover {
+        background-color: #722ebf;
+        transform: scale(1.05);
+    }
+
+.accept-button {
+    background-color: #2e7d32;
+}
+
+.reject-button {
+    background-color: #c62828;
+}
+
+.cancel-button {
+    background-color: #616161;
+}
+
+.counter-button {
+    background-color: var(--brand-secondary);
+}
 
 /* Timestamp */
 .trade-timestamp {
