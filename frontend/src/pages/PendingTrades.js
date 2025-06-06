@@ -1,5 +1,6 @@
 // src/pages/PendingTrades.js
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { fetchUserProfile, fetchPendingTrades, acceptTrade, rejectTrade, cancelTrade } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner'; // Import the spinner
@@ -14,6 +15,7 @@ const PendingTrades = () => {
     const [filter, setFilter] = useState('all');
     const [sortOrder, setSortOrder] = useState('newest');
     const [expandedTrades, setExpandedTrades] = useState({});
+    const navigate = useNavigate();
 
     useEffect(() => {
         const loadUserProfile = async () => {
@@ -58,6 +60,21 @@ const PendingTrades = () => {
                 setError(`Failed to ${action} trade`);
             }
         }
+    };
+
+    const handleCounterOffer = (trade, e) => {
+        e.stopPropagation();
+        navigate('/trading', {
+            state: {
+                counterOffer: {
+                    selectedUser: trade.sender.username,
+                    tradeOffer: trade.requestedItems,
+                    tradeRequest: trade.offeredItems,
+                    offeredPacks: trade.requestedPacks,
+                    requestedPacks: trade.offeredPacks,
+                },
+            },
+        });
     };
 
     const handleSearch = (e) => setSearchQuery(e.target.value.toLowerCase());
@@ -119,7 +136,8 @@ const PendingTrades = () => {
             {filteredAndSortedTrades.length === 0 ? (
                 <p className="no-trades">No pending trades.</p>
             ) : (
-                filteredAndSortedTrades.map((trade) => {
+                <div className="trades-grid">
+                {filteredAndSortedTrades.map((trade) => {
                     const isOutgoing = trade.sender._id === loggedInUser._id;
                     const tradeStatusClass = `trade-card ${isOutgoing ? 'outgoing' : 'incoming'}`;
                     const isExpanded = expandedTrades[trade._id];
@@ -152,6 +170,12 @@ const PendingTrades = () => {
                                                     onClick={(e) => handleTradeAction(trade._id, 'reject', e)}
                                                 >
                                                     Reject
+                                                </button>
+                                                <button
+                                                    className="counter-button"
+                                                    onClick={(e) => handleCounterOffer(trade, e)}
+                                                >
+                                                    Counter
                                                 </button>
                                             </>
                                         ) : (
@@ -219,7 +243,8 @@ const PendingTrades = () => {
                             </div>
                         </div>
                     );
-                })
+                })}
+                </div>
             )}
         </div>
     );

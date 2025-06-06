@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { createTrade, searchUsers, fetchWithAuth } from "../utils/api";
 import BaseCard from "../components/BaseCard";
 import "../styles/TradingPage.css";
 import { rarities } from "../constants/rarities";
 
 const TradingPage = ({ userId }) => {
+    const location = useLocation();
     const [showTradeForm, setShowTradeForm] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [userSuggestions, setUserSuggestions] = useState([]);
@@ -36,6 +37,19 @@ const TradingPage = ({ userId }) => {
             })
             .catch(console.error);
     }, []);
+
+    // If navigated with counter offer data, pre-populate the trade form
+    useEffect(() => {
+        const counter = location.state?.counterOffer;
+        if (counter) {
+            setShowTradeForm(true);
+            setSelectedUser(counter.selectedUser);
+            setTradeOffer(counter.tradeOffer || []);
+            setTradeRequest(counter.tradeRequest || []);
+            setOfferedPacks(counter.offeredPacks || 0);
+            setRequestedPacks(counter.requestedPacks || 0);
+        }
+    }, [location.state]);
 
     // Fetch user search suggestions
     useEffect(() => {
