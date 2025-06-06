@@ -276,6 +276,10 @@ const CollectionPage = ({
 
             {/* New Top Section Container */}
             <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-gray-900 p-4 rounded-lg w-full">
+                        <h3 className="text-center mb-4 text-lg">Filters</h3>
+                        <div className="flex flex-wrap justify-center gap-4">
                             <input
                                 type="text"
                                 placeholder="Search by card name..."
@@ -320,26 +324,26 @@ const CollectionPage = ({
                     </div>
 
                     <div className="bg-gray-900 p-4 rounded-lg w-full">
-                        <h3 className="text-center mb-4 text-lg">Featured Controls</h3>
-                        <div className="flex items-center justify-center gap-4">
-                            <label className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    checked={showFeaturedOnly}
-                                    onChange={(e) => setShowFeaturedOnly(e.target.checked)}
-                                />
-                                Show Featured Only
-                            </label>
-                            {isOwner && (
-                                <button className="px-4 py-2 rounded bg-purple-600 hover:bg-purple-500" onClick={handleClearFeatured}>
-                                    Clear Featured Cards
-                                </button>
-                            )}
+                        <div>
+                            <h3 className="text-center mb-4 text-lg">Featured Controls</h3>
+                            <div className="flex items-center justify-center gap-4">
+                                <label className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={showFeaturedOnly}
+                                        onChange={(e) => setShowFeaturedOnly(e.target.checked)}
+                                    />
+                                    Show Featured Only
+                                </label>
+                                {isOwner && (
+                                    <button className="px-4 py-2 rounded bg-purple-600 hover:bg-purple-500" onClick={handleClearFeatured}>
+                                        Clear Featured Cards
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
-
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex flex-col items-center justify-center bg-gray-900 p-4 rounded-lg">
                         <div className="w-full text-center">
