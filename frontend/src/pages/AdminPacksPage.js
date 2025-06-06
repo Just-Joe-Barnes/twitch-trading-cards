@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchWithAuth } from '../utils/api';
 import BaseCard from '../components/BaseCard';
-import '../styles/AdminDashboardPage.css';
 
 const AdminPacksPage = () => {
   const [packs, setPacks] = useState([]);
@@ -96,8 +95,8 @@ const AdminPacksPage = () => {
   };
 
   return (
-    <div className="dashboard-container">
-      <h1>Admin Pack Management</h1>
+    <div className="p-6 bg-gray-950 text-gray-100 min-h-screen">
+      <h1 className="text-3xl mb-4">Admin Pack Management</h1>
 
       <div className="section">
         <h2>Create / Update Pack</h2>

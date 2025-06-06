@@ -9,7 +9,6 @@ import {
 } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
-import '../styles/CollectionPage.css';
 import { rarities } from '../constants/rarities';
 
 const cardRarities = [
@@ -264,30 +263,35 @@ const CollectionPage = ({
     if (loading) return <LoadingSpinner />;
 
     return (
-        <div className="cp-page">
+        <div className="p-6 bg-gray-950 text-gray-100 min-h-screen">
             {!hideHeader && (
-                <h1>{collectionTitle || `${collectionOwner || loggedInUser}'s Collection`}</h1>
+                <h1 className="text-3xl text-center mb-2">{collectionTitle || `${collectionOwner || loggedInUser}'s Collection`}</h1>
             )}
 
-            <p className="cp-catalogue-description">
+            <p className="text-center text-lg mb-6 text-gray-300">
                 Browse your entire collection here! Use the filters below to search by name, rarity, or mint number.
                 You can also add up to 4 cards to your profile page as "featured cards" by double clicking them.
                 Double clicking a card again, or clicking the "Clear Featured Cards" button, will remove it.
             </p>
 
             {/* New Top Section Container */}
-            <div className="cp-top-section">
-                <div className="cp-row">
-                    <div className="cp-filters-container">
+            <div className="space-y-6">
+                <div className="flex flex-wrap justify-around gap-6">
+                    <div>
                         <h3>Filters</h3>
-                        <div className="cp-filters">
+                        <div className="flex flex-wrap gap-4">
                             <input
                                 type="text"
                                 placeholder="Search by card name..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
+                                className="p-2 rounded bg-gray-800 border border-gray-700 placeholder-gray-400"
                             />
-                            <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
+                            <select
+                                value={rarityFilter}
+                                onChange={(e) => setRarityFilter(e.target.value)}
+                                className="p-2 rounded bg-gray-800 border border-gray-700"
+                            >
                                 <option value="">All Rarities</option>
                                 {rarities
                                     .filter((r) => r.name !== 'All')
@@ -297,23 +301,31 @@ const CollectionPage = ({
                                         </option>
                                     ))}
                             </select>
-                            <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+                            <select
+                                value={sortOption}
+                                onChange={(e) => setSortOption(e.target.value)}
+                                className="p-2 rounded bg-gray-800 border border-gray-700"
+                            >
                                 <option value="">Sort By</option>
                                 <option value="name">Name</option>
                                 <option value="mintNumber">Mint Number</option>
                                 <option value="rarity">Rarity</option>
                                 <option value="acquiredAt">Acquisition Date</option>
                             </select>
-                            <select value={order} onChange={(e) => setOrder(e.target.value)}>
+                            <select
+                                value={order}
+                                onChange={(e) => setOrder(e.target.value)}
+                                className="p-2 rounded bg-gray-800 border border-gray-700"
+                            >
                                 <option value="asc">Ascending</option>
                                 <option value="desc">Descending</option>
                             </select>
                         </div>
                     </div>
-                    <div className="cp-featured-container">
+                    <div>
                         <h3>Featured Controls</h3>
-                        <div className="cp-featured-controls">
-                            <label className="cp-featured-toggle">
+                        <div className="flex items-center gap-4">
+                            <label className="flex items-center gap-2">
                                 <input
                                     type="checkbox"
                                     checked={showFeaturedOnly}
@@ -322,7 +334,7 @@ const CollectionPage = ({
                                 Show Featured Only
                             </label>
                             {isOwner && (
-                                <button className="cp-clear-featured-button" onClick={handleClearFeatured}>
+                                <button className="px-4 py-2 rounded bg-purple-600 hover:bg-purple-500" onClick={handleClearFeatured}>
                                     Clear Featured Cards
                                 </button>
                             )}
@@ -330,7 +342,7 @@ const CollectionPage = ({
                     </div>
                 </div>
 
-                <div className="cp-row">
+                <div className="flex flex-wrap justify-around gap-6">
                     <div className="cp-slider-container">
                         <div className="slidecontainer">
                             <label>Card Scale: </label>
@@ -359,19 +371,19 @@ const CollectionPage = ({
             </div>
 
             {/* New Stats Container */}
-            <div className="cp-stats-container">
-                <div className="cp-stats-item">
+            <div className="flex justify-center gap-8 mb-6 text-center">
+                <div>
                     <h4>Total Cards</h4>
                     <p>{allCards.length}</p>
                 </div>
-                <div className="cp-stats-item">
+                <div>
                     <h4>Total Packs</h4>
                     <p>{totalPacks}</p>
                 </div>
             </div>
 
             {/* Cards Grid (unchanged) */}
-            <div className="cp-cards-grid" style={{ "--card-scale": cardScale }}>
+            <div className="grid gap-4" style={{ '--card-scale': cardScale }}>
                 {filteredCards.length > 0 ? (
                     filteredCards.map((card) => {
                         const isFeatured = featuredCards.some((fc) => fc._id === card._id);
@@ -380,11 +392,11 @@ const CollectionPage = ({
                             <div
                                 key={card._id}
                                 id={`cp-card-${card._id}`}
-                                className={`cp-card-item ${isSelected ? 'cp-selected' : ''}`}
+                                className={`cursor-pointer transition-transform rounded-lg ${isSelected ? 'ring-2 ring-purple-500' : ''}`}
                                 onClick={() => handleClick(card)}
                                 onDoubleClick={() => handleDoubleClick(card)}
                             >
-                                {isFeatured && <div className="cp-featured-badge">Featured</div>}
+                                {isFeatured && <div className="absolute top-2 left-2 bg-purple-600 text-white text-xs px-2 py-1 rounded">Featured</div>}
                                 <BaseCard
                                     name={card.name}
                                     image={card.imageUrl}

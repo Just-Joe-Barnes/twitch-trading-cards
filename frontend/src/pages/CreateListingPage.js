@@ -4,7 +4,6 @@ import { fetchUserCollection, fetchUserProfile, API_BASE_URL } from '../utils/ap
 import LoadingSpinner from '../components/LoadingSpinner';
 import BaseCard from '../components/BaseCard';
 import { useNavigate } from 'react-router-dom';
-import "../styles/CreateListingPage.css";
 
 /*
   CreateListingPage:
@@ -156,21 +155,26 @@ const CreateListingPage = () => {
     if (loading) return <LoadingSpinner />;
 
     return (
-        <div className="create-listing-page">
-            <h1 className="page-title">Create a Market Listing</h1>
-            <p className="info-text">
+        <div className="flex flex-col items-center min-h-screen p-8 bg-gray-950 text-gray-100">
+            <h1 className="text-3xl mb-4">Create a Market Listing</h1>
+            <p className="mb-6 text-lg text-gray-300 max-w-xl text-center">
                 Use this page to list a card from your collection on the market. First, use the filters below to search and sort your collection. Then, select a card to preview your listing, and finally click "List This Card" to post your listing.
             </p>
 
             {/* Filters & Sorting Controls */}
-            <div className="listing-filters">
+            <div className="flex flex-wrap justify-center gap-4 mb-8">
                 <input
                     type="text"
                     placeholder="Search by card name..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
+                    className="p-2 rounded bg-gray-800 border border-gray-700 placeholder-gray-400"
                 />
-                <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
+                <select
+                    value={rarityFilter}
+                    onChange={(e) => setRarityFilter(e.target.value)}
+                    className="p-2 rounded bg-gray-800 border border-gray-700"
+                >
                     <option value="">All Rarities</option>
                     <option value="Basic">Basic</option>
                     <option value="Common">Common</option>
@@ -183,29 +187,37 @@ const CreateListingPage = () => {
                     <option value="Unique">Unique</option>
                     <option value="Divine">Divine</option>
                 </select>
-                <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+                <select
+                    value={sortOption}
+                    onChange={(e) => setSortOption(e.target.value)}
+                    className="p-2 rounded bg-gray-800 border border-gray-700"
+                >
                     <option value="name">Name</option>
                     <option value="mintNumber">Mint Number</option>
                     <option value="rarity">Rarity</option>
                     <option value="acquiredAt">Acquisition Date</option>
                 </select>
-                <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+                <select
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value)}
+                    className="p-2 rounded bg-gray-800 border border-gray-700"
+                >
                     <option value="asc">Ascending</option>
                     <option value="desc">Descending</option>
                 </select>
             </div>
 
             {/* Collection Container */}
-            <div className="collection-container">
+            <div className="w-full max-w-3xl bg-gray-900 p-6 rounded-lg shadow mb-8">
                 <h2 className="collection-heading">Your Collection</h2>
                 {filteredCollection.length === 0 ? (
                     <p className="no-cards-message">No cards available to list.</p>
                 ) : (
-                    <div className="collection-grid">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-h-96 overflow-y-auto p-2">
                         {filteredCollection.map((card) => (
                             <div
                                 key={card._id}
-                                className={`card-item ${selectedCard && selectedCard._id === card._id ? 'selected' : ''}`}
+                                className={`cursor-pointer transition-transform rounded-lg border-2 border-transparent hover:scale-105 hover:border-cyan-400 ${selectedCard && selectedCard._id === card._id ? 'border-purple-500 shadow-lg' : ''}`}
                                 onClick={() => handleCardSelect(card)}
                             >
                                 <BaseCard
@@ -222,10 +234,10 @@ const CreateListingPage = () => {
             </div>
 
             {/* Listing Preview */}
-            <div className="listing-preview-container">
+            <div className="w-full max-w-3xl bg-gray-900 p-6 rounded-lg shadow mb-8 text-center">
                 <h2 className="preview-heading">Listing Preview</h2>
                 {selectedCard ? (
-                    <div className="preview-card">
+                    <div className="flex flex-col items-center mb-4">
                         <BaseCard
                             name={selectedCard.name}
                             image={selectedCard.imageUrl}
@@ -234,7 +246,7 @@ const CreateListingPage = () => {
                             mintNumber={selectedCard.mintNumber}
                         />
                         <button
-                            className="list-card-button"
+                            className="mt-4 px-6 py-3 rounded bg-purple-600 hover:bg-purple-500 text-white w-full max-w-xs disabled:bg-gray-600 disabled:cursor-not-allowed"
                             onClick={handleListCard}
                             disabled={isSubmitting}
                         >
@@ -242,7 +254,7 @@ const CreateListingPage = () => {
                         </button>
                     </div>
                 ) : (
-                    <p className="no-preview-message">Select a card to preview your listing.</p>
+                    <p className="text-gray-300">Select a card to preview your listing.</p>
                 )}
             </div>
         </div>

@@ -8,8 +8,6 @@ import {
     fetchUserCollection,
 } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner';
-import '../styles/App.css';
-import '../styles/ProfilePage.css';
 
 const ProfilePage = () => {
     const [featuredCards, setFeaturedCards] = useState([]);
@@ -71,9 +69,9 @@ const ProfilePage = () => {
     }
 
     return (
-        <div className="profile-page">
-            <div className="title-container">
-                <h1>{username}'s Profile</h1>
+        <div className="p-6 bg-gray-950 text-gray-100 min-h-screen">
+            <div className="text-center mb-4">
+                <h1 className="text-3xl">{username}'s Profile</h1>
             </div>
 
             <div className="profile-overview">

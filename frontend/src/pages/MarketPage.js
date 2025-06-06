@@ -5,7 +5,6 @@ import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Link } from 'react-router-dom';
 import { rarities } from '../constants/rarities';
-import '../styles/MarketPage.css';
 import { io } from 'socket.io-client';
 
 const MarketPage = () => {
@@ -95,23 +94,28 @@ const MarketPage = () => {
     };
 
     if (loading) return <LoadingSpinner />;
-    if (error) return <div className="market-page-error">{error}</div>;
+    if (error) return <div className="p-6 bg-gray-950 min-h-screen text-gray-100">{error}</div>;
 
     return (
-        <div className="market-page">
-            <h1>Market</h1>
-            <p className="market-description">
+        <div className="p-6 max-w-4xl mx-auto bg-gray-950 min-h-screen text-gray-100 rounded-xl shadow">
+            <h1 className="text-3xl text-center mb-2">Market</h1>
+            <p className="text-center text-lg mb-6 text-gray-300">
                 Welcome to the market! Here you can list your cards for trade offers and view offers from other users.
                 Browse listings, filter by card name or rarity, and make an offer on the ones you like.
             </p>
-            <div className="market-controls">
+            <div className="flex flex-wrap justify-center gap-4 mb-6">
                 <input
                     type="text"
                     placeholder="Search listings by card name..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    className="p-2 rounded bg-gray-800 border border-gray-700 placeholder-gray-400"
                 />
-                <select value={selectedRarity} onChange={(e) => setSelectedRarity(e.target.value)}>
+                <select
+                    value={selectedRarity}
+                    onChange={(e) => setSelectedRarity(e.target.value)}
+                    className="p-2 rounded bg-gray-800 border border-gray-700"
+                >
                     <option value="">All Rarities</option>
                     {rarities.map((r) => (
                         <option key={r.name} value={r.name}>
@@ -119,25 +123,33 @@ const MarketPage = () => {
                         </option>
                     ))}
                 </select>
-                <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+                <select
+                    value={sortOption}
+                    onChange={(e) => setSortOption(e.target.value)}
+                    className="p-2 rounded bg-gray-800 border border-gray-700"
+                >
                     <option value="name">Name</option>
                     <option value="rarity">Rarity</option>
                 </select>
-                <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+                <select
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value)}
+                    className="p-2 rounded bg-gray-800 border border-gray-700"
+                >
                     <option value="asc">Ascending</option>
                     <option value="desc">Descending</option>
                 </select>
             </div>
-            <div className="create-listing-container">
+            <div className="flex justify-center mb-6">
                 <Link to="/market/create">
-                    <button className="create-listing-button">Create New Listing</button>
+                    <button className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded">Create New Listing</button>
                 </Link>
             </div>
-            <div className="listings-grid">
+            <div className="grid gap-8 grid-cols-[repeat(auto-fit,minmax(280px,1fr))] mb-8">
                 {sortedListings.length > 0 ? (
                     sortedListings.map((listing) => (
-                        <div key={listing._id} className="listing-card">
-                            <div className="listing-card-content">
+                        <div key={listing._id} className="bg-gray-900 border border-gray-700 rounded-xl p-4 flex flex-col justify-between hover:border-purple-500 hover:shadow-lg transition">
+                            <div className="flex justify-center">
                                 <BaseCard
                                     name={listing.card.name}
                                     image={listing.card.imageUrl}
@@ -146,10 +158,10 @@ const MarketPage = () => {
                                     mintNumber={listing.card.mintNumber}
                                 />
                             </div>
-                            <p className="listing-owner">Listed by: {listing.owner.username}</p>
-                            <p className="offers-count">Offers: {listing.offers ? listing.offers.length : 0}</p>
+                            <p className="mt-2 text-sm">Listed by: {listing.owner.username}</p>
+                            <p className="text-sm text-cyan-400">Offers: {listing.offers ? listing.offers.length : 0}</p>
                             <Link to={`/market/listing/${listing._id}`}>
-                                <button className="view-listing-button">View &amp; Make Offer</button>
+                                <button className="mt-4 w-full bg-purple-600 hover:bg-purple-500 text-white p-2 rounded">View &amp; Make Offer</button>
                             </Link>
                         </div>
                     ))
@@ -157,14 +169,14 @@ const MarketPage = () => {
                     <p>No listings found.</p>
                 )}
             </div>
-            <div className="market-pagination" style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-                <button onClick={handlePreviousPage} disabled={currentPage === 1}>
+            <div className="flex justify-center mb-4 space-x-2">
+                <button className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed" onClick={handlePreviousPage} disabled={currentPage === 1}>
                     Previous
                 </button>
                 <span style={{ margin: '0 1rem' }}>
                     Page {currentPage} of {totalPages}
                 </span>
-                <button onClick={handleNextPage} disabled={currentPage === totalPages}>
+                <button className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleNextPage} disabled={currentPage === totalPages}>
                     Next
                 </button>
             </div>

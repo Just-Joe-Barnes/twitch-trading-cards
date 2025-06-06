@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { fetchCards } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
-import '../styles/CataloguePage.css';
 
 const rarityData = [
     { name: 'Basic', color: '#8D8D8D' },
@@ -105,7 +104,7 @@ const CataloguePage = () => {
     });
 
     if (loading) return <LoadingSpinner />;
-    if (error) return <div className="cata-page">{error}</div>;
+    if (error) return <div className="p-6 bg-gray-950 min-h-screen text-gray-100">{error}</div>;
 
     const RemainingBadge = ({ remaining }) =>
         remaining !== null && remaining !== undefined ? (
@@ -115,36 +114,35 @@ const CataloguePage = () => {
         ) : null;
 
     return (
-        <div className="cata-page">
-            <h1>Card Catalogue</h1>
-            <p className="cata-description">
+        <div className="p-6 bg-gray-950 min-h-screen text-gray-100">
+            <h1 className="text-3xl text-center mt-24 mb-2">Card Catalogue</h1>
+            <p className="text-center text-lg mb-8 text-gray-300">
                 Explore our complete collection of trading cards. Use the search box to
                 find cards by name, and click on the rarity buttons below to preview each
                 card in a different style.
             </p>
 
-            <div className="cata-filters-container">
-                <div className="cata-search-box">
+            <div className="flex flex-col items-center gap-5 mb-8">
+                <div className="w-full max-w-md flex justify-center">
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={handleSearchChange}
                         placeholder="Search cards..."
+                        className="w-full p-3 rounded bg-gray-800 border border-gray-700 placeholder-gray-400"
                     />
                 </div>
-                <div className="cata-rarity-selector">
+                <div className="flex flex-wrap justify-center gap-2">
                     {rarityData.map((r) => {
                         const textColor = r.name === 'Divine' ? '#000' : '#fff';
                         return (
                             <button
                                 key={r.name}
                                 onClick={() => handleRarityChange(r.name)}
-                                className={`cata-rarity-button ${selectedRarity === r.name ? 'active' : ''}`}
+                                className={`px-3 py-2 rounded border hover:opacity-90 transition ${selectedRarity === r.name ? 'ring-2 ring-purple-500' : ''}`}
                                 style={{
                                     backgroundColor: r.color,
                                     color: textColor,
-                                    padding: '8px 12px',
-                                    border: '2px solid #888',
                                 }}
                             >
                                 {r.name}
@@ -152,12 +150,22 @@ const CataloguePage = () => {
                         );
                     })}
                 </div>
-                <div className="cata-sort-box">
+                <div className="flex items-center gap-3">
                     <label htmlFor="sortField">Sort by:</label>
-                    <select id="sortField" value={sortOption} onChange={handleSortChange}>
+                    <select
+                        id="sortField"
+                        value={sortOption}
+                        onChange={handleSortChange}
+                        className="p-2 rounded bg-gray-800 border border-gray-700"
+                    >
                         <option value="name">Name</option>
                     </select>
-                    <select id="sortOrder" value={sortOrder} onChange={handleSortOrderChange}>
+                    <select
+                        id="sortOrder"
+                        value={sortOrder}
+                        onChange={handleSortOrderChange}
+                        className="p-2 rounded bg-gray-800 border border-gray-700"
+                    >
                         <option value="asc">Ascending</option>
                         <option value="desc">Descending</option>
                     </select>
@@ -166,7 +174,7 @@ const CataloguePage = () => {
 
             {/* Limited Time Cards */}
             <h2>Limited Time Cards</h2>
-            <div className="cata-grid">
+            <div className="flex flex-wrap justify-center gap-8 mb-10">
                 {activeLimitedCards.length > 0 ? (
                     activeLimitedCards.map((card) => {
                         const to = card.availableTo ? new Date(card.availableTo) : null;
@@ -204,7 +212,7 @@ const CataloguePage = () => {
 
             {/* All Limited Cards */}
             <h2>All Limited Cards (Past, Present, Future)</h2>
-            <div className="cata-grid">
+            <div className="flex flex-wrap justify-center gap-8 mb-10">
                 {limitedCards.length > 0 ? (
                     limitedCards.map((card) => {
                         const from = card.availableFrom ? new Date(card.availableFrom) : null;
@@ -241,7 +249,7 @@ const CataloguePage = () => {
 
             {/* All Cards */}
             <h2>All Cards</h2>
-            <div className="cata-grid">
+            <div className="flex flex-wrap justify-center gap-8 mb-10">
                 {sortedCards.length > 0 ? (
                     sortedCards.map((card) => {
                         const remaining = getRemaining(card.name, selectedRarity);
