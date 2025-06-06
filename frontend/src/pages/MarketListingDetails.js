@@ -4,7 +4,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { fetchWithAuth, fetchUserProfile, fetchUserCollection } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
-import '../styles/MarketListingDetails.css';
 
 const rarities = [
     { name: 'Basic' },
@@ -208,9 +207,9 @@ const MarketListingDetails = () => {
             : listing.owner.toString() === currentUser._id.toString());
 
     return (
-        <div className="market-listing-details">
-            <h1>{listing.card.name}</h1>
-            <div className="listing-card-container">
+        <div className="p-6 max-w-4xl mx-auto bg-gray-950 min-h-screen text-gray-100">
+            <h1 className="text-3xl text-center mb-4">{listing.card.name}</h1>
+            <div className="flex justify-center mb-4">
                 <BaseCard
                     name={listing.card.name}
                     image={listing.card.imageUrl}
@@ -219,11 +218,11 @@ const MarketListingDetails = () => {
                     mintNumber={listing.card.mintNumber}
                 />
             </div>
-            <p className="listing-owner">Listed by: {listing.owner.username}</p>
+            <p className="text-sm mb-4">Listed by: {listing.owner.username}</p>
 
             {isOwner ? (
                 <div className="owner-actions">
-                    <button className="cancel-button" onClick={handleCancelListing}>
+                    <button className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded" onClick={handleCancelListing}>
                         Cancel Listing
                     </button>
                 </div>

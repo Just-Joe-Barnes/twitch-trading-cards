@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { fetchUserProfile, fetchPendingTrades, acceptTrade, rejectTrade, cancelTrade } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner'; // Import the spinner
-import '../styles/PendingTrades.css';
 import '../styles/CardComponent.css'; // Ensure BaseCard styles are applied
 
 const PendingTrades = () => {
@@ -94,23 +93,23 @@ const PendingTrades = () => {
     }
 
     return (
-        <div className="pending-trades-container">
-            <h1 className="page-title">Pending Trades</h1>
+        <div className="p-6 bg-gray-950 text-gray-100 min-h-screen">
+            <h1 className="text-3xl mb-4">Pending Trades</h1>
 
-            <div className="filters">
+            <div className="flex flex-wrap gap-4 mb-4">
                 <input
                     type="text"
                     placeholder="Search by username..."
                     value={searchQuery}
                     onChange={handleSearch}
-                    className="search-box"
+                    className="p-2 rounded bg-gray-800 border border-gray-700 placeholder-gray-400"
                 />
-                <select value={filter} onChange={handleFilterChange} className="filter-dropdown">
+                <select value={filter} onChange={handleFilterChange} className="p-2 rounded bg-gray-800 border border-gray-700">
                     <option value="all">All Trades</option>
                     <option value="incoming">Incoming Trades</option>
                     <option value="outgoing">Outgoing Trades</option>
                 </select>
-                <select value={sortOrder} onChange={handleSortChange} className="sort-dropdown">
+                <select value={sortOrder} onChange={handleSortChange} className="p-2 rounded bg-gray-800 border border-gray-700">
                     <option value="newest">Newest First</option>
                     <option value="oldest">Oldest First</option>
                 </select>

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createTrade, searchUsers, fetchWithAuth } from "../utils/api";
 import BaseCard from "../components/BaseCard";
-import "../styles/TradingPage.css";
 import { rarities } from "../constants/rarities";
 
 const TradingPage = ({ userId }) => {
@@ -152,9 +151,9 @@ const TradingPage = ({ userId }) => {
     };
 
     return (
-        <div className="tp-trading-container">
-            <h1>Trading</h1>
-            <p className="tp-trading-info">
+        <div className="p-6 bg-gray-950 text-gray-100 min-h-screen">
+            <h1 className="text-3xl mb-2">Trading</h1>
+            <p className="mb-4 text-gray-300">
                 Welcome to the trading system! You can trade up to 3 cards and/or up to 10 packs with other users.
                 Double-click on any selected card to remove it from your trade. Make sure to review your offers
                 and requests carefully before confirming a trade. Pending trades can be managed through the "View Pending Trades" button below.
