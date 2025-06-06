@@ -276,10 +276,6 @@ const CollectionPage = ({
 
             {/* New Top Section Container */}
             <div className="space-y-6">
-                <div className="flex flex-wrap justify-around gap-6">
-                    <div>
-                        <h3>Filters</h3>
-                        <div className="flex flex-wrap gap-4">
                             <input
                                 type="text"
                                 placeholder="Search by card name..."
@@ -322,9 +318,10 @@ const CollectionPage = ({
                             </select>
                         </div>
                     </div>
-                    <div>
-                        <h3>Featured Controls</h3>
-                        <div className="flex items-center gap-4">
+
+                    <div className="bg-gray-900 p-4 rounded-lg w-full">
+                        <h3 className="text-center mb-4 text-lg">Featured Controls</h3>
+                        <div className="flex items-center justify-center gap-4">
                             <label className="flex items-center gap-2">
                                 <input
                                     type="checkbox"
@@ -342,9 +339,10 @@ const CollectionPage = ({
                     </div>
                 </div>
 
-                <div className="flex flex-wrap justify-around gap-6">
-                    <div className="cp-slider-container">
-                        <div className="slidecontainer">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex flex-col items-center justify-center bg-gray-900 p-4 rounded-lg">
+                        <div className="w-full text-center">
                             <label>Card Scale: </label>
                             <input
                                 type="range"
@@ -357,12 +355,12 @@ const CollectionPage = ({
                             <p>{Math.round(cardScale * 100)}%</p>
                         </div>
                     </div>
-                    <div className="cp-rarity-container">
-                        <div className="cp-rarity-key">
+                    <div className="bg-gray-900 p-4 rounded-lg flex justify-center">
+                        <div className="flex flex-wrap justify-center items-center gap-4 border border-gray-700 rounded-lg p-4 bg-gray-800">
                             {cardRarities.map((r) => (
-                                <div key={r.rarity} className="cp-rarity-item">
-                                    <span className="cp-color-box" style={{ backgroundColor: r.color }} />
-                                    <span className="cp-rarity-text">{r.rarity}</span>
+                                <div key={r.rarity} className="flex items-center gap-2">
+                                    <span className="w-6 h-6 rounded" style={{ backgroundColor: r.color }} />
+                                    <span>{r.rarity}</span>
                                 </div>
                             ))}
                         </div>
@@ -382,8 +380,11 @@ const CollectionPage = ({
                 </div>
             </div>
 
-            {/* Cards Grid (unchanged) */}
-            <div className="grid gap-4" style={{ '--card-scale': cardScale }}>
+            {/* Cards Grid */}
+            <div
+                className="flex flex-wrap justify-center gap-6 bg-gray-900 border border-gray-700 rounded-2xl p-4 mb-8"
+                style={{ transform: `scale(${cardScale})`, width: `${100 / cardScale}%`, transformOrigin: 'top left' }}
+            >
                 {filteredCards.length > 0 ? (
                     filteredCards.map((card) => {
                         const isFeatured = featuredCards.some((fc) => fc._id === card._id);
