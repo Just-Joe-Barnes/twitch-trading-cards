@@ -14,6 +14,7 @@ const PendingTrades = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filter, setFilter] = useState('all');
     const [sortOrder, setSortOrder] = useState('newest');
+    const [expandedTrades, setExpandedTrades] = useState({});
     const navigate = useNavigate();
 
     useEffect(() => {
