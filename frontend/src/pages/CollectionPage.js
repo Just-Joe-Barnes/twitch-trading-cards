@@ -9,7 +9,6 @@ import {
 } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
-import '../styles/CollectionPage.css';
 import { rarities } from '../constants/rarities';
 
 const cardRarities = [
@@ -205,6 +204,14 @@ const CollectionPage = ({
             await updateFeaturedCards(newFeaturedIds);
             const response = await fetchFeaturedCards();
             setFeaturedCards(response.featuredCards || []);
+            if (window.showToast) {
+                window.showToast(
+                    isCurrentlyFeatured
+                        ? 'Card removed from featured'
+                        : 'Card added to featured',
+                    'success'
+                );
+            }
         } catch (error) {
             console.error('Error updating featured cards:', error);
         }
@@ -216,6 +223,9 @@ const CollectionPage = ({
         const isCurrentlyFeatured = featuredCards.some((fc) => fc._id === card._id);
         if (!isCurrentlyFeatured && featuredCards.length >= 4) {
             console.warn('Max 4 featured cards allowed!');
+            if (window.showToast) {
+                window.showToast('You can feature up to 4 cards', 'warning');
+            }
             return;
         }
         try {
@@ -254,6 +264,9 @@ const CollectionPage = ({
             await updateFeaturedCards([]);
             const response = await fetchFeaturedCards();
             setFeaturedCards(response.featuredCards || []);
+            if (window.showToast) {
+                window.showToast('Featured cards cleared', 'success');
+            }
         } catch (error) {
             console.error('Error clearing featured cards:', error);
         }
@@ -264,30 +277,35 @@ const CollectionPage = ({
     if (loading) return <LoadingSpinner />;
 
     return (
-        <div className="cp-page">
+        <div className="p-6 bg-gray-950 text-gray-100 min-h-screen">
             {!hideHeader && (
-                <h1>{collectionTitle || `${collectionOwner || loggedInUser}'s Collection`}</h1>
+                <h1 className="text-3xl text-center mb-2">{collectionTitle || `${collectionOwner || loggedInUser}'s Collection`}</h1>
             )}
 
-            <p className="cp-catalogue-description">
+            <p className="text-center text-lg mb-6 text-gray-300">
                 Browse your entire collection here! Use the filters below to search by name, rarity, or mint number.
                 You can also add up to 4 cards to your profile page as "featured cards" by double clicking them.
                 Double clicking a card again, or clicking the "Clear Featured Cards" button, will remove it.
             </p>
 
             {/* New Top Section Container */}
-            <div className="cp-top-section">
-                <div className="cp-row">
-                    <div className="cp-filters-container">
-                        <h3>Filters</h3>
-                        <div className="cp-filters">
+            <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-gray-900 p-4 rounded-lg w-full">
+                        <h3 className="text-center mb-4 text-lg">Filters</h3>
+                        <div className="flex flex-wrap justify-center gap-4">
                             <input
                                 type="text"
                                 placeholder="Search by card name..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
+                                className="p-2 rounded bg-gray-800 border border-gray-700 placeholder-gray-400"
                             />
-                            <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
+                            <select
+                                value={rarityFilter}
+                                onChange={(e) => setRarityFilter(e.target.value)}
+                                className="p-2 rounded bg-gray-800 border border-gray-700"
+                            >
                                 <option value="">All Rarities</option>
                                 {rarities
                                     .filter((r) => r.name !== 'All')
@@ -297,42 +315,52 @@ const CollectionPage = ({
                                         </option>
                                     ))}
                             </select>
-                            <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+                            <select
+                                value={sortOption}
+                                onChange={(e) => setSortOption(e.target.value)}
+                                className="p-2 rounded bg-gray-800 border border-gray-700"
+                            >
                                 <option value="">Sort By</option>
                                 <option value="name">Name</option>
                                 <option value="mintNumber">Mint Number</option>
                                 <option value="rarity">Rarity</option>
                                 <option value="acquiredAt">Acquisition Date</option>
                             </select>
-                            <select value={order} onChange={(e) => setOrder(e.target.value)}>
+                            <select
+                                value={order}
+                                onChange={(e) => setOrder(e.target.value)}
+                                className="p-2 rounded bg-gray-800 border border-gray-700"
+                            >
                                 <option value="asc">Ascending</option>
                                 <option value="desc">Descending</option>
                             </select>
                         </div>
                     </div>
-                    <div className="cp-featured-container">
-                        <h3>Featured Controls</h3>
-                        <div className="cp-featured-controls">
-                            <label className="cp-featured-toggle">
-                                <input
-                                    type="checkbox"
-                                    checked={showFeaturedOnly}
-                                    onChange={(e) => setShowFeaturedOnly(e.target.checked)}
-                                />
-                                Show Featured Only
-                            </label>
-                            {isOwner && (
-                                <button className="cp-clear-featured-button" onClick={handleClearFeatured}>
-                                    Clear Featured Cards
-                                </button>
-                            )}
+                    <div className="bg-gray-900 p-4 rounded-lg w-full">
+                        <div>
+                            <h3 className="text-center mb-4 text-lg">Featured Controls</h3>
+                            <div className="flex items-center justify-center gap-4">
+                                <label className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={showFeaturedOnly}
+                                        onChange={(e) => setShowFeaturedOnly(e.target.checked)}
+                                    />
+                                    Show Featured Only
+                                </label>
+                                {isOwner && (
+                                    <button className="px-4 py-2 rounded bg-purple-600 hover:bg-purple-500" onClick={handleClearFeatured}>
+                                        Clear Featured Cards
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="cp-row">
-                    <div className="cp-slider-container">
-                        <div className="slidecontainer">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex flex-col items-center justify-center bg-gray-900 p-4 rounded-lg">
+                        <div className="w-full text-center">
                             <label>Card Scale: </label>
                             <input
                                 type="range"
@@ -345,12 +373,12 @@ const CollectionPage = ({
                             <p>{Math.round(cardScale * 100)}%</p>
                         </div>
                     </div>
-                    <div className="cp-rarity-container">
-                        <div className="cp-rarity-key">
+                    <div className="bg-gray-900 p-4 rounded-lg flex justify-center">
+                        <div className="flex flex-wrap justify-center items-center gap-4 border border-gray-700 rounded-lg p-4 bg-gray-800">
                             {cardRarities.map((r) => (
-                                <div key={r.rarity} className="cp-rarity-item">
-                                    <span className="cp-color-box" style={{ backgroundColor: r.color }} />
-                                    <span className="cp-rarity-text">{r.rarity}</span>
+                                <div key={r.rarity} className="flex items-center gap-2">
+                                    <span className="w-6 h-6 rounded" style={{ backgroundColor: r.color }} />
+                                    <span>{r.rarity}</span>
                                 </div>
                             ))}
                         </div>
@@ -359,19 +387,22 @@ const CollectionPage = ({
             </div>
 
             {/* New Stats Container */}
-            <div className="cp-stats-container">
-                <div className="cp-stats-item">
+            <div className="flex justify-center gap-8 mb-6 text-center">
+                <div>
                     <h4>Total Cards</h4>
                     <p>{allCards.length}</p>
                 </div>
-                <div className="cp-stats-item">
+                <div>
                     <h4>Total Packs</h4>
                     <p>{totalPacks}</p>
                 </div>
             </div>
 
-            {/* Cards Grid (unchanged) */}
-            <div className="cp-cards-grid" style={{ "--card-scale": cardScale }}>
+            {/* Cards Grid */}
+            <div
+                className="flex flex-wrap justify-center gap-6 bg-gray-900 border border-gray-700 rounded-2xl p-4 mb-8"
+                style={{ transform: `scale(${cardScale})`, width: `${100 / cardScale}%`, transformOrigin: 'top left' }}
+            >
                 {filteredCards.length > 0 ? (
                     filteredCards.map((card) => {
                         const isFeatured = featuredCards.some((fc) => fc._id === card._id);
@@ -380,11 +411,11 @@ const CollectionPage = ({
                             <div
                                 key={card._id}
                                 id={`cp-card-${card._id}`}
-                                className={`cp-card-item ${isSelected ? 'cp-selected' : ''}`}
+                                className={`cursor-pointer transition-transform rounded-lg ${isSelected ? 'ring-2 ring-purple-500' : ''}`}
                                 onClick={() => handleClick(card)}
                                 onDoubleClick={() => handleDoubleClick(card)}
                             >
-                                {isFeatured && <div className="cp-featured-badge">Featured</div>}
+                                {isFeatured && <div className="absolute top-2 left-2 bg-purple-600 text-white text-xs px-2 py-1 rounded">Featured</div>}
                                 <BaseCard
                                     name={card.name}
                                     image={card.imageUrl}
