@@ -161,12 +161,23 @@
     margin-bottom: 1rem;
 }
 
+/* Trade content wrapper for smooth expand/collapse */
+.trade-content-wrapper {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease, opacity 0.5s ease;
+}
 
-/* Layout for offer/request columns */
-.trade-columns {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
+    .trade-content-wrapper.expanded {
+        max-height: 1200px; /* Increased max-height to ensure full content visibility */
+        opacity: 1;
+        overflow: visible; /* Allow overflow so both sides are visible */
+        margin-bottom: 1rem; /* Extra space so buttons are not overlapped */
+    }
+
+/* Trade Content */
+.trade-content {
     margin-bottom: 1rem;
 }
 
@@ -177,7 +188,6 @@
     padding: 1rem;
     border-radius: var(--border-radius);
     margin-bottom: 1rem;
-    flex: 1 1 300px;
 }
 
     .trade-section h4 {
