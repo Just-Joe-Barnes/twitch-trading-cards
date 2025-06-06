@@ -52,6 +52,13 @@
     justify-content: center;
 }
 
+/* Grid layout for trade tiles */
+.trades-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
     .filters input,
     .filters select {
         padding: 0.75rem 1rem;
@@ -126,10 +133,26 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
-        .trade-buttons-inline button:hover {
-            background-color: #722ebf;
-            transform: scale(1.05);
-        }
+    .trade-buttons-inline button:hover {
+        background-color: #722ebf;
+        transform: scale(1.05);
+    }
+
+.accept-button {
+    background-color: #2e7d32;
+}
+
+.reject-button {
+    background-color: #c62828;
+}
+
+.cancel-button {
+    background-color: #616161;
+}
+
+.counter-button {
+    background-color: var(--brand-secondary);
+}
 
 /* Timestamp */
 .trade-timestamp {
@@ -138,23 +161,12 @@
     margin-bottom: 1rem;
 }
 
-/* Trade content wrapper for smooth expand/collapse */
-.trade-content-wrapper {
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition: max-height 0.5s ease, opacity 0.5s ease;
-}
 
-    .trade-content-wrapper.expanded {
-        max-height: 1200px; /* Increased max-height to ensure full content visibility */
-        opacity: 1;
-        overflow: visible; /* Allow overflow so both sides are visible */
-        margin-bottom: 1rem; /* Extra space so buttons are not overlapped */
-    }
-
-/* Trade Content */
-.trade-content {
+/* Layout for offer/request columns */
+.trade-columns {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
     margin-bottom: 1rem;
 }
 
@@ -165,6 +177,7 @@
     padding: 1rem;
     border-radius: var(--border-radius);
     margin-bottom: 1rem;
+    flex: 1 1 300px;
 }
 
     .trade-section h4 {

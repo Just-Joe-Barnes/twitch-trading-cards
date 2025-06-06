@@ -1,5 +1,6 @@
 // src/pages/PendingTrades.js
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { fetchUserProfile, fetchPendingTrades, acceptTrade, rejectTrade, cancelTrade } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner'; // Import the spinner
@@ -13,7 +14,7 @@ const PendingTrades = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filter, setFilter] = useState('all');
     const [sortOrder, setSortOrder] = useState('newest');
-    const [expandedTrades, setExpandedTrades] = useState({});
+    const navigate = useNavigate();
 
     useEffect(() => {
         const loadUserProfile = async () => {
@@ -60,16 +61,25 @@ const PendingTrades = () => {
         }
     };
 
+    const handleCounterOffer = (trade, e) => {
+        e.stopPropagation();
+        navigate('/trading', {
+            state: {
+                counterOffer: {
+                    selectedUser: trade.sender._id,
+                    tradeOffer: trade.requestedItems,
+                    tradeRequest: trade.offeredItems,
+                    offeredPacks: trade.requestedPacks,
+                    requestedPacks: trade.offeredPacks,
+                },
+            },
+        });
+    };
+
     const handleSearch = (e) => setSearchQuery(e.target.value.toLowerCase());
     const handleFilterChange = (e) => setFilter(e.target.value);
     const handleSortChange = (e) => setSortOrder(e.target.value);
 
-    const toggleTrade = (tradeId) => {
-        setExpandedTrades((prevState) => ({
-            ...prevState,
-            [tradeId]: !prevState[tradeId],
-        }));
-    };
 
     const filteredAndSortedTrades = pendingTrades
         .filter((trade) => {
@@ -119,26 +129,20 @@ const PendingTrades = () => {
             {filteredAndSortedTrades.length === 0 ? (
                 <p className="no-trades">No pending trades.</p>
             ) : (
-                filteredAndSortedTrades.map((trade) => {
-                    const isOutgoing = trade.sender._id === loggedInUser._id;
-                    const tradeStatusClass = `trade-card ${isOutgoing ? 'outgoing' : 'incoming'}`;
-                    const isExpanded = expandedTrades[trade._id];
-
-                    return (
-                        <div
-                            key={trade._id}
-                            className={tradeStatusClass}
-                            onClick={() => toggleTrade(trade._id)}
-                        >
-                            <div className="trade-header">
-                                <div className="trade-header-info">
-                                    {isOutgoing ? 'Outgoing Trade' : 'Incoming Trade'}{' '}
-                                    <span>
-                                        with {isOutgoing ? trade.recipient.username : trade.sender.username}
-                                    </span>
-                                </div>
-                                {isExpanded && (
-                                    <div className="trade-buttons-inline" onClick={(e) => e.stopPropagation()}>
+                <div className="trades-grid">
+                    {filteredAndSortedTrades.map((trade) => {
+                        const isOutgoing = trade.sender._id === loggedInUser._id;
+                        const tradeStatusClass = `trade-card ${isOutgoing ? 'outgoing' : 'incoming'}`;
+                        return (
+                            <div key={trade._id} className={tradeStatusClass}>
+                                <div className="trade-header">
+                                    <div className="trade-header-info">
+                                        {isOutgoing ? 'Outgoing Trade to' : 'Incoming Trade from'}{' '}
+                                        <span>
+                                            {isOutgoing ? trade.recipient.username : trade.sender.username}
+                                        </span>
+                                    </div>
+                                    <div className="trade-buttons-inline">
                                         {!isOutgoing ? (
                                             <>
                                                 <button
@@ -153,6 +157,12 @@ const PendingTrades = () => {
                                                 >
                                                     Reject
                                                 </button>
+                                                <button
+                                                    className="counter-button"
+                                                    onClick={(e) => handleCounterOffer(trade, e)}
+                                                >
+                                                    Counter
+                                                </button>
                                             </>
                                         ) : (
                                             <button
@@ -163,15 +173,13 @@ const PendingTrades = () => {
                                             </button>
                                         )}
                                     </div>
-                                )}
-                            </div>
+                                </div>
 
-                            <div className="trade-timestamp">
-                                Created on: {new Date(trade.createdAt).toLocaleString()}
-                            </div>
+                                <div className="trade-timestamp">
+                                    Created on: {new Date(trade.createdAt).toLocaleString()}
+                                </div>
 
-                            <div className={`trade-content-wrapper ${isExpanded ? 'expanded' : ''}`}>
-                                <div className="trade-content">
+                                <div className="trade-columns">
                                     <div className="trade-section">
                                         <h4>Offered Items</h4>
                                         <div className="cards-grid">
@@ -217,9 +225,9 @@ const PendingTrades = () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    );
-                })
+                        );
+                    })}
+                </div>
             )}
         </div>
     );
