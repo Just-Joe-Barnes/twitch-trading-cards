@@ -12,6 +12,7 @@ For in depth information on the trading and market system implementation, see **
    cd backend && npm install
    cd ../frontend && npm install
    ```
+   Tailwind CSS is used for styling and is processed automatically when running the React scripts.
 3. Configure environment variables as described below.
 
 ## Environment Variables
