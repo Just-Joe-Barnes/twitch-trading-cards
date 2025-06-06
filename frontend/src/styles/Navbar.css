@@ -46,7 +46,7 @@
 
 .search-wrapper {
     position: relative;
-    width: clamp(200px, 40vw, 600px);
+    width: clamp(180px, 35vw, 500px);
 }
 
 .search-bar {
@@ -111,7 +111,7 @@
     margin: 0;
     padding: 0;
     gap: 1rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
     .navbar-links li {
@@ -180,7 +180,7 @@
 
 
 /* Responsive Adjustments */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .burger-button {
         display: flex;
         order: -1;
@@ -216,11 +216,15 @@
     }
 
     .search-wrapper {
-        width: 100%;
+        width: clamp(180px, 50vw, 400px);
     }
 
     .navbar-logo h1 {
         font-size: 1.5rem;
+    }
+
+    .navbar-username {
+        display: none;
     }
 }
 
