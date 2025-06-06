@@ -322,6 +322,7 @@ const CollectionPage = ({
                             </select>
                         </div>
                     </div>
+
                     <div className="bg-gray-900 p-4 rounded-lg w-full">
                         <div>
                             <h3 className="text-center mb-4 text-lg">Featured Controls</h3>
@@ -343,7 +344,6 @@ const CollectionPage = ({
                         </div>
                     </div>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex flex-col items-center justify-center bg-gray-900 p-4 rounded-lg">
                         <div className="w-full text-center">
