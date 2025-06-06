@@ -19,6 +19,7 @@ const LoginPage = () => {
     }, []);
 
     return (
+ 9nyu01-codex/analyze-project-for-optimization-and-responsiveness
         <div className="flex items-center justify-center min-h-screen bg-gray-950 text-white p-4">
             <div className="bg-gray-800 border border-gray-700 p-8 rounded-2xl shadow-lg max-w-md w-full text-center">
                 <h1 className="text-3xl mb-6">
