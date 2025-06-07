@@ -12,6 +12,7 @@ const Navbar = ({ isAdmin }) => {
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
     const [loggedInUser, setLoggedInUser] = useState({});
     const [menuOpen, setMenuOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 480 : false);
 
     // Fetch logged-in user data including profile picture
     useEffect(() => {
@@ -25,6 +26,14 @@ const Navbar = ({ isAdmin }) => {
             }
         };
         fetchUsername();
+    }, []);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 480);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     const handleLogout = () => {
@@ -76,34 +85,36 @@ const Navbar = ({ isAdmin }) => {
                 <img src="/images/NedsDecksLogo.png" alt="Ned's Decks" />
             </div>
 
-            <div className="navbar-search">
-                <div className="search-wrapper">
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={handleSearchChange}
-                        placeholder="Search for users..."
-                        className="search-bar"
-                    />
-                    {isDropdownVisible && (
-                        <ul className="search-dropdown">
-                            {searchResults.length > 0 ? (
-                                searchResults.map((user) => (
-                                    <li
-                                        key={user._id}
-                                        onClick={() => handleSearchSelect(user.username)}
-                                        className="search-result-item"
-                                    >
-                                        {user.username}
-                                    </li>
-                                ))
-                            ) : (
-                                <li className="no-results">No users found</li>
-                            )}
-                        </ul>
-                    )}
+            {!isMobile && (
+                <div className="navbar-search">
+                    <div className="search-wrapper">
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                            placeholder="Search for users..."
+                            className="search-bar"
+                        />
+                        {isDropdownVisible && (
+                            <ul className="search-dropdown">
+                                {searchResults.length > 0 ? (
+                                    searchResults.map((user) => (
+                                        <li
+                                            key={user._id}
+                                            onClick={() => handleSearchSelect(user.username)}
+                                            className="search-result-item"
+                                        >
+                                            {user.username}
+                                        </li>
+                                    ))
+                                ) : (
+                                    <li className="no-results">No users found</li>
+                                )}
+                            </ul>
+                        )}
+                    </div>
                 </div>
-            </div>
+            )}
 
             <ul
                 id="primary-navigation"
@@ -167,6 +178,39 @@ const Navbar = ({ isAdmin }) => {
                         Catalogue
                     </NavLink>
                 </li>
+                {isMobile && (
+                    <li className="mobile-search">
+                        <div className="search-wrapper">
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={handleSearchChange}
+                                placeholder="Search for users..."
+                                className="search-bar"
+                            />
+                            {isDropdownVisible && (
+                                <ul className="search-dropdown">
+                                    {searchResults.length > 0 ? (
+                                        searchResults.map((user) => (
+                                            <li
+                                                key={user._id}
+                                                onClick={() => {
+                                                    handleSearchSelect(user.username);
+                                                    setMenuOpen(false);
+                                                }}
+                                                className="search-result-item"
+                                            >
+                                                {user.username}
+                                            </li>
+                                        ))
+                                    ) : (
+                                        <li className="no-results">No users found</li>
+                                    )}
+                                </ul>
+                            )}
+                        </div>
+                    </li>
+                )}
             </ul>
 
             {/* Render NotificationDropdown only when loggedInUser._id is available */}
