@@ -12,6 +12,7 @@ const TradingPage = ({ userId }) => {
     const [userSuggestions, setUserSuggestions] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [showTradePreview, setShowTradePreview] = useState(true);
+    const [counterTradeId, setCounterTradeId] = useState(null);
     const [userCollection, setUserCollection] = useState([]);
     const [recipientCollection, setRecipientCollection] = useState([]);
     const [tradeOffer, setTradeOffer] = useState([]);
@@ -48,6 +49,9 @@ const TradingPage = ({ userId }) => {
             setTradeRequest(counter.tradeRequest || []);
             setOfferedPacks(counter.offeredPacks || 0);
             setRequestedPacks(counter.requestedPacks || 0);
+            setCounterTradeId(counter.tradeId || null);
+        } else {
+            setCounterTradeId(null);
         }
     }, [location.state]);
 
@@ -151,6 +155,9 @@ const TradingPage = ({ userId }) => {
             offeredPacks: Number(offeredPacks),
             requestedPacks: Number(requestedPacks)
         };
+        if (counterTradeId) {
+            tradePayload.counterOf = counterTradeId;
+        }
 
         try {
             await createTrade(tradePayload);

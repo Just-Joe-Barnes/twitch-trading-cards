@@ -67,6 +67,7 @@ const PendingTrades = () => {
         navigate('/trading', {
             state: {
                 counterOffer: {
+                    tradeId: trade._id,
                     selectedUser: trade.sender.username,
                     tradeOffer: trade.requestedItems,
                     tradeRequest: trade.offeredItems,

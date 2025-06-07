@@ -6,7 +6,7 @@ const { createNotification } = require('../helpers/notificationHelper');
 const { sendNotificationToUser } = require('../../notificationService');
 const { logAudit } = require('../helpers/auditLogger');
 
-async function createTrade(senderId, { recipient, offeredItems, requestedItems, offeredPacks, requestedPacks }) {
+async function createTrade(senderId, { recipient, offeredItems, requestedItems, offeredPacks, requestedPacks, counterOf }) {
   // Business logic from tradeController.js createTrade
   // Returns { success: true, trade } or { success: false, status, message }
   try {
@@ -33,6 +33,23 @@ async function createTrade(senderId, { recipient, offeredItems, requestedItems, 
       return { success: false, status: 400, message: `Recipient only has ${recipientUser.packs} pack(s), but you requested ${requestedPacks}.` };
     }
 
+    let counterTrade = null;
+    if (counterOf) {
+      counterTrade = await Trade.findById(counterOf);
+      if (!counterTrade) {
+        return { success: false, status: 404, message: 'Original trade not found' };
+      }
+      if (counterTrade.status !== 'pending') {
+        return { success: false, status: 400, message: 'Original trade is not pending' };
+      }
+      if (
+        counterTrade.sender.toString() !== senderId &&
+        counterTrade.recipient.toString() !== senderId
+      ) {
+        return { success: false, status: 403, message: 'Not a participant of the original trade' };
+      }
+    }
+
     const offeredCardsDetails = sender.cards.filter(card =>
       offeredItems.includes(card._id.toString())
     );
@@ -47,8 +64,26 @@ async function createTrade(senderId, { recipient, offeredItems, requestedItems, 
       return { success: false, status: 400, message: 'You requested card(s) the recipient does not own.' };
     }
 
-    const pendingOfferedCards = offeredCardsDetails.filter(card => card.status === 'pending');
-    const pendingRequestedCards = requestedCardsDetails.filter(card => card.status === 'pending');
+    const pendingOfferedCards = offeredCardsDetails.filter(card => {
+      if (card.status !== 'pending') return false;
+      if (counterTrade && (
+            counterTrade.offeredItems.some(id => id.equals(card._id)) ||
+            counterTrade.requestedItems.some(id => id.equals(card._id))
+          )) {
+        return false;
+      }
+      return true;
+    });
+    const pendingRequestedCards = requestedCardsDetails.filter(card => {
+      if (card.status !== 'pending') return false;
+      if (counterTrade && (
+            counterTrade.offeredItems.some(id => id.equals(card._id)) ||
+            counterTrade.requestedItems.some(id => id.equals(card._id))
+          )) {
+        return false;
+      }
+      return true;
+    });
     if (pendingOfferedCards.length > 0 || pendingRequestedCards.length > 0) {
       return { success: false, status: 400, message: 'One or more cards are pending in another trade or listing.' };
     }
