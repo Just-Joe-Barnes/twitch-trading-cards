@@ -207,6 +207,7 @@ const CollectionPage = ({
             setFeaturedCards(response.featuredCards || []);
         } catch (error) {
             console.error('Error updating featured cards:', error);
+            alert('Error updating featured cards.');
         }
     };
 
@@ -215,13 +216,32 @@ const CollectionPage = ({
         if (!loggedInUser) return;
         const isCurrentlyFeatured = featuredCards.some((fc) => fc._id === card._id);
         if (!isCurrentlyFeatured && featuredCards.length >= 4) {
-            console.warn('Max 4 featured cards allowed!');
+            alert('You can only feature up to 4 cards.');
+            if (window.showToast) {
+                window.showToast('You can only feature up to 4 cards.', 'warning');
+            }
             return;
         }
         try {
             await handleToggleFeatured(card);
+            alert(
+                isCurrentlyFeatured
+                    ? 'Card removed from featured collection.'
+                    : 'Card added to featured collection.'
+            );
+            if (window.showToast) {
+                window.showToast(
+                    isCurrentlyFeatured
+                        ? 'Card removed from featured collection.'
+                        : 'Card added to featured collection.',
+                    'success'
+                );
+            }
         } catch (error) {
             console.error(error);
+            if (window.showToast) {
+                window.showToast('Error updating featured cards.', 'error');
+            }
         }
         const cardElement = document.getElementById(`cp-card-${card._id}`);
         if (cardElement) {
@@ -254,8 +274,16 @@ const CollectionPage = ({
             await updateFeaturedCards([]);
             const response = await fetchFeaturedCards();
             setFeaturedCards(response.featuredCards || []);
+            alert('Featured cards cleared.');
+            if (window.showToast) {
+                window.showToast('Featured cards cleared.', 'success');
+            }
         } catch (error) {
             console.error('Error clearing featured cards:', error);
+            alert('Error clearing featured cards.');
+            if (window.showToast) {
+                window.showToast('Error clearing featured cards.', 'error');
+            }
         }
     };
 
