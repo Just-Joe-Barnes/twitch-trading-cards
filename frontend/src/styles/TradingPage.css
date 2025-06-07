@@ -254,6 +254,17 @@
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
 
+/* — Override BaseCard’s built-in margins/borders so it fills its wrapper — */
+.tp-card-item .card-container {
+    margin: 0 !important;
+    max-width: 100% !important;
+}
+
+.tp-card-item .card-border {
+    padding: 8px !important;
+    border-width: 6px !important;
+}
+
 /* Card Preview Wrapper (for other sections) */
 .tp-card-preview-wrapper {
     --tp-card-scale: 1;
@@ -439,6 +450,36 @@
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 0.75rem;
     }
+    /* Mobile tweaks for card internals */
+    .tp-card-item {
+        padding: 0.5rem !important;
+    }
+
+    .tp-card-item .card-name {
+        font-size: 1rem !important;
+        margin-bottom: 8px !important;
+        margin-left: 6px !important;
+    }
+
+    .tp-card-item .card-artwork {
+        height: 43% !important;
+        margin-top: 0 !important;
+        border-width: 4px !important;
+        border-radius: 6px !important;
+    }
+
+    .tp-card-item .card-description {
+        font-size: 0.75rem !important;
+        margin: 4px 6px !important;
+        padding: 4px !important;
+        max-height: 15% !important;
+    }
+
+    .tp-card-item .card-mint {
+        font-size: 0.6rem !important;
+        margin-right: 6px !important;
+        padding: 2px 4px !important;
+    }
 }
 
 @media (max-width: 480px) {
@@ -458,5 +499,10 @@
 @media (max-width: 400px) {
     .tp-card-preview-wrapper {
         --tp-card-scale: 0.6;
+    }
+
+    .tp-card-item .card-container {
+        transform: scale(0.9);
+        transform-origin: top center;
     }
 }
