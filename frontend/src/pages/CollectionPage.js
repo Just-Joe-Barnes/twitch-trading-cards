@@ -201,13 +201,20 @@ const CollectionPage = ({
             newFeatured = [...featuredCards, card];
         }
         const newFeaturedIds = newFeatured.map((c) => c._id);
+
+        // Optimistically update UI
+        const previousFeatured = featuredCards;
+        setFeaturedCards(newFeatured);
+
         try {
-            await updateFeaturedCards(newFeaturedIds);
-            const response = await fetchFeaturedCards();
-            setFeaturedCards(response.featuredCards || []);
+            const response = await updateFeaturedCards(newFeaturedIds);
+            if (response.featuredCards) {
+                setFeaturedCards(response.featuredCards);
+            }
         } catch (error) {
             console.error('Error updating featured cards:', error);
             alert('Error updating featured cards.');
+            setFeaturedCards(previousFeatured); // revert on failure
         }
     };
 
@@ -221,6 +228,13 @@ const CollectionPage = ({
                 window.showToast('You can only feature up to 4 cards.', 'warning');
             }
             return;
+        }
+        const cardElement = document.getElementById(`cp-card-${card._id}`);
+        if (cardElement) {
+            cardElement.classList.add('cp-double-clicked');
+            setTimeout(() => {
+                cardElement.classList.remove('cp-double-clicked');
+            }, 1000);
         }
         try {
             await handleToggleFeatured(card);
@@ -243,13 +257,6 @@ const CollectionPage = ({
                 window.showToast('Error updating featured cards.', 'error');
             }
         }
-        const cardElement = document.getElementById(`cp-card-${card._id}`);
-        if (cardElement) {
-            cardElement.classList.add('cp-double-clicked');
-            setTimeout(() => {
-                cardElement.classList.remove('cp-double-clicked');
-            }, 1000);
-        }
     };
 
     // Distinguish single vs. double-click logic
@@ -270,10 +277,14 @@ const CollectionPage = ({
 
     // Clear all featured cards
     const handleClearFeatured = async () => {
+        // Optimistically clear UI
+        const previousFeatured = featuredCards;
+        setFeaturedCards([]);
         try {
-            await updateFeaturedCards([]);
-            const response = await fetchFeaturedCards();
-            setFeaturedCards(response.featuredCards || []);
+            const response = await updateFeaturedCards([]);
+            if (response.featuredCards) {
+                setFeaturedCards(response.featuredCards);
+            }
             alert('Featured cards cleared.');
             if (window.showToast) {
                 window.showToast('Featured cards cleared.', 'success');
@@ -281,6 +292,7 @@ const CollectionPage = ({
         } catch (error) {
             console.error('Error clearing featured cards:', error);
             alert('Error clearing featured cards.');
+            setFeaturedCards(previousFeatured);
             if (window.showToast) {
                 window.showToast('Error clearing featured cards.', 'error');
             }
