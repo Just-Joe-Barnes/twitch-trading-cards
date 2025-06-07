@@ -403,7 +403,8 @@
 @media (max-width: 768px) {
     .tp-cards-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
     }
 
     .tp-trading-container h1 {
@@ -429,18 +430,33 @@
     }
 }
 
+@media (max-width: 600px) {
+    .tp-card-preview-wrapper {
+        --tp-card-scale: 0.71;
+    }
+
+    .tp-cards-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.75rem;
+    }
+}
+
 @media (max-width: 480px) {
     .tp-trading-container {
         padding: 1.5rem 1rem;
     }
 
     .tp-card-item {
-        padding: 0.75rem;
+        padding: 0.5rem;
+    }
+
+    .tp-cards-grid {
+        gap: 0.5rem;
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 400px) {
     .tp-card-preview-wrapper {
-        --tp-card-scale: 0.71;
+        --tp-card-scale: 0.6;
     }
 }
