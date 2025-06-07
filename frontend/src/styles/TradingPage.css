@@ -441,7 +441,7 @@
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 700px) {
     .tp-card-preview-wrapper {
         --tp-card-scale: 0.71;
     }
@@ -479,6 +479,15 @@
         font-size: 0.6rem !important;
         margin-right: 6px !important;
         padding: 2px 4px !important;
+    }
+
+    .tp-card-item .card-border {
+        border-width: 5px !important;
+    }
+
+    .tp-card-item .card-container {
+        transform: scale(0.95);
+        transform-origin: top center;
     }
 }
 
