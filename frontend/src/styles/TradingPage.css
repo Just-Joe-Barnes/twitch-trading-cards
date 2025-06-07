@@ -409,6 +409,10 @@
     .tp-trade-preview {
         grid-template-columns: 1fr;
     }
+
+    .tp-collections-wrapper {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 480px) {
