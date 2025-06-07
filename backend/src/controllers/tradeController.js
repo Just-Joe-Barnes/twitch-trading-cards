@@ -15,7 +15,8 @@ const createTrade = async (req, res) => {
     offeredItems: Joi.array().items(Joi.string().hex().length(24)).required(),
     requestedItems: Joi.array().items(Joi.string().hex().length(24)).required(),
     offeredPacks: Joi.number().min(0).required(),
-    requestedPacks: Joi.number().min(0).required()
+    requestedPacks: Joi.number().min(0).required(),
+    counterOf: Joi.string().hex().length(24).optional()
   });
 
   const { error } = tradeSchema.validate(req.body);
@@ -24,11 +25,11 @@ const createTrade = async (req, res) => {
   }
 
   const senderId = req.userId;
-  const { recipient, offeredItems, requestedItems, offeredPacks, requestedPacks } = req.body;
+  const { recipient, offeredItems, requestedItems, offeredPacks, requestedPacks, counterOf } = req.body;
 
   logAudit('Trade Create Attempt', { senderId, body: req.body });
 
-  const result = await tradeService.createTrade(senderId, { recipient, offeredItems, requestedItems, offeredPacks, requestedPacks });
+  const result = await tradeService.createTrade(senderId, { recipient, offeredItems, requestedItems, offeredPacks, requestedPacks, counterOf });
 
   if (!result.success) {
     return res.status(result.status || 500).json({ popupMessage: result.message });

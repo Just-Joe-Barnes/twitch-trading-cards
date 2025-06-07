@@ -56,6 +56,7 @@ This document details the **refactored trading and market system**, including:
   - Recipient has enough packs
   - No cards are `'pending'` in other trades/listings
   - At least one item or pack involved
+- **Optional:** `counterOf` field can reference an existing trade ID when sending a counter offer. Cards pending solely because of that trade are allowed.
 - **Process:**
   - Creates a `Trade` with status `'pending'`
   - Marks involved cards as `'pending'`
