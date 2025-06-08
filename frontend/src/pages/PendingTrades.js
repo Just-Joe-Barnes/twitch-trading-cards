@@ -142,6 +142,7 @@ const PendingTrades = () => {
                     const previewOffered = trade.offeredItems?.slice(0, 2) || [];
                     const previewRequested = trade.requestedItems?.slice(0, 2) || [];
 
+
                     const offeredItemsCount = trade.offeredItems?.length || 0;
                     const requestedItemsCount = trade.requestedItems?.length || 0;
                     const tradeSummary = `${offeredItemsCount} item(s) & ${trade.offeredPacks} pack(s) for ${requestedItemsCount} item(s) & ${trade.requestedPacks} pack(s)`;
