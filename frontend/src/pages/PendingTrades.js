@@ -154,6 +154,7 @@ const PendingTrades = () => {
                                     <div className="trade-overview">
                                         <div className="overview-section">
                                             {trade.offeredItems?.map((item) => (
+
                                                 <img
                                                     key={item._id}
                                                     src={item.imageUrl}
