@@ -146,6 +146,10 @@ const PendingTrades = () => {
                     const requestedCount = trade.requestedItems?.length || 0;
                     const tradeSummary = `${offeredCount} item(s) & ${trade.offeredPacks} pack(s) for ${requestedCount} item(s) & ${trade.requestedPacks} pack(s)`;
 
+                    const offeredCount = trade.offeredItems?.length || 0;
+                    const requestedCount = trade.requestedItems?.length || 0;
+                    const tradeSummary = `${offeredCount} item(s) & ${trade.offeredPacks} pack(s) for ${requestedCount} item(s) & ${trade.requestedPacks} pack(s)`;
+
                     return (
                         <div
                             key={trade._id}
