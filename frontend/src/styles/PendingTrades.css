@@ -85,6 +85,7 @@
     position: relative;
 }
 
+
     .trade-card:hover {
         transform: translateY(-2px);
     }
