@@ -94,11 +94,8 @@ const PendingTrades = () => {
                             mintNumber={item.mintNumber}
                         />
                     </div>
-                ))}
-                {cards.length > preview.length && (
-                    <span className="thumb-more">+{cards.length - preview.length} more</span>
-                )}
             </div>
+
         );
     };
 
