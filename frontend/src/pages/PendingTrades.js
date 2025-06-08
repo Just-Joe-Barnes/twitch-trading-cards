@@ -79,6 +79,25 @@ const PendingTrades = () => {
     const handleFilterChange = (e) => setFilter(e.target.value);
     const handleSortChange = (e) => setSortOrder(e.target.value);
 
+    const renderCardPreview = (cards = []) => {
+        const preview = cards.slice(0, 3);
+        return (
+            <>
+                {preview.map((item) => (
+                    <img
+                        key={item._id}
+                        src={item.imageUrl}
+                        alt={item.name}
+                        className="trade-thumb"
+                    />
+                ))}
+                {cards.length > preview.length && (
+                    <span className="thumb-more">+{cards.length - preview.length} more</span>
+                )}
+            </>
+        );
+    };
+
 
     const filteredAndSortedTrades = pendingTrades
         .filter((trade) => {
@@ -145,35 +164,20 @@ const PendingTrades = () => {
                             <div className="trade-header">
                                 <div className="trade-header-info">
                                     <div className="trade-title">
-                                        {isOutgoing ? 'Outgoing Trade' : 'Incoming Trade'}{' '}
+                                        {isOutgoing ? 'Outgoing to' : 'Incoming from'}{' '}
                                         <span>
-                                            with {isOutgoing ? trade.recipient.username : trade.sender.username}
+                                            {isOutgoing ? trade.recipient.username : trade.sender.username}
                                         </span>
                                     </div>
                                     <div className="trade-summary">{tradeSummary}</div>
                                     <div className="trade-overview">
                                         <div className="overview-section">
-                                            {trade.offeredItems?.map((item) => (
-
-                                                <img
-                                                    key={item._id}
-                                                    src={item.imageUrl}
-                                                    alt={item.name}
-                                                    className="trade-thumb"
-                                                />
-                                            ))}
+                                            {renderCardPreview(trade.offeredItems)}
                                             <span className="packs-chip">{trade.offeredPacks} pack{trade.offeredPacks !== 1 ? 's' : ''}</span>
                                         </div>
                                         <div className="trade-arrow">for</div>
                                         <div className="overview-section">
-                                            {trade.requestedItems?.map((item) => (
-                                                <img
-                                                    key={item._id}
-                                                    src={item.imageUrl}
-                                                    alt={item.name}
-                                                    className="trade-thumb"
-                                                />
-                                            ))}
+                                            {renderCardPreview(trade.requestedItems)}
                                             <span className="packs-chip">{trade.requestedPacks} pack{trade.requestedPacks !== 1 ? 's' : ''}</span>
                                         </div>
                                     </div>

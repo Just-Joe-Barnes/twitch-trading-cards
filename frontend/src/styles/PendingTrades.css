@@ -151,6 +151,8 @@
 .thumb-more {
     font-size: 0.8rem;
     color: #bbb;
+    padding-left: 0.25rem;
+    display: inline-block;
 }
 
 .packs-chip {
