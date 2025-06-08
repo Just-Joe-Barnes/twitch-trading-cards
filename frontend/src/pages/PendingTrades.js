@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchUserProfile, fetchPendingTrades, acceptTrade, rejectTrade, cancelTrade } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner'; // Import the spinner
+import BaseCard from '../components/BaseCard';
 import '../styles/PendingTrades.css';
 
 const PendingTrades = () => {
@@ -82,19 +83,19 @@ const PendingTrades = () => {
     const renderCardPreview = (cards = []) => {
         const preview = cards.slice(0, 3);
         return (
-            <>
+            <div className="preview-cards">
                 {preview.map((item) => (
-                    <img
-                        key={item._id}
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className="trade-thumb"
-                    />
-                ))}
-                {cards.length > preview.length && (
-                    <span className="thumb-more">+{cards.length - preview.length} more</span>
-                )}
-            </>
+                    <div key={item._id} className="trade-preview">
+                        <BaseCard
+                            name={item.name}
+                            image={item.imageUrl}
+                            rarity={item.rarity}
+                            description={item.flavorText}
+                            mintNumber={item.mintNumber}
+                        />
+                    </div>
+            </div>
+
         );
     };
 
