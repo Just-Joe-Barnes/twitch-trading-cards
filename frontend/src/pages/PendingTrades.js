@@ -14,7 +14,6 @@ const PendingTrades = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filter, setFilter] = useState('all');
     const [sortOrder, setSortOrder] = useState('newest');
-    const [expandedTradeId, setExpandedTradeId] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -82,9 +81,6 @@ const PendingTrades = () => {
     const handleFilterChange = (e) => setFilter(e.target.value);
     const handleSortChange = (e) => setSortOrder(e.target.value);
 
-    const toggleTrade = (tradeId) => {
-        setExpandedTradeId((prev) => (prev === tradeId ? null : tradeId));
-    };
 
     const filteredAndSortedTrades = pendingTrades
         .filter((trade) => {
@@ -150,8 +146,7 @@ const PendingTrades = () => {
                     return (
                         <div
                             key={trade._id}
-                            className={`${tradeStatusClass} ${isExpanded ? 'expanded' : ''}`}
-                            onClick={() => toggleTrade(trade._id)}
+                            className={tradeStatusClass}
                         >
                             <div className="trade-header">
                                 <div className="trade-header-info">
@@ -164,7 +159,9 @@ const PendingTrades = () => {
                                     <div className="trade-summary">{tradeSummary}</div>
                                     <div className="trade-overview">
                                         <div className="overview-section">
-                                            {previewOffered.map((item) => (
+
+                                            {trade.offeredItems?.map((item) => (
+
                                                 <img
                                                     key={item._id}
                                                     src={item.imageUrl}
@@ -172,14 +169,11 @@ const PendingTrades = () => {
                                                     className="trade-thumb"
                                                 />
                                             ))}
-                                            {trade.offeredItems?.length > 2 && (
-                                                <span className="thumb-more">+{trade.offeredItems.length - 2}</span>
-                                            )}
                                             <span className="packs-chip">{trade.offeredPacks} pack{trade.offeredPacks !== 1 ? 's' : ''}</span>
                                         </div>
                                         <div className="trade-arrow">for</div>
                                         <div className="overview-section">
-                                            {previewRequested.map((item) => (
+                                            {trade.requestedItems?.map((item) => (
                                                 <img
                                                     key={item._id}
                                                     src={item.imageUrl}
@@ -187,99 +181,48 @@ const PendingTrades = () => {
                                                     className="trade-thumb"
                                                 />
                                             ))}
-                                            {trade.requestedItems?.length > 2 && (
-                                                <span className="thumb-more">+{trade.requestedItems.length - 2}</span>
-                                            )}
+
                                             <span className="packs-chip">{trade.requestedPacks} pack{trade.requestedPacks !== 1 ? 's' : ''}</span>
                                         </div>
                                     </div>
                                 </div>
-                                {isExpanded && (
-                                    <div className="trade-buttons-inline" onClick={(e) => e.stopPropagation()}>
-                                        {!isOutgoing ? (
-                                            <>
-                                                <button
-                                                    className="accept-button"
-                                                    onClick={(e) => handleTradeAction(trade._id, 'accept', e)}
-                                                >
-                                                    Accept
-                                                </button>
-                                                <button
-                                                    className="reject-button"
-                                                    onClick={(e) => handleTradeAction(trade._id, 'reject', e)}
-                                                >
-                                                    Reject
-                                                </button>
-                                                <button
-                                                    className="counter-button"
-                                                    onClick={(e) => handleCounterOffer(trade, e)}
-                                                >
-                                                    Counter
-                                                </button>
-                                            </>
-                                        ) : (
+                                <div className="trade-buttons-inline" onClick={(e) => e.stopPropagation()}>
+                                    {!isOutgoing ? (
+                                        <>
                                             <button
-                                                className="cancel-button"
-                                                onClick={(e) => handleTradeAction(trade._id, 'cancel', e)}
+                                                className="accept-button"
+                                                onClick={(e) => handleTradeAction(trade._id, 'accept', e)}
                                             >
-                                                Cancel Trade
+                                                Accept
                                             </button>
-                                        )}
-                                    </div>
-                                )}
+                                            <button
+                                                className="reject-button"
+                                                onClick={(e) => handleTradeAction(trade._id, 'reject', e)}
+                                            >
+                                                Reject
+                                            </button>
+                                            <button
+                                                className="counter-button"
+                                                onClick={(e) => handleCounterOffer(trade, e)}
+                                            >
+                                                Counter
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <button
+                                            className="cancel-button"
+                                            onClick={(e) => handleTradeAction(trade._id, 'cancel', e)}
+                                        >
+                                            Cancel Trade
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="trade-timestamp">
                                 Created on: {new Date(trade.createdAt).toLocaleString()}
                             </div>
 
-                            <div className={`trade-content-wrapper ${isExpanded ? 'expanded' : ''}`}>
-                                <div className="trade-content">
-                                    <div className="trade-section">
-                                        <h4>Offered Items</h4>
-                                        <div className="cards-grid">
-                                            {trade.offeredItems?.length > 0 ? (
-                                                trade.offeredItems.map((item) => (
-                                                    <BaseCard
-                                                        key={item._id}
-                                                        name={item.name}
-                                                        image={item.imageUrl}
-                                                        rarity={item.rarity}
-                                                        description={item.flavorText}
-                                                        mintNumber={item.mintNumber}
-                                                        maxMint={item.maxMint || '???'}
-                                                    />
-                                                ))
-                                            ) : (
-                                                <p>No offered items.</p>
-                                            )}
-                                        </div>
-                                        <p className="packs-info">Packs Offered: {trade.offeredPacks}</p>
-                                    </div>
-
-                                    <div className="trade-section">
-                                        <h4>Requested Items</h4>
-                                        <div className="cards-grid">
-                                            {trade.requestedItems?.length > 0 ? (
-                                                trade.requestedItems.map((item) => (
-                                                    <BaseCard
-                                                        key={item._id}
-                                                        name={item.name}
-                                                        image={item.imageUrl}
-                                                        rarity={item.rarity}
-                                                        description={item.flavorText}
-                                                        mintNumber={item.mintNumber}
-                                                        maxMint={item.maxMint || '???'}
-                                                    />
-                                                ))
-                                            ) : (
-                                                <p>No requested items.</p>
-                                            )}
-                                        </div>
-                                        <p className="packs-info">Packs Requested: {trade.requestedPacks}</p>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     );
                 })}

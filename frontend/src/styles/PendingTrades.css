@@ -85,10 +85,6 @@
     position: relative;
 }
 
-.trade-card.expanded {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-}
-
     .trade-card:hover {
         transform: translateY(-2px);
     }
@@ -220,60 +216,6 @@
     margin-bottom: 1rem;
 }
 
-/* Trade content wrapper for smooth expand/collapse */
-.trade-content-wrapper {
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition: max-height 0.5s ease, opacity 0.5s ease;
-}
-
-    .trade-content-wrapper.expanded {
-        max-height: 1200px; /* Increased max-height to ensure full content visibility */
-        opacity: 1;
-        overflow: visible; /* Allow overflow so both sides are visible */
-        margin-bottom: 1rem; /* Extra space so buttons are not overlapped */
-    }
-
-/* Trade Content */
-.trade-content {
-    margin-bottom: 1rem;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-}
-
-/* Trade Sections (Offer/Request) */
-.trade-section {
-    background: var(--surface-dark);
-    border: 1px solid var(--border-dark);
-    padding: 1.25rem;
-    border-radius: var(--border-radius);
-    margin-bottom: 1.5rem;
-}
-
-    .trade-section h4 {
-        font-size: 1.2rem;
-        font-weight: 500;
-        margin-bottom: 0.75rem;
-        color: var(--text-primary);
-    }
-
-/* Cards Grid inside a trade section */
-.cards-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: center;
-}
-
-/* Packs Info */
-.packs-info {
-    margin-top: 0.5rem;
-    font-weight: 600;
-    text-align: center;
-}
-
 /* Error and No Trades Messages */
 .error-message,
 .no-trades {
@@ -290,8 +232,4 @@
         align-items: center;
     }
 
-    .trade-content {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
 }
