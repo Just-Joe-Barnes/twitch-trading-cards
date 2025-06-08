@@ -2,10 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchUserProfile, fetchPendingTrades, acceptTrade, rejectTrade, cancelTrade } from '../utils/api';
-import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner'; // Import the spinner
 import '../styles/PendingTrades.css';
-import '../styles/CardComponent.css'; // Ensure BaseCard styles are applied
 
 const PendingTrades = () => {
     const [pendingTrades, setPendingTrades] = useState([]);
@@ -14,7 +12,6 @@ const PendingTrades = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filter, setFilter] = useState('all');
     const [sortOrder, setSortOrder] = useState('newest');
-    const [expandedTrades, setExpandedTrades] = useState({});
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -82,12 +79,6 @@ const PendingTrades = () => {
     const handleFilterChange = (e) => setFilter(e.target.value);
     const handleSortChange = (e) => setSortOrder(e.target.value);
 
-    const toggleTrade = (tradeId) => {
-        setExpandedTrades((prevState) => ({
-            ...prevState,
-            [tradeId]: !prevState[tradeId],
-        }));
-    };
 
     const filteredAndSortedTrades = pendingTrades
         .filter((trade) => {
@@ -141,107 +132,88 @@ const PendingTrades = () => {
                 {filteredAndSortedTrades.map((trade) => {
                     const isOutgoing = trade.sender._id === loggedInUser._id;
                     const tradeStatusClass = `trade-card ${isOutgoing ? 'outgoing' : 'incoming'}`;
-                    const isExpanded = expandedTrades[trade._id];
+
+                    const offeredItemsCount = trade.offeredItems?.length || 0;
+                    const requestedItemsCount = trade.requestedItems?.length || 0;
+                    const tradeSummary = `${offeredItemsCount} item(s) & ${trade.offeredPacks} pack(s) for ${requestedItemsCount} item(s) & ${trade.requestedPacks} pack(s)`;
 
                     return (
                         <div
                             key={trade._id}
                             className={tradeStatusClass}
-                            onClick={() => toggleTrade(trade._id)}
                         >
                             <div className="trade-header">
                                 <div className="trade-header-info">
-                                    {isOutgoing ? 'Outgoing Trade' : 'Incoming Trade'}{' '}
-                                    <span>
-                                        with {isOutgoing ? trade.recipient.username : trade.sender.username}
-                                    </span>
-                                </div>
-                                {isExpanded && (
-                                    <div className="trade-buttons-inline" onClick={(e) => e.stopPropagation()}>
-                                        {!isOutgoing ? (
-                                            <>
-                                                <button
-                                                    className="accept-button"
-                                                    onClick={(e) => handleTradeAction(trade._id, 'accept', e)}
-                                                >
-                                                    Accept
-                                                </button>
-                                                <button
-                                                    className="reject-button"
-                                                    onClick={(e) => handleTradeAction(trade._id, 'reject', e)}
-                                                >
-                                                    Reject
-                                                </button>
-                                                <button
-                                                    className="counter-button"
-                                                    onClick={(e) => handleCounterOffer(trade, e)}
-                                                >
-                                                    Counter
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <button
-                                                className="cancel-button"
-                                                onClick={(e) => handleTradeAction(trade._id, 'cancel', e)}
-                                            >
-                                                Cancel Trade
-                                            </button>
-                                        )}
+                                    <div className="trade-title">
+                                        {isOutgoing ? 'Outgoing Trade' : 'Incoming Trade'}{' '}
+                                        <span>
+                                            with {isOutgoing ? trade.recipient.username : trade.sender.username}
+                                        </span>
                                     </div>
-                                )}
+                                    <div className="trade-summary">{tradeSummary}</div>
+                                    <div className="trade-overview">
+                                        <div className="overview-section">
+                                            {trade.offeredItems?.map((item) => (
+                                                <img
+                                                    key={item._id}
+                                                    src={item.imageUrl}
+                                                    alt={item.name}
+                                                    className="trade-thumb"
+                                                />
+                                            ))}
+                                            <span className="packs-chip">{trade.offeredPacks} pack{trade.offeredPacks !== 1 ? 's' : ''}</span>
+                                        </div>
+                                        <div className="trade-arrow">for</div>
+                                        <div className="overview-section">
+                                            {trade.requestedItems?.map((item) => (
+                                                <img
+                                                    key={item._id}
+                                                    src={item.imageUrl}
+                                                    alt={item.name}
+                                                    className="trade-thumb"
+                                                />
+                                            ))}
+                                            <span className="packs-chip">{trade.requestedPacks} pack{trade.requestedPacks !== 1 ? 's' : ''}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="trade-buttons-inline" onClick={(e) => e.stopPropagation()}>
+                                    {!isOutgoing ? (
+                                        <>
+                                            <button
+                                                className="accept-button"
+                                                onClick={(e) => handleTradeAction(trade._id, 'accept', e)}
+                                            >
+                                                Accept
+                                            </button>
+                                            <button
+                                                className="reject-button"
+                                                onClick={(e) => handleTradeAction(trade._id, 'reject', e)}
+                                            >
+                                                Reject
+                                            </button>
+                                            <button
+                                                className="counter-button"
+                                                onClick={(e) => handleCounterOffer(trade, e)}
+                                            >
+                                                Counter
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <button
+                                            className="cancel-button"
+                                            onClick={(e) => handleTradeAction(trade._id, 'cancel', e)}
+                                        >
+                                            Cancel Trade
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="trade-timestamp">
                                 Created on: {new Date(trade.createdAt).toLocaleString()}
                             </div>
 
-                            <div className={`trade-content-wrapper ${isExpanded ? 'expanded' : ''}`}>
-                                <div className="trade-content">
-                                    <div className="trade-section">
-                                        <h4>Offered Items</h4>
-                                        <div className="cards-grid">
-                                            {trade.offeredItems?.length > 0 ? (
-                                                trade.offeredItems.map((item) => (
-                                                    <BaseCard
-                                                        key={item._id}
-                                                        name={item.name}
-                                                        image={item.imageUrl}
-                                                        rarity={item.rarity}
-                                                        description={item.flavorText}
-                                                        mintNumber={item.mintNumber}
-                                                        maxMint={item.maxMint || '???'}
-                                                    />
-                                                ))
-                                            ) : (
-                                                <p>No offered items.</p>
-                                            )}
-                                        </div>
-                                        <p className="packs-info">Packs Offered: {trade.offeredPacks}</p>
-                                    </div>
-
-                                    <div className="trade-section">
-                                        <h4>Requested Items</h4>
-                                        <div className="cards-grid">
-                                            {trade.requestedItems?.length > 0 ? (
-                                                trade.requestedItems.map((item) => (
-                                                    <BaseCard
-                                                        key={item._id}
-                                                        name={item.name}
-                                                        image={item.imageUrl}
-                                                        rarity={item.rarity}
-                                                        description={item.flavorText}
-                                                        mintNumber={item.mintNumber}
-                                                        maxMint={item.maxMint || '???'}
-                                                    />
-                                                ))
-                                            ) : (
-                                                <p>No requested items.</p>
-                                            )}
-                                        </div>
-                                        <p className="packs-info">Packs Requested: {trade.requestedPacks}</p>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     );
                 })}
