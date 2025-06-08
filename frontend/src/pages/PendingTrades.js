@@ -143,18 +143,25 @@ const PendingTrades = () => {
                     const tradeStatusClass = `trade-card ${isOutgoing ? 'outgoing' : 'incoming'}`;
                     const isExpanded = expandedTrades[trade._id];
 
+                    const offeredCount = trade.offeredItems?.length || 0;
+                    const requestedCount = trade.requestedItems?.length || 0;
+                    const tradeSummary = `${offeredCount} item(s) & ${trade.offeredPacks} pack(s) for ${requestedCount} item(s) & ${trade.requestedPacks} pack(s)`;
+
                     return (
                         <div
                             key={trade._id}
-                            className={tradeStatusClass}
+                            className={`${tradeStatusClass} ${isExpanded ? 'expanded' : ''}`}
                             onClick={() => toggleTrade(trade._id)}
                         >
                             <div className="trade-header">
                                 <div className="trade-header-info">
-                                    {isOutgoing ? 'Outgoing Trade' : 'Incoming Trade'}{' '}
-                                    <span>
-                                        with {isOutgoing ? trade.recipient.username : trade.sender.username}
-                                    </span>
+                                    <div className="trade-title">
+                                        {isOutgoing ? 'Outgoing Trade' : 'Incoming Trade'}{' '}
+                                        <span>
+                                            with {isOutgoing ? trade.recipient.username : trade.sender.username}
+                                        </span>
+                                    </div>
+                                    <div className="trade-summary">{tradeSummary}</div>
                                 </div>
                                 {isExpanded && (
                                     <div className="trade-buttons-inline" onClick={(e) => e.stopPropagation()}>
