@@ -134,6 +134,10 @@ const PendingTrades = () => {
                 {filteredAndSortedTrades.map((trade) => {
                     const isOutgoing = trade.sender._id === loggedInUser._id;
                     const tradeStatusClass = `trade-card ${isOutgoing ? 'outgoing' : 'incoming'}`;
+                    const isExpanded = expandedTradeId === trade._id;
+                    const previewOffered = trade.offeredItems?.slice(0, 2) || [];
+                    const previewRequested = trade.requestedItems?.slice(0, 2) || [];
+
 
                     const offeredItemsCount = trade.offeredItems?.length || 0;
                     const requestedItemsCount = trade.requestedItems?.length || 0;
@@ -155,7 +159,9 @@ const PendingTrades = () => {
                                     <div className="trade-summary">{tradeSummary}</div>
                                     <div className="trade-overview">
                                         <div className="overview-section">
+
                                             {trade.offeredItems?.map((item) => (
+
                                                 <img
                                                     key={item._id}
                                                     src={item.imageUrl}
@@ -175,6 +181,7 @@ const PendingTrades = () => {
                                                     className="trade-thumb"
                                                 />
                                             ))}
+
                                             <span className="packs-chip">{trade.requestedPacks} pack{trade.requestedPacks !== 1 ? 's' : ''}</span>
                                         </div>
                                     </div>
