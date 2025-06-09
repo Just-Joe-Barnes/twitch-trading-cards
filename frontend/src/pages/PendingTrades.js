@@ -103,7 +103,6 @@ const PendingTrades = () => {
     };
   }, [openTrade]);
 
-
   const handleAction = async (id, action) => {
     const messages = {
       accept: 'Are you sure you want to accept this trade?',
