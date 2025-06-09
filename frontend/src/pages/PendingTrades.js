@@ -77,6 +77,32 @@ const PendingTrades = () => {
     return () => document.removeEventListener('keydown', handleKey);
   }, [showFilters]);
 
+  useEffect(() => {
+    if (!openTrade) return;
+    document.body.classList.add('modal-open');
+    const overlay = document.querySelector('.modal-overlay');
+    const focusable = overlay?.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    focusable?.[0]?.focus();
+    const trap = (e) => {
+      if (e.key === 'Escape') setOpenTrade(null);
+      if (e.key === 'Tab' && focusable && focusable.length > 0) {
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey ? document.activeElement === first : document.activeElement === last) {
+          e.preventDefault();
+          (e.shiftKey ? last : first).focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', trap);
+    return () => {
+      document.body.classList.remove('modal-open');
+      document.removeEventListener('keydown', trap);
+    };
+  }, [openTrade]);
+
   const refreshTrades = async () => {
     if (!user) return;
     try {
@@ -95,14 +121,16 @@ const PendingTrades = () => {
       cancel: 'Are you sure you want to cancel this trade?',
     };
     if (!window.confirm(messages[action])) return;
+    const prev = trades;
+    setTrades(prev.filter((t) => t._id !== id));
     try {
       if (action === 'accept') await acceptTrade(id);
       if (action === 'reject') await rejectTrade(id);
       if (action === 'cancel') await cancelTrade(id);
-      refreshTrades();
     } catch (err) {
       console.error(`Failed to ${action} trade:`, err);
-      setError(`Failed to ${action} trade`);
+      setTrades(prev);
+      window.showToast && window.showToast('Trade failed', 'error');
     }
   };
 
@@ -228,7 +256,7 @@ const PendingTrades = () => {
               </div>
             ))}
           </div>
-          <span className="packs-chip">
+          <span className="packs-label">
             {trade.offeredPacks} pack{trade.offeredPacks !== 1 ? 's' : ''}
           </span>
         </div>
@@ -247,7 +275,7 @@ const PendingTrades = () => {
               </div>
             ))}
           </div>
-          <span className="packs-chip">
+          <span className="packs-label">
             {trade.requestedPacks} pack{trade.requestedPacks !== 1 ? 's' : ''}
           </span>
         </div>
@@ -294,30 +322,34 @@ const PendingTrades = () => {
       aria-labelledby="trade-dialog-title"
       onClick={() => setOpenTrade(null)}
     >
-      <div className="trade-modal" onClick={(e) => e.stopPropagation()}>
-        <header className="modal-head">
-          <div className="avatar">
-            {(isOutgoing ? trade.recipient.username : trade.sender.username)
-              .charAt(0)
-              .toUpperCase()}
-          </div>
-          <div className="modal-meta">
-            <h2 id="trade-dialog-title">
-              {isOutgoing ? trade.recipient.username : trade.sender.username}
-            </h2>
-            <span className="modal-age">Sent {timeAgo(trade.createdAt)}</span>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <header className="modal-header">
+          <div className="modal-header-info">
+            <div className="avatar">
+              {(isOutgoing ? trade.recipient.username : trade.sender.username)
+                .charAt(0)
+                .toUpperCase()}
+            </div>
+            <div className="user-and-timestamp">
+              <h2 id="trade-dialog-title">
+                {isOutgoing ? trade.recipient.username : trade.sender.username}
+              </h2>
+              <time dateTime={trade.createdAt}>
+                Sent {timeAgo(trade.createdAt)}
+              </time>
+            </div>
           </div>
           <button
-            className="modal-close"
+            className="modal-close-btn"
             onClick={() => setOpenTrade(null)}
-            aria-label="Close"
+            aria-label="Close trade dialog"
           >
-            ✕
+            &times;
           </button>
         </header>
         <div className="modal-body">
-          <section>
-            <h3>Offered</h3>
+          <section aria-labelledby="offered-label">
+            <h3 id="offered-label">Offered</h3>
             <div className="cards-grid">
               {trade.offeredItems?.map((item) => (
                 <div key={item._id} className="full-card">
@@ -330,13 +362,13 @@ const PendingTrades = () => {
                   />
                 </div>
               ))}
-              <span className="packs-chip">
-                {trade.offeredPacks} pack{trade.offeredPacks !== 1 ? 's' : ''}
-              </span>
+            </div>
+            <div className="packs-label text-14 text-muted">
+              {trade.offeredPacks} pack{trade.offeredPacks !== 1 ? 's' : ''}
             </div>
           </section>
-          <section>
-            <h3>Requested</h3>
+          <section aria-labelledby="requested-label">
+            <h3 id="requested-label">Requested</h3>
             <div className="cards-grid">
               {trade.requestedItems?.map((item) => (
                 <div key={item._id} className="full-card">
@@ -349,13 +381,13 @@ const PendingTrades = () => {
                   />
                 </div>
               ))}
-              <span className="packs-chip">
-                {trade.requestedPacks} pack{trade.requestedPacks !== 1 ? 's' : ''}
-              </span>
+            </div>
+            <div className="packs-label text-14 text-muted">
+              {trade.requestedPacks} pack{trade.requestedPacks !== 1 ? 's' : ''}
             </div>
           </section>
         </div>
-        <div className="modal-actions">
+        <footer className="modal-footer">
           {!isOutgoing ? (
             <>
               <button
@@ -385,7 +417,7 @@ const PendingTrades = () => {
               Cancel
             </button>
           )}
-        </div>
+        </footer>
       </div>
     </div>
   );
