@@ -130,7 +130,7 @@ const PendingTrades = () => {
         return <LoadingSpinner />;
     }
 
-    return (
+                <div className="trades-list">
         <div className="pending-trades-container">
             <h1 className="page-title">Pending Trades</h1>
 
