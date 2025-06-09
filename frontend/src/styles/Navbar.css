@@ -175,6 +175,7 @@
 /* Add this rule or update your existing .navbar-notifications */
 .navbar-notifications {
     margin-left: auto;
+    padding-left: 1rem; /* ensure space before username */
     display: flex;
     align-items: center;
     gap: 0.5rem;

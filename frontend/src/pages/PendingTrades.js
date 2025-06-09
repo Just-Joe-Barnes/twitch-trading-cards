@@ -200,6 +200,7 @@ const PendingTrades = () => {
             {trade.offeredPacks} pack{trade.offeredPacks !== 1 ? 's' : ''}
           </span>
         </div>
+
         <div className="trade-side">
           <h3>Requested</h3>
           <div className="cards-grid">

@@ -186,6 +186,7 @@
   border-radius: var(--border-radius);
   padding: 1rem;
 }
+
 .cards-grid {
   display: flex;
   flex-wrap: wrap;
@@ -250,6 +251,7 @@
   color: var(--text-primary);
   font-size: 1.5rem;
   cursor: pointer;
+
 }
 
 @media (max-width: 768px) {
