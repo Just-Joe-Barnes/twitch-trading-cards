@@ -53,10 +53,10 @@
 }
 
 /* Grid layout for trade tiles */
-.trades-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 2rem;
+.trades-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
     .filters input,
@@ -79,10 +79,11 @@
     background: var(--surface-dark);
     border-radius: var(--border-radius);
     padding: 2rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     transition: var(--transition);
     position: relative;
+    width: 100%;
 }
 
 
@@ -148,8 +149,8 @@
 }
 
 .trade-preview {
-    width: 80px;
-    max-width: 80px;
+    width: 150px;
+    max-width: 150px;
 }
 
 .trade-preview .card-container {
@@ -245,7 +246,8 @@
 }
 
 .full-card {
-    width: 120px;
+    width: 300px;
+    max-width: 300px;
 }
 
 .full-card .card-container {
@@ -276,4 +278,12 @@
         align-items: center;
     }
 
+    .trade-overview {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .trade-buttons-inline {
+        margin-top: 0.5rem;
+    }
 }

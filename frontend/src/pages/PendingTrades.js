@@ -84,7 +84,6 @@ const PendingTrades = () => {
         setExpandedTrade((prev) => (prev === tradeId ? null : tradeId));
     };
 
-
     const cardPreview = (cards = []) => {
         const preview = cards.slice(0, 3);
         return (
@@ -156,7 +155,7 @@ const PendingTrades = () => {
             {filteredAndSortedTrades.length === 0 ? (
                 <p className="no-trades">No pending trades.</p>
             ) : (
-                <div className="trades-grid">
+                <div className="trades-list">
                 {filteredAndSortedTrades.map((trade) => {
                     const isOutgoing = trade.sender._id === loggedInUser._id;
                     const tradeStatusClass = `trade-card ${isOutgoing ? 'outgoing' : 'incoming'} ${expandedTrade === trade._id ? 'expanded' : 'collapsed'}`;
