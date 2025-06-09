@@ -20,6 +20,7 @@ const PendingTrades = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState('newest');
   const [activeTab, setActiveTab] = useState('incoming');
+  const [showFilters, setShowFilters] = useState(false);
   const [statusFilters, setStatusFilters] = useState({
     pending: true,
     countered: true,
@@ -32,6 +33,7 @@ const PendingTrades = () => {
   });
   const [openTrade, setOpenTrade] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const sidebarRef = useRef(null);
   const gridRef = useRef(null);
   const [gridWidth, setGridWidth] = useState(0);
   const navigate = useNavigate();
@@ -64,6 +66,16 @@ const PendingTrades = () => {
     return () => window.removeEventListener('resize', updateWidth);
   }, []);
 
+  useEffect(() => {
+    if (!showFilters) return;
+    const firstInput = sidebarRef.current?.querySelector('input, select, button');
+    firstInput?.focus();
+    const handleKey = (e) => {
+      if (e.key === 'Escape') setShowFilters(false);
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [showFilters]);
 
   useEffect(() => {
     if (!openTrade) return;
@@ -291,9 +303,7 @@ const PendingTrades = () => {
     </div>
   );
 
-  const TradeModal = ({ trade, isOutgoing }) => {
-    const [showCards, setShowCards] = useState(false);
-    return (
+  const TradeModal = ({ trade, isOutgoing }) => (
     <div
       className="modal-overlay"
       role="dialog"
@@ -327,62 +337,44 @@ const PendingTrades = () => {
           </button>
         </header>
         <div className="modal-body">
-          {!showCards && (
-            <div className="modal-summary">
-              <p>
-                {trade.offeredItems.length} offered, {trade.requestedItems.length}
-                {' '}requested
-              </p>
-              <button className="toggle-cards" onClick={() => setShowCards(true)}>
-                View All Cards
-              </button>
+          <section aria-labelledby="offered-label">
+            <h3 id="offered-label">Offered</h3>
+            <div className="cards-grid">
+              {trade.offeredItems?.map((item) => (
+                <div key={item._id} className="full-card">
+                  <BaseCard
+                    name={item.name}
+                    image={item.imageUrl}
+                    rarity={item.rarity}
+                    description={item.flavorText}
+                    mintNumber={item.mintNumber}
+                  />
+                </div>
+              ))}
             </div>
-          )}
-          {showCards && (
-            <>
-              <section aria-labelledby="offered-label">
-                <h3 id="offered-label">Offered</h3>
-                <div className="cards-grid">
-                  {trade.offeredItems?.map((item) => (
-                    <div key={item._id} className="full-card">
-                      <BaseCard
-                        name={item.name}
-                        image={item.imageUrl}
-                        rarity={item.rarity}
-                        description={item.flavorText}
-                        mintNumber={item.mintNumber}
-                      />
-                    </div>
-                  ))}
+            <div className="packs-label text-14 text-muted">
+              {trade.offeredPacks} pack{trade.offeredPacks !== 1 ? 's' : ''}
+            </div>
+          </section>
+          <section aria-labelledby="requested-label">
+            <h3 id="requested-label">Requested</h3>
+            <div className="cards-grid">
+              {trade.requestedItems?.map((item) => (
+                <div key={item._id} className="full-card">
+                  <BaseCard
+                    name={item.name}
+                    image={item.imageUrl}
+                    rarity={item.rarity}
+                    description={item.flavorText}
+                    mintNumber={item.mintNumber}
+                  />
                 </div>
-                <div className="packs-label text-14 text-muted">
-                  {trade.offeredPacks} pack{trade.offeredPacks !== 1 ? 's' : ''}
-                </div>
-              </section>
-              <section aria-labelledby="requested-label">
-                <h3 id="requested-label">Requested</h3>
-                <div className="cards-grid">
-                  {trade.requestedItems?.map((item) => (
-                    <div key={item._id} className="full-card">
-                      <BaseCard
-                        name={item.name}
-                        image={item.imageUrl}
-                        rarity={item.rarity}
-                        description={item.flavorText}
-                        mintNumber={item.mintNumber}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="packs-label text-14 text-muted">
-                  {trade.requestedPacks} pack{trade.requestedPacks !== 1 ? 's' : ''}
-                </div>
-                <button className="toggle-cards" onClick={() => setShowCards(false)}>
-                  Hide Cards
-                </button>
-              </section>
-            </>
-          )}
+              ))}
+            </div>
+            <div className="packs-label text-14 text-muted">
+              {trade.requestedPacks} pack{trade.requestedPacks !== 1 ? 's' : ''}
+            </div>
+          </section>
         </div>
         <footer className="modal-footer">
           {!isOutgoing ? (
@@ -418,7 +410,6 @@ const PendingTrades = () => {
       </div>
     </div>
   );
-  };
 
   return (
     <div className="pending-trades-page">
@@ -446,67 +437,94 @@ const PendingTrades = () => {
             Outgoing
           </button>
         </div>
-        <div className="filter-bar">
-          <label htmlFor="filter-user" className="sr-only">
-            Filter by user
-          </label>
-          <input
-            id="filter-user"
-            type="search"
-            placeholder="Username…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <label htmlFor="filter-sort" className="sr-only">
-            Sort
-          </label>
-          <select
-            id="filter-sort"
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-          >
-            <option value="newest">Date (newest)</option>
-            <option value="oldest">Date (oldest)</option>
-            <option value="rarity">Rarity</option>
-          </select>
-          <fieldset>
-            <legend>Status</legend>
-            {['pending', 'countered', 'expired'].map((s) => (
-              <label key={s}>
-                <input
-                  type="checkbox"
-                  checked={statusFilters[s]}
-                  onChange={(e) =>
-                    setStatusFilters({
-                      ...statusFilters,
-                      [s]: e.target.checked,
-                    })
-                  }
-                />
-                {s.charAt(0).toUpperCase() + s.slice(1)}
-              </label>
-            ))}
-          </fieldset>
-          <fieldset>
-            <legend>Card type</legend>
-            {Object.keys(typeFilters).map((t) => (
-              <label key={t}>
-                <input
-                  type="checkbox"
-                  checked={typeFilters[t]}
-                  onChange={(e) =>
-                    setTypeFilters({
-                      ...typeFilters,
-                      [t]: e.target.checked,
-                    })
-                  }
-                />
-                {t}
-              </label>
-            ))}
-          </fieldset>
-        </div>
+        <button
+          className="open-filters"
+          onClick={() => setShowFilters(true)}
+        >
+          Filters
+        </button>
       </header>
+
+      {showFilters && (
+        <>
+          <div
+            className="filters-overlay"
+            onClick={() => setShowFilters(false)}
+          />
+          <aside
+            className="filters-sidebar"
+            ref={sidebarRef}
+            role="dialog"
+            aria-label="Trade filters"
+          >
+            <button
+              className="close-filters"
+              onClick={() => setShowFilters(false)}
+              aria-label="Close filters"
+            >
+              ✕
+            </button>
+            <label htmlFor="filter-user" className="sr-only">
+              Filter by user
+            </label>
+            <input
+              id="filter-user"
+              type="search"
+              placeholder="Username…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <label htmlFor="filter-sort" className="sr-only">
+              Sort
+            </label>
+            <select
+              id="filter-sort"
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+            >
+              <option value="newest">Date (newest)</option>
+              <option value="oldest">Date (oldest)</option>
+              <option value="rarity">Rarity</option>
+            </select>
+            <fieldset>
+              <legend>Status</legend>
+              {['pending', 'countered', 'expired'].map((s) => (
+                <label key={s}>
+                  <input
+                    type="checkbox"
+                    checked={statusFilters[s]}
+                    onChange={(e) =>
+                      setStatusFilters({
+                        ...statusFilters,
+                        [s]: e.target.checked,
+                      })
+                    }
+                  />
+                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                </label>
+              ))}
+            </fieldset>
+            <fieldset>
+              <legend>Card type</legend>
+              {Object.keys(typeFilters).map((t) => (
+                <label key={t}>
+                  <input
+                    type="checkbox"
+                    checked={typeFilters[t]}
+                    onChange={(e) =>
+                      setTypeFilters({
+                        ...typeFilters,
+                        [t]: e.target.checked,
+                      })
+                    }
+                  />
+                  {t}
+                </label>
+              ))}
+            </fieldset>
+          </aside>
+        </>
+      )}
 
       {!isMobile && (
         <div
