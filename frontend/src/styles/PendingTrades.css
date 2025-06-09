@@ -246,12 +246,12 @@ body.modal-open {
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 16px;
 }
 .full-card {
-  width: 150px;
-  max-width: 150px;
+  width: 300px;
+  max-width: 300px;
 }
 .full-card .card-container {
   margin: 0 !important;
