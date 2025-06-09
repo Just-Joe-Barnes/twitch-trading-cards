@@ -1,7 +1,7 @@
 :root {
-  --brand-primary: #8c52ff;
+  --brand-primary: #db88db;
   --brand-secondary: #88cddb;
-  --background-dark: #0e0e0e;
+  --background-dark: #0a0a0a;
   --surface-dark: #1a1a1a;
   --surface-darker: #141414;
   --text-primary: rgba(255, 255, 255, 0.95);
@@ -70,9 +70,7 @@
   padding: 0.5rem 1rem;
   color: var(--text-primary);
   cursor: pointer;
-  transition: filter 0.2s ease;
 }
-.open-filters:hover { filter: brightness(90%); }
 
 .filters-overlay {
   position: fixed;
@@ -96,14 +94,8 @@
   flex-direction: column;
   gap: 0.75rem;
   box-shadow: -2px 0 8px rgba(0, 0, 0, 0.5);
-  transform: translateX(100%);
-  animation: slide-in 0.2s ease forwards;
+  transform: translateX(0);
   z-index: 20;
-}
-
-@keyframes slide-in {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
 }
 .filters-sidebar input,
 .filters-sidebar select {
@@ -120,9 +112,7 @@
   color: var(--text-primary);
   font-size: 1.25rem;
   cursor: pointer;
-  transition: filter 0.2s ease;
 }
-.close-filters:hover { filter: brightness(90%); }
 
 .trades-grid {
   display: grid;
@@ -136,11 +126,10 @@
   border-radius: var(--border-radius);
   padding: 1rem;
   cursor: pointer;
-  transition: box-shadow 0.2s ease, filter 0.2s ease;
+  transition: box-shadow 0.2s ease;
 }
 .trade-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  filter: brightness(90%);
 }
 .trade-card:focus {
   outline: 2px dashed var(--brand-primary);
@@ -277,18 +266,11 @@
   font-weight: bold;
   cursor: pointer;
   color: var(--text-primary);
-  transition: filter 0.2s ease, transform 0.1s ease;
 }
-.trade-actions button:hover {
-  filter: brightness(90%);
-}
-.trade-actions button:active {
-  transform: scale(0.97);
-}
-.accept-button { background: #3cb043; }
-.reject-button { background: #e53e3e; }
+.accept-button { background: #2e7d32; }
+.reject-button { background: #c62828; }
 .cancel-button { background: #616161; }
-.counter-button { background: #5bc0de; }
+.counter-button { background: var(--brand-secondary); }
 
 .modal-overlay {
   position: fixed;
@@ -301,7 +283,6 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fade-in 0.2s ease forwards;
 }
 .trade-modal {
   background: var(--surface-dark);
@@ -312,8 +293,6 @@
   position: relative;
   max-height: 90vh;
   overflow-y: auto;
-  transform: scale(0.9);
-  animation: pop 0.2s ease forwards;
 }
 
 .modal-head {
@@ -357,22 +336,6 @@
   height: 40px;
   border-radius: 8px;
 
-}
-
-@media (max-width: 768px) {
-  .modal-actions {
-    flex-direction: column;
-  }
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes pop {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
 }
 
 @media (max-width: 768px) {

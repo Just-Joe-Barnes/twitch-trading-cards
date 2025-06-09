@@ -1,6 +1,5 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { FixedSizeGrid as Grid } from 'react-window';
 import { useNavigate } from 'react-router-dom';
 import {
   fetchUserProfile,
@@ -34,8 +33,6 @@ const PendingTrades = () => {
   const [openTrade, setOpenTrade] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const sidebarRef = useRef(null);
-  const gridRef = useRef(null);
-  const [gridWidth, setGridWidth] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,13 +54,6 @@ const PendingTrades = () => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  useEffect(() => {
-    const updateWidth = () => setGridWidth(gridRef.current?.offsetWidth || 0);
-    updateWidth();
-    window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
   }, []);
 
   useEffect(() => {
@@ -178,11 +168,11 @@ const PendingTrades = () => {
       </header>
       <div className="preview">
         {trade.offeredItems[0] && (
-          <img src={trade.offeredItems[0].imageUrl} alt="offered" loading="lazy" />
+          <img src={trade.offeredItems[0].imageUrl} alt="offered" />
         )}
         <span className="arrow">→</span>
         {trade.requestedItems[0] && (
-          <img src={trade.requestedItems[0].imageUrl} alt="requested" loading="lazy" />
+          <img src={trade.requestedItems[0].imageUrl} alt="requested" />
         )}
       </div>
       <footer className="card-foot">{timeAgo(trade.createdAt)}</footer>
@@ -511,36 +501,9 @@ const PendingTrades = () => {
           role="tabpanel"
           id={activeTab === 'incoming' ? 'panel-in' : 'panel-out'}
           aria-labelledby={activeTab === 'incoming' ? 'tab-in' : 'tab-out'}
-          ref={gridRef}
         >
           {tradesToShow.length === 0 ? (
             <p className="no-trades">No trades.</p>
-          ) : tradesToShow.length > 20 ? (
-            <Grid
-              columnCount={Math.max(1, Math.floor(gridWidth / 264))}
-              columnWidth={264}
-              height={600}
-              rowCount={Math.ceil(
-                tradesToShow.length / Math.max(1, Math.floor(gridWidth / 264))
-              )}
-              rowHeight={360}
-              width={gridWidth}
-            >
-              {({ columnIndex, rowIndex, style }) => {
-                const colCount = Math.max(1, Math.floor(gridWidth / 264));
-                const index = rowIndex * colCount + columnIndex;
-                const trade = tradesToShow[index];
-                if (!trade) return null;
-                return (
-                  <div style={{ ...style, padding: 12 }}>
-                    <TradeTile
-                      trade={trade}
-                      isOutgoing={activeTab === 'outgoing'}
-                    />
-                  </div>
-                );
-              }}
-            </Grid>
           ) : (
             tradesToShow.map((t) => (
               <TradeTile
