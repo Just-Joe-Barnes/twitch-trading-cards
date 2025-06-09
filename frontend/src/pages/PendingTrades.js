@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchUserProfile, fetchPendingTrades, acceptTrade, rejectTrade, cancelTrade } from '../utils/api';
+import {
+  fetchUserProfile,
+  fetchPendingTrades,
+  acceptTrade,
+  rejectTrade,
+  cancelTrade,
+} from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import BaseCard from '../components/BaseCard';
 import '../styles/PendingTrades.css';
@@ -11,6 +17,10 @@ const PendingTrades = () => {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState('newest');
+  const [activeTab, setActiveTab] = useState('incoming');
+  const [showFilters, setShowFilters] = useState(false);
+  const [openTrade, setOpenTrade] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,6 +36,12 @@ const PendingTrades = () => {
       }
     };
     load();
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const refreshTrades = async () => {
@@ -47,9 +63,9 @@ const PendingTrades = () => {
     };
     if (!window.confirm(messages[action])) return;
     try {
-      if (action === 'accept') await acceptTrade(id, user._id);
-      if (action === 'reject') await rejectTrade(id, user._id);
-      if (action === 'cancel') await cancelTrade(id, user._id);
+      if (action === 'accept') await acceptTrade(id);
+      if (action === 'reject') await rejectTrade(id);
+      if (action === 'cancel') await cancelTrade(id);
       refreshTrades();
     } catch (err) {
       console.error(`Failed to ${action} trade:`, err);
@@ -84,41 +100,87 @@ const PendingTrades = () => {
 
   const incoming = pending
     .filter((t) => t.recipient._id === user._id)
-    .filter((t) => t.sender.username.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter((t) =>
+      t.sender.username.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     .sort(sortFn);
   const outgoing = pending
     .filter((t) => t.sender._id === user._id)
-    .filter((t) => t.recipient.username.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter((t) =>
+      t.recipient.username.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     .sort(sortFn);
 
-  const TradeCard = ({ trade, isOutgoing }) => (
-    <div className={`trade-card ${isOutgoing ? 'outgoing' : 'incoming'}`}>
-      <div className="trade-header">
-        <div className="trade-title">
-          {isOutgoing ? 'To' : 'From'}{' '}
-          <span>{isOutgoing ? trade.recipient.username : trade.sender.username}</span>
+  const tradesToShow = activeTab === 'incoming' ? incoming : outgoing;
+
+  const timeAgo = (date) => {
+    const diff = Math.floor((Date.now() - new Date(date)) / 1000);
+    if (diff < 60) return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+  };
+
+  const TradeTile = ({ trade, isOutgoing }) => (
+    <div
+      className="trade-tile"
+      onClick={() => setOpenTrade(trade)}
+      role="button"
+      tabIndex={0}
+    >
+      <div className="tile-header">
+        <div className="avatar">
+          {(isOutgoing ? trade.recipient.username : trade.sender.username)
+            .charAt(0)
+            .toUpperCase()}
         </div>
-        <div className="trade-buttons-inline">
-          {!isOutgoing ? (
-            <>
-              <button className="accept-button" onClick={() => handleAction(trade._id, 'accept')}>
-                Accept
-              </button>
-              <button className="reject-button" onClick={() => handleAction(trade._id, 'reject')}>
-                Reject
-              </button>
-              <button className="counter-button" onClick={() => handleCounter(trade)}>
-                Counter
-              </button>
-            </>
-          ) : (
-            <button className="cancel-button" onClick={() => handleAction(trade._id, 'cancel')}>
-              Cancel
-            </button>
-          )}
+        <div className="tile-info">
+          <div className="tile-user">
+            {isOutgoing ? trade.recipient.username : trade.sender.username}
+          </div>
+          <div className="tile-age">{timeAgo(trade.createdAt)}</div>
         </div>
+        <span className="status-badge">pending</span>
       </div>
-      <div className="trade-body">
+      <div className="tile-preview">
+        {trade.offeredItems[0] && (
+          <img src={trade.offeredItems[0].imageUrl} alt="offered" />
+        )}
+        <span className="arrow">→</span>
+        {trade.requestedItems[0] && (
+          <img src={trade.requestedItems[0].imageUrl} alt="requested" />
+        )}
+      </div>
+    </div>
+  );
+
+  const MobileTrade = ({ trade, isOutgoing }) => (
+    <details className="trade-accordion">
+      <summary>
+        <div className="tile-header">
+          <div className="avatar">
+            {(isOutgoing ? trade.recipient.username : trade.sender.username)
+              .charAt(0)
+              .toUpperCase()}
+          </div>
+          <div className="tile-info">
+            <div className="tile-user">
+              {isOutgoing ? trade.recipient.username : trade.sender.username}
+            </div>
+            <div className="tile-age">{timeAgo(trade.createdAt)}</div>
+          </div>
+          <span className="status-badge">pending</span>
+        </div>
+      </summary>
+      <div className="accordion-body">
+        <TradeDetails trade={trade} isOutgoing={isOutgoing} />
+      </div>
+    </details>
+  );
+
+  const TradeDetails = ({ trade, isOutgoing }) => (
+    <div className="trade-details-wrapper">
+      <div className="trade-sides">
         <div className="trade-side">
           <h3>Offered</h3>
           <div className="cards-grid">
@@ -138,7 +200,7 @@ const PendingTrades = () => {
             {trade.offeredPacks} pack{trade.offeredPacks !== 1 ? 's' : ''}
           </span>
         </div>
-        <div className="trade-arrow">for</div>
+
         <div className="trade-side">
           <h3>Requested</h3>
           <div className="cards-grid">
@@ -159,55 +221,134 @@ const PendingTrades = () => {
           </span>
         </div>
       </div>
-      <div className="trade-timestamp">
-        Created on: {new Date(trade.createdAt).toLocaleString()}
+      <div className="trade-actions">
+        {!isOutgoing ? (
+          <>
+            <button
+              className="accept-button"
+              onClick={() => handleAction(trade._id, 'accept')}
+            >
+              Accept
+            </button>
+            <button
+              className="reject-button"
+              onClick={() => handleAction(trade._id, 'reject')}
+            >
+              Reject
+            </button>
+            <button
+              className="counter-button"
+              onClick={() => handleCounter(trade)}
+            >
+              Counter
+            </button>
+          </>
+        ) : (
+          <button
+            className="cancel-button"
+            onClick={() => handleAction(trade._id, 'cancel')}
+          >
+            Cancel
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  const TradeModal = ({ trade, isOutgoing }) => (
+    <div className="modal-overlay" onClick={() => setOpenTrade(null)}>
+      <div className="trade-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="modal-close" onClick={() => setOpenTrade(null)}>
+          ✕
+        </button>
+        <TradeDetails trade={trade} isOutgoing={isOutgoing} />
       </div>
     </div>
   );
 
   return (
-    <div className="pending-trades-container">
+    <div className="pending-trades-page">
       <h1 className="page-title">Pending Trades</h1>
 
-      <div className="filters">
-        <input
-          type="text"
-          placeholder="Search by username..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="search-box"
+      <div className="trade-tabs">
+        <button
+          className={activeTab === 'incoming' ? 'active' : ''}
+          onClick={() => setActiveTab('incoming')}
+        >
+          Incoming
+        </button>
+        <button
+          className={activeTab === 'outgoing' ? 'active' : ''}
+          onClick={() => setActiveTab('outgoing')}
+        >
+          Outgoing
+        </button>
+      </div>
+
+      <div className="filters-bar">
+        <button
+          className="toggle-filters"
+          onClick={() => setShowFilters((p) => !p)}
+        >
+          Filters
+        </button>
+        {showFilters && (
+          <div className="filters-panel">
+            <input
+              type="text"
+              placeholder="Search by username..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+            </select>
+          </div>
+        )}
+      </div>
+
+      {!isMobile && (
+        <div className="trades-grid">
+          {tradesToShow.length === 0 ? (
+            <p className="no-trades">No trades.</p>
+          ) : (
+            tradesToShow.map((t) => (
+              <TradeTile
+                key={t._id}
+                trade={t}
+                isOutgoing={activeTab === 'outgoing'}
+              />
+            ))
+          )}
+        </div>
+      )}
+
+      {isMobile && (
+        <div className="trade-accordions">
+          {tradesToShow.length === 0 ? (
+            <p className="no-trades">No trades.</p>
+          ) : (
+            tradesToShow.map((t) => (
+              <MobileTrade
+                key={t._id}
+                trade={t}
+                isOutgoing={activeTab === 'outgoing'}
+              />
+            ))
+          )}
+        </div>
+      )}
+
+      {openTrade && (
+        <TradeModal
+          trade={openTrade}
+          isOutgoing={openTrade.sender._id === user._id}
         />
-        <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} className="sort-dropdown">
-          <option value="newest">Newest First</option>
-          <option value="oldest">Oldest First</option>
-        </select>
-      </div>
-
-      <div className="pending-section">
-        <h2>Incoming Trades</h2>
-        {incoming.length === 0 ? (
-          <p className="no-trades">No incoming trades.</p>
-        ) : (
-          <div className="trades-list">
-            {incoming.map((t) => (
-              <TradeCard key={t._id} trade={t} isOutgoing={false} />
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="pending-section">
-        <h2>Outgoing Trades</h2>
-        {outgoing.length === 0 ? (
-          <p className="no-trades">No outgoing trades.</p>
-        ) : (
-          <div className="trades-list">
-            {outgoing.map((t) => (
-              <TradeCard key={t._id} trade={t} isOutgoing={true} />
-            ))}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 };
