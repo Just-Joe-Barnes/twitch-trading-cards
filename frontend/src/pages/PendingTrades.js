@@ -84,6 +84,7 @@ const PendingTrades = () => {
         setExpandedTrade((prev) => (prev === tradeId ? null : tradeId));
     };
 
+
     const cardPreview = (cards = []) => {
         const preview = cards.slice(0, 3);
         return (
