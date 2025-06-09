@@ -13,6 +13,7 @@ const PendingTrades = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filter, setFilter] = useState('all');
     const [sortOrder, setSortOrder] = useState('newest');
+    const [expandedTrade, setExpandedTrade] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -79,6 +80,31 @@ const PendingTrades = () => {
     const handleSearch = (e) => setSearchQuery(e.target.value.toLowerCase());
     const handleFilterChange = (e) => setFilter(e.target.value);
     const handleSortChange = (e) => setSortOrder(e.target.value);
+    const toggleTrade = (tradeId) => {
+        setExpandedTrade((prev) => (prev === tradeId ? null : tradeId));
+    };
+
+    const renderCardPreview = (cards = []) => {
+        const preview = cards.slice(0, 3);
+        return (
+            <div className="preview-cards">
+                {preview.map((item) => (
+                    <div key={item._id} className="trade-preview">
+                        <BaseCard
+                            name={item.name}
+                            image={item.imageUrl}
+                            rarity={item.rarity}
+                            description={item.flavorText}
+                            mintNumber={item.mintNumber}
+                        />
+                    </div>
+                ))}
+                {cards.length > preview.length && (
+                    <span className="thumb-more">+{cards.length - preview.length} more</span>
+                )}
+            </div>
+        );
+    };
 
     const renderCardPreview = (cards = []) => {
         const preview = cards.slice(0, 3);
@@ -154,7 +180,7 @@ const PendingTrades = () => {
                 <div className="trades-grid">
                 {filteredAndSortedTrades.map((trade) => {
                     const isOutgoing = trade.sender._id === loggedInUser._id;
-                    const tradeStatusClass = `trade-card ${isOutgoing ? 'outgoing' : 'incoming'}`;
+                    const tradeStatusClass = `trade-card ${isOutgoing ? 'outgoing' : 'incoming'} ${expandedTrade === trade._id ? 'expanded' : 'collapsed'}`;
 
                     const offeredItemsCount = trade.offeredItems?.length || 0;
                     const requestedItemsCount = trade.requestedItems?.length || 0;
@@ -164,6 +190,7 @@ const PendingTrades = () => {
                         <div
                             key={trade._id}
                             className={tradeStatusClass}
+                            onClick={() => toggleTrade(trade._id)}
                         >
                             <div className="trade-header">
                                 <div className="trade-header-info">
@@ -222,6 +249,46 @@ const PendingTrades = () => {
                             <div className="trade-timestamp">
                                 Created on: {new Date(trade.createdAt).toLocaleString()}
                             </div>
+
+                            {expandedTrade === trade._id && (
+                                <div className="trade-details" onClick={(e) => e.stopPropagation()}>
+                                    <div className="trade-section">
+                                        <h3>Offered Items</h3>
+                                        <div className="cards-grid">
+                                            {trade.offeredItems?.map((item) => (
+                                                <div key={item._id} className="full-card">
+                                                    <BaseCard
+                                                        name={item.name}
+                                                        image={item.imageUrl}
+                                                        rarity={item.rarity}
+                                                        description={item.flavorText}
+                                                        mintNumber={item.mintNumber}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <span className="packs-chip">{trade.offeredPacks} pack{trade.offeredPacks !== 1 ? 's' : ''}</span>
+                                    </div>
+
+                                    <div className="trade-section">
+                                        <h3>Requested Items</h3>
+                                        <div className="cards-grid">
+                                            {trade.requestedItems?.map((item) => (
+                                                <div key={item._id} className="full-card">
+                                                    <BaseCard
+                                                        name={item.name}
+                                                        image={item.imageUrl}
+                                                        rarity={item.rarity}
+                                                        description={item.flavorText}
+                                                        mintNumber={item.mintNumber}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <span className="packs-chip">{trade.requestedPacks} pack{trade.requestedPacks !== 1 ? 's' : ''}</span>
+                                    </div>
+                                </div>
+                            )}
 
                         </div>
                     );

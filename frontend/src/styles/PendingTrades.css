@@ -221,6 +221,38 @@
     background-color: var(--brand-secondary);
 }
 
+/* Expanded trade details */
+.trade-card {
+    cursor: pointer;
+}
+
+.trade-details {
+    margin-top: 1rem;
+    display: grid;
+    gap: 1rem;
+}
+
+.trade-section h3 {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.cards-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.full-card {
+    width: 120px;
+}
+
+.full-card .card-container {
+    margin: 0 !important;
+    max-width: 100% !important;
+}
+
 /* Timestamp */
 .trade-timestamp {
     font-size: 0.9rem;
