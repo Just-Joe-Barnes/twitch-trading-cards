@@ -10,6 +10,10 @@
   --transition: all 0.3s ease;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 .pending-trades-page {
   margin: 1rem auto;
   max-width: 1100px;
@@ -233,7 +237,7 @@
   gap: 1rem;
 }
 .trade-side {
-  flex: 1 1 280px;
+  flex: 1 1 0;
   background: var(--surface-darker);
   border: 1px solid var(--border-dark);
   border-radius: var(--border-radius);
@@ -241,20 +245,20 @@
 }
 
 .cards-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
 }
 .full-card {
-  width: 200px;
-  max-width: 200px;
+  width: 150px;
+  max-width: 150px;
 }
 .full-card .card-container {
   margin: 0 !important;
   max-width: 100% !important;
 }
 
-.packs-chip {
+.packs-label {
   display: inline-block;
   margin-top: 0.5rem;
   padding: 0.25rem 0.5rem;
@@ -292,71 +296,100 @@
 
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.7);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fade-in 0.2s ease forwards;
+  animation: fadeIn 200ms ease forwards;
 }
-.trade-modal {
+.modal-content {
+  width: min(90vw, 800px);
   background: var(--surface-dark);
-  padding: 1.5rem;
-  border-radius: var(--border-radius);
-  max-width: 900px;
-  width: 90%;
-  position: relative;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   max-height: 90vh;
-  overflow-y: auto;
-  transform: scale(0.9);
-  animation: pop 0.2s ease forwards;
+  transform: scale(0.95);
+  animation: scaleIn 200ms ease forwards;
 }
 
-.modal-head {
+.modal-header {
   display: flex;
-  gap: 1rem;
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  padding: 16px 24px;
 }
-.modal-meta h2 {
+.modal-header-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.modal-header h2 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 18px;
+  font-weight: 600;
 }
-.modal-age {
-  font-size: 0.9rem;
-  color: rgba(255,255,255,0.7);
+.modal-header time {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
 }
-.modal-close {
-  margin-left: auto;
+.modal-close-btn {
   background: none;
   border: none;
   color: var(--text-primary);
   font-size: 1.5rem;
+  width: 32px;
+  height: 32px;
   cursor: pointer;
-
 }
 .modal-body {
   display: flex;
   gap: 32px;
-  padding: 0 0 1rem;
+  padding: 24px;
 }
 .modal-body section {
-  flex: 1;
-}
-.modal-actions {
+  flex: 1 1 0;
   display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  flex-direction: column;
+  gap: 16px;
 }
-.modal-actions button {
+.modal-footer {
+  display: flex;
+  gap: 16px;
+  padding: 16px 24px;
+}
+.modal-footer button {
   flex: 1;
   height: 40px;
   border-radius: 8px;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+.modal-footer button:hover {
+  filter: brightness(0.9);
+}
+.modal-footer button:active {
+  transform: translateY(1px);
+}
 
+@media (max-width: 768px) {
+  .modal-footer {
+    flex-direction: column;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 @media (max-width: 768px) {
