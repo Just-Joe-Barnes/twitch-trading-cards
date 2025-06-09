@@ -67,66 +67,20 @@ body.modal-open {
   font-weight: bold;
 }
 
-.open-filters {
-  background: var(--brand-secondary);
-  border: none;
-  border-radius: var(--border-radius);
-  padding: 0.5rem 1rem;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: filter 0.2s ease;
-}
-.open-filters:hover { filter: brightness(90%); }
-
-.filters-overlay {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 10;
-}
-.filters-sidebar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 320px;
-  max-width: 90%;
-  height: 100%;
-  background: var(--surface-dark);
-  padding: 1rem;
+.filter-bar {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 0.75rem;
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.5);
-  transform: translateX(100%);
-  animation: slide-in 0.2s ease forwards;
-  z-index: 20;
+  margin-top: 0.5rem;
 }
-
-@keyframes slide-in {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
-}
-.filters-sidebar input,
-.filters-sidebar select {
+.filter-bar input,
+.filter-bar select {
   padding: 0.5rem;
   background: var(--surface-darker);
   color: var(--text-primary);
   border: 1px solid var(--border-dark);
   border-radius: var(--border-radius);
 }
-.close-filters {
-  align-self: flex-end;
-  background: none;
-  border: none;
-  color: var(--text-primary);
-  font-size: 1.25rem;
-  cursor: pointer;
-  transition: filter 0.2s ease;
-}
-.close-filters:hover { filter: brightness(90%); }
 
 .trades-grid {
   display: grid;
@@ -135,16 +89,17 @@ body.modal-open {
   margin-top: 1rem;
 }
 .trade-card {
-  background: var(--surface-dark);
-  border: 1px solid var(--border-dark);
+  background: var(--surface-darker);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--border-radius);
-  padding: 1rem;
+  padding: 1.25rem;
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   transition: box-shadow 0.2s ease, filter 0.2s ease;
 }
 .trade-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  filter: brightness(90%);
+  filter: brightness(95%);
 }
 .trade-card:focus {
   outline: 2px dashed var(--brand-primary);
@@ -204,10 +159,11 @@ body.modal-open {
 }
 
 .trade-accordion {
-  background: var(--surface-dark);
-  border: 1px solid var(--border-dark);
+  background: var(--surface-darker);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--border-radius);
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 .trade-accordion summary {
   padding: 1rem;
@@ -289,10 +245,10 @@ body.modal-open {
 .trade-actions button:active {
   transform: scale(0.97);
 }
-.accept-button { background: #3cb043; }
-.reject-button { background: #e53e3e; }
-.cancel-button { background: #616161; }
-.counter-button { background: #5bc0de; }
+.accept-button { background: var(--brand-primary); }
+.reject-button { background: var(--brand-primary); opacity: 0.85; }
+.cancel-button { background: var(--brand-primary); opacity: 0.6; }
+.counter-button { background: var(--brand-primary); opacity: 0.85; }
 
 .modal-overlay {
   position: fixed;
@@ -302,7 +258,7 @@ body.modal-open {
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fadeIn 200ms ease forwards;
+  animation: fadeIn 150ms ease forwards;
 }
 .modal-content {
   width: min(90vw, 800px);
@@ -314,14 +270,15 @@ body.modal-open {
   overflow: hidden;
   max-height: 90vh;
   transform: scale(0.95);
-  animation: scaleIn 200ms ease forwards;
+  animation: scaleIn 150ms ease forwards;
 }
 
 .modal-header {
+  position: relative;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
+  justify-content: space-between;
+  padding: 12px 20px;
 }
 .modal-header-info {
   display: flex;
@@ -330,18 +287,21 @@ body.modal-open {
 }
 .modal-header h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
 }
 .modal-header time {
-  font-size: 14px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.7);
 }
 .modal-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
   background: none;
   border: none;
   color: var(--text-primary);
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   width: 32px;
   height: 32px;
   cursor: pointer;
@@ -350,6 +310,26 @@ body.modal-open {
   display: flex;
   gap: 32px;
   padding: 24px;
+}
+.modal-summary {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.toggle-cards {
+  background: var(--brand-primary);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 0.5rem 1rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: filter 0.2s ease;
+}
+.toggle-cards:hover {
+  filter: brightness(90%);
 }
 .modal-body section {
   flex: 1 1 0;
