@@ -1,5 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
+import { FixedSizeGrid as Grid } from 'react-window';
 import { useNavigate } from 'react-router-dom';
 import {
   fetchUserProfile,
@@ -33,6 +34,8 @@ const PendingTrades = () => {
   const [openTrade, setOpenTrade] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const sidebarRef = useRef(null);
+  const gridRef = useRef(null);
+  const [gridWidth, setGridWidth] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,6 +60,13 @@ const PendingTrades = () => {
   }, []);
 
   useEffect(() => {
+    const updateWidth = () => setGridWidth(gridRef.current?.offsetWidth || 0);
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
+  useEffect(() => {
     if (!showFilters) return;
     const firstInput = sidebarRef.current?.querySelector('input, select, button');
     firstInput?.focus();
@@ -67,16 +77,32 @@ const PendingTrades = () => {
     return () => document.removeEventListener('keydown', handleKey);
   }, [showFilters]);
 
-  const refreshTrades = async () => {
-    if (!user) return;
-    try {
-      const data = await fetchPendingTrades(user._id);
-      setTrades(data);
-    } catch (err) {
-      console.error('Failed to refresh trades:', err);
-      setError('Failed to refresh trades');
-    }
-  };
+  useEffect(() => {
+    if (!openTrade) return;
+    document.body.classList.add('modal-open');
+    const overlay = document.querySelector('.modal-overlay');
+    const focusable = overlay?.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    focusable?.[0]?.focus();
+    const trap = (e) => {
+      if (e.key === 'Escape') setOpenTrade(null);
+      if (e.key === 'Tab' && focusable && focusable.length > 0) {
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey ? document.activeElement === first : document.activeElement === last) {
+          e.preventDefault();
+          (e.shiftKey ? last : first).focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', trap);
+    return () => {
+      document.body.classList.remove('modal-open');
+      document.removeEventListener('keydown', trap);
+    };
+  }, [openTrade]);
+
 
   const handleAction = async (id, action) => {
     const messages = {
@@ -85,14 +111,16 @@ const PendingTrades = () => {
       cancel: 'Are you sure you want to cancel this trade?',
     };
     if (!window.confirm(messages[action])) return;
+    const prev = trades;
+    setTrades(prev.filter((t) => t._id !== id));
     try {
       if (action === 'accept') await acceptTrade(id);
       if (action === 'reject') await rejectTrade(id);
       if (action === 'cancel') await cancelTrade(id);
-      refreshTrades();
     } catch (err) {
       console.error(`Failed to ${action} trade:`, err);
-      setError(`Failed to ${action} trade`);
+      setTrades(prev);
+      window.showToast && window.showToast('Trade failed', 'error');
     }
   };
 
@@ -168,11 +196,11 @@ const PendingTrades = () => {
       </header>
       <div className="preview">
         {trade.offeredItems[0] && (
-          <img src={trade.offeredItems[0].imageUrl} alt="offered" />
+          <img src={trade.offeredItems[0].imageUrl} alt="offered" loading="lazy" />
         )}
         <span className="arrow">→</span>
         {trade.requestedItems[0] && (
-          <img src={trade.requestedItems[0].imageUrl} alt="requested" />
+          <img src={trade.requestedItems[0].imageUrl} alt="requested" loading="lazy" />
         )}
       </div>
       <footer className="card-foot">{timeAgo(trade.createdAt)}</footer>
@@ -218,7 +246,7 @@ const PendingTrades = () => {
               </div>
             ))}
           </div>
-          <span className="packs-chip">
+          <span className="packs-label">
             {trade.offeredPacks} pack{trade.offeredPacks !== 1 ? 's' : ''}
           </span>
         </div>
@@ -237,7 +265,7 @@ const PendingTrades = () => {
               </div>
             ))}
           </div>
-          <span className="packs-chip">
+          <span className="packs-label">
             {trade.requestedPacks} pack{trade.requestedPacks !== 1 ? 's' : ''}
           </span>
         </div>
@@ -284,30 +312,34 @@ const PendingTrades = () => {
       aria-labelledby="trade-dialog-title"
       onClick={() => setOpenTrade(null)}
     >
-      <div className="trade-modal" onClick={(e) => e.stopPropagation()}>
-        <header className="modal-head">
-          <div className="avatar">
-            {(isOutgoing ? trade.recipient.username : trade.sender.username)
-              .charAt(0)
-              .toUpperCase()}
-          </div>
-          <div className="modal-meta">
-            <h2 id="trade-dialog-title">
-              {isOutgoing ? trade.recipient.username : trade.sender.username}
-            </h2>
-            <span className="modal-age">Sent {timeAgo(trade.createdAt)}</span>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <header className="modal-header">
+          <div className="modal-header-info">
+            <div className="avatar">
+              {(isOutgoing ? trade.recipient.username : trade.sender.username)
+                .charAt(0)
+                .toUpperCase()}
+            </div>
+            <div className="user-and-timestamp">
+              <h2 id="trade-dialog-title">
+                {isOutgoing ? trade.recipient.username : trade.sender.username}
+              </h2>
+              <time dateTime={trade.createdAt}>
+                Sent {timeAgo(trade.createdAt)}
+              </time>
+            </div>
           </div>
           <button
-            className="modal-close"
+            className="modal-close-btn"
             onClick={() => setOpenTrade(null)}
-            aria-label="Close"
+            aria-label="Close trade dialog"
           >
-            ✕
+            &times;
           </button>
         </header>
         <div className="modal-body">
-          <section>
-            <h3>Offered</h3>
+          <section aria-labelledby="offered-label">
+            <h3 id="offered-label">Offered</h3>
             <div className="cards-grid">
               {trade.offeredItems?.map((item) => (
                 <div key={item._id} className="full-card">
@@ -320,13 +352,13 @@ const PendingTrades = () => {
                   />
                 </div>
               ))}
-              <span className="packs-chip">
-                {trade.offeredPacks} pack{trade.offeredPacks !== 1 ? 's' : ''}
-              </span>
+            </div>
+            <div className="packs-label text-14 text-muted">
+              {trade.offeredPacks} pack{trade.offeredPacks !== 1 ? 's' : ''}
             </div>
           </section>
-          <section>
-            <h3>Requested</h3>
+          <section aria-labelledby="requested-label">
+            <h3 id="requested-label">Requested</h3>
             <div className="cards-grid">
               {trade.requestedItems?.map((item) => (
                 <div key={item._id} className="full-card">
@@ -339,13 +371,13 @@ const PendingTrades = () => {
                   />
                 </div>
               ))}
-              <span className="packs-chip">
-                {trade.requestedPacks} pack{trade.requestedPacks !== 1 ? 's' : ''}
-              </span>
+            </div>
+            <div className="packs-label text-14 text-muted">
+              {trade.requestedPacks} pack{trade.requestedPacks !== 1 ? 's' : ''}
             </div>
           </section>
         </div>
-        <div className="modal-actions">
+        <footer className="modal-footer">
           {!isOutgoing ? (
             <>
               <button
@@ -375,7 +407,7 @@ const PendingTrades = () => {
               Cancel
             </button>
           )}
-        </div>
+        </footer>
       </div>
     </div>
   );
@@ -501,9 +533,36 @@ const PendingTrades = () => {
           role="tabpanel"
           id={activeTab === 'incoming' ? 'panel-in' : 'panel-out'}
           aria-labelledby={activeTab === 'incoming' ? 'tab-in' : 'tab-out'}
+          ref={gridRef}
         >
           {tradesToShow.length === 0 ? (
             <p className="no-trades">No trades.</p>
+          ) : tradesToShow.length > 20 ? (
+            <Grid
+              columnCount={Math.max(1, Math.floor(gridWidth / 264))}
+              columnWidth={264}
+              height={600}
+              rowCount={Math.ceil(
+                tradesToShow.length / Math.max(1, Math.floor(gridWidth / 264))
+              )}
+              rowHeight={360}
+              width={gridWidth}
+            >
+              {({ columnIndex, rowIndex, style }) => {
+                const colCount = Math.max(1, Math.floor(gridWidth / 264));
+                const index = rowIndex * colCount + columnIndex;
+                const trade = tradesToShow[index];
+                if (!trade) return null;
+                return (
+                  <div style={{ ...style, padding: 12 }}>
+                    <TradeTile
+                      trade={trade}
+                      isOutgoing={activeTab === 'outgoing'}
+                    />
+                  </div>
+                );
+              }}
+            </Grid>
           ) : (
             tradesToShow.map((t) => (
               <TradeTile
