@@ -235,6 +235,7 @@ const BaseCard = ({
                     alt={name}
                     className="grayscale"
                     draggable={false}
+                    loading="lazy"
                   />
                   <img
                     src={image}
@@ -242,10 +243,11 @@ const BaseCard = ({
                     className="invertband"
                     ref={invertRef}
                     draggable={false}
+                    loading="lazy"
                   />
                 </>
               ) : (
-                <img src={image} alt={name} draggable={false} />
+                <img src={image} alt={name} draggable={false} loading="lazy" />
               )}
 
               {modifierData?.name === 'Rainbow Holo' && (
