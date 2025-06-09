@@ -84,29 +84,8 @@ const PendingTrades = () => {
         setExpandedTrade((prev) => (prev === tradeId ? null : tradeId));
     };
 
-    const renderCardPreview = (cards = []) => {
-        const preview = cards.slice(0, 3);
-        return (
-            <div className="preview-cards">
-                {preview.map((item) => (
-                    <div key={item._id} className="trade-preview">
-                        <BaseCard
-                            name={item.name}
-                            image={item.imageUrl}
-                            rarity={item.rarity}
-                            description={item.flavorText}
-                            mintNumber={item.mintNumber}
-                        />
-                    </div>
-                ))}
-                {cards.length > preview.length && (
-                    <span className="thumb-more">+{cards.length - preview.length} more</span>
-                )}
-            </div>
-        );
-    };
 
-    const renderCardPreview = (cards = []) => {
+    const cardPreview = (cards = []) => {
         const preview = cards.slice(0, 3);
         return (
             <div className="preview-cards">
@@ -203,12 +182,12 @@ const PendingTrades = () => {
                                     <div className="trade-summary">{tradeSummary}</div>
                                     <div className="trade-overview">
                                         <div className="overview-section">
-                                            {renderCardPreview(trade.offeredItems)}
+                                            {cardPreview(trade.offeredItems)}
                                             <span className="packs-chip">{trade.offeredPacks} pack{trade.offeredPacks !== 1 ? 's' : ''}</span>
                                         </div>
                                         <div className="trade-arrow">for</div>
                                         <div className="overview-section">
-                                            {renderCardPreview(trade.requestedItems)}
+                                            {cardPreview(trade.requestedItems)}
                                             <span className="packs-chip">{trade.requestedPacks} pack{trade.requestedPacks !== 1 ? 's' : ''}</span>
                                         </div>
                                     </div>
