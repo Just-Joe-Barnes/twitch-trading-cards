@@ -103,17 +103,6 @@ const PendingTrades = () => {
     };
   }, [openTrade]);
 
-  const refreshTrades = async () => {
-    if (!user) return;
-    try {
-      const data = await fetchPendingTrades(user._id);
-      setTrades(data);
-    } catch (err) {
-      console.error('Failed to refresh trades:', err);
-      setError('Failed to refresh trades');
-    }
-  };
-
   const handleAction = async (id, action) => {
     const messages = {
       accept: 'Are you sure you want to accept this trade?',
