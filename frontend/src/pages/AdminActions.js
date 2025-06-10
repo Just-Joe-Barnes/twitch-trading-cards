@@ -5,67 +5,6 @@ import { fetchUserProfile, fetchWithAuth, searchCardsByName } from '../utils/api
 import BaseCard from '../components/BaseCard';
 import '../styles/AdminActions.css';
 
-const EditCardTool = () => {
-  const [cardSearchQuery, setCardSearchQuery] = useState('');
-  const [cardSearchResults, setCardSearchResults] = useState([]);
-  const navigate = useNavigate();
-
-  const handleCardSearchInput = (e) => {
-    setCardSearchQuery(e.target.value);
-  };
-
-  const handleSelectCard = (card) => {
-    navigate(`/admin/cards/${card.name}`);
-  };
-
-  useEffect(() => {
-    const fetchCardResults = async () => {
-      if (cardSearchQuery.length > 0) {
-        const results = await searchCardsByName(cardSearchQuery);
-        setCardSearchResults(results);
-      } else {
-        setCardSearchResults([]);
-      }
-    };
-
-    const timer = setTimeout(() => {
-      fetchCardResults();
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [cardSearchQuery, searchCardsByName]);
-
-  return (
-    <section className="aa-panel">
-      <h2>Edit Card</h2>
-      <div className="aa-admin-actions-form">
-        <div className="aa-form-group" style={{ position: 'relative' }}>
-          <label>Card Name:</label>
-          <input
-            type="text"
-            className="search-bar"
-            value={cardSearchQuery}
-            onChange={handleCardSearchInput}
-            placeholder="Search for a card..."
-          />
-          {cardSearchResults.length > 0 && (
-            <ul className="search-dropdown">
-              {cardSearchResults.map(card => (
-                <li
-                  key={card._id}
-                  className="search-result-item"
-                  onMouseDown={() => handleSelectCard(card)}
-                >
-                  {card.name}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
-    </section>
-  );
-};
-
 const AdminActions = () => {
     const [newNote, setNewNote] = useState('');
     const [devNotes, setDevNotes] = useState(() => {
@@ -221,8 +160,7 @@ const AdminActions = () => {
     return (
         <div className="aa-admin-actions-page">
             <h1 className="page-title">Admin Actions</h1>
-            <div className="aa-admin-panels" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
-            <EditCardTool/>
+            <div className="aa-admin-panels">
 
             {/* Create New Card Panel */}
             <section className="aa-panel" style={{ gridColumn: '1 / -1' }}>
@@ -365,7 +303,6 @@ const AdminActions = () => {
                 </div>
             </section>
 
-            <div className="aa-admin-panels" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
 
                 {/* Notification Panel */}
                 <section className="aa-panel">
@@ -531,11 +468,7 @@ const AdminActions = () => {
                         )}
                     </div>
                 </section>
-            </div>
 
-            </div>
-
-            <div className="aa-admin-panels" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
             {/* User Profile Viewer */}
             <section className="aa-panel">
                 <h2>User Profile</h2>
