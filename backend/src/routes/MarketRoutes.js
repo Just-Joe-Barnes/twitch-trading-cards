@@ -216,11 +216,6 @@ router.post('/listings/:id/offers', protect, sensitiveLimiter, async (req, res) 
             message: `You have received a new offer on your market listing.`,
             link: `/market/listings/${listing._id}`
         });
-        sendNotificationToUser(listing.owner, {
-            type: 'New Market Offer',
-            message: `You have received a new offer on your market listing.`,
-            link: `/market/listings/${listing._id}`
-        });
 
         logAudit('Market Offer Created', { listingId: listing._id, offererId: req.user._id });
 
