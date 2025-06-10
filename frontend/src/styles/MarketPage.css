@@ -78,13 +78,13 @@
     }
 
 .listings-grid {
-    --listing-card-scale: 1;
+    --card-scale: 1;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 2rem;
     margin-bottom: 3rem;
-    width: calc(100% / var(--listing-card-scale));
-    transform: scale(var(--listing-card-scale));
+    width: calc(100% / var(--card-scale));
+    transform: scale(var(--card-scale));
     transform-origin: top left;
 }
 
@@ -168,6 +168,6 @@
 
 @media (max-width: 600px) {
     .listings-grid {
-        --listing-card-scale: 0.71;
+        --card-scale: 0.71;
     }
 }
