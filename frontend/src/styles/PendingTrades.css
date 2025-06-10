@@ -184,11 +184,11 @@ body {
 
 .detail-panel {
   position: fixed;
-  top: 0;
+  top: 60px;
   right: 0;
-  width: 480px;
+  width: 648px;
   max-width: 100%;
-  height: 100%;
+  height: calc(100% - 60px);
   background: var(--surface);
   box-shadow: var(--shadow);
   padding: 16px;
@@ -196,6 +196,21 @@ body {
   flex-direction: column;
   gap: 16px;
   z-index: 20;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+.detail-panel.open {
+  transform: translateX(0);
+}
+.detail-panel .close-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 20px;
+  cursor: pointer;
 }
 .detail-panel header {
   display: flex;
@@ -223,6 +238,14 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(calc(300px * var(--card-scale)), 1fr));
   gap: 16px;
   justify-items: center;
+}
+
+@media (max-width: 600px) {
+  .card-grid { --card-scale: 0.65; }
+}
+
+@media (max-width: 400px) {
+  .card-grid { --card-scale: 0.55; }
 }
 .card-tile {
   width: calc(100% / var(--card-scale));

@@ -31,7 +31,14 @@ const PendingTrades = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('incoming');
   const [openTrade, setOpenTrade] = useState(null);
+  const [panelOpen, setPanelOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    if (!panelOpen && openTrade) {
+      const t = setTimeout(() => setOpenTrade(null), 300);
+      return () => clearTimeout(t);
+    }
+  }, [panelOpen, openTrade]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -143,12 +150,25 @@ const PendingTrades = () => {
     </div>
   );
 
+  const handleRowClick = (trade) => {
+    if (openTrade && openTrade._id === trade._id) {
+      setPanelOpen(false);
+    } else {
+      setPanelOpen(false);
+      setOpenTrade(trade);
+    }
+  };
+
+  useEffect(() => {
+    if (openTrade) {
+      requestAnimationFrame(() => setPanelOpen(true));
+    }
+  }, [openTrade]);
+
   const TradeRow = ({ trade, isOutgoing }) => (
     <tr
       tabIndex={0}
-      onClick={() =>
-        setOpenTrade(openTrade && openTrade._id === trade._id ? null : trade)
-      }
+      onClick={() => handleRowClick(trade)}
     >
       <td><RowActions trade={trade} isOutgoing={isOutgoing} /></td>
       <td className="who">
@@ -166,9 +186,7 @@ const PendingTrades = () => {
     <div
       className="mobile-card"
       tabIndex={0}
-      onClick={() =>
-        setOpenTrade(openTrade && openTrade._id === trade._id ? null : trade)
-      }
+      onClick={() => handleRowClick(trade)}
     >
       <div className="top">
         <span>
@@ -188,12 +206,13 @@ const PendingTrades = () => {
     </div>
   );
 
-  const DetailPanel = ({ trade, isOutgoing }) => (
-    <aside className="detail-panel" role="dialog" aria-modal="true">
+  const DetailPanel = ({ trade, isOutgoing, open }) => (
+    <aside className={`detail-panel${open ? ' open' : ''}`} role="dialog" aria-modal="true">
       <header>
         <h2>Trade Details</h2>
-        <button onClick={() => setOpenTrade(null)} aria-label="Close details">✕</button>
+        <button onClick={() => setPanelOpen(false)} aria-label="Close details">✕</button>
       </header>
+      <button className="close-button" onClick={() => setPanelOpen(false)} aria-label="Close panel">✕</button>
       <div className="detail-body">
         <section>
           <h3>Offered</h3>
@@ -265,7 +284,11 @@ const PendingTrades = () => {
         )}
       </div>
       {openTrade && (
-        <DetailPanel trade={openTrade} isOutgoing={openTrade.sender._id === user._id} />
+        <DetailPanel
+          trade={openTrade}
+          isOutgoing={openTrade.sender._id === user._id}
+          open={panelOpen}
+        />
       )}
     </div>
   );
