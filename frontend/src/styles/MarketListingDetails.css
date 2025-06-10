@@ -115,7 +115,7 @@
 
 /* User Collection Grid */
 .market-user-collection-grid {
-    --listing-card-scale: 1;
+    --card-scale: 1;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.25rem;
@@ -123,8 +123,8 @@
     max-height: 800px;
     overflow-y: auto;
     padding-right: 0.5rem;
-    width: calc(100% / var(--listing-card-scale));
-    transform: scale(var(--listing-card-scale));
+    width: calc(100% / var(--card-scale));
+    transform: scale(var(--card-scale));
     transform-origin: top left;
 }
 
@@ -152,7 +152,7 @@
     }
 
 .market-selected-cards-grid {
-    --listing-card-scale: 1;
+    --card-scale: 1;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.25rem;
@@ -160,8 +160,8 @@
     max-height: 800px; /* Increased height for selected cards panel */
     overflow-y: auto;
     padding-right: 0.5rem;
-    width: calc(100% / var(--listing-card-scale));
-    transform: scale(var(--listing-card-scale));
+    width: calc(100% / var(--card-scale));
+    transform: scale(var(--card-scale));
     transform-origin: top left;
 }
 
@@ -219,13 +219,13 @@
 }
 
 .offered-cards-grid {
-    --listing-card-scale: 1;
+    --card-scale: 1;
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
     margin-top: 0.5rem;
-    width: calc(100% / var(--listing-card-scale));
-    transform: scale(var(--listing-card-scale));
+    width: calc(100% / var(--card-scale));
+    transform: scale(var(--card-scale));
     transform-origin: top left;
 }
 
@@ -243,6 +243,6 @@
     .market-user-collection-grid,
     .market-selected-cards-grid,
     .offered-cards-grid {
-        --listing-card-scale: 0.8;
+        --card-scale: 0.8;
     }
 }
