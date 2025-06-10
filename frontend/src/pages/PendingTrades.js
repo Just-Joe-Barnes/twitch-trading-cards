@@ -31,15 +31,15 @@ const PendingTrades = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('incoming');
   const [openTrade, setOpenTrade] = useState(null);
-  const [panelOpen, setPanelOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  useEffect(() => {
-    if (!panelOpen && openTrade) {
-      const t = setTimeout(() => setOpenTrade(null), 300);
-      return () => clearTimeout(t);
-    }
-  }, [panelOpen, openTrade]);
-  const navigate = useNavigate();
+const [panelOpen, setPanelOpen] = useState(false);
+const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+useEffect(() => {
+  if (!panelOpen && openTrade) {
+    const t = setTimeout(() => setOpenTrade(null), 300);
+    return () => clearTimeout(t);
+  }
+}, [panelOpen, openTrade]);
+const navigate = useNavigate();
 
   useEffect(() => {
     const load = async () => {
@@ -61,6 +61,12 @@ const PendingTrades = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    if (openTrade) {
+      requestAnimationFrame(() => setPanelOpen(true));
+    }
+  }, [openTrade]);
 
   const handleAction = async (id, action) => {
     const confirmMsg = {
@@ -158,12 +164,6 @@ const PendingTrades = () => {
       setOpenTrade(trade);
     }
   };
-
-  useEffect(() => {
-    if (openTrade) {
-      requestAnimationFrame(() => setPanelOpen(true));
-    }
-  }, [openTrade]);
 
   const TradeRow = ({ trade, isOutgoing }) => (
     <tr
