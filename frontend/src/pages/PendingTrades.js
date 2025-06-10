@@ -1,6 +1,4 @@
-
-import React, { useEffect, useRef, useState } from 'react';
-import { FixedSizeGrid as Grid } from 'react-window';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   fetchUserProfile,
@@ -20,20 +18,11 @@ const PendingTrades = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState('newest');
   const [activeTab, setActiveTab] = useState('incoming');
-  const [statusFilters, setStatusFilters] = useState({
-    pending: true,
-    countered: true,
-    expired: true,
-  });
-  const [typeFilters, setTypeFilters] = useState({
-    Creature: true,
-    Spell: true,
-    Artifact: true,
-  });
+  const [statusFilters, setStatusFilters] = useState({ pending: true, countered: true, expired: true });
+  const [typeFilters, setTypeFilters] = useState({ Creature: true, Spell: true, Artifact: true });
   const [openTrade, setOpenTrade] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const gridRef = useRef(null);
-  const [gridWidth, setGridWidth] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,47 +46,13 @@ const PendingTrades = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => {
-    const updateWidth = () => setGridWidth(gridRef.current?.offsetWidth || 0);
-    updateWidth();
-    window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
-  }, []);
-
-
-  useEffect(() => {
-    if (!openTrade) return;
-    document.body.classList.add('modal-open');
-    const overlay = document.querySelector('.modal-overlay');
-    const focusable = overlay?.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    focusable?.[0]?.focus();
-    const trap = (e) => {
-      if (e.key === 'Escape') setOpenTrade(null);
-      if (e.key === 'Tab' && focusable && focusable.length > 0) {
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        if (e.shiftKey ? document.activeElement === first : document.activeElement === last) {
-          e.preventDefault();
-          (e.shiftKey ? last : first).focus();
-        }
-      }
-    };
-    document.addEventListener('keydown', trap);
-    return () => {
-      document.body.classList.remove('modal-open');
-      document.removeEventListener('keydown', trap);
-    };
-  }, [openTrade]);
-
   const handleAction = async (id, action) => {
-    const messages = {
+    const confirmMsg = {
       accept: 'Are you sure you want to accept this trade?',
       reject: 'Are you sure you want to reject this trade?',
       cancel: 'Are you sure you want to cancel this trade?',
-    };
-    if (!window.confirm(messages[action])) return;
+    }[action];
+    if (!window.confirm(confirmMsg)) return;
     const prev = trades;
     setTrades(prev.filter((t) => t._id !== id));
     try {
@@ -107,7 +62,6 @@ const PendingTrades = () => {
     } catch (err) {
       console.error(`Failed to ${action} trade:`, err);
       setTrades(prev);
-      window.showToast && window.showToast('Trade failed', 'error');
     }
   };
 
@@ -129,458 +83,198 @@ const PendingTrades = () => {
   if (error) return <div className="error-message">{error}</div>;
   if (!user) return <LoadingSpinner />;
 
-  const visibleStatuses = Object.keys(statusFilters).filter(
-    (k) => statusFilters[k]
-  );
-  const pending = trades.filter((t) => visibleStatuses.includes(t.status));
+  const timeAgo = (date) => {
+    const diff = Math.floor((Date.now() - new Date(date)) / 1000);
+    if (diff < 60) return `${diff}s`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+    return `${Math.floor(diff / 86400)}d`;
+  };
 
+  const visibleStatuses = Object.keys(statusFilters).filter((k) => statusFilters[k]);
   const sortFn = (a, b) =>
     sortOrder === 'newest'
       ? new Date(b.createdAt) - new Date(a.createdAt)
       : new Date(a.createdAt) - new Date(b.createdAt);
 
-  const incoming = pending
+  const incoming = trades
+    .filter((t) => visibleStatuses.includes(t.status))
     .filter((t) => t.recipient._id === user._id)
-    .filter((t) =>
-      t.sender.username.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    .filter((t) => t.sender.username.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort(sortFn);
-  const outgoing = pending
+
+  const outgoing = trades
+    .filter((t) => visibleStatuses.includes(t.status))
     .filter((t) => t.sender._id === user._id)
-    .filter((t) =>
-      t.recipient.username.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    .filter((t) => t.recipient.username.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort(sortFn);
 
   const tradesToShow = activeTab === 'incoming' ? incoming : outgoing;
 
-  const timeAgo = (date) => {
-    const diff = Math.floor((Date.now() - new Date(date)) / 1000);
-    if (diff < 60) return `${diff}s ago`;
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    return `${Math.floor(diff / 86400)}d ago`;
-  };
+  const RowActions = ({ trade, isOutgoing }) => (
+    <div className="row-actions" onClick={(e) => e.stopPropagation()}>
+      {!isOutgoing ? (
+        <>
+          <button onClick={() => handleAction(trade._id, 'accept')} aria-label={`Accept trade with ${trade.sender.username}`}>Accept</button>
+          <button onClick={() => handleCounter(trade)} aria-label={`Counter trade with ${trade.sender.username}`}>Counter</button>
+          <button onClick={() => handleAction(trade._id, 'reject')} aria-label={`Reject trade with ${trade.sender.username}`}>Reject</button>
+        </>
+      ) : (
+        <button onClick={() => handleAction(trade._id, 'cancel')} aria-label={`Cancel trade with ${trade.recipient.username}`}>Cancel</button>
+      )}
+    </div>
+  );
 
-  const TradeTile = ({ trade, isOutgoing }) => (
-    <article
-      className="trade-card"
-      onClick={() => setOpenTrade(trade)}
-      tabIndex={0}
-    >
-      <header className="card-head">
-        <div className="avatar">
-          {(isOutgoing ? trade.recipient.username : trade.sender.username)
-            .charAt(0)
-            .toUpperCase()}
-        </div>
-        <div className="card-meta">
-          <span className="user-name">
-            {isOutgoing ? trade.recipient.username : trade.sender.username}
-          </span>
-          <span className="badge">Pending</span>
-        </div>
-      </header>
-      <div className="preview">
-        {trade.offeredItems[0] && (
-          <img src={trade.offeredItems[0].imageUrl} alt="offered" loading="lazy" />
-        )}
+  const TradeRow = ({ trade, isOutgoing }) => (
+    <tr tabIndex={0} onClick={() => setOpenTrade(trade)}>
+      <td><RowActions trade={trade} isOutgoing={isOutgoing} /></td>
+      <td className="who">
+        <strong>{isOutgoing ? 'you' : trade.sender.username}</strong>
         <span className="arrow">→</span>
-        {trade.requestedItems[0] && (
-          <img src={trade.requestedItems[0].imageUrl} alt="requested" loading="lazy" />
+        <strong>{isOutgoing ? trade.recipient.username : 'you'}</strong>
+      </td>
+      <td>
+        {trade.offeredItems.slice(0,3).map((i) => (
+          <img key={i._id} src={i.imageUrl} alt={i.name} />
+        ))}
+        {trade.offeredItems.length > 3 && (
+          <span className="badge">+{trade.offeredItems.length - 3}</span>
         )}
-      </div>
-      <footer className="card-foot">{timeAgo(trade.createdAt)}</footer>
-    </article>
+        {trade.offeredPacks > 0 && <span className="packs">📦{trade.offeredPacks}</span>}
+      </td>
+      <td>
+        {trade.requestedItems.slice(0,3).map((i) => (
+          <img key={i._id} src={i.imageUrl} alt={i.name} />
+        ))}
+        {trade.requestedItems.length > 3 && (
+          <span className="badge">+{trade.requestedItems.length - 3}</span>
+        )}
+        {trade.requestedPacks > 0 && <span className="packs">📦{trade.requestedPacks}</span>}
+      </td>
+      <td className="age">{timeAgo(trade.createdAt)}</td>
+    </tr>
   );
 
-  const MobileTrade = ({ trade, isOutgoing }) => (
-    <details className="trade-accordion">
-      <summary>
-        <div className="mobile-head">
-          <div className="avatar">
-            {(isOutgoing ? trade.recipient.username : trade.sender.username)
-              .charAt(0)
-              .toUpperCase()}
-          </div>
-          <span className="user-name">
-            {isOutgoing ? trade.recipient.username : trade.sender.username}
-          </span>
-          <span className="badge">Pending</span>
-        </div>
-      </summary>
-      <div className="accordion-body">
-        <TradeDetails trade={trade} isOutgoing={isOutgoing} />
+  const MobileCard = ({ trade, isOutgoing }) => (
+    <div className="mobile-card" tabIndex={0} onClick={() => setOpenTrade(trade)}>
+      <div className="top">
+        <span>
+          {isOutgoing ? 'you' : trade.sender.username} →{' '}
+          {isOutgoing ? trade.recipient.username : 'you'}
+        </span>
+        <span className="age">{timeAgo(trade.createdAt)}</span>
       </div>
-    </details>
+      <div className="preview">
+        {trade.offeredItems.slice(0,3).map((i) => (
+          <img key={i._id} src={i.imageUrl} alt={i.name} />
+        ))}
+        <span className="arrow">→</span>
+        {trade.requestedItems.slice(0,3).map((i) => (
+          <img key={i._id} src={i.imageUrl} alt={i.name} />
+        ))}
+      </div>
+      <div className="actions">
+        <RowActions trade={trade} isOutgoing={isOutgoing} />
+      </div>
+    </div>
   );
 
-  const TradeDetails = ({ trade, isOutgoing }) => (
-    <div className="trade-details-wrapper">
-      <div className="trade-sides">
-        <div className="trade-side">
+  const DetailPanel = ({ trade, isOutgoing }) => (
+    <aside className="detail-panel" role="dialog" aria-modal="true">
+      <header>
+        <h2>Trade Details</h2>
+        <button onClick={() => setOpenTrade(null)} aria-label="Close details">✕</button>
+      </header>
+      <div className="detail-body">
+        <section>
           <h3>Offered</h3>
-          <div className="cards-grid">
-            {trade.offeredItems?.map((item) => (
-              <div key={item._id} className="full-card">
-                <BaseCard
-                  name={item.name}
-                  image={item.imageUrl}
-                  rarity={item.rarity}
-                  description={item.flavorText}
-                  mintNumber={item.mintNumber}
-                />
+          <div className="card-grid">
+            {trade.offeredItems.map((item) => (
+              <div key={item._id} className="card-tile">
+                <BaseCard name={item.name} image={item.imageUrl} rarity={item.rarity} description={item.flavorText} mintNumber={item.mintNumber} />
               </div>
             ))}
+            {trade.offeredPacks > 0 && <div className="pack-tile">📦 {trade.offeredPacks} packs</div>}
           </div>
-          <span className="packs-label">
-            {trade.offeredPacks} pack{trade.offeredPacks !== 1 ? 's' : ''}
-          </span>
-        </div>
-        <div className="trade-side">
+        </section>
+        <section>
           <h3>Requested</h3>
-          <div className="cards-grid">
-            {trade.requestedItems?.map((item) => (
-              <div key={item._id} className="full-card">
-                <BaseCard
-                  name={item.name}
-                  image={item.imageUrl}
-                  rarity={item.rarity}
-                  description={item.flavorText}
-                  mintNumber={item.mintNumber}
-                />
+          <div className="card-grid">
+            {trade.requestedItems.map((item) => (
+              <div key={item._id} className="card-tile">
+                <BaseCard name={item.name} image={item.imageUrl} rarity={item.rarity} description={item.flavorText} mintNumber={item.mintNumber} />
               </div>
             ))}
+            {trade.requestedPacks > 0 && <div className="pack-tile">📦 {trade.requestedPacks} packs</div>}
           </div>
-          <span className="packs-label">
-            {trade.requestedPacks} pack{trade.requestedPacks !== 1 ? 's' : ''}
-          </span>
-        </div>
+        </section>
       </div>
-      <div className="trade-actions">
-        {!isOutgoing ? (
-          <>
-            <button
-              className="accept-button"
-              onClick={() => handleAction(trade._id, 'accept')}
-            >
-              Accept
-            </button>
-            <button
-              className="reject-button"
-              onClick={() => handleAction(trade._id, 'reject')}
-            >
-              Reject
-            </button>
-            <button
-              className="counter-button"
-              onClick={() => handleCounter(trade)}
-            >
-              Counter
-            </button>
-          </>
-        ) : (
-          <button
-            className="cancel-button"
-            onClick={() => handleAction(trade._id, 'cancel')}
-          >
-            Cancel
-          </button>
-        )}
-      </div>
-    </div>
+      <footer>
+        <RowActions trade={trade} isOutgoing={isOutgoing} />
+      </footer>
+    </aside>
   );
-
-  const TradeModal = ({ trade, isOutgoing }) => {
-    const [showCards, setShowCards] = useState(false);
-    return (
-    <div
-      className="modal-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="trade-dialog-title"
-      onClick={() => setOpenTrade(null)}
-    >
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <header className="modal-header">
-          <div className="modal-header-info">
-            <div className="avatar">
-              {(isOutgoing ? trade.recipient.username : trade.sender.username)
-                .charAt(0)
-                .toUpperCase()}
-            </div>
-            <div className="user-and-timestamp">
-              <h2 id="trade-dialog-title">
-                {isOutgoing ? trade.recipient.username : trade.sender.username}
-              </h2>
-              <time dateTime={trade.createdAt}>
-                Sent {timeAgo(trade.createdAt)}
-              </time>
-            </div>
-          </div>
-          <button
-            className="modal-close-btn"
-            onClick={() => setOpenTrade(null)}
-            aria-label="Close trade dialog"
-          >
-            &times;
-          </button>
-        </header>
-        <div className="modal-body">
-          {!showCards && (
-            <div className="modal-summary">
-              <p>
-                {trade.offeredItems.length} offered, {trade.requestedItems.length}
-                {' '}requested
-              </p>
-              <button className="toggle-cards" onClick={() => setShowCards(true)}>
-                View All Cards
-              </button>
-            </div>
-          )}
-          {showCards && (
-            <>
-              <section aria-labelledby="offered-label">
-                <h3 id="offered-label">Offered</h3>
-                <div className="cards-grid">
-                  {trade.offeredItems?.map((item) => (
-                    <div key={item._id} className="full-card">
-                      <BaseCard
-                        name={item.name}
-                        image={item.imageUrl}
-                        rarity={item.rarity}
-                        description={item.flavorText}
-                        mintNumber={item.mintNumber}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="packs-label text-14 text-muted">
-                  {trade.offeredPacks} pack{trade.offeredPacks !== 1 ? 's' : ''}
-                </div>
-              </section>
-              <section aria-labelledby="requested-label">
-                <h3 id="requested-label">Requested</h3>
-                <div className="cards-grid">
-                  {trade.requestedItems?.map((item) => (
-                    <div key={item._id} className="full-card">
-                      <BaseCard
-                        name={item.name}
-                        image={item.imageUrl}
-                        rarity={item.rarity}
-                        description={item.flavorText}
-                        mintNumber={item.mintNumber}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="packs-label text-14 text-muted">
-                  {trade.requestedPacks} pack{trade.requestedPacks !== 1 ? 's' : ''}
-                </div>
-                <button className="toggle-cards" onClick={() => setShowCards(false)}>
-                  Hide Cards
-                </button>
-              </section>
-            </>
-          )}
-        </div>
-        <footer className="modal-footer">
-          {!isOutgoing ? (
-            <>
-              <button
-                className="accept-button"
-                onClick={() => handleAction(trade._id, 'accept')}
-              >
-                Accept
-              </button>
-              <button
-                className="reject-button"
-                onClick={() => handleAction(trade._id, 'reject')}
-              >
-                Reject
-              </button>
-              <button
-                className="counter-button"
-                onClick={() => handleCounter(trade)}
-              >
-                Counter
-              </button>
-            </>
-          ) : (
-            <button
-              className="cancel-button"
-              onClick={() => handleAction(trade._id, 'cancel')}
-            >
-              Cancel
-            </button>
-          )}
-        </footer>
-      </div>
-    </div>
-  );
-  };
 
   return (
-    <div className="pending-trades-page">
-      <header className="pending-header">
-        <h1 id="page-title" className="page-title">Pending Trades</h1>
-        <div role="tablist" aria-label="Pending trades" className="trade-tabs">
-          <button
-            role="tab"
-            id="tab-in"
-            aria-controls="panel-in"
-            aria-selected={activeTab === 'incoming'}
-            className={activeTab === 'incoming' ? 'active' : ''}
-            onClick={() => setActiveTab('incoming')}
-          >
-            Incoming
-          </button>
-          <button
-            role="tab"
-            id="tab-out"
-            aria-controls="panel-out"
-            aria-selected={activeTab === 'outgoing'}
-            className={activeTab === 'outgoing' ? 'active' : ''}
-            onClick={() => setActiveTab('outgoing')}
-          >
-            Outgoing
-          </button>
+    <div className="pending-page">
+      <header className="page-header">
+        <h1>Pending Trades</h1>
+        <div className="header-controls">
+          <div className="segmented" role="tablist">
+            <button role="tab" aria-selected={activeTab === 'incoming'} className={activeTab==='incoming' ? 'active' : ''} onClick={() => setActiveTab('incoming')}>Incoming</button>
+            <button role="tab" aria-selected={activeTab === 'outgoing'} className={activeTab==='outgoing' ? 'active' : ''} onClick={() => setActiveTab('outgoing')}>Outgoing</button>
+          </div>
+          <input type="search" placeholder="Search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+          <button className="filter-btn" onClick={() => setShowFilters((v) => !v)}>Filters</button>
         </div>
-        <div className="filter-bar">
-          <label htmlFor="filter-user" className="sr-only">
-            Filter by user
-          </label>
-          <input
-            id="filter-user"
-            type="search"
-            placeholder="Username…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <label htmlFor="filter-sort" className="sr-only">
-            Sort
-          </label>
-          <select
-            id="filter-sort"
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-          >
-            <option value="newest">Date (newest)</option>
-            <option value="oldest">Date (oldest)</option>
-            <option value="rarity">Rarity</option>
-          </select>
-          <fieldset>
-            <legend>Status</legend>
-            {['pending', 'countered', 'expired'].map((s) => (
-              <label key={s}>
-                <input
-                  type="checkbox"
-                  checked={statusFilters[s]}
-                  onChange={(e) =>
-                    setStatusFilters({
-                      ...statusFilters,
-                      [s]: e.target.checked,
-                    })
-                  }
-                />
-                {s.charAt(0).toUpperCase() + s.slice(1)}
-              </label>
-            ))}
-          </fieldset>
-          <fieldset>
-            <legend>Card type</legend>
-            {Object.keys(typeFilters).map((t) => (
-              <label key={t}>
-                <input
-                  type="checkbox"
-                  checked={typeFilters[t]}
-                  onChange={(e) =>
-                    setTypeFilters({
-                      ...typeFilters,
-                      [t]: e.target.checked,
-                    })
-                  }
-                />
-                {t}
-              </label>
-            ))}
-          </fieldset>
-        </div>
+        {showFilters && (
+          <div className="filter-bar">
+            <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+              <option value="newest">Date ↓</option>
+              <option value="oldest">Date ↑</option>
+            </select>
+            <div className="toggle-group">
+              {['pending','countered','expired'].map((s) => (
+                <button key={s} className={statusFilters[s] ? 'active' : ''} onClick={() => setStatusFilters({ ...statusFilters, [s]: !statusFilters[s] })}>{s.charAt(0).toUpperCase()+s.slice(1)}</button>
+              ))}
+            </div>
+            <div className="toggle-group">
+              {Object.keys(typeFilters).map((t) => (
+                <button key={t} className={typeFilters[t] ? 'active' : ''} onClick={() => setTypeFilters({ ...typeFilters, [t]: !typeFilters[t] })}>{t}</button>
+              ))}
+            </div>
+          </div>
+        )}
       </header>
 
-      {!isMobile && (
-        <div
-          className="trades-grid"
-          role="tabpanel"
-          id={activeTab === 'incoming' ? 'panel-in' : 'panel-out'}
-          aria-labelledby={activeTab === 'incoming' ? 'tab-in' : 'tab-out'}
-          ref={gridRef}
-        >
-          {tradesToShow.length === 0 ? (
-            <p className="no-trades">No trades.</p>
-          ) : tradesToShow.length > 20 ? (
-            <Grid
-              columnCount={Math.max(1, Math.floor(gridWidth / 264))}
-              columnWidth={264}
-              height={600}
-              rowCount={Math.ceil(
-                tradesToShow.length / Math.max(1, Math.floor(gridWidth / 264))
-              )}
-              rowHeight={360}
-              width={gridWidth}
-            >
-              {({ columnIndex, rowIndex, style }) => {
-                const colCount = Math.max(1, Math.floor(gridWidth / 264));
-                const index = rowIndex * colCount + columnIndex;
-                const trade = tradesToShow[index];
-                if (!trade) return null;
-                return (
-                  <div style={{ ...style, padding: 12 }}>
-                    <TradeTile
-                      trade={trade}
-                      isOutgoing={activeTab === 'outgoing'}
-                    />
-                  </div>
-                );
-              }}
-            </Grid>
-          ) : (
-            tradesToShow.map((t) => (
-              <TradeTile
-                key={t._id}
-                trade={t}
-                isOutgoing={activeTab === 'outgoing'}
-              />
-            ))
-          )}
-        </div>
-      )}
-
-      {isMobile && (
-        <div
-          className="trade-accordions"
-          role="tabpanel"
-          id={activeTab === 'incoming' ? 'panel-in' : 'panel-out'}
-          aria-labelledby={activeTab === 'incoming' ? 'tab-in' : 'tab-out'}
-        >
-          {tradesToShow.length === 0 ? (
-            <p className="no-trades">No trades.</p>
-          ) : (
-            tradesToShow.map((t) => (
-              <MobileTrade
-                key={t._id}
-                trade={t}
-                isOutgoing={activeTab === 'outgoing'}
-              />
-            ))
-          )}
-        </div>
-      )}
+      <div className="table-wrapper">
+        {tradesToShow.length === 0 ? (
+          <p className="no-trades">No pending trades</p>
+        ) : !isMobile ? (
+          <table className="trade-table">
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>Who</th>
+                <th>Offer</th>
+                <th>Want</th>
+                <th className="age">Age</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tradesToShow.map((t) => (
+                <TradeRow key={t._id} trade={t} isOutgoing={activeTab==='outgoing'} />
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          tradesToShow.map((t) => (
+            <MobileCard key={t._id} trade={t} isOutgoing={activeTab==='outgoing'} />
+          ))
+        )}
+      </div>
       {openTrade && (
-        <TradeModal
-          trade={openTrade}
-          isOutgoing={openTrade.sender._id === user._id}
-        />
+        <DetailPanel trade={openTrade} isOutgoing={openTrade.sender._id === user._id} />
       )}
     </div>
   );
