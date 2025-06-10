@@ -130,9 +130,11 @@ body {
   vertical-align: middle;
   border-bottom: 1px solid #2a2a2a;
 }
+
 .trade-table tbody tr {
   height: 96px;
 }
+
 .trade-table tbody tr:hover {
   background: #222;
   cursor: pointer;
@@ -177,6 +179,7 @@ body {
 .who .arrow {
   margin: 0 4px;
 }
+
 .age { text-align: right; }
 
 .detail-panel {
@@ -221,6 +224,7 @@ body {
 }
 .card-tile {
   width: 120px;
+
 }
 .pack-tile {
   background: #282828;
