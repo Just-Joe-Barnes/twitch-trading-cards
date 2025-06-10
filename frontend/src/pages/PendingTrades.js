@@ -16,10 +16,7 @@ const PendingTrades = () => {
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortOrder, setSortOrder] = useState('newest');
   const [activeTab, setActiveTab] = useState('incoming');
-  const [statusFilters, setStatusFilters] = useState({ pending: true, countered: true, expired: true });
-  const [typeFilters, setTypeFilters] = useState({ Creature: true, Spell: true, Artifact: true });
   const [openTrade, setOpenTrade] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -91,20 +88,15 @@ const PendingTrades = () => {
     return `${Math.floor(diff / 86400)}d`;
   };
 
-  const visibleStatuses = Object.keys(statusFilters).filter((k) => statusFilters[k]);
-  const sortFn = (a, b) =>
-    sortOrder === 'newest'
-      ? new Date(b.createdAt) - new Date(a.createdAt)
-      : new Date(a.createdAt) - new Date(b.createdAt);
+  const sortFn = (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
 
   const incoming = trades
-    .filter((t) => visibleStatuses.includes(t.status))
     .filter((t) => t.recipient._id === user._id)
     .filter((t) => t.sender.username.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort(sortFn);
 
   const outgoing = trades
-    .filter((t) => visibleStatuses.includes(t.status))
+
     .filter((t) => t.sender._id === user._id)
     .filter((t) => t.recipient.username.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort(sortFn);
@@ -225,26 +217,8 @@ const PendingTrades = () => {
             <button role="tab" aria-selected={activeTab === 'outgoing'} className={activeTab==='outgoing' ? 'active' : ''} onClick={() => setActiveTab('outgoing')}>Outgoing</button>
           </div>
           <input type="search" placeholder="Search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-          <button className="filter-btn" onClick={() => setShowFilters((v) => !v)}>Filters</button>
         </div>
-        {showFilters && (
-          <div className="filter-bar">
-            <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
-              <option value="newest">Date ↓</option>
-              <option value="oldest">Date ↑</option>
-            </select>
-            <div className="toggle-group">
-              {['pending','countered','expired'].map((s) => (
-                <button key={s} className={statusFilters[s] ? 'active' : ''} onClick={() => setStatusFilters({ ...statusFilters, [s]: !statusFilters[s] })}>{s.charAt(0).toUpperCase()+s.slice(1)}</button>
-              ))}
-            </div>
-            <div className="toggle-group">
-              {Object.keys(typeFilters).map((t) => (
-                <button key={t} className={typeFilters[t] ? 'active' : ''} onClick={() => setTypeFilters({ ...typeFilters, [t]: !typeFilters[t] })}>{t}</button>
-              ))}
-            </div>
-          </div>
-        )}
+        
       </header>
 
       <div className="table-wrapper">
