@@ -18,7 +18,6 @@ const PendingTrades = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('incoming');
   const [openTrade, setOpenTrade] = useState(null);
-  const [showFilters, setShowFilters] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const navigate = useNavigate();
 
