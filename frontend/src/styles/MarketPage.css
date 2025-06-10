@@ -78,13 +78,13 @@
     }
 
 .listings-grid {
-    --listing-card-scale: 1;
+    --card-scale: 1;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 2rem;
     margin-bottom: 3rem;
-    width: calc(100% / var(--listing-card-scale));
-    transform: scale(var(--listing-card-scale));
+    width: calc(100% / var(--card-scale));
+    transform: scale(var(--card-scale));
     transform-origin: top left;
 }
 
@@ -98,8 +98,8 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    flex: 1 1 280px;
-    max-width: 280px;
+    flex: 1 1 320px;
+    max-width: 320px;
 }
 
 .listing-card:hover {
@@ -168,6 +168,6 @@
 
 @media (max-width: 600px) {
     .listings-grid {
-        --listing-card-scale: 0.71;
+        --card-scale: 0.71;
     }
 }

@@ -9,6 +9,11 @@ import '../styles/MarketPage.css';
 import { io } from 'socket.io-client';
 
 const MarketPage = () => {
+    const defaultCardScale = 1;
+    const [cardScale] = useState(() => {
+        const storedScale = localStorage.getItem('cardScale');
+        return storedScale !== null ? parseFloat(storedScale) : defaultCardScale;
+    });
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -133,7 +138,7 @@ const MarketPage = () => {
                     <button className="create-listing-button">Create New Listing</button>
                 </Link>
             </div>
-            <div className="listings-grid">
+            <div className="listings-grid" style={{ '--card-scale': cardScale }}>
                 {sortedListings.length > 0 ? (
                     sortedListings.map((listing) => (
                         <div key={listing._id} className="listing-card">
