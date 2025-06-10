@@ -11,6 +11,19 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import BaseCard from '../components/BaseCard';
 import '../styles/PendingTrades.css';
 
+const rarityColors = {
+  Basic: '#8D8D8D',
+  Common: '#64B5F6',
+  Standard: '#66BB6A',
+  Uncommon: '#1976D2',
+  Rare: '#AB47BC',
+  Epic: '#FFA726',
+  Legendary: '#e32232',
+  Mythic: 'hotpink',
+  Unique: 'black',
+  Divine: 'white',
+};
+
 const PendingTrades = () => {
   const [trades, setTrades] = useState([]);
   const [user, setUser] = useState(null);
@@ -87,6 +100,20 @@ const PendingTrades = () => {
     return `${Math.floor(diff / 86400)}d`;
   };
 
+  const offerSummary = (items, packs) => {
+    if (items.length === 0) return packs > 0 ? `${packs} packs` : '';
+    const first = items[0];
+    const extras = items.length - 1;
+    const rarityColor = rarityColors[first.rarity] || 'inherit';
+    return (
+      <span>
+        {first.name} <span style={{ color: rarityColor }}>{first.rarity}</span>
+        {extras > 0 && ` +${extras} more`}
+        {packs > 0 && ` + ${packs} packs`}
+      </span>
+    );
+  };
+
   const sortFn = (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
 
   const incoming = trades
@@ -117,37 +144,32 @@ const PendingTrades = () => {
   );
 
   const TradeRow = ({ trade, isOutgoing }) => (
-    <tr tabIndex={0} onClick={() => setOpenTrade(trade)}>
+    <tr
+      tabIndex={0}
+      onClick={() =>
+        setOpenTrade(openTrade && openTrade._id === trade._id ? null : trade)
+      }
+    >
       <td><RowActions trade={trade} isOutgoing={isOutgoing} /></td>
       <td className="who">
         <strong>{isOutgoing ? 'you' : trade.sender.username}</strong>
         <span className="arrow">→</span>
         <strong>{isOutgoing ? trade.recipient.username : 'you'}</strong>
       </td>
-      <td>
-        {trade.offeredItems.slice(0,3).map((i) => (
-          <img key={i._id} src={i.imageUrl} alt={i.name} />
-        ))}
-        {trade.offeredItems.length > 3 && (
-          <span className="badge">+{trade.offeredItems.length - 3}</span>
-        )}
-        {trade.offeredPacks > 0 && <span className="packs">📦{trade.offeredPacks}</span>}
-      </td>
-      <td>
-        {trade.requestedItems.slice(0,3).map((i) => (
-          <img key={i._id} src={i.imageUrl} alt={i.name} />
-        ))}
-        {trade.requestedItems.length > 3 && (
-          <span className="badge">+{trade.requestedItems.length - 3}</span>
-        )}
-        {trade.requestedPacks > 0 && <span className="packs">📦{trade.requestedPacks}</span>}
-      </td>
+      <td>{offerSummary(trade.offeredItems, trade.offeredPacks)}</td>
+      <td>{offerSummary(trade.requestedItems, trade.requestedPacks)}</td>
       <td className="age">{timeAgo(trade.createdAt)}</td>
     </tr>
   );
 
   const MobileCard = ({ trade, isOutgoing }) => (
-    <div className="mobile-card" tabIndex={0} onClick={() => setOpenTrade(trade)}>
+    <div
+      className="mobile-card"
+      tabIndex={0}
+      onClick={() =>
+        setOpenTrade(openTrade && openTrade._id === trade._id ? null : trade)
+      }
+    >
       <div className="top">
         <span>
           {isOutgoing ? 'you' : trade.sender.username} →{' '}
@@ -156,13 +178,9 @@ const PendingTrades = () => {
         <span className="age">{timeAgo(trade.createdAt)}</span>
       </div>
       <div className="preview">
-        {trade.offeredItems.slice(0,3).map((i) => (
-          <img key={i._id} src={i.imageUrl} alt={i.name} />
-        ))}
+        {offerSummary(trade.offeredItems, trade.offeredPacks)}
         <span className="arrow">→</span>
-        {trade.requestedItems.slice(0,3).map((i) => (
-          <img key={i._id} src={i.imageUrl} alt={i.name} />
-        ))}
+        {offerSummary(trade.requestedItems, trade.requestedPacks)}
       </div>
       <div className="actions">
         <RowActions trade={trade} isOutgoing={isOutgoing} />
