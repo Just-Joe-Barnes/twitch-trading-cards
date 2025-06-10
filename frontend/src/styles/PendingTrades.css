@@ -186,7 +186,7 @@ body {
   position: fixed;
   top: 0;
   right: 0;
-  width: 360px;
+  width: 480px;
   max-width: 100%;
   height: 100%;
   background: var(--surface);
@@ -218,13 +218,17 @@ body {
   overflow-y: auto;
 }
 .card-grid {
+  --card-scale: 0.4;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px,1fr));
+  grid-template-columns: repeat(auto-fit, minmax(calc(300px * var(--card-scale)), 1fr));
   gap: 16px;
+  justify-items: center;
 }
 .card-tile {
-  width: 120px;
-
+  width: calc(100% / var(--card-scale));
+  max-width: 300px;
+  transform: scale(var(--card-scale));
+  transform-origin: top left;
 }
 .pack-tile {
   background: #282828;
@@ -248,13 +252,8 @@ body {
   .mobile-card .preview {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
     margin: 8px 0;
-  }
-  .mobile-card .preview img {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-sm);
   }
   .mobile-card .top {
     display: flex;
