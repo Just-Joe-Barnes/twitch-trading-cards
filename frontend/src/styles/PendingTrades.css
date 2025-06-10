@@ -186,7 +186,7 @@ body {
   position: fixed;
   top: 0;
   right: 0;
-  width: 480px;
+  width: 648px;
   max-width: 100%;
   height: 100%;
   background: var(--surface);
@@ -196,6 +196,21 @@ body {
   flex-direction: column;
   gap: 16px;
   z-index: 20;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+.detail-panel.open {
+  transform: translateX(0);
+}
+.detail-panel .close-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 20px;
+  cursor: pointer;
 }
 .detail-panel header {
   display: flex;
