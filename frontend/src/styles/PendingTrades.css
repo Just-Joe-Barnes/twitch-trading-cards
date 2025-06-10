@@ -218,7 +218,7 @@ body {
   overflow-y: auto;
 }
 .card-grid {
-  --card-scale: 0.4;
+  --card-scale: 0.8;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(calc(300px * var(--card-scale)), 1fr));
   gap: 16px;
