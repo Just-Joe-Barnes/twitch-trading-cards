@@ -27,16 +27,25 @@ const getUserProfile = async (req, res) => {
     }
 };
 
-// Get profile by username (for viewing other users� profiles)
+// Get profile by username (for viewing other users' profiles)
 const getProfileByUsername = async (req, res) => {
     try {
         const { username } = req.params;
-        const user = await User.findOne({ username }).select(
-            'username email isAdmin openedPacks featuredCards cards twitchProfilePic xp level achievements'
-        ).lean();
+
+        // Base fields returned for any profile lookup
+        const baseFields =
+            'username isAdmin openedPacks featuredCards cards twitchProfilePic xp level achievements';
+
+        // Only include the email if the requester is viewing their own profile
+        // or has admin privileges
+        const includeEmail = req.username === username || req.isAdmin;
+        const projection = includeEmail ? `${baseFields} email` : baseFields;
+
+        const user = await User.findOne({ username }).select(projection).lean();
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
+
         res.status(200).json(user);
     } catch (error) {
         console.error('Error fetching profile by username:', error.message);
