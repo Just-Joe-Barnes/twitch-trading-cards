@@ -69,8 +69,14 @@ const DashboardPage = () => {
                         <h3>How to Earn Packs:</h3>
                         <ul>
                             <li>Earn 1 pack for your first login and signing into the app.</li>
-                            <li>Earn 1 pack every time you subscribe to the show.</li>
-                            <li>Earn 1 pack per gifted subscription to the show (e.g., 5 gifted earns 5 packs).</li>
+                            <li>
+                                Earn packs when you subscribe: 1 pack for tier 1,
+                                5 packs for tier 2, and 20 packs for tier 3.
+                            </li>
+                            <li>
+                                Gifted subscriptions award packs to the gifter and
+                                each recipient based on the same tier values.
+                            </li>
                             <li>
                                 Earn 1 pack by redeeming{' '}
                                 {CHANNEL_POINTS_COST.toLocaleString()} channel
