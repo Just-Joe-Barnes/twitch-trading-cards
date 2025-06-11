@@ -49,7 +49,8 @@
         color: var(--text-primary);
         font-size: 1rem;
         transition: all 0.3s ease;
-        width: 240px;
+        width: 100%;
+        max-width: 240px;
     }
 
         .market-controls input[type="text"]::placeholder {
@@ -99,6 +100,7 @@
     flex-direction: column;
     justify-content: space-between;
     flex: 1 1 348px;
+    width: 100%;
     max-width: 348px;
 }
 
@@ -166,8 +168,36 @@
     cursor: default;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+    .market-controls {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .market-controls input[type="text"],
+    .market-controls select {
+        max-width: 400px;
+    }
+
     .listings-grid {
-        --card-scale: 0.71;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .listing-card {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .market-page {
+        padding: 1.5rem 1rem;
+    }
+
+    .listings-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .listing-card {
+        max-width: 100%;
     }
 }
