@@ -391,17 +391,45 @@ router.delete('/cards/:cardId', protect, adminOnly, async (req, res) => {
 
 router.put('/cards/:cardId', protect, adminOnly, async (req, res) => {
   try {
-    const { name, flavorText } = req.body;
+    const { name, flavorText, imageUrl } = req.body;
     const Card = require('../models/cardModel');
+    const User = require('../models/userModel');
     const card = await Card.findById(req.params.cardId);
     if (!card) {
       return res.status(404).json({ message: 'Card not found' });
     }
 
+    const oldName = card.name;
+
     card.name = name || card.name;
     card.flavorText = flavorText || card.flavorText;
+    card.imageUrl = imageUrl || card.imageUrl;
 
     await card.save();
+
+    const updateData = {
+      'cards.$[elem].name': card.name,
+      'cards.$[elem].imageUrl': card.imageUrl,
+      'cards.$[elem].flavorText': card.flavorText,
+    };
+    const arrayFilters = [{ 'elem.name': oldName }];
+
+    await User.updateMany({ 'cards.name': oldName }, { $set: updateData }, { arrayFilters });
+    await User.updateMany({ 'openedCards.name': oldName }, {
+      $set: {
+        'openedCards.$[elem].name': card.name,
+        'openedCards.$[elem].imageUrl': card.imageUrl,
+        'openedCards.$[elem].flavorText': card.flavorText,
+      },
+    }, { arrayFilters });
+    await User.updateMany({ 'featuredCards.name': oldName }, {
+      $set: {
+        'featuredCards.$[elem].name': card.name,
+        'featuredCards.$[elem].imageUrl': card.imageUrl,
+        'featuredCards.$[elem].flavorText': card.flavorText,
+      },
+    }, { arrayFilters });
+
     res.json({ message: 'Card updated successfully', card });
   } catch (error) {
     console.error('Error updating card:', error);

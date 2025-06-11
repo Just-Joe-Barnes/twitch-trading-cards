@@ -36,6 +36,11 @@ const AdminActions = () => {
     const [cardSearchResults, setCardSearchResults] = useState([]);
     const [selectedCardDetails, setSelectedCardDetails] = useState(null);
 
+    // Edit Card state
+    const [editQuery, setEditQuery] = useState('');
+    const [editResults, setEditResults] = useState([]);
+    const [editCard, setEditCard] = useState(null);
+
     // Pack management state
 
 
@@ -143,10 +148,31 @@ const AdminActions = () => {
         return () => clearTimeout(timer);
     }, [cardSearchQuery]);
 
+    // Debounced search for edit tool
+    useEffect(() => {
+        const fetchEditResults = async () => {
+            if (editQuery.length > 0) {
+                const results = await searchCardsByName(editQuery);
+                setEditResults(results);
+            } else {
+                setEditResults([]);
+            }
+        };
+
+        const t = setTimeout(fetchEditResults, 300);
+        return () => clearTimeout(t);
+    }, [editQuery]);
+
     const handleSelectCard = (card) => {
         setSelectedCardDetails(card);
         setCardSearchQuery(card.name);
         setCardSearchResults([]);
+    };
+
+    const handleEditSelect = (card) => {
+        setEditCard({ ...card });
+        setEditQuery(card.name);
+        setEditResults([]);
     };
 
     if (!isAdmin) {
@@ -556,6 +582,115 @@ const AdminActions = () => {
                   ))}
                 </ul>
               </div>
+            </section>
+
+            {/* Card Editor */}
+            <section className="aa-panel">
+                <h2>Edit Card</h2>
+                <div className="aa-admin-actions-form" style={{ position: 'relative' }}>
+                    <div style={{ position: 'relative' }}>
+                        <input
+                            type="text"
+                            placeholder="Search card..."
+                            value={editQuery}
+                            onChange={e => setEditQuery(e.target.value)}
+                            className="search-bar"
+                        />
+                        {editResults.length > 0 && (
+                            <ul className="search-dropdown">
+                                {editResults.map(card => (
+                                    <li
+                                        key={card._id}
+                                        className="search-result-item"
+                                        onMouseDown={() => handleEditSelect(card)}
+                                    >
+                                        {card.name}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+
+                    {editCard && (
+                        <>
+                            <div className="aa-form-group">
+                                <label>Title:</label>
+                                <input
+                                    type="text"
+                                    value={editCard.name}
+                                    onChange={e => setEditCard({ ...editCard, name: e.target.value })}
+                                />
+                            </div>
+                            <div className="aa-form-group">
+                                <label>Flavor Text:</label>
+                                <textarea
+                                    value={editCard.flavorText || ''}
+                                    onChange={e => setEditCard({ ...editCard, flavorText: e.target.value })}
+                                />
+                            </div>
+                            <div className="aa-form-group">
+                                <label>Change Image:</label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={async (e) => {
+                                        const file = e.target.files[0];
+                                        if (!file) return;
+                                        const formData = new FormData();
+                                        formData.append('file', file);
+                                        formData.append('upload_preset', 'unsigned_preset');
+                                        try {
+                                            const res = await fetch('https://api.cloudinary.com/v1_1/dtnrd3xcy/image/upload', {
+                                                method: 'POST',
+                                                body: formData,
+                                            });
+                                            const data = await res.json();
+                                            if (data.secure_url) {
+                                                setEditCard({ ...editCard, imageUrl: data.secure_url });
+                                                window.showToast('Image uploaded', 'success');
+                                            } else {
+                                                window.showToast('Upload failed', 'error');
+                                            }
+                                        } catch {
+                                            window.showToast('Upload error', 'error');
+                                        }
+                                    }}
+                                />
+                            </div>
+                            <button
+                                disabled={loading}
+                                onClick={async () => {
+                                    setLoading(true);
+                                    try {
+                                        await fetchWithAuth(`/api/admin/cards/${editCard._id}`, {
+                                            method: 'PUT',
+                                            body: JSON.stringify({
+                                                name: editCard.name,
+                                                flavorText: editCard.flavorText,
+                                                imageUrl: editCard.imageUrl,
+                                            }),
+                                        });
+                                        window.showToast('Card updated', 'success');
+                                    } catch {
+                                        window.showToast('Error updating card', 'error');
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }}
+                            >
+                                {loading ? 'Saving...' : 'Save Changes'}
+                            </button>
+                            <div style={{ marginTop: '1rem' }}>
+                                <BaseCard
+                                    name={editCard.name}
+                                    description={editCard.flavorText}
+                                    image={editCard.imageUrl}
+                                    rarity={editCard.rarity || (editCard.rarities && editCard.rarities[0]?.rarity)}
+                                />
+                            </div>
+                        </>
+                    )}
+                </div>
             </section>
 
             {/* Card Availability Editor */}
