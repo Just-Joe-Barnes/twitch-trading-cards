@@ -17,6 +17,7 @@ import CreateListingPage from './pages/CreateListingPage';
 import MarketListingDetails from './pages/MarketListingDetails';
 import AdminActions from './pages/AdminActions';
 import CardEditor from './components/CardEditor';
+import NotFoundPage from './pages/NotFoundPage';
 import Toast from './components/Toast';
 
 import 'normalize.css';
@@ -135,7 +136,7 @@ const App = () => {
                     <Route path="/market/listing/:id" element={<MarketListingDetails />} />
                     <Route path="/admin/cards/:id" element={<CardEditor />} />
                     <Route path="/" element={<Navigate to="/dashboard" />} />
-                    <Route path="*" element={<Navigate to="/login" />} />
+                    <Route path="*" element={<NotFoundPage />} />
                 </Routes>
             </Router>
             {toasts.map((toast) => (
