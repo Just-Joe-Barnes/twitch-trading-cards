@@ -12,6 +12,8 @@ const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET;
 let TWITCH_REFRESH_TOKEN = process.env.TWITCH_REFRESH_TOKEN;
 const CHANNEL_POINTS_COST = parseInt(process.env.CHANNEL_POINTS_COST || '5000', 10);
+// Packs awarded for each subscription tier
+const tierPacks = { '1000': 1, '2000': 5, '3000': 20 };
 
 if (!TWITCH_SECRET) {
     console.error('TWITCH_SECRET is not defined in the environment variables!');
@@ -52,21 +54,22 @@ const verifyTwitchRequest = (req, res, next) => {
 // Function to handle Twitch events
 const handleTwitchEvent = async (event) => {
     console.log('Handling Twitch event:', event.type);
-    const { user_id, user_name, type, reward, total } = event;
+    const { user_id, user_name, type, reward, total, tier } = event;
 
     try {
         switch (type) {
             case 'channel.subscribe':
                 console.log(`Processing channel.subscribe for ${user_name} (${user_id})`);
-                // Check if the user exists before awarding a pack
+                // Check if the user exists before awarding packs
                 const existingSubscriber = await User.findOne({ twitchId: user_id });
                 if (existingSubscriber) {
+                    const packsToAward = tierPacks[tier] || 1;
                     await User.findOneAndUpdate(
                         { twitchId: user_id },
-                        { $inc: { packs: 1 } },
+                        { $inc: { packs: packsToAward } },
                         { new: true }
                     );
-                    console.log(`1 pack awarded to subscriber ${user_name} (${user_id}).`);
+                    console.log(`${packsToAward} pack(s) awarded to subscriber ${user_name} (${user_id}).`);
                 } else {
                     console.error(`❌ User not found for Twitch ID ${user_id} (${user_name}). Subscription event ignored.`);
                 }
@@ -82,13 +85,15 @@ const handleTwitchEvent = async (event) => {
                 }
                 const existingGifter = await User.findOne({ twitchId: user_id });
                 if (existingGifter) {
+                    const packsPerSub = tierPacks[tier] || 1;
+                    const totalPacks = packsPerSub * giftedCount;
                     // Increment packs for existing gifter
                     const updatedGifter = await User.findOneAndUpdate(
                         { twitchId: user_id },
-                        { $inc: { packs: giftedCount } },
+                        { $inc: { packs: totalPacks } },
                         { new: true }
                     );
-                    console.log(`🎁 ${giftedCount} pack(s) awarded to gifter (${user_id}). New pack count: ${updatedGifter.packs}`);
+                    console.log(`🎁 ${totalPacks} pack(s) awarded to gifter (${user_id}). New pack count: ${updatedGifter.packs}`);
                 } else {
                     // No account exists, so do not award a pack.
                     console.error(`❌ User not found for Twitch ID ${user_id} in gifted subscription event. Pack not awarded.`);
