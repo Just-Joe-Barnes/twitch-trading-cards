@@ -1,2 +1,7 @@
 .vs/
 *.vsidx
+
+# Ignore build artifacts and archives
+build/
+dist/
+*.zip
