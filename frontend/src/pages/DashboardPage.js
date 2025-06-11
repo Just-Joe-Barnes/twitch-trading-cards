@@ -4,6 +4,11 @@ import { fetchUserProfile, fetchMyPacks } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner'; // Import your spinner
 import '../styles/DashboardPage.css';
 
+const CHANNEL_POINTS_COST = parseInt(
+    process.env.REACT_APP_CHANNEL_POINTS_COST || '5000',
+    10
+);
+
 const DashboardPage = () => {
     const [userData, setUserData] = useState(null);
     const [packCount, setPackCount] = useState(0);
@@ -66,7 +71,11 @@ const DashboardPage = () => {
                             <li>Earn 1 pack for your first login and signing into the app.</li>
                             <li>Earn 1 pack every time you subscribe to the show.</li>
                             <li>Earn 1 pack per gifted subscription to the show (e.g., 5 gifted earns 5 packs).</li>
-                            <li>Earn 1 pack by redeeming 10,000 channel points.</li>
+                            <li>
+                                Earn 1 pack by redeeming{' '}
+                                {CHANNEL_POINTS_COST.toLocaleString()} channel
+                                points.
+                            </li>
                         </ul>
                     </div>
                 </div>

@@ -11,6 +11,7 @@ const TWITCH_SECRET = process.env.TWITCH_SECRET;
 const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET;
 let TWITCH_REFRESH_TOKEN = process.env.TWITCH_REFRESH_TOKEN;
+const CHANNEL_POINTS_COST = parseInt(process.env.CHANNEL_POINTS_COST || '5000', 10);
 
 if (!TWITCH_SECRET) {
     console.error('TWITCH_SECRET is not defined in the environment variables!');
@@ -98,7 +99,7 @@ const handleTwitchEvent = async (event) => {
                 if (
                     reward &&
                     reward.title === "Get A Ned's Decks Pack" &&
-                    reward.cost === 10000
+                    reward.cost === CHANNEL_POINTS_COST
                 ) {
                     console.log(`Processing channel points redemption for ${user_name}`);
                     const existingUser = await User.findOne({ twitchId: user_id });

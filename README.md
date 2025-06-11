@@ -31,6 +31,7 @@ PORT=5000
 MONGO_URI=
 CLIENT_URL=
 FRONTEND_URL=
+CHANNEL_POINTS_COST=5000
 ```
 
 ### Frontend (`frontend/.env`)
@@ -39,6 +40,7 @@ The frontend uses a small `.env` file:
 ```
 PORT=3000
 REACT_APP_API_BASE_URL=
+REACT_APP_CHANNEL_POINTS_COST=5000
 ```
 
 ## Development Scripts
