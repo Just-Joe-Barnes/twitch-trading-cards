@@ -1,0 +1,41 @@
+:root {
+    --brand-primary: #db88db;
+    --brand-secondary: #88cddb;
+    --background-dark: #0a0a0a;
+    --surface-dark: #1a1a1a;
+    --surface-darker: #141414;
+    --text-primary: rgba(255, 255, 255, 0.95);
+    --border-dark: rgba(255, 255, 255, 0.12);
+}
+
+.notfound-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4rem 1.5rem;
+    min-height: 100vh;
+    background: var(--background-dark);
+    color: var(--text-primary);
+}
+
+.notfound-page h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.notfound-page p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.back-link {
+    color: var(--brand-primary);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
