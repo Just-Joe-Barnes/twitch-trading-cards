@@ -13,7 +13,9 @@ const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET;
 let TWITCH_REFRESH_TOKEN = process.env.TWITCH_REFRESH_TOKEN;
 const CHANNEL_POINTS_COST = parseInt(process.env.CHANNEL_POINTS_COST || '5000', 10);
 // Packs awarded for each subscription tier
-const tierPacks = { '1000': 1, '2000': 5, '3000': 20 };
+// Tier 3 subscriptions were previously awarded 20 packs, which was overly
+// generous. Both regular and gifted tier 3 subs now grant 5 packs instead.
+const tierPacks = { '1000': 1, '2000': 5, '3000': 5 };
 
 if (!TWITCH_SECRET) {
     console.error('TWITCH_SECRET is not defined in the environment variables!');
