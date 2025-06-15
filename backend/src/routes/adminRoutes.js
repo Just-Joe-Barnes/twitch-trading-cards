@@ -45,6 +45,22 @@ router.post('/set-packs', protect, adminOnly, async (req, res) => {
     }
 });
 
+// API to add a specific number of packs to all users
+router.post('/add-packs', protect, adminOnly, async (req, res) => {
+    const { amount } = req.body;
+    const num = Number(amount);
+    if (isNaN(num)) {
+        return res.status(400).json({ error: 'Amount must be a number.' });
+    }
+    try {
+        const result = await User.updateMany({}, { $inc: { packs: num } });
+        res.json({ message: `Added ${num} packs to all users.`, updatedCount: result.modifiedCount });
+    } catch (error) {
+        console.error('Error adding packs to all users:', error);
+        res.status(500).json({ error: 'Failed to add packs to all users.' });
+    }
+});
+
 // New endpoint: Broadcast custom notification to all users
 router.post('/notifications', protect, adminOnly, async (req, res) => {
     const { type, message, link = "" } = req.body; // Allow optional link
