@@ -30,6 +30,7 @@ const AdminActions = () => {
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState('');
     const [packAmount, setPackAmount] = useState('');
+    const [addAllAmount, setAddAllAmount] = useState('');
     const [isUserDropdownVisible, setUserDropdownVisible] = useState(false);
     // Card Search Tool state
     const [cardSearchQuery, setCardSearchQuery] = useState('');
@@ -112,6 +113,20 @@ const AdminActions = () => {
             setPackAmount('');
         } catch {
             setStatus('Error giving packs.');
+        }
+    };
+
+    const handleAddPacksAll = async () => {
+        try {
+            await fetchWithAuth('/api/admin/add-packs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: Number(addAllAmount) }),
+            });
+            setStatus(`Added ${addAllAmount} packs to all users.`);
+            setAddAllAmount('');
+        } catch {
+            setStatus('Error adding packs to all users.');
         }
     };
 
@@ -406,8 +421,20 @@ const AdminActions = () => {
                                 required
                             />
                         </div>
+                        <div className="aa-form-group">
+                            <label>Add Packs to All:</label>
+                            <input
+                                type="number"
+                                min="1"
+                                value={addAllAmount}
+                                onChange={e => setAddAllAmount(e.target.value)}
+                            />
+                        </div>
                         <button type="submit" disabled={loading}>
                             {loading ? 'Giving...' : 'Give Packs'}
+                        </button>
+                        <button type="button" disabled={loading} onClick={handleAddPacksAll}>
+                            {loading ? 'Adding...' : 'Give To All'}
                         </button>
                         <button type="button" className="aa-reset-button" disabled={loading} onClick={async () => {
                             const confirmed = window.confirm('Are you sure you want to reset ALL users\' packs to 6? This cannot be undone.');
