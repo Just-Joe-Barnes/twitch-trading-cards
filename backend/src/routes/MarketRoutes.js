@@ -162,6 +162,29 @@ router.post('/listings/:id/offers', protect, sensitiveLimiter, async (req, res) 
         const listingId = req.params.id;
         const { message, offeredCards, offeredPacks } = req.body;
 
+        // Fetch the user making the offer to validate ownership and packs
+        const offerer = await User.findById(req.user._id);
+        if (!offerer) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (offerer.packs < offeredPacks) {
+            return res.status(400).json({ message: `You only have ${offerer.packs} pack(s), but tried to offer ${offeredPacks}.` });
+        }
+
+        // Verify all offered cards exist in the user's collection and are available
+        const missingCards = offeredCards.filter(card =>
+            !offerer.cards.some(uc =>
+                uc.name === card.name &&
+                uc.mintNumber === card.mintNumber &&
+                uc.status === 'available'
+            )
+        );
+
+        if (missingCards.length > 0) {
+            return res.status(400).json({ message: 'You attempted to offer card(s) you do not own or that are not available.' });
+        }
+
         // 1. Fetch the listing
         const listing = await MarketListing.findById(listingId);
         if (!listing) {
