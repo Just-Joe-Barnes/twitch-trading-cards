@@ -171,6 +171,8 @@ body {
 }
 .detail-panel footer .row-actions {
   width: 100%;
+  display: flex;
+  gap: 8px;
 }
 .detail-panel footer .row-actions button {
   flex: 1;
@@ -262,10 +264,10 @@ body {
   }
 }
 .card-tile {
-  width: calc(100% / var(--card-scale));
+  width: 100%;
   max-width: 300px;
   transform: scale(var(--card-scale));
-  transform-origin: top left;
+  transform-origin: top center;
 }
 .pack-count {
   margin-bottom: 8px;
