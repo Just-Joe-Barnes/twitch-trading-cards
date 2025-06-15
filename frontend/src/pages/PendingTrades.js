@@ -210,30 +210,45 @@ const navigate = useNavigate();
     <aside className={`detail-panel${open ? ' open' : ''}`} role="dialog" aria-modal="true">
       <header>
         <h2>Trade Details</h2>
-        <button onClick={() => setPanelOpen(false)} aria-label="Close details">✕</button>
       </header>
       <button className="close-button" onClick={() => setPanelOpen(false)} aria-label="Close panel">✕</button>
       <div className="detail-body">
         <section>
           <h3>Offered</h3>
+          {trade.offeredPacks > 0 && (
+            <p className="pack-count">{trade.offeredPacks} packs</p>
+          )}
           <div className="card-grid">
             {trade.offeredItems.map((item) => (
               <div key={item._id} className="card-tile">
-                <BaseCard name={item.name} image={item.imageUrl} rarity={item.rarity} description={item.flavorText} mintNumber={item.mintNumber} />
+                <BaseCard
+                  name={item.name}
+                  image={item.imageUrl}
+                  rarity={item.rarity}
+                  description={item.flavorText}
+                  mintNumber={item.mintNumber}
+                />
               </div>
             ))}
-            {trade.offeredPacks > 0 && <div className="pack-tile">📦 {trade.offeredPacks} packs</div>}
           </div>
         </section>
         <section>
           <h3>Requested</h3>
+          {trade.requestedPacks > 0 && (
+            <p className="pack-count">{trade.requestedPacks} packs</p>
+          )}
           <div className="card-grid">
             {trade.requestedItems.map((item) => (
               <div key={item._id} className="card-tile">
-                <BaseCard name={item.name} image={item.imageUrl} rarity={item.rarity} description={item.flavorText} mintNumber={item.mintNumber} />
+                <BaseCard
+                  name={item.name}
+                  image={item.imageUrl}
+                  rarity={item.rarity}
+                  description={item.flavorText}
+                  mintNumber={item.mintNumber}
+                />
               </div>
             ))}
-            {trade.requestedPacks > 0 && <div className="pack-tile">📦 {trade.requestedPacks} packs</div>}
           </div>
         </section>
       </div>
