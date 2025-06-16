@@ -232,6 +232,7 @@ const navigate = useNavigate();
                   rarity={item.rarity}
                   description={item.flavorText}
                   mintNumber={item.mintNumber}
+                  modifier={item.modifier}
                 />
               </div>
             ))}
@@ -251,6 +252,7 @@ const navigate = useNavigate();
                   rarity={item.rarity}
                   description={item.flavorText}
                   mintNumber={item.mintNumber}
+                  modifier={item.modifier}
                 />
               </div>
             ))}

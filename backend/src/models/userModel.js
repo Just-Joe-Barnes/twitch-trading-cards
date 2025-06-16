@@ -6,6 +6,7 @@ const cardSchema = new mongoose.Schema({
     mintNumber: Number,
     imageUrl: String,
     flavorText: String,
+    modifier: { type: mongoose.Schema.Types.ObjectId, ref: 'Modifier', default: null },
     acquiredAt: { type: Date, default: Date.now }, // Track when the card was acquired
 status: { type: String, enum: ['available', 'pending', 'escrow'], default: 'available' } // Card status
 });

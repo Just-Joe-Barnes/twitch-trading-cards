@@ -36,6 +36,7 @@ const AdminDashboardPage = ({ user }) => {
     // Pack types
     const [packTypes, setPackTypes] = useState([]);
     const [selectedPackTypeId, setSelectedPackTypeId] = useState('');
+    const [forceModifier, setForceModifier] = useState(false);
 
     // Rarity color mapping
     const cardRarities = {
@@ -152,7 +153,7 @@ const AdminDashboardPage = ({ user }) => {
                 `/api/packs/admin/openPacksForUser/${selectedUser._id}`,
                 {
                     method: 'POST',
-                    body: JSON.stringify({ templateId: selectedPackTypeId })
+                    body: JSON.stringify({ templateId: selectedPackTypeId, forceModifier })
                 }
             );
             const { newCards } = res;
@@ -324,6 +325,14 @@ const AdminDashboardPage = ({ user }) => {
                                     </option>
                                 ))}
                             </select>
+                            <label style={{ marginLeft: '1rem' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={forceModifier}
+                                    onChange={(e) => setForceModifier(e.target.checked)}
+                                />
+                                Force Modifier
+                            </label>
                             <button
                                 onClick={openPackForUser}
                                 disabled={loading || isOpeningAnimation || selectedUser.packs <= 0}
@@ -376,6 +385,7 @@ const AdminDashboardPage = ({ user }) => {
                                                     description={card.flavorText}
                                                     rarity={card.rarity}
                                                     mintNumber={card.mintNumber}
+                                                    modifier={card.modifier}
                                                 />
                                             </div>
                                         </div>

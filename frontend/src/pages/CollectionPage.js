@@ -431,6 +431,7 @@ const CollectionPage = ({
                                     rarity={card.rarity}
                                     description={card.flavorText}
                                     mintNumber={card.mintNumber}
+                                    modifier={card.modifier}
                                     maxMint={
                                         rarities.find(
                                             (r) => r.name.toLowerCase() === card.rarity.toLowerCase()

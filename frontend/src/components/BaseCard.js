@@ -219,13 +219,7 @@ const BaseCard = ({
           </div>
         ) : (
           <>
-            <div
-              className={`card-name ${
-                modifierData?.name === 'Rainbow Holo' ? 'rainbow-holo' : ''
-              }`}
-            >
-              {name}
-            </div>
+            <div className="card-name">{name}</div>
 
             <div className="card-artwork">
               {rarity.toLowerCase()==='unique' ? (
@@ -250,15 +244,6 @@ const BaseCard = ({
                 <img src={image} alt={name} draggable={false} loading="lazy" />
               )}
 
-              {modifierData?.name === 'Rainbow Holo' && (
-                <div
-                  className="rainbow-holo-image"
-                  style={{
-                    '--cursor-x': `${cursorPosition.x}px`,
-                    '--cursor-y': `${cursorPosition.y}px`,
-                  }}
-                />
-              )}
             </div>
 
             {description && (
@@ -278,6 +263,9 @@ const BaseCard = ({
           </>
         )}
       </div>
+      {modifierData?.name === 'Negative' && (
+        <div className="negative-overlay" />
+      )}
     </div>
   );
 };

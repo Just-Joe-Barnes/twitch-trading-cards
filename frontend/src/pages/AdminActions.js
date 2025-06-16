@@ -713,6 +713,7 @@ const AdminActions = () => {
                                     description={editCard.flavorText}
                                     image={editCard.imageUrl}
                                     rarity={editCard.rarity || (editCard.rarities && editCard.rarities[0]?.rarity)}
+                                    modifier={editCard.modifier}
                                 />
                             </div>
                         </>
@@ -802,6 +803,7 @@ const AdminActions = () => {
                                 rarity={selectedCardDetails.rarity || (selectedCardDetails.rarities && selectedCardDetails.rarities[0]?.rarity)}
                                 description={selectedCardDetails.flavorText}
                                 mintNumber={selectedCardDetails.mintNumber}
+                                modifier={selectedCardDetails.modifier}
                             />
                         </div>
                     </div>

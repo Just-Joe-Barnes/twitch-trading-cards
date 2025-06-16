@@ -45,7 +45,8 @@ router.get('/', protect, adminOnly, async (req, res) => {
 // @desc    Get modifier by ID
 // @route   GET /api/modifiers/:id
 // @access  Private/Admin
-router.get('/:id', protect, adminOnly, async (req, res) => {
+// Allow any authenticated user to fetch a modifier
+router.get('/:id', protect, async (req, res) => {
   try {
     const modifier = await Modifier.findById(req.params.id);
     if (modifier) {

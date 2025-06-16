@@ -140,6 +140,7 @@ const AdminPacksPage = () => {
                   image={card.imageUrl}
                   rarity={card.rarities?.[0]?.rarity}
                   description={card.flavorText}
+                  modifier={card.modifier}
                 />
                 <button onClick={() => handleRemoveCard(id)}>Remove</button>
               </div>
