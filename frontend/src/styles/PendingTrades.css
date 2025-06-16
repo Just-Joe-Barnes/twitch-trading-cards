@@ -196,7 +196,7 @@ body {
   position: fixed;
   top: 60px;
   right: 0;
-  width: 648px;
+  width: 40vw;
   max-width: 100%;
   height: calc(100% - 60px);
   background: var(--surface);
