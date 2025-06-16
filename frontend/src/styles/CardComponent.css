@@ -660,7 +660,7 @@
         -webkit-text-stroke: 1px white;
     }
 
-    .card-container.divine:hover .card-mint {
+.card-container.divine:hover .card-mint {
         font-size: 1.2rem;
         margin-bottom: 10px;
         color: white;
@@ -674,7 +674,17 @@
         transition: text-shadow 0.3s ease;
         -webkit-text-stroke: 1px white;
         text-shadow: 1px 1px 5px black;
-    }
+}
+
+.negative-overlay {
+    position: absolute;
+    inset: 8px;
+    border-radius: calc(15px - 8px);
+    background: white;
+    mix-blend-mode: difference;
+    pointer-events: none;
+    z-index: 5;
+}
 
 
 /**************************************

@@ -241,7 +241,8 @@ const TradingPage = ({ userId }) => {
                                                         rarity={card.rarity}
                                                         mintNumber={card.mintNumber}
                                                         maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
-                                                    />                                                    
+                                                        modifier={card.modifier}
+                                                    />
                                                 </div>
                                             ))}
                                         </div>
@@ -276,7 +277,8 @@ const TradingPage = ({ userId }) => {
                                                         rarity={card.rarity}
                                                         mintNumber={card.mintNumber}
                                                         maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
-                                                    />                                                  
+                                                        modifier={card.modifier}
+                                                    />
                                                 </div>
                                             ))}
                                         </div>
@@ -338,6 +340,7 @@ const TradingPage = ({ userId }) => {
                                                     rarity={card.rarity}
                                                     mintNumber={card.mintNumber}
                                                     maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
+                                                    modifier={card.modifier}
                                                 />
                                             </div>
                                         ))}
@@ -385,7 +388,8 @@ const TradingPage = ({ userId }) => {
                                                     rarity={card.rarity}
                                                     mintNumber={card.mintNumber}
                                                     maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
-                                                />                                            
+                                                    modifier={card.modifier}
+                                                />
                                             </div>
                                         ))}
                                     </div>

@@ -2,6 +2,7 @@ const Pack = require('../models/packModel');
 const User = require('../models/userModel');
 const Modifier = require('../models/modifierModel');
 const { generateCardWithProbability, generatePack } = require('../helpers/cardHelpers');
+const MODIFIER_CHANCE = parseFloat(process.env.MODIFIER_CHANCE || '0.1');
 
 // Get all users with packs (Admin-only functionality)
 const getUsersWithPacks = async (req, res) => {
@@ -30,11 +31,11 @@ const openPack = async (req, res) => {
             return res.status(500).json({ message: 'Failed to generate a card' });
         }
 
-        // Add modifier logic here
-        const modifiers = await Modifier.find();
-        if (modifiers && modifiers.length > 0) {
-            const randomIndex = Math.floor(Math.random() * modifiers.length);
-            newCard.modifier = modifiers[randomIndex]._id;
+        const forceModifier = req.body?.forceModifier === true;
+        const negative = await Modifier.findOne({ name: 'Negative' });
+        if (negative && (forceModifier || Math.random() < MODIFIER_CHANCE)) {
+            newCard.modifier = negative._id;
+            newCard.name = `Negative ${newCard.name}`;
         }
 
         user.cards.push(newCard);
@@ -119,12 +120,12 @@ const openPacksForUser = async (req, res) => {
             return res.status(500).json({ message: 'Failed to generate cards for the pack' });
         }
 
-        // Add modifier logic here
-        const modifiers = await Modifier.find();
+        const forceModifier = req.body?.forceModifier === true;
+        const negative = await Modifier.findOne({ name: 'Negative' });
         for (const newCard of newCards) {
-            if (modifiers && modifiers.length > 0) {
-                const randomIndex = Math.floor(Math.random() * modifiers.length);
-                newCard.modifier = modifiers[randomIndex]._id;
+            if (negative && (forceModifier || Math.random() < MODIFIER_CHANCE)) {
+                newCard.modifier = negative._id;
+                newCard.name = `Negative ${newCard.name}`;
             }
         }
 

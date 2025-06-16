@@ -14,31 +14,25 @@ const seedModifiers = async () => {
     });
     console.log('MongoDB connected for seeding modifiers');
 
-    // Check if the Rainbow Holo modifier already exists
-    const existingModifier = await Modifier.findOne({ name: 'Rainbow Holo' });
+    // Check if the Negative modifier already exists
+    const existingModifier = await Modifier.findOne({ name: 'Negative' });
 
     if (!existingModifier) {
-      const rainbowHoloModifier = new Modifier({
-        name: 'Rainbow Holo',
-        description: 'Adds a rainbow holographic effect to the card name.',
-        css: JSON.stringify({
-          background: 'linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet)',
-          WebkitBackgroundClip: 'text',
-          backgroundClip: 'text',
-          color: 'transparent',
-          animation: 'rainbow 5s linear infinite',
-        }),
+      const negativeModifier = new Modifier({
+        name: 'Negative',
+        description: 'Inverts the card colours.',
+        css: JSON.stringify({}),
         blendMode: null,
-        filter: null,
-        animation: 'rainbow 5s linear infinite',
+        filter: 'invert(1)',
+        animation: null,
         overlayImage: null,
         overlayBlendMode: null,
       });
 
-      await rainbowHoloModifier.save();
-      console.log('Rainbow Holo modifier created');
+      await negativeModifier.save();
+      console.log('Negative modifier created');
     } else {
-      console.log('Rainbow Holo modifier already exists');
+      console.log('Negative modifier already exists');
     }
 
     mongoose.disconnect();

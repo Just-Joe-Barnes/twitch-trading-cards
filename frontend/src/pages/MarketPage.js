@@ -149,6 +149,7 @@ const MarketPage = () => {
                                     rarity={listing.card.rarity}
                                     description={listing.card.flavorText}
                                     mintNumber={listing.card.mintNumber}
+                                    modifier={listing.card.modifier}
                                 />
                             </div>
                             <p className="listing-owner">Listed by: {listing.owner.username}</p>

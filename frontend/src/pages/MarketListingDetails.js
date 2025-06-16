@@ -223,6 +223,7 @@ const MarketListingDetails = () => {
                     rarity={listing.card.rarity}
                     description={listing.card.flavorText}
                     mintNumber={listing.card.mintNumber}
+                    modifier={listing.card.modifier}
                 />
             </div>
             <p className="listing-owner">Listed by: {listing.owner.username}</p>
@@ -294,6 +295,7 @@ const MarketListingDetails = () => {
                                                 rarity={card.rarity || (card.rarities && card.rarities[0]?.rarity)}
                                                 description={card.flavorText}
                                                 mintNumber={card.mintNumber}
+                                                modifier={card.modifier}
                                             />
                                         </div>
                                     );
@@ -313,6 +315,7 @@ const MarketListingDetails = () => {
                                                 rarity={card.rarity || (card.rarities && card.rarities[0]?.rarity)}
                                                 description={card.flavorText}
                                                 mintNumber={card.mintNumber}
+                                                modifier={card.modifier}
                                             />
                                         </div>
                                     ))
@@ -353,6 +356,7 @@ const MarketListingDetails = () => {
                                                     rarity={card.rarity}
                                                     description={card.flavorText}
                                                     mintNumber={card.mintNumber}
+                                                    modifier={card.modifier}
                                                 />
                                             </div>
                                         ))}

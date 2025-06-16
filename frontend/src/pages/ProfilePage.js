@@ -149,6 +149,7 @@ const ProfilePage = () => {
                                 description={card.flavorText}
                                 mintNumber={card.mintNumber}
                                 maxMint={card?.maxMint || '???'}
+                                modifier={card.modifier}
                             />
                         ))}
                     </div>
