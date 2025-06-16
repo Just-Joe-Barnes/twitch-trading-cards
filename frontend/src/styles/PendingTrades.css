@@ -243,31 +243,33 @@ body {
   overflow-y: auto;
 }
 .card-grid {
-  --card-scale: 0.7;
+  --card-scale: 1;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
   justify-items: center;
+  width: calc(100% / var(--card-scale));
+  transform: scale(var(--card-scale));
+  transform-origin: top left;
 }
 
 @media (max-width: 600px) {
   .card-grid {
-    --card-scale: 0.65;
-    grid-template-columns: repeat(2, 1fr);
+    --card-scale: 0.9;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   }
 }
 
 @media (max-width: 400px) {
   .card-grid {
-    --card-scale: 0.55;
-    grid-template-columns: 1fr;
+    --card-scale: 0.8;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
 }
+
 .card-tile {
   width: 100%;
   max-width: 300px;
-  transform: scale(var(--card-scale));
-  transform-origin: top center;
 }
 .pack-count {
   margin-bottom: 8px;
