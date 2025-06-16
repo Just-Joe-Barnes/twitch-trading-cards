@@ -244,9 +244,6 @@ const BaseCard = ({
                 <img src={image} alt={name} draggable={false} loading="lazy" />
               )}
 
-              {modifierData?.name === 'Negative' && (
-                <div className="negative-overlay" />
-              )}
             </div>
 
             {description && (
@@ -266,6 +263,9 @@ const BaseCard = ({
           </>
         )}
       </div>
+      {modifierData?.name === 'Negative' && (
+        <div className="negative-overlay" />
+      )}
     </div>
   );
 };
