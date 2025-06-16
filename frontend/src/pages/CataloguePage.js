@@ -186,6 +186,7 @@ const CataloguePage = () => {
                                         description={card.flavorText}
                                         rarity={selectedRarity}
                                         mintNumber={card.mintNumber}
+                                        modifier={card.modifier}
                                     />
                                     <RemainingBadge remaining={remaining} />
                                     {to && timeLeft > 0 && (
@@ -225,6 +226,7 @@ const CataloguePage = () => {
                                         description={card.flavorText}
                                         rarity={selectedRarity}
                                         mintNumber={card.mintNumber}
+                                        modifier={card.modifier}
                                     />
                                     <RemainingBadge remaining={remaining} />
                                     <div className="cata-overlay-badge cata-timeleft-badge">
@@ -255,6 +257,7 @@ const CataloguePage = () => {
                                         description={card.flavorText}
                                         rarity={selectedRarity}
                                         mintNumber={card.mintNumber}
+                                        modifier={card.modifier}
                                     />
                                     <RemainingBadge remaining={remaining} />
                                 </div>
