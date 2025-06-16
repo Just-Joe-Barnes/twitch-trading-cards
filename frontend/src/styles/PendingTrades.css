@@ -131,8 +131,13 @@ body {
   border-bottom: 1px solid #2a2a2a;
 }
 
+/* improve readability with alternating backgrounds */
 .trade-table tbody tr {
   height: 96px;
+  background: var(--surface);
+}
+.trade-table tbody tr:nth-child(even) {
+  background: #181818;
 }
 
 .trade-table tbody tr:hover {
