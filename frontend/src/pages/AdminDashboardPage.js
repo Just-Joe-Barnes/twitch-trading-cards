@@ -385,6 +385,7 @@ const AdminDashboardPage = ({ user }) => {
                                                     description={card.flavorText}
                                                     rarity={card.rarity}
                                                     mintNumber={card.mintNumber}
+                                                    modifier={card.modifier}
                                                 />
                                             </div>
                                         </div>

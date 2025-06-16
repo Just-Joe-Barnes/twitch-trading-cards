@@ -35,6 +35,12 @@ CHANNEL_POINTS_COST=5000
 MODIFIER_CHANCE=0.1
 ```
 
+After configuring the backend environment, seed the default card modifiers:
+
+```bash
+node src/scripts/seedModifiers.js
+```
+
 ### Frontend (`frontend/.env`)
 The frontend uses a small `.env` file:
 

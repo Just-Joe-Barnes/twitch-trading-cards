@@ -214,6 +214,7 @@ const CreateListingPage = () => {
                                     description={card.flavorText}
                                     rarity={card.rarity}
                                     mintNumber={card.mintNumber}
+                                    modifier={card.modifier}
                                 />
                             </div>
                         ))}
@@ -232,6 +233,7 @@ const CreateListingPage = () => {
                             description={selectedCard.flavorText}
                             rarity={selectedCard.rarity}
                             mintNumber={selectedCard.mintNumber}
+                            modifier={selectedCard.modifier}
                         />
                         <button
                             className="list-card-button"

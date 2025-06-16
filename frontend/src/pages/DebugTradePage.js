@@ -167,6 +167,7 @@ const PendingTrades = () => {
                                                     mintNumber={item.mintNumber}
                                                     maxMint={item.maxMint || '???'}
                                                     glowEffect={true}
+                                                    modifier={item.modifier}
                                                 />
                                             ))}
                                         </div>
@@ -187,6 +188,7 @@ const PendingTrades = () => {
                                                         mintNumber={item.mintNumber}
                                                         maxMint={item.maxMint || '???'}
                                                         glowEffect={true}
+                                                        modifier={item.modifier}
                                                     />
                                                 ))
                                             ) : (
