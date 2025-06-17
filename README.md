@@ -32,7 +32,7 @@ MONGO_URI=
 CLIENT_URL=
 FRONTEND_URL=
 CHANNEL_POINTS_COST=5000
-MODIFIER_CHANCE=0.1
+MODIFIER_CHANCE=0.05
 ```
 
 After configuring the backend environment, seed the default card modifiers:
