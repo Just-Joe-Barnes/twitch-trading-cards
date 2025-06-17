@@ -687,10 +687,22 @@
 }
 
 .glitch-overlay {
-    background: url('../assets/textures/static.gif') center/cover;
-    mix-blend-mode: color-burn;
+    --glitch-x: 0px;
+    --glitch-y: 0px;
+    --glitch-angle: 0deg;
+    background:
+        repeating-linear-gradient(var(--glitch-angle), rgba(255,0,255,0.25) 0 2px, rgba(0,255,255,0.25) 2px 4px, transparent 4px 6px),
+        url('../assets/textures/static.gif') center/cover;
+    background-blend-mode: overlay, color-burn;
+    mix-blend-mode: color-dodge;
     opacity: 0.6;
     animation: glitchShift 1s steps(2, end) infinite;
+    transform: translate(var(--glitch-x), var(--glitch-y));
+    transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+.card-container:hover .glitch-overlay {
+    opacity: 0.8;
 }
 
 @keyframes glitchShift {

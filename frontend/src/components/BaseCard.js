@@ -151,6 +151,14 @@ const BaseCard = ({
       const dy = (y-halfH)/20;
       divineArtworkRef.current.style.transform = `translate(${dx}px,${dy}px)`;
     }
+    if (modifierData?.name === 'Glitch') {
+      const gx = ((x-halfW)/15).toFixed(2);
+      const gy = ((y-halfH)/15).toFixed(2);
+      const ang = ((x/rect.width)*60 - 30).toFixed(2);
+      card.style.setProperty('--glitch-x', `${gx}px`);
+      card.style.setProperty('--glitch-y', `${gy}px`);
+      card.style.setProperty('--glitch-angle', `${ang}deg`);
+    }
   };
 
   const handleMouseLeave = () => {
@@ -174,6 +182,9 @@ const BaseCard = ({
     if (mythicCursorGradientRef.current) {
       mythicCursorGradientRef.current.style.backgroundPosition = 'center';
     }
+    card.style.removeProperty('--glitch-x');
+    card.style.removeProperty('--glitch-y');
+    card.style.removeProperty('--glitch-angle');
   };
 
   return (
