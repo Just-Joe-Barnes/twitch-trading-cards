@@ -35,6 +35,46 @@ const seedModifiers = async () => {
       console.log('Negative modifier already exists');
     }
 
+    const glitchExisting = await Modifier.findOne({ name: 'Glitch' });
+
+    if (!glitchExisting) {
+      const glitchModifier = new Modifier({
+        name: 'Glitch',
+        description: 'Static glitch overlay.',
+        css: JSON.stringify({}),
+        blendMode: null,
+        filter: null,
+        animation: null,
+        overlayImage: null,
+        overlayBlendMode: null,
+      });
+
+      await glitchModifier.save();
+      console.log('Glitch modifier created');
+    } else {
+      console.log('Glitch modifier already exists');
+    }
+
+    const prismExisting = await Modifier.findOne({ name: 'Prismatic Hologram' });
+
+    if (!prismExisting) {
+      const prismModifier = new Modifier({
+        name: 'Prismatic Hologram',
+        description: 'Rainbow holographic shimmer.',
+        css: JSON.stringify({}),
+        blendMode: null,
+        filter: null,
+        animation: null,
+        overlayImage: null,
+        overlayBlendMode: null,
+      });
+
+      await prismModifier.save();
+      console.log('Prismatic Hologram modifier created');
+    } else {
+      console.log('Prismatic Hologram modifier already exists');
+    }
+
     mongoose.disconnect();
     console.log('MongoDB disconnected');
   } catch (error) {
