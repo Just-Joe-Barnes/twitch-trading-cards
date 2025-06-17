@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { fetchCards } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { modifiers } from '../constants/modifiers';
 import '../styles/CataloguePage.css';
 
 const rarityData = [
@@ -31,6 +32,7 @@ const CataloguePage = () => {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedRarity, setSelectedRarity] = useState('Basic');
+    const [selectedModifier, setSelectedModifier] = useState('None');
     const [sortOption, setSortOption] = useState('name');
     const [sortOrder, setSortOrder] = useState('asc');
     const [now, setNow] = useState(new Date());
@@ -71,6 +73,7 @@ const CataloguePage = () => {
 
     const handleSearchChange = (e) => setSearchQuery(e.target.value);
     const handleRarityChange = (rarityName) => setSelectedRarity(rarityName);
+    const handleModifierChange = (name) => setSelectedModifier(name);
     const handleSortChange = (e) => setSortOption(e.target.value);
     const handleSortOrderChange = (e) => setSortOrder(e.target.value);
 
@@ -123,6 +126,48 @@ const CataloguePage = () => {
                 card in a different style.
             </p>
 
+            <div className="cata-rarity-selector">
+                {rarityData.map((r) => {
+                    const textColor = r.name === 'Divine' ? '#000' : '#fff';
+                    return (
+                        <button
+                            key={r.name}
+                            onClick={() => handleRarityChange(r.name)}
+                            className={`cata-rarity-button ${selectedRarity === r.name ? 'active' : ''}`}
+                            style={{
+                                backgroundColor: r.color,
+                                color: textColor,
+                                padding: '8px 12px',
+                                border: '2px solid #888',
+                            }}
+                        >
+                            {r.name}
+                        </button>
+                    );
+                })}
+            </div>
+
+            <div className="cata-modifier-selector">
+                {modifiers.map((m) => {
+                    const textColor = m.text || '#fff';
+                    return (
+                        <button
+                            key={m.name}
+                            onClick={() => handleModifierChange(m.name)}
+                            className={`cata-modifier-button ${selectedModifier === m.name ? 'active' : ''}`}
+                            style={{
+                                backgroundColor: m.color,
+                                color: textColor,
+                                padding: '8px 12px',
+                                border: '2px solid #888',
+                            }}
+                        >
+                            {m.name}
+                        </button>
+                    );
+                })}
+            </div>
+
             <div className="cata-filters-container">
                 <div className="cata-search-box">
                     <input
@@ -131,26 +176,6 @@ const CataloguePage = () => {
                         onChange={handleSearchChange}
                         placeholder="Search cards..."
                     />
-                </div>
-                <div className="cata-rarity-selector">
-                    {rarityData.map((r) => {
-                        const textColor = r.name === 'Divine' ? '#000' : '#fff';
-                        return (
-                            <button
-                                key={r.name}
-                                onClick={() => handleRarityChange(r.name)}
-                                className={`cata-rarity-button ${selectedRarity === r.name ? 'active' : ''}`}
-                                style={{
-                                    backgroundColor: r.color,
-                                    color: textColor,
-                                    padding: '8px 12px',
-                                    border: '2px solid #888',
-                                }}
-                            >
-                                {r.name}
-                            </button>
-                        );
-                    })}
                 </div>
                 <div className="cata-sort-box">
                     <label htmlFor="sortField">Sort by:</label>
@@ -186,7 +211,7 @@ const CataloguePage = () => {
                                         description={card.flavorText}
                                         rarity={selectedRarity}
                                         mintNumber={card.mintNumber}
-                                        modifier={card.modifier}
+                                        modifier={selectedModifier === 'None' ? null : selectedModifier}
                                     />
                                     <RemainingBadge remaining={remaining} />
                                     {to && timeLeft > 0 && (
@@ -226,7 +251,7 @@ const CataloguePage = () => {
                                         description={card.flavorText}
                                         rarity={selectedRarity}
                                         mintNumber={card.mintNumber}
-                                        modifier={card.modifier}
+                                        modifier={selectedModifier === 'None' ? null : selectedModifier}
                                     />
                                     <RemainingBadge remaining={remaining} />
                                     <div className="cata-overlay-badge cata-timeleft-badge">
@@ -257,7 +282,7 @@ const CataloguePage = () => {
                                         description={card.flavorText}
                                         rarity={selectedRarity}
                                         mintNumber={card.mintNumber}
-                                        modifier={card.modifier}
+                                        modifier={selectedModifier === 'None' ? null : selectedModifier}
                                     />
                                     <RemainingBadge remaining={remaining} />
                                 </div>
