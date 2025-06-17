@@ -40,6 +40,8 @@ After configuring the backend environment, seed the default card modifiers:
 ```bash
 node src/scripts/seedModifiers.js
 ```
+This seeds the **Negative**, **Glitch**, and **Prismatic** modifiers. The Glitch modifier now features
+dynamic gradient lines that react to cursor movement.
 
 ### Frontend (`frontend/.env`)
 The frontend uses a small `.env` file:

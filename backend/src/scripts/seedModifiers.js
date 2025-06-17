@@ -40,7 +40,7 @@ const seedModifiers = async () => {
     if (!glitchExisting) {
       const glitchModifier = new Modifier({
         name: 'Glitch',
-        description: 'Static glitch overlay.',
+        description: 'Reactive glitch lines with static overlay.',
         css: JSON.stringify({}),
         blendMode: null,
         filter: null,
