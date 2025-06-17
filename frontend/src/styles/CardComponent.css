@@ -146,6 +146,7 @@
     color: #f5f5dc;
     text-shadow: 1px 1px 2px black;
     font-size: 1.1rem;
+    white-space: nowrap;
     margin-bottom: 15px;
     text-transform: capitalize;
     margin-left: 10px;
@@ -674,6 +675,37 @@
         transition: text-shadow 0.3s ease;
         -webkit-text-stroke: 1px white;
         text-shadow: 1px 1px 5px black;
+}
+
+.glitch-overlay,
+.prismatic-overlay {
+    position: absolute;
+    inset: 8px;
+    border-radius: calc(15px - 8px);
+    pointer-events: none;
+    z-index: 3;
+}
+
+.glitch-overlay {
+    background: url('../assets/textures/static.gif') center/cover;
+    mix-blend-mode: screen;
+    opacity: 0.6;
+    animation: glitchShift 1s steps(2, end) infinite;
+}
+
+@keyframes glitchShift {
+    0% { transform: translate(0,0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(2px, -2px); }
+    60% { transform: translate(-1px, 1px); }
+    80% { transform: translate(1px, -1px); }
+    100% { transform: translate(0,0); }
+}
+
+.prismatic-overlay {
+    background: url('../assets/textures/rainbowpop.gif') center/cover;
+    mix-blend-mode: overlay;
+    opacity: 0.7;
 }
 
 .negative-overlay {
