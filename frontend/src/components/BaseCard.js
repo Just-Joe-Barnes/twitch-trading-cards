@@ -16,6 +16,7 @@ const BaseCard = ({
   modifier,
 }) => {
   const cardRef = useRef(null);
+  const nameRef = useRef(null);
   const invertRef = useRef(null);
   const glareRef = useRef(null);
   const holoRef = useRef(null);
@@ -55,6 +56,17 @@ const BaseCard = ({
       }
     }
   }, [description]);
+
+  useEffect(() => {
+    if (nameRef.current) {
+      nameRef.current.style.fontSize = '1.1rem';
+      let fontSize = 1.1;
+      while (nameRef.current.scrollWidth > nameRef.current.clientWidth && fontSize > 0.7) {
+        fontSize -= 0.05;
+        nameRef.current.style.fontSize = `${fontSize}rem`;
+      }
+    }
+  }, [name]);
 
   const handleMouseMove = (e) => {
     const card = cardRef.current;
@@ -197,8 +209,7 @@ const BaseCard = ({
           <div className="mythic-particles" />
           <div className="mythic-holographic-overlay" />
           <div className="mythic-tint" />
-          <div className="mythic-rainbow-overlay" />
-          <div className="mythic-holo-overlay" />
+          
         </>
       )}
       {/* epic */}
@@ -207,7 +218,7 @@ const BaseCard = ({
       <div className="card-border">
         {rarity.toLowerCase()==='divine' ? (
           <div className="card-header">
-            <div className="card-name">{name}</div>
+            <div className="card-name" ref={nameRef}>{name}</div>
             <div className="card-mint">
               <span className="mint-number">
                 {mintNumber} /{' '}
@@ -219,7 +230,7 @@ const BaseCard = ({
           </div>
         ) : (
           <>
-            <div className="card-name">{name}</div>
+            <div className="card-name" ref={nameRef}>{name}</div>
 
             <div className="card-artwork">
               {rarity.toLowerCase()==='unique' ? (
@@ -269,8 +280,8 @@ const BaseCard = ({
       {modifierData?.name === 'Glitch' && (
         <div className="glitch-overlay" />
       )}
-      {modifierData?.name === 'Prismatic Hologram' && (
-        <div className="prismatic-hologram-overlay" />
+      {modifierData?.name === 'Prismatic' && (
+        <div className="prismatic-overlay" />
       )}
     </div>
   );

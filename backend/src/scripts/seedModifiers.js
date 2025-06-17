@@ -55,11 +55,11 @@ const seedModifiers = async () => {
       console.log('Glitch modifier already exists');
     }
 
-    const prismExisting = await Modifier.findOne({ name: 'Prismatic Hologram' });
+    const prismExisting = await Modifier.findOne({ name: 'Prismatic' });
 
     if (!prismExisting) {
       const prismModifier = new Modifier({
-        name: 'Prismatic Hologram',
+        name: 'Prismatic',
         description: 'Rainbow holographic shimmer.',
         css: JSON.stringify({}),
         blendMode: null,
@@ -70,9 +70,9 @@ const seedModifiers = async () => {
       });
 
       await prismModifier.save();
-      console.log('Prismatic Hologram modifier created');
+      console.log('Prismatic modifier created');
     } else {
-      console.log('Prismatic Hologram modifier already exists');
+      console.log('Prismatic modifier already exists');
     }
 
     mongoose.disconnect();

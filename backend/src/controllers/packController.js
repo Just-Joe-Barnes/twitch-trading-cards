@@ -49,7 +49,8 @@ const openPack = async (req, res) => {
 
         if (modifierDoc) {
             newCard.modifier = modifierDoc._id;
-            newCard.name = `${modifierDoc.name} ${newCard.name}`;
+            const prefix = modifierDoc.name === 'Glitch' ? 'Glitched' : modifierDoc.name;
+            newCard.name = `${prefix} ${newCard.name}`;
         }
 
         user.cards.push(newCard);
@@ -148,7 +149,8 @@ const openPacksForUser = async (req, res) => {
                 const idx = forceModifier ? Math.floor(Math.random() * mods.length) : 0;
                 const mod = mods[idx];
                 newCard.modifier = mod._id;
-                newCard.name = `${mod.name} ${newCard.name}`;
+                const prefix = mod.name === 'Glitch' ? 'Glitched' : mod.name;
+                newCard.name = `${prefix} ${newCard.name}`;
             }
         }
 
