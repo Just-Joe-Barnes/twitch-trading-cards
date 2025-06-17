@@ -266,6 +266,12 @@ const BaseCard = ({
       {modifierData?.name === 'Negative' && (
         <div className="negative-overlay" />
       )}
+      {modifierData?.name === 'Glitch' && (
+        <div className="glitch-overlay" />
+      )}
+      {modifierData?.name === 'Prismatic Hologram' && (
+        <div className="prismatic-hologram-overlay" />
+      )}
     </div>
   );
 };

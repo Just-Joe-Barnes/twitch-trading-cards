@@ -32,10 +32,24 @@ const openPack = async (req, res) => {
         }
 
         const forceModifier = req.body?.forceModifier === true;
-        const negative = await Modifier.findOne({ name: 'Negative' });
-        if (negative && (forceModifier || Math.random() < MODIFIER_CHANCE)) {
-            newCard.modifier = negative._id;
-            newCard.name = `Negative ${newCard.name}`;
+        let modifierDoc = null;
+
+        if (forceModifier) {
+            const mods = await Modifier.find();
+            if (mods && mods.length > 0) {
+                const idx = Math.floor(Math.random() * mods.length);
+                modifierDoc = mods[idx];
+            }
+        } else {
+            const negative = await Modifier.findOne({ name: 'Negative' });
+            if (negative && Math.random() < MODIFIER_CHANCE) {
+                modifierDoc = negative;
+            }
+        }
+
+        if (modifierDoc) {
+            newCard.modifier = modifierDoc._id;
+            newCard.name = `${modifierDoc.name} ${newCard.name}`;
         }
 
         user.cards.push(newCard);
@@ -121,11 +135,20 @@ const openPacksForUser = async (req, res) => {
         }
 
         const forceModifier = req.body?.forceModifier === true;
-        const negative = await Modifier.findOne({ name: 'Negative' });
+        let mods = null;
+        if (forceModifier) {
+            mods = await Modifier.find();
+        } else {
+            const negative = await Modifier.findOne({ name: 'Negative' });
+            mods = negative ? [negative] : [];
+        }
+
         for (const newCard of newCards) {
-            if (negative && (forceModifier || Math.random() < MODIFIER_CHANCE)) {
-                newCard.modifier = negative._id;
-                newCard.name = `Negative ${newCard.name}`;
+            if (mods && mods.length > 0 && (forceModifier || Math.random() < MODIFIER_CHANCE)) {
+                const idx = forceModifier ? Math.floor(Math.random() * mods.length) : 0;
+                const mod = mods[idx];
+                newCard.modifier = mod._id;
+                newCard.name = `${mod.name} ${newCard.name}`;
             }
         }
 

@@ -331,7 +331,7 @@ const AdminDashboardPage = ({ user }) => {
                                     checked={forceModifier}
                                     onChange={(e) => setForceModifier(e.target.checked)}
                                 />
-                                Force Modifier
+                                Force Random Modifier
                             </label>
                             <button
                                 onClick={openPackForUser}
