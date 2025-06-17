@@ -2,7 +2,9 @@ const Pack = require('../models/packModel');
 const User = require('../models/userModel');
 const Modifier = require('../models/modifierModel');
 const { generateCardWithProbability, generatePack } = require('../helpers/cardHelpers');
-const MODIFIER_CHANCE = parseFloat(process.env.MODIFIER_CHANCE || '0.1');
+// Percentage chance that a card will receive a modifier when a pack is opened.
+// Default to 5% if the environment variable is not set.
+const MODIFIER_CHANCE = parseFloat(process.env.MODIFIER_CHANCE || '0.05');
 
 // Get all users with packs (Admin-only functionality)
 const getUsersWithPacks = async (req, res) => {
@@ -34,17 +36,16 @@ const openPack = async (req, res) => {
         const forceModifier = req.body?.forceModifier === true;
         let modifierDoc = null;
 
+        const mods = await Modifier.find();
+
         if (forceModifier) {
-            const mods = await Modifier.find();
             if (mods && mods.length > 0) {
                 const idx = Math.floor(Math.random() * mods.length);
                 modifierDoc = mods[idx];
             }
-        } else {
-            const negative = await Modifier.findOne({ name: 'Negative' });
-            if (negative && Math.random() < MODIFIER_CHANCE) {
-                modifierDoc = negative;
-            }
+        } else if (mods && mods.length > 0 && Math.random() < MODIFIER_CHANCE) {
+            const idx = Math.floor(Math.random() * mods.length);
+            modifierDoc = mods[idx];
         }
 
         if (modifierDoc) {
@@ -136,17 +137,11 @@ const openPacksForUser = async (req, res) => {
         }
 
         const forceModifier = req.body?.forceModifier === true;
-        let mods = null;
-        if (forceModifier) {
-            mods = await Modifier.find();
-        } else {
-            const negative = await Modifier.findOne({ name: 'Negative' });
-            mods = negative ? [negative] : [];
-        }
+        const mods = await Modifier.find();
 
         for (const newCard of newCards) {
             if (mods && mods.length > 0 && (forceModifier || Math.random() < MODIFIER_CHANCE)) {
-                const idx = forceModifier ? Math.floor(Math.random() * mods.length) : 0;
+                const idx = Math.floor(Math.random() * mods.length);
                 const mod = mods[idx];
                 newCard.modifier = mod._id;
                 const prefix = mod.name === 'Glitch' ? 'Glitched' : mod.name;
