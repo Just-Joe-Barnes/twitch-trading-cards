@@ -29,15 +29,23 @@ const BaseCard = ({
 
   useEffect(() => {
     const fetchModifier = async () => {
-      if (modifier) {
-        try {
-          const data = await fetchWithAuth(`/api/modifiers/${modifier}`, { method: 'GET' });
-          setModifierData(data);
-        } catch (error) {
-          console.error('Error fetching modifier:', error.message);
-        }
-      } else {
+      if (!modifier) {
         setModifierData(null);
+        return;
+      }
+
+      // Treat plain names as local modifiers and skip API fetch
+      const isObjectId = /^[0-9a-fA-F]{24}$/.test(modifier);
+      if (!isObjectId) {
+        setModifierData({ name: modifier });
+        return;
+      }
+
+      try {
+        const data = await fetchWithAuth(`/api/modifiers/${modifier}`, { method: 'GET' });
+        setModifierData(data);
+      } catch (error) {
+        console.error('Error fetching modifier:', error.message);
       }
     };
     fetchModifier();

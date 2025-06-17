@@ -84,6 +84,32 @@
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
 }
 
+/* Modifier selector buttons */
+.cata-modifier-selector {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.cata-modifier-button {
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-size: 1rem;
+}
+
+.cata-modifier-button:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
+.cata-modifier-button.active {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
 /* Sort box styling */
 .cata-sort-box {
     display: flex;
