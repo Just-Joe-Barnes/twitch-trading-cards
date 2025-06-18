@@ -196,6 +196,7 @@ const searchUsers = async (req, res) => {
         }
         const users = await User.find({
             username: { $regex: query, $options: 'i' },
+            _id: { $ne: req.userId }
         }).select('username').lean();
         res.status(200).json(users);
     } catch (error) {

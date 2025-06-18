@@ -59,7 +59,10 @@ const TradingPage = ({ userId }) => {
     useEffect(() => {
         if (searchQuery.length > 1) {
             searchUsers(searchQuery)
-                .then(setUserSuggestions)
+                .then((results) => {
+                    const filtered = loggedInUser ? results.filter(u => u.username !== loggedInUser.username) : results;
+                    setUserSuggestions(filtered);
+                })
                 .catch(console.error);
         } else {
             setUserSuggestions([]);
@@ -80,6 +83,10 @@ const TradingPage = ({ userId }) => {
     }, [selectedUser, loggedInUser]);
 
     const handleUserSelect = (username) => {
+        if (loggedInUser && username === loggedInUser.username) {
+            window.showToast("You cannot trade with yourself!", "warning");
+            return;
+        }
         setSelectedUser(username);
         setSearchQuery("");
         setUserSuggestions([]);
@@ -133,6 +140,10 @@ const TradingPage = ({ userId }) => {
     const handleSubmit = async () => {
         if (!selectedUser) {
             window.showToast("Select a user first!", "warning");
+            return;
+        }
+        if (loggedInUser && selectedUser === loggedInUser.username) {
+            window.showToast("You cannot trade with yourself!", "warning");
             return;
         }
         if (!tradeOffer.length && !offeredPacks) {
