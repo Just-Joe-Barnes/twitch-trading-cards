@@ -239,10 +239,34 @@
     opacity: 1 !important;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 1200px) {
     .market-user-collection-grid,
     .market-selected-cards-grid,
     .offered-cards-grid {
-        --card-scale: 0.8;
+        --card-scale: 0.85;
+    }
+}
+
+@media (max-width: 992px) {
+    .market-user-collection-grid,
+    .market-selected-cards-grid,
+    .offered-cards-grid {
+        --card-scale: 0.75;
+    }
+}
+
+@media (max-width: 768px) {
+    .market-user-collection-grid,
+    .market-selected-cards-grid,
+    .offered-cards-grid {
+        --card-scale: 0.65;
+    }
+}
+
+@media (max-width: 480px) {
+    .market-user-collection-grid,
+    .market-selected-cards-grid,
+    .offered-cards-grid {
+        --card-scale: 0.55;
     }
 }

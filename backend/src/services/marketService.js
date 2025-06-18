@@ -95,9 +95,11 @@ async function acceptOffer(listingId, offerId, userId, session) {
   // Check if buyer has all offered cards specified in the offer
   if (offeredCardDetails.length !== offer.offeredCards.length) {
       console.log('[Accept Offer Service] Error: Buyer does not possess all offered cards.');
-      // IMPORTANT: Abort transaction here as state is inconsistent
-      throw new Error('Buyer does not possess all offered cards.'); // Throw error to trigger catch block and abort transaction
-      // return { success: false, status: 400, message: 'Buyer does not possess all offered cards.' }; // Don't just return, abort transaction
+      return {
+        success: false,
+        status: 400,
+        message: 'Buyer does not possess all offered cards.'
+      };
   }
   console.log('[Accept Offer Service] Buyer possesses all offered cards.');
 
