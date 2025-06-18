@@ -242,19 +242,6 @@ body {
     }
 }
 
-/* View Collection Button */
-.view-collection-button {
-    background-color: var(--brand-primary);
-    color: var(--text-primary);
-    border: none;
-    border-radius: var(--border-radius);
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-}
 
 /* Favorite Card Panel */
 .favorite-card-container {
@@ -359,22 +346,7 @@ body {
     color: var(--text-primary);
 }
 
-    .view-collection-button:hover {
-        background-color: #722ebf;
-        transform: scale(1.05);
-    }
 
-    .view-collection-button:focus {
-        outline: none;
-        box-shadow: 0 0 8px rgba(145, 70, 255, 0.8);
-    }
-
-@media (max-width: 768px) {
-    .view-collection-button {
-        font-size: 1rem;
-        padding: 0.5rem 1rem;
-    }
-}
 
 .profile-overview,
 .profile-overview * {
@@ -383,11 +355,6 @@ body {
 
 /* Trade & Collection Actions */
 .trade-actions-container {
-    background: var(--surface-dark);
-    border: 1px solid var(--border-dark);
-    padding: 1.5rem;
-    border-radius: var(--border-radius);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -396,21 +363,25 @@ body {
     grid-column: span 1;
 }
 
-.initiate-trade-button,
-.trade-actions-container .view-collection-button {
+.profile-action-button {
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 1.5rem;
     font-size: 1rem;
-    border-radius: 8px;
-    border: none;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--surface-dark);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--border-radius);
     cursor: pointer;
-    font-weight: bold;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.initiate-trade-button {
-    background-color: var(--brand-secondary);
-    color: var(--background-dark);
+.profile-action-button:hover {
+    background: var(--surface-darker);
+    transform: scale(1.05);
 }
+
 
 .user-listings-container {
     background: var(--surface-dark);
@@ -428,4 +399,10 @@ body {
     justify-content: center;
     gap: 1rem;
     margin-top: 1rem;
+}
+
+.more-listings {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--brand-secondary);
 }

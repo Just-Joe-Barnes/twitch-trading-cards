@@ -32,6 +32,7 @@ const ProfilePage = () => {
     const [username, setUsername] = useState('');
     const [profileId, setProfileId] = useState(null);
     const [userListings, setUserListings] = useState([]);
+    const [moreListings, setMoreListings] = useState(0);
     const navigate = useNavigate();
     const { username: routeUsername } = useParams();
 
@@ -104,8 +105,9 @@ const ProfilePage = () => {
         const fetchListings = async () => {
             if (!profileId) return;
             try {
-                const listings = await fetchUserMarketListings(profileId, 3);
+                const { listings, total } = await fetchUserMarketListings(profileId, 3);
                 setUserListings(listings);
+                setMoreListings(Math.max(total - listings.length, 0));
             } catch (e) {
                 console.error('Error fetching user listings:', e);
             }
@@ -294,10 +296,10 @@ const ProfilePage = () => {
             </div>
 
             <div className="trade-actions-container">
-                <button className="initiate-trade-button" onClick={handleInitiateTrade}>
+                <button className="profile-action-button" onClick={handleInitiateTrade}>
                     Start trade with {username}
                 </button>
-                <button className="view-collection-button" onClick={handleViewCollection}>
+                <button className="profile-action-button" onClick={handleViewCollection}>
                     View Full Collection
                 </button>
             </div>
@@ -341,7 +343,7 @@ const ProfilePage = () => {
                                     />
                                 </div>
                                 <p className="offers-count">Offers: {listing.offers ? listing.offers.length : 0}</p>
-                                <Link to={`/market/listing/${listing._id}`}> 
+                                <Link to={`/market/listing/${listing._id}`}>
                                     <button className="view-listing-button">View Listing</button>
                                 </Link>
                             </div>
@@ -350,33 +352,8 @@ const ProfilePage = () => {
                 ) : (
                     <p>No active listings.</p>
                 )}
-            </div>
-
-            <div className="user-listings-container">
-                <h2>{username}'s Market Listings</h2>
-                {userListings.length > 0 ? (
-                    <div className="user-listings">
-                        {userListings.map((listing) => (
-                            <div key={listing._id} className="listing-card">
-                                <div className="listing-card-content">
-                                    <BaseCard
-                                        name={listing.card.name}
-                                        image={listing.card.imageUrl}
-                                        rarity={listing.card.rarity}
-                                        description={listing.card.flavorText}
-                                        mintNumber={listing.card.mintNumber}
-                                        modifier={listing.card.modifier}
-                                    />
-                                </div>
-                                <p className="offers-count">Offers: {listing.offers ? listing.offers.length : 0}</p>
-                                <Link to={`/market/listing/${listing._id}`}> 
-                                    <button className="view-listing-button">View Listing</button>
-                                </Link>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <p>No active listings.</p>
+                {moreListings > 0 && (
+                    <p className="more-listings">{moreListings} more on the market</p>
                 )}
             </div>
         </div>
