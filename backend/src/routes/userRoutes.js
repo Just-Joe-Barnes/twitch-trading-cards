@@ -5,6 +5,8 @@ const {
     getProfileByUsername,
     getFeaturedCards,
     updateFeaturedCards,
+    getFavoriteCard,
+    updateFavoriteCard,
     searchUsers,
 } = require('../controllers/userController');
 const { protect } = require('../middleware/authMiddleware');
@@ -41,6 +43,10 @@ router.get('/featured-cards', protect, getFeaturedCards);
 
 // Route to update user's featured cards
 router.put('/featured-cards', protect, updateFeaturedCards);
+
+// Favorite card routes
+router.get('/favorite-card', protect, getFavoriteCard);
+router.put('/favorite-card', protect, updateFavoriteCard);
 
 // Route to fetch all cards in the user's collection
 router.get('/:userId/collection', protect, async (req, res) => {
