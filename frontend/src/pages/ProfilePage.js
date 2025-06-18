@@ -293,6 +293,15 @@ const ProfilePage = () => {
                 )}
             </div>
 
+            <div className="trade-actions-container">
+                <button className="initiate-trade-button" onClick={handleInitiateTrade}>
+                    Start trade with {username}
+                </button>
+                <button className="view-collection-button" onClick={handleViewCollection}>
+                    View Full Collection
+                </button>
+            </div>
+
             <div className="featured-cards-container">
                 <h2>Featured Cards</h2>
                 {featuredCards.length > 0 ? (
@@ -315,13 +324,32 @@ const ProfilePage = () => {
                 )}
             </div>
 
-            <div className="trade-actions-container">
-                <button className="initiate-trade-button" onClick={handleInitiateTrade}>
-                    Initiate Trade
-                </button>
-                <button className="view-collection-button" onClick={handleViewCollection}>
-                    View Full Collection
-                </button>
+            <div className="user-listings-container">
+                <h2>{username}'s Market Listings</h2>
+                {userListings.length > 0 ? (
+                    <div className="user-listings">
+                        {userListings.map((listing) => (
+                            <div key={listing._id} className="listing-card">
+                                <div className="listing-card-content">
+                                    <BaseCard
+                                        name={listing.card.name}
+                                        image={listing.card.imageUrl}
+                                        rarity={listing.card.rarity}
+                                        description={listing.card.flavorText}
+                                        mintNumber={listing.card.mintNumber}
+                                        modifier={listing.card.modifier}
+                                    />
+                                </div>
+                                <p className="offers-count">Offers: {listing.offers ? listing.offers.length : 0}</p>
+                                <Link to={`/market/listing/${listing._id}`}> 
+                                    <button className="view-listing-button">View Listing</button>
+                                </Link>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p>No active listings.</p>
+                )}
             </div>
 
             <div className="user-listings-container">
