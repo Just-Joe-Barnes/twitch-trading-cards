@@ -159,6 +159,31 @@ export const updateFeaturedCards = async (featuredCards) => {
     }
 };
 
+// Fetch favorite card for the logged-in user
+export const fetchFavoriteCard = async () => {
+    try {
+        const response = await fetchWithAuth("/api/users/favorite-card", { method: "GET" });
+        return response.favoriteCard;
+    } catch (error) {
+        console.error("[API] Error fetching favorite card:", error.message);
+        throw error;
+    }
+};
+
+// Update favorite card for the logged-in user
+export const updateFavoriteCard = async (name, rarity) => {
+    try {
+        const response = await fetchWithAuth("/api/users/favorite-card", {
+            method: "PUT",
+            body: JSON.stringify({ name, rarity }),
+        });
+        return response.favoriteCard;
+    } catch (error) {
+        console.error("[API] Error updating favorite card:", error.message);
+        throw error;
+    }
+};
+
 // Create a new trade
 export const createTrade = async (tradeData) => {
     try {

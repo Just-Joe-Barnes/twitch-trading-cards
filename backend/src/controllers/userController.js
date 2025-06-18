@@ -8,7 +8,7 @@ const getUserProfile = async (req, res) => {
     try {
         const dbStart = process.hrtime();
         const user = await User.findById(req.user._id).select(
-            'username email isAdmin packs openedPacks featuredCards cards twitchProfilePic xp level achievements'
+            'username email isAdmin packs openedPacks featuredCards favoriteCard cards twitchProfilePic xp level achievements'
         ).lean();
         const dbEnd = process.hrtime(dbStart);
         console.log(`[PERF] [getUserProfile] DB query took ${dbEnd[0] * 1000 + dbEnd[1] / 1e6} ms`);
@@ -16,6 +16,14 @@ const getUserProfile = async (req, res) => {
             const total = process.hrtime(start);
             console.log(`[PERF] [getUserProfile] TOTAL (user not found): ${total[0] * 1000 + total[1] / 1e6} ms`);
             return res.status(404).json({ message: 'User not found' });
+        }
+        if (user.favoriteCard && user.favoriteCard.name) {
+            const cardDoc = await Card.findOne({ name: user.favoriteCard.name });
+            user.favoriteCard = {
+                ...user.favoriteCard,
+                flavorText: cardDoc?.flavorText,
+                imageUrl: cardDoc?.imageUrl,
+            };
         }
         const total = process.hrtime(start);
         console.log(`[PERF] [getUserProfile] TOTAL: ${total[0] * 1000 + total[1] / 1e6} ms`);
@@ -34,7 +42,7 @@ const getProfileByUsername = async (req, res) => {
 
         // Base fields returned for any profile lookup
         const baseFields =
-            'username isAdmin openedPacks featuredCards cards twitchProfilePic xp level achievements';
+            'username isAdmin openedPacks featuredCards favoriteCard cards twitchProfilePic xp level achievements';
 
         // Only include the email if the requester is viewing their own profile
         // or has admin privileges
@@ -44,6 +52,15 @@ const getProfileByUsername = async (req, res) => {
         const user = await User.findOne({ username }).select(projection).lean();
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (user.favoriteCard && user.favoriteCard.name) {
+            const cardDoc = await Card.findOne({ name: user.favoriteCard.name });
+            user.favoriteCard = {
+                ...user.favoriteCard,
+                flavorText: cardDoc?.flavorText,
+                imageUrl: cardDoc?.imageUrl,
+            };
         }
 
         res.status(200).json(user);
@@ -124,6 +141,52 @@ const updateFeaturedCards = async (req, res) => {
     }
 };
 
+// Get the logged in user's favorite card
+const getFavoriteCard = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).select('favoriteCard').lean();
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        let enriched = null;
+        if (user.favoriteCard && user.favoriteCard.name) {
+            const cardDoc = await Card.findOne({ name: user.favoriteCard.name });
+            enriched = {
+                ...user.favoriteCard,
+                flavorText: cardDoc?.flavorText || 'No description available',
+                imageUrl: cardDoc?.imageUrl,
+            };
+        }
+        res.status(200).json({ favoriteCard: enriched });
+    } catch (error) {
+        console.error('[getFavoriteCard] Error:', error.message);
+        res.status(500).json({ message: 'Failed to fetch favorite card' });
+    }
+};
+
+// Update user's favorite card
+const updateFavoriteCard = async (req, res) => {
+    try {
+        const { name, rarity } = req.body;
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (!name || !rarity) {
+            user.favoriteCard = undefined;
+        } else {
+            user.favoriteCard = { name, rarity };
+        }
+
+        await user.save();
+        res.status(200).json({ favoriteCard: user.favoriteCard });
+    } catch (error) {
+        console.error('[updateFavoriteCard] Error:', error.message);
+        res.status(500).json({ message: 'Failed to update favorite card' });
+    }
+};
+
 // Search for users by username
 const searchUsers = async (req, res) => {
     const { query } = req.query;
@@ -146,5 +209,7 @@ module.exports = {
     getProfileByUsername,
     getFeaturedCards,
     updateFeaturedCards,
+    getFavoriteCard,
+    updateFavoriteCard,
     searchUsers,
 };

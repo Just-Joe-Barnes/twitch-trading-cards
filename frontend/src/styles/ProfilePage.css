@@ -261,6 +261,48 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
+/* Favorite Card Panel */
+.favorite-card-container {
+    background: var(--surface-dark);
+    border: 1px solid var(--border-dark);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.favorite-card-form {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.favorite-card-form select,
+.favorite-card-form button {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-dark);
+    background: var(--surface-darker);
+    color: var(--text-primary);
+}
+
+.favorite-card-form button {
+    background-color: var(--brand-primary);
+    border: none;
+    cursor: pointer;
+}
+
+.favorite-input {
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+}
+
     .view-collection-button:hover {
         background-color: #722ebf;
         transform: scale(1.05);
