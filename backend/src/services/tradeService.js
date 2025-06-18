@@ -26,6 +26,11 @@ async function createTrade(senderId, { recipient, offeredItems, requestedItems, 
     }
     if (!recipientUser) return { success: false, status: 404, message: 'Recipient not found' };
 
+    // Re-check after lookup to prevent trading with self when username is provided
+    if (recipientUser._id.toString() === senderId) {
+      return { success: false, status: 400, message: 'You cannot create a trade with yourself.' };
+    }
+
     if (offeredPacks > sender.packs) {
       return { success: false, status: 400, message: `You only have ${sender.packs} pack(s), but tried to offer ${offeredPacks}.` };
     }
