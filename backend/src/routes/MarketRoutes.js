@@ -123,12 +123,18 @@ router.get('/listings', protect, async (req, res) => {
 router.get('/user/:userId/listings', protect, async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 3;
-        const listings = await MarketListing.find({ owner: req.params.userId, status: 'active' })
-            .populate('owner', 'username')
-            .populate('offers.offerer', 'username')
-            .sort({ createdAt: -1 })
-            .limit(limit);
-        res.status(200).json({ listings });
+        const query = { owner: req.params.userId, status: 'active' };
+
+        const [listings, total] = await Promise.all([
+            MarketListing.find(query)
+                .populate('owner', 'username')
+                .populate('offers.offerer', 'username')
+                .sort({ createdAt: -1 })
+                .limit(limit),
+            MarketListing.countDocuments(query),
+        ]);
+
+        res.status(200).json({ listings, total });
     } catch (error) {
         console.error('Error fetching user market listings:', error);
         res.status(500).json({ message: 'Server error fetching user listings' });

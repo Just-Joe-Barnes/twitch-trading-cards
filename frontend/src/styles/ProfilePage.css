@@ -396,15 +396,20 @@ body {
     grid-column: span 1;
 }
 
-.initiate-trade-button,
-.trade-actions-container .view-collection-button {
+.trade-actions-container button {
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 1.25rem;
     font-size: 1rem;
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     border: none;
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 600;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.trade-actions-container button:hover {
+    transform: scale(1.05);
 }
 
 .initiate-trade-button {
@@ -428,4 +433,10 @@ body {
     justify-content: center;
     gap: 1rem;
     margin-top: 1rem;
+}
+
+.more-listings {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--brand-secondary);
 }

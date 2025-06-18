@@ -337,7 +337,10 @@ export const clearNotifications = async () => {
 export const fetchUserMarketListings = async (userId, limit = 3) => {
     try {
         const response = await fetchWithAuth(`/api/market/user/${userId}/listings?limit=${limit}`);
-        return response.listings || [];
+        return {
+            listings: response.listings || [],
+            total: response.total || 0,
+        };
     } catch (error) {
         console.error('[API] Error fetching user market listings:', error.message);
         throw error;
