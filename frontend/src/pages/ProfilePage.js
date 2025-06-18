@@ -6,13 +6,21 @@ import {
     fetchUserProfile,
     fetchUserProfileByUsername,
     fetchUserCollection,
+    fetchFavoriteCard,
+    updateFavoriteCard,
+    searchCardsByName,
 } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/App.css';
 import '../styles/ProfilePage.css';
+import { rarities } from '../constants/rarities';
 
 const ProfilePage = () => {
     const [featuredCards, setFeaturedCards] = useState([]);
+    const [favoriteCard, setFavoriteCard] = useState(null);
+    const [cardQuery, setCardQuery] = useState('');
+    const [cardResults, setCardResults] = useState([]);
+    const [selectedRarity, setSelectedRarity] = useState('');
     const [collectionCount, setCollectionCount] = useState(0);
     const [currentPacks, setCurrentPacks] = useState(0);
     const [openedPacks, setOpenedPacks] = useState(0);
@@ -41,6 +49,18 @@ const ProfilePage = () => {
                 setAchievements(profile.achievements || []);
 
                 let tempFeatured = profile.featuredCards || [];
+                if (!routeUsername) {
+                    try {
+                        const fav = await fetchFavoriteCard();
+                        setFavoriteCard(fav);
+                        if (fav && fav.rarity) setSelectedRarity(fav.rarity);
+                        if (fav && fav.name) setCardQuery(fav.name);
+                    } catch (e) {
+                        console.error('Error fetching favorite card:', e);
+                    }
+                } else {
+                    setFavoriteCard(profile.favoriteCard || null);
+                }
                 if (profile._id) {
                     const collectionData = await fetchUserCollection(profile._id);
                     setCollectionCount(collectionData.cards ? collectionData.cards.length : 0);
@@ -62,8 +82,38 @@ const ProfilePage = () => {
         fetchProfileData();
     }, [routeUsername]);
 
+    // Debounced search for card names when editing favorite card
+    useEffect(() => {
+        const fetchResults = async () => {
+            if (cardQuery && !routeUsername) {
+                const results = await searchCardsByName(cardQuery);
+                setCardResults(results);
+            } else {
+                setCardResults([]);
+            }
+        };
+        const t = setTimeout(fetchResults, 300);
+        return () => clearTimeout(t);
+    }, [cardQuery, routeUsername]);
+
     const handleViewCollection = () => {
         navigate(`/collection/${username}`);
+    };
+
+    const handleSelectCard = (card) => {
+        setCardQuery(card.name);
+        setCardResults([]);
+        setFavoriteCard({ ...favoriteCard, name: card.name, imageUrl: card.imageUrl, flavorText: card.flavorText });
+    };
+
+    const saveFavorite = async () => {
+        try {
+            await updateFavoriteCard(cardQuery, selectedRarity);
+            const fav = await fetchFavoriteCard();
+            setFavoriteCard(fav);
+        } catch (err) {
+            console.error('Error saving favorite card:', err);
+        }
     };
 
     if (loading) {
@@ -134,6 +184,57 @@ const ProfilePage = () => {
                         );
                     })}
                 </div>
+            </div>
+
+            <div className="favorite-card-container">
+                <h2>Favorite Card Wanted</h2>
+                {favoriteCard && favoriteCard.name ? (
+                    <div className="favorite-card-display">
+                        <BaseCard
+                            name={favoriteCard.name}
+                            image={favoriteCard.imageUrl}
+                            rarity={favoriteCard.rarity}
+                            description={favoriteCard.flavorText}
+                        />
+                    </div>
+                ) : (
+                    <p>No favorite card selected.</p>
+                )}
+                {!routeUsername && (
+                    <div className="favorite-card-form">
+                        <div className="favorite-input">
+                            <input
+                                type="text"
+                                className="search-bar"
+                                placeholder="Search card..."
+                                value={cardQuery}
+                                onChange={(e) => setCardQuery(e.target.value)}
+                            />
+                            {cardResults.length > 0 && (
+                                <ul className="search-dropdown">
+                                    {cardResults.map((c) => (
+                                        <li
+                                            key={c._id}
+                                            className="search-result-item"
+                                            onMouseDown={() => handleSelectCard(c)}
+                                        >
+                                            {c.name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                        <select value={selectedRarity} onChange={(e) => setSelectedRarity(e.target.value)}>
+                            <option value="">Select rarity</option>
+                            {rarities.map((r) => (
+                                <option key={r.name} value={r.name}>
+                                    {r.name}
+                                </option>
+                            ))}
+                        </select>
+                        <button onClick={saveFavorite}>Save</button>
+                    </div>
+                )}
             </div>
 
             <div className="featured-cards-container">

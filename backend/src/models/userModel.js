@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema({
             flavorText: { type: String }
         },
     ],
+    favoriteCard: {
+        name: String,
+        rarity: String,
+    },
     notifications: [notificationSchema], // NEW: Notifications for the user
     firstLogin: { type: Boolean, default: false },
     isAdmin: { type: Boolean, default: false },
