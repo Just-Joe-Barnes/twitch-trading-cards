@@ -296,10 +296,10 @@ const ProfilePage = () => {
             </div>
 
             <div className="trade-actions-container">
-                <button className="initiate-trade-button" onClick={handleInitiateTrade}>
+                <button className="profile-action-button" onClick={handleInitiateTrade}>
                     Start trade with {username}
                 </button>
-                <button className="view-collection-button" onClick={handleViewCollection}>
+                <button className="profile-action-button" onClick={handleViewCollection}>
                     View Full Collection
                 </button>
             </div>
