@@ -119,6 +119,22 @@ router.get('/listings', protect, async (req, res) => {
     }
 });
 
+// GET /api/market/user/:userId/listings - Get active listings for a specific user
+router.get('/user/:userId/listings', protect, async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 3;
+        const listings = await MarketListing.find({ owner: req.params.userId, status: 'active' })
+            .populate('owner', 'username')
+            .populate('offers.offerer', 'username')
+            .sort({ createdAt: -1 })
+            .limit(limit);
+        res.status(200).json({ listings });
+    } catch (error) {
+        console.error('Error fetching user market listings:', error);
+        res.status(500).json({ message: 'Server error fetching user listings' });
+    }
+});
+
 // GET /api/market/listings/:id - Get a single market listing.
 router.get('/listings/:id', protect, async (req, res) => {
     try {
