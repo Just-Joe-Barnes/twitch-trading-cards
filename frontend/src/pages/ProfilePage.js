@@ -21,6 +21,7 @@ const ProfilePage = () => {
     const [cardQuery, setCardQuery] = useState('');
     const [cardResults, setCardResults] = useState([]);
     const [selectedRarity, setSelectedRarity] = useState('');
+    const [isOwnProfile, setIsOwnProfile] = useState(false);
     const [collectionCount, setCollectionCount] = useState(0);
     const [currentPacks, setCurrentPacks] = useState(0);
     const [openedPacks, setOpenedPacks] = useState(0);
@@ -36,9 +37,19 @@ const ProfilePage = () => {
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
+                // Determine if the logged-in user is viewing their own profile
+                let me = null;
+                try {
+                    me = await fetchUserProfile();
+                } catch (e) {
+                    console.error('Error fetching current user:', e);
+                }
+
                 let profile;
                 if (routeUsername) {
                     profile = await fetchUserProfileByUsername(routeUsername);
+                } else if (me) {
+                    profile = me;
                 } else {
                     profile = await fetchUserProfile();
                 }
@@ -48,8 +59,11 @@ const ProfilePage = () => {
                 setLevel(profile.level || 1);
                 setAchievements(profile.achievements || []);
 
+                const ownProfile = me && profile && me.username === profile.username;
+                setIsOwnProfile(ownProfile);
+
                 let tempFeatured = profile.featuredCards || [];
-                if (!routeUsername) {
+                if (ownProfile) {
                     try {
                         const fav = await fetchFavoriteCard();
                         setFavoriteCard(fav);
@@ -85,7 +99,7 @@ const ProfilePage = () => {
     // Debounced search for card names when editing favorite card
     useEffect(() => {
         const fetchResults = async () => {
-            if (cardQuery && !routeUsername) {
+            if (cardQuery && isOwnProfile) {
                 const results = await searchCardsByName(cardQuery);
                 setCardResults(results);
             } else {
@@ -94,7 +108,7 @@ const ProfilePage = () => {
         };
         const t = setTimeout(fetchResults, 300);
         return () => clearTimeout(t);
-    }, [cardQuery, routeUsername]);
+    }, [cardQuery, isOwnProfile]);
 
     const handleViewCollection = () => {
         navigate(`/collection/${username}`);
@@ -200,7 +214,7 @@ const ProfilePage = () => {
                 ) : (
                     <p>No favorite card selected.</p>
                 )}
-                {!routeUsername && (
+                {isOwnProfile && (
                     <div className="favorite-card-form">
                         <div className="favorite-input">
                             <input
