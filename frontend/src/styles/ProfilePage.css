@@ -23,8 +23,9 @@ body {
     padding: 6rem 1.5rem 2rem;
     max-width: 1600px;
     margin: 0 auto;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-auto-rows: auto;
     gap: 2rem;
 }
 
@@ -32,6 +33,7 @@ body {
 .title-container {
     text-align: center;
     margin-bottom: 1rem;
+    grid-column: 1 / -1;
 }
 
     .title-container h1 {
@@ -66,6 +68,7 @@ body {
     width: 100%;
     max-width: 1400px;
     margin: 0 auto;
+    grid-column: span 3;
 }
 
 .profile-overview h3 {
@@ -190,6 +193,7 @@ body {
     width: 100%;
     max-width: 1400px;
     margin: 0 auto;
+    grid-column: 1 / -1;
 }
 
     .featured-cards-container h2 {
@@ -246,6 +250,7 @@ body {
 .view-collection-button-container {
     display: flex;
     justify-content: center;
+    grid-column: 1 / -1;
 }
 
 .view-collection-button {
@@ -253,7 +258,7 @@ body {
     color: var(--text-primary);
     border: none;
     border-radius: var(--border-radius);
-    padding: 0.75rem 1.5rem;
+    padding: 0.75rem 2rem;
     font-size: 1.2rem;
     font-weight: bold;
     cursor: pointer;
@@ -272,6 +277,13 @@ body {
     width: 100%;
     max-width: 600px;
     margin: 0 auto;
+    grid-column: span 2;
+}
+
+.favorite-card-display {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
 }
 
 .favorite-card-form {
@@ -293,6 +305,16 @@ body {
 
 .favorite-card-form button {
     background-color: var(--brand-primary);
+    border: none;
+    cursor: pointer;
+}
+
+.edit-favorite-button {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    background-color: var(--brand-primary);
+    color: var(--text-primary);
     border: none;
     cursor: pointer;
 }

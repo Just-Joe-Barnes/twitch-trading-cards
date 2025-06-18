@@ -21,6 +21,7 @@ const ProfilePage = () => {
     const [cardQuery, setCardQuery] = useState('');
     const [cardResults, setCardResults] = useState([]);
     const [selectedRarity, setSelectedRarity] = useState('');
+    const [editingFavorite, setEditingFavorite] = useState(false);
     const [isOwnProfile, setIsOwnProfile] = useState(false);
     const [collectionCount, setCollectionCount] = useState(0);
     const [currentPacks, setCurrentPacks] = useState(0);
@@ -67,8 +68,6 @@ const ProfilePage = () => {
                     try {
                         const fav = await fetchFavoriteCard();
                         setFavoriteCard(fav);
-                        if (fav && fav.rarity) setSelectedRarity(fav.rarity);
-                        if (fav && fav.name) setCardQuery(fav.name);
                     } catch (e) {
                         console.error('Error fetching favorite card:', e);
                     }
@@ -99,7 +98,7 @@ const ProfilePage = () => {
     // Debounced search for card names when editing favorite card
     useEffect(() => {
         const fetchResults = async () => {
-            if (cardQuery && isOwnProfile) {
+            if (cardQuery && isOwnProfile && editingFavorite) {
                 const results = await searchCardsByName(cardQuery);
                 setCardResults(results);
             } else {
@@ -108,7 +107,7 @@ const ProfilePage = () => {
         };
         const t = setTimeout(fetchResults, 300);
         return () => clearTimeout(t);
-    }, [cardQuery, isOwnProfile]);
+    }, [cardQuery, isOwnProfile, editingFavorite]);
 
     const handleViewCollection = () => {
         navigate(`/collection/${username}`);
@@ -125,6 +124,10 @@ const ProfilePage = () => {
             await updateFavoriteCard(cardQuery, selectedRarity);
             const fav = await fetchFavoriteCard();
             setFavoriteCard(fav);
+            setEditingFavorite(false);
+            setCardQuery('');
+            setSelectedRarity('');
+            setCardResults([]);
         } catch (err) {
             console.error('Error saving favorite card:', err);
         }
@@ -214,7 +217,19 @@ const ProfilePage = () => {
                 ) : (
                     <p>No favorite card selected.</p>
                 )}
-                {isOwnProfile && (
+                {isOwnProfile && !editingFavorite && (
+                    <button
+                        className="edit-favorite-button"
+                        onClick={() => {
+                            setEditingFavorite(true);
+                            setCardQuery(favoriteCard?.name || '');
+                            setSelectedRarity(favoriteCard?.rarity || '');
+                        }}
+                    >
+                        Change Favourite Card
+                    </button>
+                )}
+                {isOwnProfile && editingFavorite && (
                     <div className="favorite-card-form">
                         <div className="favorite-input">
                             <input
@@ -238,7 +253,10 @@ const ProfilePage = () => {
                                 </ul>
                             )}
                         </div>
-                        <select value={selectedRarity} onChange={(e) => setSelectedRarity(e.target.value)}>
+                        <select
+                            value={selectedRarity}
+                            onChange={(e) => setSelectedRarity(e.target.value)}
+                        >
                             <option value="">Select rarity</option>
                             {rarities.map((r) => (
                                 <option key={r.name} value={r.name}>
