@@ -332,3 +332,14 @@ export const deleteNotification = async (notificationId) => {
 export const clearNotifications = async () => {
     return fetchWithAuth('/api/notifications/clear', { method: 'DELETE' });
 };
+
+// Fetch active market listings for a specific user
+export const fetchUserMarketListings = async (userId, limit = 3) => {
+    try {
+        const response = await fetchWithAuth(`/api/market/user/${userId}/listings?limit=${limit}`);
+        return response.listings || [];
+    } catch (error) {
+        console.error('[API] Error fetching user market listings:', error.message);
+        throw error;
+    }
+};
