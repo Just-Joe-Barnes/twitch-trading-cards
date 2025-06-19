@@ -29,6 +29,30 @@ body {
     gap: 2rem;
 }
 
+@media (max-width: 1024px) {
+    .profile-page {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .profile-overview {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-page {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-overview,
+    .favorite-card-container,
+    .trade-actions-container,
+    .featured-cards-container,
+    .user-listings-container {
+        grid-column: 1 / -1;
+    }
+}
+
 /* Title Container - simple text with underline */
 .title-container {
     text-align: center;
@@ -213,6 +237,7 @@ body {
 
 /* Featured Cards Section */
 .featured-cards {
+    --card-scale: 1;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -220,6 +245,9 @@ body {
     padding-bottom: 1rem;
     text-align: left;
     -webkit-overflow-scrolling: touch;
+    width: calc(100% / var(--card-scale));
+    transform: scale(var(--card-scale));
+    transform-origin: top left;
 }
 
 .featured-cards > * {
@@ -229,6 +257,7 @@ body {
 @media (max-width: 768px) {
     .featured-cards {
         gap: 1rem;
+        --card-scale: 0.9;
     }
 }
 
@@ -236,9 +265,9 @@ body {
     flex: 1 1 250px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 480px) {
     .featured-cards {
-        gap: 1rem;
+        --card-scale: 0.8;
     }
 }
 
@@ -256,9 +285,25 @@ body {
 }
 
 .favorite-card-display {
+    --card-scale: 1;
     display: flex;
     justify-content: center;
     margin-bottom: 1rem;
+    width: calc(100% / var(--card-scale));
+    transform: scale(var(--card-scale));
+    transform-origin: top left;
+}
+
+@media (max-width: 768px) {
+    .favorite-card-display {
+        --card-scale: 0.9;
+    }
+}
+
+@media (max-width: 480px) {
+    .favorite-card-display {
+        --card-scale: 0.8;
+    }
 }
 
 .favorite-card-form {
@@ -394,11 +439,27 @@ body {
 }
 
 .user-listings {
+    --card-scale: 1;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 1rem;
     margin-top: 1rem;
+    width: calc(100% / var(--card-scale));
+    transform: scale(var(--card-scale));
+    transform-origin: top left;
+}
+
+@media (max-width: 768px) {
+    .user-listings {
+        --card-scale: 0.9;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-listings {
+        --card-scale: 0.8;
+    }
 }
 
 .more-listings {
