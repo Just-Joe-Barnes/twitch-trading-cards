@@ -34,8 +34,14 @@ const BaseCard = ({
         return;
       }
 
+      // If modifier comes as a populated object, use it directly
+      if (typeof modifier === 'object' && modifier.name) {
+        setModifierData(modifier);
+        return;
+      }
+
       // Treat plain names as local modifiers and skip API fetch
-      const isObjectId = /^[0-9a-fA-F]{24}$/.test(modifier);
+      const isObjectId = typeof modifier === 'string' && /^[0-9a-fA-F]{24}$/.test(modifier);
       if (!isObjectId) {
         setModifierData({ name: modifier });
         return;
