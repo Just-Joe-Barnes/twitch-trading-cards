@@ -1,7 +1,8 @@
 :root {
     --card-width: 300px;
     --card-height: 450px;
-    --card-artwork-height: 48%;
+    /* Fixed artwork height so all images scale the same */
+    --card-artwork-height: 216px;
 }
 
 /**************************************
