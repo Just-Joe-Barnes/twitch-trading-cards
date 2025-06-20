@@ -1,4 +1,6 @@
 :root {
+    --card-width: 300px;
+    --card-height: 450px;
     --card-artwork-height: 48%;
 }
 
@@ -6,9 +8,10 @@
  * Generic Card Styles (Layout Only)
  **************************************/
 .card-container {
-    width: 100%;
-    max-width: 300px;
+    width: var(--card-width);
+    height: var(--card-height);
     aspect-ratio: 2 / 3;
+    max-width: var(--card-width);
     border-radius: 15px;
     overflow: hidden;
     display: flex;
