@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import Navbar from './components/Navbar';
 import LoadingSpinner from './components/LoadingSpinner';
 import Toast from './components/Toast';
+import 'normalize.css';
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const CollectionPage = lazy(() => import('./pages/CollectionPage'));
@@ -20,8 +21,6 @@ const MarketListingDetails = lazy(() => import('./pages/MarketListingDetails'));
 const AdminActions = lazy(() => import('./pages/AdminActions'));
 const CardEditor = lazy(() => import('./components/CardEditor'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
-
-import 'normalize.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
