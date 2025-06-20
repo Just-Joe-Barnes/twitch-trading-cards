@@ -212,7 +212,12 @@ const navigate = useNavigate();
   );
 
   const DetailPanel = ({ trade, isOutgoing, open }) => (
-    <aside className={`detail-panel${open ? ' open' : ''}`} role="dialog" aria-modal="true">
+    <aside
+      className={`detail-panel${open ? ' open' : ''}`}
+      role="dialog"
+      aria-modal="true"
+      style={{ '--user-card-scale': cardScale }}
+    >
       <header>
         <h2>Trade Details</h2>
       </header>
