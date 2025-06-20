@@ -19,6 +19,31 @@
 
     --border-radius: 8px;
     --transition: all 0.3s ease;
+    --screen-card-scale: 1;
+}
+
+@media (max-width: 1200px) {
+    :root {
+        --screen-card-scale: 0.85;
+    }
+}
+
+@media (max-width: 992px) {
+    :root {
+        --screen-card-scale: 0.75;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --screen-card-scale: 0.65;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --screen-card-scale: 0.55;
+    }
 }
 
 *, *::before, *::after {

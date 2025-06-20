@@ -263,6 +263,8 @@ body {
 
 /* Cards Grid Container */
 .cp-cards-grid {
+    --user-card-scale: 1;
+    --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
     display: flex;
     gap: 1.5rem;
     background: var(--surface-darker);

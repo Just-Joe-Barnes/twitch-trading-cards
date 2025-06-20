@@ -411,7 +411,7 @@ const CollectionPage = ({
             </div>
 
             {/* Cards Grid (unchanged) */}
-            <div className="cp-cards-grid" style={{ "--card-scale": cardScale }}>
+            <div className="cp-cards-grid" style={{ "--user-card-scale": cardScale }}>
                 {filteredCards.length > 0 ? (
                     filteredCards.map((card) => {
                         const isFeatured = featuredCards.some((fc) => fc._id === card._id);
