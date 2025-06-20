@@ -28,15 +28,17 @@ const openPack = async (req, res) => {
             return res.status(400).json({ message: 'No unopened packs available' });
         }
 
-        const newCard = await generateCardWithProbability();
-        if (!newCard) {
-            return res.status(500).json({ message: 'Failed to generate a card' });
-        }
-
         const forceModifier = req.body?.forceModifier === true;
         let modifierDoc = null;
 
-        const mods = await Modifier.find();
+        const [newCard, mods] = await Promise.all([
+            generateCardWithProbability(),
+            Modifier.find().lean(),
+        ]);
+
+        if (!newCard) {
+            return res.status(500).json({ message: 'Failed to generate a card' });
+        }
 
         if (forceModifier) {
             if (mods && mods.length > 0) {
@@ -99,7 +101,7 @@ const openPacksForUser = async (req, res) => {
             return res.status(400).json({ message: 'No unopened packs available for this user' });
         }
 
-        let newCards = [];
+        let packPromise;
 
         if (templateId) {
             const templatePack = await Pack.findById(templateId);
@@ -119,25 +121,25 @@ const openPacksForUser = async (req, res) => {
                     { availableTo: null },
                     { availableTo: { $gte: now } }
                 ]
-            });
+            }).lean();
 
             const filteredIds = poolCards.map(c => c._id);
 
             const { generatePackFromPool } = require('../helpers/cardHelpers');
-            newCards = await generatePackFromPool(filteredIds, 5);
+            packPromise = generatePackFromPool(filteredIds, 5);
+        } else {
+            packPromise = generatePack(5);
         }
 
-        if (!newCards.length) {
-            // fallback to global pool
-            newCards = await generatePack(5);
-        }
+        const [newCards, mods] = await Promise.all([
+            packPromise,
+            Modifier.find().lean(),
+        ]);
 
         if (!newCards || !newCards.length) {
             return res.status(500).json({ message: 'Failed to generate cards for the pack' });
         }
-
         const forceModifier = req.body?.forceModifier === true;
-        const mods = await Modifier.find();
 
         for (const newCard of newCards) {
             if (mods && mods.length > 0 && (forceModifier || Math.random() < MODIFIER_CHANCE)) {
