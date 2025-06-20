@@ -198,6 +198,8 @@ body {
 .age { text-align: right; }
 
 .detail-panel {
+  --user-card-scale: 1;
+  --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
   position: fixed;
   top: 60px;
   right: 0;
