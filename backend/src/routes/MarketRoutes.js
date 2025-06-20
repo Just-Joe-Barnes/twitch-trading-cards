@@ -290,6 +290,8 @@ router.put('/listings/:id/offers/:offerId/accept', protect, sensitiveLimiter, as
     await session.commitTransaction();
     session.endSession();
 
+    await marketService.finalizeOfferAcceptance(result);
+
     res.status(200).json({ message: 'Offer accepted, card transferred, and listing sold.' });
   } catch (error) {
     console.error('Error accepting offer:', error);

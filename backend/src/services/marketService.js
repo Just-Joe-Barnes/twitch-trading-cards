@@ -195,11 +195,17 @@ async function acceptOffer(listingId, offerId, userId, session) {
   console.log('[Accept Offer Service] Seller offered cards status updated.');
 
 
+  console.log('[Accept Offer Service] DB updates complete.');
+  logAudit('Market Offer DB Updates', { listingId, offerId, sellerId: seller._id, buyerId: buyer._id });
+  return { success: true, seller, buyer, listing, offer };
+}
+
+async function finalizeOfferAcceptance({ seller, buyer, listing, offer }) {
   console.log('[Accept Offer Service] Creating notifications.');
   await createNotification(seller._id, {
     type: 'Listing Update',
     message: `Your listing for ${listing.card.name} #${listing.card.mintNumber} has been sold to ${buyer.username}.`,
-    link: `/profile/${buyer.username}` // Link to buyer profile maybe?
+    link: `/profile/${buyer.username}`
   });
   sendNotificationToUser(seller._id, {
     type: 'Listing Update',
@@ -210,7 +216,7 @@ async function acceptOffer(listingId, offerId, userId, session) {
   await createNotification(buyer._id, {
     type: 'Listing Update',
     message: `Your offer on ${listing.card.name} #${listing.card.mintNumber} has been accepted.`,
-    link: `/collection/${buyer.username}` // Link to their collection
+    link: `/collection/${buyer.username}`
   });
   sendNotificationToUser(buyer._id, {
     type: 'Listing Update',
@@ -219,14 +225,13 @@ async function acceptOffer(listingId, offerId, userId, session) {
   });
   console.log('[Accept Offer Service] Notifications created.');
 
-  // Award XP
   console.log('[Accept Offer Service] Awarding XP.');
   seller.xp = (seller.xp || 0) + 15;
   buyer.xp = (buyer.xp || 0) + 15;
   seller.level = Math.floor(seller.xp / 100) + 1;
   buyer.level = Math.floor(buyer.xp / 100) + 1;
-  await seller.save({ session });
-  await buyer.save({ session });
+  await seller.save();
+  await buyer.save();
   console.log('[Accept Offer Service] XP awarded and users saved.');
 
   console.log('[Accept Offer Service] Checking achievements.');
@@ -235,11 +240,11 @@ async function acceptOffer(listingId, offerId, userId, session) {
   await checkAndGrantAchievements(buyer);
   console.log('[Accept Offer Service] Achievements checked.');
 
-  logAudit('Market Offer Accepted', { listingId, offerId, sellerId: seller._id, buyerId: buyer._id });
+  logAudit('Market Offer Accepted', { listingId: listing._id, offerId: offer._id, sellerId: seller._id, buyerId: buyer._id });
   console.log('[Accept Offer Service] Completed successfully.');
-  return { success: true };
 }
 
 module.exports = {
-  acceptOffer
+  acceptOffer,
+  finalizeOfferAcceptance
 };
