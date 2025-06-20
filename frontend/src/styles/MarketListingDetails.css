@@ -115,7 +115,8 @@
 
 /* User Collection Grid */
 .market-user-collection-grid {
-    --card-scale: 1;
+    --user-card-scale: 1;
+    --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.25rem;
@@ -152,7 +153,8 @@
     }
 
 .market-selected-cards-grid {
-    --card-scale: 1;
+    --user-card-scale: 1;
+    --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.25rem;
@@ -219,7 +221,8 @@
 }
 
 .offered-cards-grid {
-    --card-scale: 1;
+    --user-card-scale: 1;
+    --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
@@ -239,34 +242,3 @@
     opacity: 1 !important;
 }
 
-@media (max-width: 1200px) {
-    .market-user-collection-grid,
-    .market-selected-cards-grid,
-    .offered-cards-grid {
-        --card-scale: 0.85;
-    }
-}
-
-@media (max-width: 992px) {
-    .market-user-collection-grid,
-    .market-selected-cards-grid,
-    .offered-cards-grid {
-        --card-scale: 0.75;
-    }
-}
-
-@media (max-width: 768px) {
-    .market-user-collection-grid,
-    .market-selected-cards-grid,
-    .offered-cards-grid {
-        --card-scale: 0.65;
-    }
-}
-
-@media (max-width: 480px) {
-    .market-user-collection-grid,
-    .market-selected-cards-grid,
-    .offered-cards-grid {
-        --card-scale: 0.55;
-    }
-}

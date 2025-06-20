@@ -296,7 +296,8 @@
 
 /* card-content forced 300x450 */
 .card-content {
-    --card-scale: 1;
+    --user-card-scale: 1;
+    --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
     width: calc(100% / var(--card-scale));
     max-width: 300px;
     aspect-ratio: 2 / 3;

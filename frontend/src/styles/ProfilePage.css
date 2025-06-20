@@ -237,7 +237,8 @@ body {
 
 /* Featured Cards Section */
 .featured-cards {
-    --card-scale: 1;
+    --user-card-scale: 1;
+    --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -257,18 +258,11 @@ body {
 @media (max-width: 768px) {
     .featured-cards {
         gap: 1rem;
-        --card-scale: 0.9;
     }
 }
 
 .featured-cards > * {
     flex: 1 1 250px;
-}
-
-@media (max-width: 480px) {
-    .featured-cards {
-        --card-scale: 0.8;
-    }
 }
 
 
@@ -285,7 +279,8 @@ body {
 }
 
 .favorite-card-display {
-    --card-scale: 1;
+    --user-card-scale: 1;
+    --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
     display: flex;
     justify-content: center;
     margin-bottom: 1rem;
@@ -294,17 +289,6 @@ body {
     transform-origin: top left;
 }
 
-@media (max-width: 768px) {
-    .favorite-card-display {
-        --card-scale: 0.9;
-    }
-}
-
-@media (max-width: 480px) {
-    .favorite-card-display {
-        --card-scale: 0.8;
-    }
-}
 
 .favorite-card-form {
     margin-top: 1rem;
@@ -439,7 +423,8 @@ body {
 }
 
 .user-listings {
-    --card-scale: 1;
+    --user-card-scale: 1;
+    --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -450,17 +435,6 @@ body {
     transform-origin: top left;
 }
 
-@media (max-width: 768px) {
-    .user-listings {
-        --card-scale: 0.9;
-    }
-}
-
-@media (max-width: 480px) {
-    .user-listings {
-        --card-scale: 0.8;
-    }
-}
 
 .more-listings {
     margin-top: 0.5rem;

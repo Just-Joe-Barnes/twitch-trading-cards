@@ -223,7 +223,7 @@ const navigate = useNavigate();
           {trade.offeredPacks > 0 && (
             <p className="pack-count">{trade.offeredPacks} packs</p>
           )}
-          <div className="card-grid" style={{ '--card-scale': cardScale }}>
+          <div className="card-grid" style={{ '--user-card-scale': cardScale }}>
             {trade.offeredItems.map((item) => (
               <div key={item._id} className="card-tile">
                 <BaseCard
@@ -243,7 +243,7 @@ const navigate = useNavigate();
           {trade.requestedPacks > 0 && (
             <p className="pack-count">{trade.requestedPacks} packs</p>
           )}
-          <div className="card-grid" style={{ '--card-scale': cardScale }}>
+          <div className="card-grid" style={{ '--user-card-scale': cardScale }}>
             {trade.requestedItems.map((item) => (
               <div key={item._id} className="card-tile">
                 <BaseCard

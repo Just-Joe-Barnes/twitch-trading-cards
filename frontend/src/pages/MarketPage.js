@@ -138,7 +138,7 @@ const MarketPage = () => {
                     <button className="create-listing-button">Create New Listing</button>
                 </Link>
             </div>
-            <div className="listings-grid" style={{ '--card-scale': cardScale }}>
+            <div className="listings-grid" style={{ '--user-card-scale': cardScale }}>
                 {sortedListings.length > 0 ? (
                     sortedListings.map((listing) => (
                         <div key={listing._id} className="listing-card">
