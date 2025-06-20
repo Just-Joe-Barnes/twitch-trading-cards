@@ -1,3 +1,7 @@
+:root {
+    --card-artwork-height: 48%;
+}
+
 /**************************************
  * Generic Card Styles (Layout Only)
  **************************************/
@@ -85,7 +89,7 @@
     justify-content: center;
     margin: 5px 0;
     margin-top: -10px;
-    height: 48%;
+    height: var(--card-artwork-height);
     overflow: hidden;
     border-radius: 10px;
     border: 6px solid #6f4e37;
