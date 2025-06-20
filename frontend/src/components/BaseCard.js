@@ -266,6 +266,13 @@ const BaseCard = ({
                     className="grayscale"
                     draggable={false}
                     loading="lazy"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      objectPosition: 'center',
+                      display: 'block',
+                    }}
                   />
                   <img
                     src={image}
@@ -274,10 +281,29 @@ const BaseCard = ({
                     ref={invertRef}
                     draggable={false}
                     loading="lazy"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      objectPosition: 'center',
+                      display: 'block',
+                    }}
                   />
                 </>
               ) : (
-                <img src={image} alt={name} draggable={false} loading="lazy" />
+                <img
+                  src={image}
+                  alt={name}
+                  draggable={false}
+                  loading="lazy"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    objectPosition: 'center',
+                    display: 'block',
+                  }}
+                />
               )}
 
             </div>
