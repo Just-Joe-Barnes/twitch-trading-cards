@@ -7,7 +7,9 @@ const getLoggedInUserCollection = async (req, res) => {
         const { search = '', rarity = '', sort = '', page = 1, limit = 30 } = req.query;
 
         // Retrieve the logged-in user's collection and populate modifier data
-        const user = await User.findById(req.user._id).populate('cards.modifier');
+        const user = await User.findById(req.user._id)
+            .populate('cards.modifier')
+            .lean();
         if (!user) {
             console.error('[ERROR] Logged-in user not found:', req.user._id);
             return res.status(404).json({ message: 'User not found' });
@@ -60,10 +62,14 @@ const getCollectionByIdentifier = async (req, res) => {
         // Explicit ObjectId check
         if (mongoose.Types.ObjectId.isValid(identifier)) {
             console.log(`[DEBUG] Querying by ObjectId: ${identifier}`);
-            user = await User.findOne({ _id: identifier }).populate('cards.modifier');
+            user = await User.findOne({ _id: identifier })
+                .populate('cards.modifier')
+                .lean();
         } else {
             console.log(`[DEBUG] Querying by username: ${identifier}`);
-            user = await User.findOne({ username: identifier }).populate('cards.modifier');
+            user = await User.findOne({ username: identifier })
+                .populate('cards.modifier')
+                .lean();
         }
 
         if (!user) {

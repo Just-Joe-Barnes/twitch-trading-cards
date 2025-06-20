@@ -5,8 +5,8 @@ const User = require('../models/userModel');
 
 exports.getCardAvailability = async (req, res) => {
     try {
-        const cards = await Card.find({});
-        const users = await User.find({}, { cards: 1 });
+        const cards = await Card.find({}).lean();
+        const users = await User.find({}, { cards: 1 }).lean();
 
         const ownedCountMap = {};
 

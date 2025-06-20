@@ -1,5 +1,5 @@
 // src/components/BaseCard.js
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, memo } from 'react';
 import '../styles/CardComponent.css';
 import { rarities } from '../constants/rarities';
 import { fetchWithAuth } from '../utils/api';
@@ -312,4 +312,4 @@ const BaseCard = ({
   );
 };
 
-export default BaseCard;
+export default memo(BaseCard);

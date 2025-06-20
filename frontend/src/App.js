@@ -1,26 +1,26 @@
 // frontend/src/App.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import CollectionPage from './pages/CollectionPage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
-import AdminPacksPage from './pages/AdminPacksPage';
 import Navbar from './components/Navbar';
-import ProfilePage from './pages/ProfilePage';
-import TradingPage from './pages/TradingPage';
-import PendingTrades from './pages/PendingTrades';
-import CataloguePage from './pages/CataloguePage';
 import LoadingSpinner from './components/LoadingSpinner';
-import MarketPage from './pages/MarketPage';
-import CreateListingPage from './pages/CreateListingPage';
-import MarketListingDetails from './pages/MarketListingDetails';
-import AdminActions from './pages/AdminActions';
-import CardEditor from './components/CardEditor';
-import NotFoundPage from './pages/NotFoundPage';
 import Toast from './components/Toast';
-
 import 'normalize.css';
+
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const CollectionPage = lazy(() => import('./pages/CollectionPage'));
+const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
+const AdminPacksPage = lazy(() => import('./pages/AdminPacksPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const TradingPage = lazy(() => import('./pages/TradingPage'));
+const PendingTrades = lazy(() => import('./pages/PendingTrades'));
+const CataloguePage = lazy(() => import('./pages/CataloguePage'));
+const MarketPage = lazy(() => import('./pages/MarketPage'));
+const CreateListingPage = lazy(() => import('./pages/CreateListingPage'));
+const MarketListingDetails = lazy(() => import('./pages/MarketListingDetails'));
+const AdminActions = lazy(() => import('./pages/AdminActions'));
+const CardEditor = lazy(() => import('./components/CardEditor'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
@@ -97,9 +97,10 @@ const App = () => {
     return (
         <>
             <Router>
-                {user && <Navbar isAdmin={user?.isAdmin} />}
-                <Routes>
-                    <Route path="/login" element={<LoginPage />} />
+                <Suspense fallback={<LoadingSpinner />}>
+                    {user && <Navbar isAdmin={user?.isAdmin} />}
+                    <Routes>
+                        <Route path="/login" element={<LoginPage />} />
                     <Route
                         path="/dashboard"
                         element={user ? <DashboardPage user={user} /> : <Navigate to="/login" />}
@@ -137,7 +138,8 @@ const App = () => {
                     <Route path="/admin/cards/:id" element={<CardEditor />} />
                     <Route path="/" element={<Navigate to="/dashboard" />} />
                     <Route path="*" element={<NotFoundPage />} />
-                </Routes>
+                    </Routes>
+                </Suspense>
             </Router>
             {toasts.map((toast) => (
                 <Toast

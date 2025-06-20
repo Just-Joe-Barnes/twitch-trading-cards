@@ -8,8 +8,16 @@ const cardSchema = new mongoose.Schema({
     flavorText: String,
     modifier: { type: mongoose.Schema.Types.ObjectId, ref: 'Modifier', default: null },
     acquiredAt: { type: Date, default: Date.now }, // Track when the card was acquired
-status: { type: String, enum: ['available', 'pending', 'escrow'], default: 'available' } // Card status
+    status: {
+        type: String,
+        enum: ['available', 'pending', 'escrow'],
+        default: 'available',
+        index: true,
+    }, // Card status
 });
+
+// Index nested card id for faster $elemMatch queries
+cardSchema.index({ _id: 1 });
 
 // Notification schema
 const notificationSchema = new mongoose.Schema({
@@ -59,6 +67,11 @@ const userSchema = new mongoose.Schema({
         }
     ]
 });
+
+// Helpful indexes for frequent queries
+userSchema.index({ 'cards._id': 1 });
+userSchema.index({ 'cards.status': 1 });
+userSchema.index({ 'notifications.isRead': 1 });
 
 const User = mongoose.model('User', userSchema);
 
