@@ -702,21 +702,21 @@
     --glitch-y: 0px;
     --glitch-angle: 0deg;
     background:
-        repeating-linear-gradient(calc(var(--glitch-angle) - 45deg), rgba(255,0,0,0.5) 0 3px, transparent 3px 7px),
-        repeating-linear-gradient(calc(var(--glitch-angle) + 45deg), rgba(0,0,255,0.5) 0 3px, transparent 3px 7px),
-        repeating-linear-gradient(calc(var(--glitch-angle) + 90deg), rgba(255,255,255,0.35) 0 2px, transparent 2px 6px),
-        repeating-linear-gradient(var(--glitch-angle), rgba(255,0,255,0.45) 0 3px, rgba(0,255,255,0.45) 3px 5px, transparent 5px 8px),
+        repeating-linear-gradient(calc(var(--glitch-angle) - 60deg), rgba(255,0,0,0.8) 0 10px, transparent 10px 30px),
+        repeating-linear-gradient(calc(var(--glitch-angle) + 60deg), rgba(0,255,255,0.8) 0 10px, transparent 10px 30px),
+        repeating-linear-gradient(calc(var(--glitch-angle) - 120deg), rgba(255,0,255,0.6) 0 6px, transparent 6px 24px),
+        repeating-linear-gradient(calc(var(--glitch-angle) + 120deg), rgba(255,255,255,0.4) 0 4px, transparent 4px 20px),
         url('../assets/textures/static.gif') center/cover;
-    background-size: 200% 200%, 200% 200%, 200% 200%, 200% 200%, cover;
+    background-size: 300% 300%, 300% 300%, 300% 300%, 300% 300%, cover;
     background-position:
-        calc(50% + var(--glitch-x)) calc(50% + var(--glitch-y)),
-        calc(50% - var(--glitch-x)) calc(50% - var(--glitch-y)),
-        calc(50% + var(--glitch-y)) calc(50% + var(--glitch-x)),
-        calc(50% + var(--glitch-x)) calc(50% + var(--glitch-y)),
+        calc(50% + var(--glitch-x)*3) calc(50% + var(--glitch-y)*3),
+        calc(50% - var(--glitch-x)*3) calc(50% - var(--glitch-y)*3),
+        calc(50% + var(--glitch-y)*3) calc(50% + var(--glitch-x)*3),
+        calc(50% - var(--glitch-y)*3) calc(50% - var(--glitch-x)*3),
         center;
     background-blend-mode: screen, screen, overlay, overlay, color-burn;
-    mix-blend-mode: color-dodge;
-    opacity: 0.7;
+    mix-blend-mode: screen;
+    opacity: 0.9;
     animation: glitchShift 1s steps(2, end) infinite;
     transform: translate(var(--glitch-x), var(--glitch-y));
     transition: transform 0.1s ease, opacity 0.1s ease, background-position 0.1s ease;
