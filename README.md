@@ -40,9 +40,8 @@ After configuring the backend environment, seed the default card modifiers:
 ```bash
 node src/scripts/seedModifiers.js
 ```
-This seeds the **Negative**, **Glitch**, and **Prismatic** modifiers. The Glitch modifier now features
-dynamic crossed gradient lines that sweep with the mouse. A static noise GIF is revealed only
-within these shifting stripes, producing a vivid red/blue glitch aesthetic.
+This seeds the **Negative**, **Glitch**, and **Prismatic** modifiers. The Glitch modifier now uses
+animated jittering text combined with a subtle static overlay.
 
 
 ### Frontend (`frontend/.env`)
