@@ -739,6 +739,16 @@
     mix-blend-mode: difference;
     pointer-events: none;
     z-index: 5;
+    animation: negativeCycle 4s ease-in-out infinite;
+}
+
+@keyframes negativeCycle {
+    0%, 100% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
 }
 
 /* Glitch text effect */
