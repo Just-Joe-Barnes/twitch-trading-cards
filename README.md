@@ -44,6 +44,7 @@ This seeds the **Negative**, **Glitch**, and **Prismatic** modifiers. The Glitch
 dynamic crossed gradient lines that sweep with the mouse. A static noise GIF is revealed only
 within these shifting stripes, producing a vivid red/blue glitch aesthetic.
 
+
 ### Frontend (`frontend/.env`)
 The frontend uses a small `.env` file:
 
