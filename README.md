@@ -41,7 +41,7 @@ After configuring the backend environment, seed the default card modifiers:
 node src/scripts/seedModifiers.js
 ```
 This seeds the **Negative**, **Glitch**, and **Prismatic** modifiers. The Glitch modifier now features
-dynamic crossed gradient lines that react to cursor movement for a richer glitch effect.
+vivid crossed gradient lines layered above the static noise. These lines track the cursor for a highly visible glitch effect.
 
 ### Frontend (`frontend/.env`)
 The frontend uses a small `.env` file:
