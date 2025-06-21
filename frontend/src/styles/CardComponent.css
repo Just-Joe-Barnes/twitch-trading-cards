@@ -238,7 +238,7 @@
     }
 
     .card-container.rare:hover::after {
-        opacity: 0.2;
+        opacity: 0.1;
     }
 
 /**************************************
@@ -275,7 +275,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-image: linear-gradient(40deg, transparent 30%, rgba(255,0,0,0.8) 50%, transparent 90%), linear-gradient(40deg, transparent 35%, rgba(200,0,0,0.75) 50%, transparent 65%), linear-gradient(40deg, transparent 25%, rgba(220,20,60,0.7) 50%, transparent 75%), url('../assets/textures/holo3.png'), url('../assets/textures/holo3.png'), url('../assets/textures/galaxy.jpg');
+        background-image: linear-gradient(40deg, transparent 30%, rgba(255,0,0,0.4) 50%, transparent 90%), linear-gradient(40deg, transparent 35%, rgba(200,0,0,0.35) 50%, transparent 65%), linear-gradient(40deg, transparent 25%, rgba(220,20,60,0.3) 50%, transparent 75%), url('../assets/textures/holo3.png'), url('../assets/textures/holo3.png'), url('../assets/textures/galaxy.jpg');
         background-blend-mode: screen, screen, screen, overlay, soft-light, multiply;
         background-size: 200% 100%, 200% 100%, 200% 100%, cover, cover, cover;
         background-repeat: no-repeat;
@@ -288,12 +288,12 @@
         mask-position: var(--cursor-x, 50%) 50%;
         pointer-events: none;
         z-index: 3;
-        opacity: 0.2;
+        opacity: 0.1;
         transition: opacity 0.3s ease, background-position 0.1s ease, mask-position 0.1s ease;
     }
 
     .card-container.legendary:hover::after {
-        opacity: 0.4;
+        opacity: 0.2;
     }
 
     .card-container.legendary .card-artwork img {
@@ -334,19 +334,19 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-image: linear-gradient(40deg, transparent 25%, rgba(255,69,0,0.5) 50%, transparent 75%), linear-gradient(40deg, transparent 30%, rgba(255,100,0,0.45) 50%, transparent 70%), linear-gradient(40deg, transparent 20%, rgba(255,140,0,0.4) 50%, transparent 80%), url('../assets/textures/subtle-sparkle.png'), url('../assets/textures/noise.png');
+        background-image: linear-gradient(40deg, transparent 25%, rgba(255,69,0,0.25) 50%, transparent 75%), linear-gradient(40deg, transparent 30%, rgba(255,100,0,0.2) 50%, transparent 70%), linear-gradient(40deg, transparent 20%, rgba(255,140,0,0.15) 50%, transparent 80%), url('../assets/textures/subtle-sparkle.png'), url('../assets/textures/noise.png');
         background-blend-mode: screen, screen, screen, overlay, multiply;
         background-size: 200% 100%, 200% 100%, 200% 100%, cover, cover;
         background-repeat: no-repeat;
         background-position: var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, center, center;
         pointer-events: none;
         z-index: 3;
-        opacity: 0.3;
+        opacity: 0.15;
         transition: opacity 0.3s ease, background-position 0.1s ease;
     }
 
     .card-container.epic:hover::after {
-        opacity: 0.6;
+        opacity: 0.3;
     }
 
     .card-container.epic::before {
@@ -447,10 +447,10 @@
 }
 
 .card-container.mythic .mythic-holographic-overlay {
-    background: linear-gradient(135deg, rgba(255,0,255,0.3), rgba(0,255,255,0.3), rgba(255,255,0,0.3));
+    background: linear-gradient(135deg, rgba(255,0,255,0.15), rgba(0,255,255,0.15), rgba(255,255,0,0.15));
     background-size: 400% 400%;
     mix-blend-mode: overlay;
-    opacity: 1;
+    opacity: 0.6;
     animation: holographicAnimation 1s ease-in-out infinite;
 }
 
@@ -700,56 +700,20 @@
 .glitch-overlay {
     --glitch-x: 0px;
     --glitch-y: 0px;
-    --glitch-angle: 0deg;
-    background:
-        repeating-linear-gradient(calc(var(--glitch-angle) - 60deg), rgba(255,0,0,0.8) 0 20px, transparent 20px 40px),
-        repeating-linear-gradient(calc(var(--glitch-angle) + 60deg), rgba(0,255,255,0.8) 0 20px, transparent 20px 40px),
-        repeating-linear-gradient(calc(var(--glitch-angle) - 120deg), rgba(255,0,255,0.7) 0 15px, transparent 15px 35px),
-        repeating-linear-gradient(calc(var(--glitch-angle) + 120deg), rgba(255,255,255,0.6) 0 10px, transparent 10px 30px),
-        url('../assets/textures/static.gif') center/cover;
-    background-size: 250% 250%, 250% 250%, 300% 300%, 300% 300%, cover;
-    background-position:
-        calc(50% + var(--glitch-x)*2) calc(50% + var(--glitch-y)*2),
-        calc(50% - var(--glitch-x)*4) calc(50% - var(--glitch-y)*1),
-        calc(50% + var(--glitch-y)*5) calc(50% - var(--glitch-x)*2.5),
-        calc(50% - var(--glitch-y)*2) calc(50% + var(--glitch-x)*6),
-        center;
-    -webkit-mask-image:
-        repeating-linear-gradient(calc(var(--glitch-angle) - 60deg), black 0 20px, transparent 20px 40px),
-        repeating-linear-gradient(calc(var(--glitch-angle) + 60deg), black 0 20px, transparent 20px 40px),
-        repeating-linear-gradient(calc(var(--glitch-angle) - 120deg), black 0 15px, transparent 15px 35px),
-        repeating-linear-gradient(calc(var(--glitch-angle) + 120deg), black 0 10px, transparent 10px 30px);
-    mask-image:
-        repeating-linear-gradient(calc(var(--glitch-angle) - 60deg), black 0 20px, transparent 20px 40px),
-        repeating-linear-gradient(calc(var(--glitch-angle) + 60deg), black 0 20px, transparent 20px 40px),
-        repeating-linear-gradient(calc(var(--glitch-angle) - 120deg), black 0 15px, transparent 15px 35px),
-        repeating-linear-gradient(calc(var(--glitch-angle) + 120deg), black 0 10px, transparent 10px 30px);
-    -webkit-mask-size: 250% 250%, 250% 250%, 300% 300%, 300% 300%;
-    mask-size: 250% 250%, 250% 250%, 300% 300%, 300% 300%;
-    -webkit-mask-position:
-        calc(50% + var(--glitch-x)*2) calc(50% + var(--glitch-y)*2),
-        calc(50% - var(--glitch-x)*4) calc(50% - var(--glitch-y)*1),
-        calc(50% + var(--glitch-y)*5) calc(50% - var(--glitch-x)*2.5),
-        calc(50% - var(--glitch-y)*2) calc(50% + var(--glitch-x)*6);
-    mask-position:
-        calc(50% + var(--glitch-x)*2) calc(50% + var(--glitch-y)*2),
-        calc(50% - var(--glitch-x)*4) calc(50% - var(--glitch-y)*1),
-        calc(50% + var(--glitch-y)*5) calc(50% - var(--glitch-x)*2.5),
-        calc(50% - var(--glitch-y)*2) calc(50% + var(--glitch-x)*6);
-    background-blend-mode: screen, screen, overlay, overlay, color-burn;
+    background: url('../assets/textures/static.gif') center/cover;
+    background-size: cover;
+    background-position: center;
     mix-blend-mode: screen;
-    opacity: 0.9;
+    opacity: 0.5;
     animation: glitchShift 1s steps(2, end) infinite;
     transform: translate(var(--glitch-x), var(--glitch-y));
     transition:
         transform 0.1s ease,
-        opacity 0.1s ease,
-        background-position 0.1s ease,
-        mask-position 0.1s ease;
+        opacity 0.1s ease;
 }
 
 .card-container:hover .glitch-overlay {
-    opacity: 0.8;
+    opacity: 0.4;
 }
 
 @keyframes glitchShift {
@@ -764,7 +728,7 @@
 .prismatic-overlay {
     background: url('../assets/textures/rainbowpop.gif') center/cover;
     mix-blend-mode: color-dodge;
-    opacity: 0.4;
+    opacity: 0.2;
 }
 
 .negative-overlay {
@@ -775,6 +739,60 @@
     mix-blend-mode: difference;
     pointer-events: none;
     z-index: 5;
+}
+
+/* Glitch text effect */
+.glitch-text {
+    position: relative;
+    animation: glitchJitter 0.6s infinite steps(1, end);
+}
+
+.glitch-text::before,
+.glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    pointer-events: none;
+}
+
+.glitch-text::before {
+    clip-path: inset(0 0 45% 0);
+    text-shadow: -2px 0 #ff00ff;
+    animation: glitchTop 1.5s infinite linear alternate-reverse;
+}
+
+.glitch-text::after {
+    clip-path: inset(55% 0 0 0);
+    text-shadow: -2px 0 #00ffff;
+    animation: glitchBottom 1.2s infinite linear alternate-reverse;
+}
+
+@keyframes glitchTop {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, -2px); }
+    40% { transform: translate(-2px, 2px); }
+    60% { transform: translate(2px, -2px); }
+    80% { transform: translate(2px, 2px); }
+    100% { transform: translate(0); }
+}
+
+@keyframes glitchBottom {
+    0% { transform: translate(0); }
+    20% { transform: translate(2px, 2px); }
+    40% { transform: translate(2px, -2px); }
+    60% { transform: translate(-2px, 2px); }
+    80% { transform: translate(-2px, -2px); }
+    100% { transform: translate(0); }
+}
+
+@keyframes glitchJitter {
+    0% { transform: translate(0); }
+    25% { transform: translate(1px, -1px); }
+    50% { transform: translate(-1px, 1px); }
+    75% { transform: translate(1px, 1px); }
+    100% { transform: translate(0); }
 }
 
 
