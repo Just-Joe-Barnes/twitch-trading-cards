@@ -703,6 +703,7 @@
     background: url('../assets/textures/static.gif') center/cover;
     background-size: cover;
     background-position: center;
+
     mix-blend-mode: screen;
     opacity: 0.5;
     animation: glitchShift 1s steps(2, end) infinite;
