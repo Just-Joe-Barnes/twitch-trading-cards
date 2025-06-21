@@ -198,6 +198,7 @@ body {
 .age { text-align: right; }
 
 .detail-panel {
+  --card-scale: var(--screen-card-scale);
   position: fixed;
   top: 60px;
   right: 0;
@@ -248,8 +249,7 @@ body {
   overflow-y: auto;
 }
 .card-grid {
-  --user-card-scale: 1;
-  --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
+  --card-scale: var(--screen-card-scale);
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
