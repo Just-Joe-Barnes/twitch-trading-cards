@@ -26,6 +26,7 @@ const BaseCard = ({
   const descriptionRef = useRef(null);
   const [modifierData, setModifierData] = useState(null);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const isGlitch = modifierData?.name === 'Glitch';
 
   useEffect(() => {
     const fetchModifier = async () => {
@@ -243,8 +244,14 @@ const BaseCard = ({
       <div className="card-border">
         {rarity.toLowerCase()==='divine' ? (
           <div className="card-header">
-            <div className="card-name" ref={nameRef}>{name}</div>
-            <div className="card-mint">
+            <div
+              className={`card-name ${isGlitch ? 'glitch-text' : ''}`}
+              ref={nameRef}
+              data-text={name}
+            >
+              {name}
+            </div>
+            <div className={`card-mint ${isGlitch ? 'glitch-text' : ''}`} data-text={`${mintNumber} / ${rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.totalCopies ?? '???'}`}> 
               <span className="mint-number">
                 {mintNumber} /{' '}
                 {rarities
@@ -255,7 +262,13 @@ const BaseCard = ({
           </div>
         ) : (
           <>
-            <div className="card-name" ref={nameRef}>{name}</div>
+            <div
+              className={`card-name ${isGlitch ? 'glitch-text' : ''}`}
+              ref={nameRef}
+              data-text={name}
+            >
+              {name}
+            </div>
 
             <div className="card-artwork">
               {rarity.toLowerCase()==='unique' ? (
@@ -309,12 +322,19 @@ const BaseCard = ({
             </div>
 
             {description && (
-              <div className="card-description" ref={descriptionRef}>
+              <div
+                className={`card-description ${isGlitch ? 'glitch-text' : ''}`}
+                ref={descriptionRef}
+                data-text={description}
+              >
                 {description}
               </div>
             )}
 
-            <div className="card-mint">
+            <div
+              className={`card-mint ${isGlitch ? 'glitch-text' : ''}`}
+              data-text={`${mintNumber} / ${rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.totalCopies ?? '???'}`}
+            >
               <span className="mint-number">
                 {mintNumber} /{' '}
                 {rarities
