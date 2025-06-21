@@ -702,9 +702,12 @@
     --glitch-y: 0px;
     --glitch-angle: 0deg;
     background:
+        repeating-linear-gradient(calc(var(--glitch-angle) - 45deg), rgba(255,0,0,0.3) 0 2px, transparent 2px 4px),
+        repeating-linear-gradient(calc(var(--glitch-angle) + 45deg), rgba(0,0,255,0.3) 0 2px, transparent 2px 4px),
+        repeating-linear-gradient(calc(var(--glitch-angle) + 90deg), rgba(255,255,255,0.2) 0 1px, transparent 1px 3px),
         repeating-linear-gradient(var(--glitch-angle), rgba(255,0,255,0.25) 0 2px, rgba(0,255,255,0.25) 2px 4px, transparent 4px 6px),
         url('../assets/textures/static.gif') center/cover;
-    background-blend-mode: overlay, color-burn;
+    background-blend-mode: overlay, overlay, overlay, overlay, color-burn;
     mix-blend-mode: color-dodge;
     opacity: 0.6;
     animation: glitchShift 1s steps(2, end) infinite;
