@@ -703,7 +703,6 @@
     background: url('../assets/textures/static.gif') center/cover;
     background-size: cover;
     background-position: center;
-
     mix-blend-mode: screen;
     opacity: 0.5;
     animation: glitchShift 1s steps(2, end) infinite;
@@ -760,7 +759,7 @@
 
 .glitch-text::before {
     clip-path: inset(0 0 45% 0);
-    text-shadow: -2px 0 #ff00ff;
+    text-shadow: -2px 0 #ff0000;
     animation: glitchTop 1.5s infinite linear alternate-reverse;
 }
 
