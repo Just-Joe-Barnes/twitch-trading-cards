@@ -41,8 +41,9 @@ After configuring the backend environment, seed the default card modifiers:
 node src/scripts/seedModifiers.js
 ```
 This seeds the **Negative**, **Glitch**, and **Prismatic** modifiers. The Glitch modifier now features
-bold crossed gradient bars—similar to the Unique rarity stripes—layered over the static noise.
-These colored bars follow the cursor to create a striking glitch effect.
+dynamic crossed gradient lines that sweep with the mouse. A static noise GIF is revealed only
+within these shifting stripes, producing a vivid red/blue glitch aesthetic.
+
 
 ### Frontend (`frontend/.env`)
 The frontend uses a small `.env` file:
