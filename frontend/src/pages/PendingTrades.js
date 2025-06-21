@@ -33,11 +33,6 @@ const PendingTrades = () => {
   const [openTrade, setOpenTrade] = useState(null);
 const [panelOpen, setPanelOpen] = useState(false);
 const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const defaultCardScale = 1;
-  const [cardScale] = useState(() => {
-    const stored = localStorage.getItem('cardScale');
-    return stored !== null ? parseFloat(stored) : defaultCardScale;
-  });
 useEffect(() => {
   if (!panelOpen && openTrade) {
     const t = setTimeout(() => setOpenTrade(null), 300);
@@ -216,7 +211,6 @@ const navigate = useNavigate();
       className={`detail-panel${open ? ' open' : ''}`}
       role="dialog"
       aria-modal="true"
-      style={{ '--user-card-scale': cardScale }}
     >
       <header>
         <h2>Trade Details</h2>
@@ -228,7 +222,7 @@ const navigate = useNavigate();
           {trade.offeredPacks > 0 && (
             <p className="pack-count">{trade.offeredPacks} packs</p>
           )}
-          <div className="card-grid" style={{ '--user-card-scale': cardScale }}>
+          <div className="card-grid">
             {trade.offeredItems.map((item) => (
               <div key={item._id} className="card-tile">
                 <BaseCard
@@ -248,7 +242,7 @@ const navigate = useNavigate();
           {trade.requestedPacks > 0 && (
             <p className="pack-count">{trade.requestedPacks} packs</p>
           )}
-          <div className="card-grid" style={{ '--user-card-scale': cardScale }}>
+          <div className="card-grid">
             {trade.requestedItems.map((item) => (
               <div key={item._id} className="card-tile">
                 <BaseCard
