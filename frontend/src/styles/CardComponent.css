@@ -238,7 +238,7 @@
     }
 
     .card-container.rare:hover::after {
-        opacity: 0.2;
+        opacity: 0.1;
     }
 
 /**************************************
@@ -275,7 +275,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-image: linear-gradient(40deg, transparent 30%, rgba(255,0,0,0.8) 50%, transparent 90%), linear-gradient(40deg, transparent 35%, rgba(200,0,0,0.75) 50%, transparent 65%), linear-gradient(40deg, transparent 25%, rgba(220,20,60,0.7) 50%, transparent 75%), url('../assets/textures/holo3.png'), url('../assets/textures/holo3.png'), url('../assets/textures/galaxy.jpg');
+        background-image: linear-gradient(40deg, transparent 30%, rgba(255,0,0,0.4) 50%, transparent 90%), linear-gradient(40deg, transparent 35%, rgba(200,0,0,0.35) 50%, transparent 65%), linear-gradient(40deg, transparent 25%, rgba(220,20,60,0.3) 50%, transparent 75%), url('../assets/textures/holo3.png'), url('../assets/textures/holo3.png'), url('../assets/textures/galaxy.jpg');
         background-blend-mode: screen, screen, screen, overlay, soft-light, multiply;
         background-size: 200% 100%, 200% 100%, 200% 100%, cover, cover, cover;
         background-repeat: no-repeat;
@@ -288,12 +288,12 @@
         mask-position: var(--cursor-x, 50%) 50%;
         pointer-events: none;
         z-index: 3;
-        opacity: 0.2;
+        opacity: 0.1;
         transition: opacity 0.3s ease, background-position 0.1s ease, mask-position 0.1s ease;
     }
 
     .card-container.legendary:hover::after {
-        opacity: 0.4;
+        opacity: 0.2;
     }
 
     .card-container.legendary .card-artwork img {
@@ -334,19 +334,19 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-image: linear-gradient(40deg, transparent 25%, rgba(255,69,0,0.5) 50%, transparent 75%), linear-gradient(40deg, transparent 30%, rgba(255,100,0,0.45) 50%, transparent 70%), linear-gradient(40deg, transparent 20%, rgba(255,140,0,0.4) 50%, transparent 80%), url('../assets/textures/subtle-sparkle.png'), url('../assets/textures/noise.png');
+        background-image: linear-gradient(40deg, transparent 25%, rgba(255,69,0,0.25) 50%, transparent 75%), linear-gradient(40deg, transparent 30%, rgba(255,100,0,0.2) 50%, transparent 70%), linear-gradient(40deg, transparent 20%, rgba(255,140,0,0.15) 50%, transparent 80%), url('../assets/textures/subtle-sparkle.png'), url('../assets/textures/noise.png');
         background-blend-mode: screen, screen, screen, overlay, multiply;
         background-size: 200% 100%, 200% 100%, 200% 100%, cover, cover;
         background-repeat: no-repeat;
         background-position: var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, center, center;
         pointer-events: none;
         z-index: 3;
-        opacity: 0.3;
+        opacity: 0.15;
         transition: opacity 0.3s ease, background-position 0.1s ease;
     }
 
     .card-container.epic:hover::after {
-        opacity: 0.6;
+        opacity: 0.3;
     }
 
     .card-container.epic::before {
@@ -447,10 +447,10 @@
 }
 
 .card-container.mythic .mythic-holographic-overlay {
-    background: linear-gradient(135deg, rgba(255,0,255,0.3), rgba(0,255,255,0.3), rgba(255,255,0,0.3));
+    background: linear-gradient(135deg, rgba(255,0,255,0.15), rgba(0,255,255,0.15), rgba(255,255,0,0.15));
     background-size: 400% 400%;
     mix-blend-mode: overlay;
-    opacity: 1;
+    opacity: 0.6;
     animation: holographicAnimation 1s ease-in-out infinite;
 }
 
@@ -702,10 +702,10 @@
     --glitch-y: 0px;
     --glitch-angle: 0deg;
     background:
-        repeating-linear-gradient(calc(var(--glitch-angle) - 60deg), rgba(255,0,0,0.8) 0 20px, transparent 20px 40px),
-        repeating-linear-gradient(calc(var(--glitch-angle) + 60deg), rgba(0,255,255,0.8) 0 20px, transparent 20px 40px),
-        repeating-linear-gradient(calc(var(--glitch-angle) - 120deg), rgba(255,0,255,0.7) 0 15px, transparent 15px 35px),
-        repeating-linear-gradient(calc(var(--glitch-angle) + 120deg), rgba(255,255,255,0.6) 0 10px, transparent 10px 30px),
+        repeating-linear-gradient(calc(var(--glitch-angle) - 60deg), rgba(255,0,0,0.4) 0 20px, transparent 20px 40px),
+        repeating-linear-gradient(calc(var(--glitch-angle) + 60deg), rgba(0,255,255,0.4) 0 20px, transparent 20px 40px),
+        repeating-linear-gradient(calc(var(--glitch-angle) - 120deg), rgba(255,0,255,0.35) 0 15px, transparent 15px 35px),
+        repeating-linear-gradient(calc(var(--glitch-angle) + 120deg), rgba(255,255,255,0.3) 0 10px, transparent 10px 30px),
         url('../assets/textures/static.gif') center/cover;
     background-size: 250% 250%, 250% 250%, 300% 300%, 300% 300%, cover;
     background-position:
@@ -738,7 +738,7 @@
         calc(50% - var(--glitch-y)*2) calc(50% + var(--glitch-x)*6);
     background-blend-mode: screen, screen, overlay, overlay, color-burn;
     mix-blend-mode: screen;
-    opacity: 0.9;
+    opacity: 0.5;
     animation: glitchShift 1s steps(2, end) infinite;
     transform: translate(var(--glitch-x), var(--glitch-y));
     transition:
@@ -749,7 +749,7 @@
 }
 
 .card-container:hover .glitch-overlay {
-    opacity: 0.8;
+    opacity: 0.4;
 }
 
 @keyframes glitchShift {
@@ -764,7 +764,7 @@
 .prismatic-overlay {
     background: url('../assets/textures/rainbowpop.gif') center/cover;
     mix-blend-mode: color-dodge;
-    opacity: 0.4;
+    opacity: 0.2;
 }
 
 .negative-overlay {
