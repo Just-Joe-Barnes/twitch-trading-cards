@@ -116,17 +116,30 @@ const AdminDashboardPage = ({ user }) => {
     };
 
     const sortedUsers = [...filteredUsers].sort((a, b) => {
-        if (sortColumn) {
-            const aValue = a[sortColumn];
-            const bValue = b[sortColumn];
+        if (!sortColumn) return 0;
 
-            if (aValue < bValue) {
-                return sortDirection === 'asc' ? -1 : 1;
-            }
-            if (aValue > bValue) {
-                return sortDirection === 'asc' ? 1 : -1;
-            }
+        const aValue = a[sortColumn];
+        const bValue = b[sortColumn];
+
+        if (sortColumn === 'username') {
+            return sortDirection === 'asc'
+                ? String(aValue).localeCompare(String(bValue), undefined, { sensitivity: 'base' })
+                : String(bValue).localeCompare(String(aValue), undefined, { sensitivity: 'base' });
         }
+
+        if (sortColumn === 'lastActive') {
+            const dateA = new Date(aValue);
+            const dateB = new Date(bValue);
+            return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+        }
+
+        if (aValue < bValue) {
+            return sortDirection === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+            return sortDirection === 'asc' ? 1 : -1;
+        }
+
         return 0;
     });
 
