@@ -187,11 +187,15 @@
 
 /* Horizontal Cards Row for Trade Preview */
 .tp-cards-horizontal {
+    --card-scale: var(--screen-card-scale);
     display: flex;
     gap: 1.5rem;
     padding: 1rem 0;
-    min-height: 250px;
+    min-height: calc(250px / var(--card-scale));
     overflow-x: visible;
+    width: calc(100% / var(--card-scale));
+    transform: scale(var(--card-scale));
+    transform-origin: top left;
 }
 
 /* Cards Grid Container (using flex layout from Collection Page) */
