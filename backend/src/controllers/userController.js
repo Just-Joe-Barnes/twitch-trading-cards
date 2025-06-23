@@ -73,13 +73,25 @@ const getProfileByUsername = async (req, res) => {
 // Get featured cards for logged-in user
 const getFeaturedCards = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id).select('featuredCards').lean();
+        const user = await User.findById(req.user._id)
+            .select('featuredCards cards')
+            .lean();
         if (!user) {
             return res.status(404).json({ message: 'User not found.' });
         }
+        const ownedIds = new Set(user.cards.map((c) => c._id.toString()));
+        const validFeatured = user.featuredCards.filter((c) =>
+            ownedIds.has(c._id.toString())
+        );
+        if (validFeatured.length !== user.featuredCards.length) {
+            await User.updateOne(
+                { _id: req.user._id },
+                { $set: { featuredCards: validFeatured } }
+            );
+        }
         // Enrich the featured cards with flavorText from the Card model
         const enrichedFeaturedCards = await Promise.all(
-            user.featuredCards.map(async (featuredCard) => {
+            validFeatured.map(async (featuredCard) => {
                 const cardDoc = await Card.findOne({ name: featuredCard.name });
                 return {
                     ...featuredCard,
