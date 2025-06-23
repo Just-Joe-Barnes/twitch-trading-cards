@@ -208,6 +208,7 @@
     border: 1px solid var(--border-dark);
     margin-bottom: 2rem;
     padding: 1rem;
+    min-height: calc(450px / var(--card-scale));
     overflow: hidden;
     flex-wrap: wrap;
     justify-content: center;
