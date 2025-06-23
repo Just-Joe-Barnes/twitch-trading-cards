@@ -79,8 +79,7 @@
     }
 
 .listings-grid {
-    --user-card-scale: 1;
-    --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
+    --card-scale: var(--screen-card-scale);
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(348px, 1fr));
     gap: 2rem;
