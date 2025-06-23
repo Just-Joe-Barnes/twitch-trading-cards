@@ -8,6 +8,13 @@ const { sendNotificationToUser } = require('../../notificationService');
 const { logAudit } = require('../helpers/auditLogger');
 const tradeService = require('../services/tradeService');
 
+function removeFromFeaturedCards(user, cardId) {
+  if (!user.featuredCards) return;
+  user.featuredCards = user.featuredCards.filter(
+    (c) => c._id.toString() !== cardId.toString()
+  );
+}
+
 // Create a new trade
 const createTrade = async (req, res) => {
   const tradeSchema = Joi.object({
@@ -148,6 +155,7 @@ const updateTradeStatus = async (req, res) => {
                 const index = sender.cards.findIndex(c => c._id.toString() === card._id.toString());
                 if (index !== -1) {
                     const cardObj = sender.cards.splice(index, 1)[0];
+                    removeFromFeaturedCards(sender, cardObj._id);
                     cardObj.status = 'available';
                     recipient.cards.push(cardObj);
                 } else {
@@ -159,6 +167,7 @@ const updateTradeStatus = async (req, res) => {
                 const index = recipient.cards.findIndex(c => c._id.toString() === card._id.toString());
                 if (index !== -1) {
                     const cardObj = recipient.cards.splice(index, 1)[0];
+                    removeFromFeaturedCards(recipient, cardObj._id);
                     cardObj.status = 'available';
                     sender.cards.push(cardObj);
                 } else {

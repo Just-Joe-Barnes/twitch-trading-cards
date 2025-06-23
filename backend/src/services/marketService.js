@@ -5,6 +5,12 @@ const { createNotification } = require('../helpers/notificationHelper');
 const { sendNotificationToUser } = require('../../notificationService');
 const { logAudit } = require('../helpers/auditLogger');
 
+function removeFromFeaturedCards(user, cardId) {
+  if (!user.featuredCards) return;
+  user.featuredCards = user.featuredCards.filter(
+    (c) => c._id.toString() !== cardId.toString()
+  );
+}
 async function acceptOffer(listingId, offerId, userId, session) {
   console.log(`[Accept Offer Service] Starting: listingId=${listingId}, offerId=${offerId}, userId=${userId}`);
   const listing = await MarketListing.findById(listingId).session(session);
@@ -70,6 +76,7 @@ async function acceptOffer(listingId, offerId, userId, session) {
   // Transfer listed card
   console.log('[Accept Offer Service] Transferring listed card from seller to buyer.');
   const [cardToTransfer] = seller.cards.splice(cardIndexInSeller, 1);
+  removeFromFeaturedCards(seller, cardToTransfer._id);
   cardToTransfer.status = 'available'; // Ensure status is set correctly before pushing
   buyer.cards.push(cardToTransfer);
   console.log('[Accept Offer Service] Listed card added to buyer locally.');
@@ -121,6 +128,7 @@ async function acceptOffer(listingId, offerId, userId, session) {
   for (let i = buyer.cards.length - 1; i >= 0; i--) {
       if (offeredCardIdsToEscrow.some(id => id.equals(buyer.cards[i]._id))) {
           const [removedCard] = buyer.cards.splice(i, 1);
+          removeFromFeaturedCards(buyer, removedCard._id);
           removedCard.status = 'available'; // Set status back to available for the seller
           cardsToGiveSeller.push(removedCard);
       }
