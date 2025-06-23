@@ -196,7 +196,7 @@
 
 /* Cards Grid Container (using flex layout from Collection Page) */
 .tp-cards-grid {
-    --tp-card-scale: 1;
+    --card-scale: var(--screen-card-scale);
     display: flex;
     gap: 1.5rem;
     background: var(--surface-darker);
@@ -208,36 +208,11 @@
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    width: calc(100% / var(--tp-card-scale));
-    transform: scale(var(--tp-card-scale));
-    transform-origin: top left;
+    width: 100%;
     box-sizing: border-box;
     min-width: 0;
 }
 
-@media (max-width: 1200px) {
-    .tp-cards-grid {
-        --tp-card-scale: 0.85;
-    }
-}
-
-@media (max-width: 992px) {
-    .tp-cards-grid {
-        --tp-card-scale: 0.75;
-    }
-}
-
-@media (max-width: 768px) {
-    .tp-cards-grid {
-        --tp-card-scale: 0.65;
-    }
-}
-
-@media (max-width: 480px) {
-    .tp-cards-grid {
-        --tp-card-scale: 0.3;
-    }
-}
 
 /* Individual Card Item */
 .tp-card-item {
@@ -294,16 +269,16 @@
 
 /* Card Preview Wrapper (for other sections) */
 .tp-card-preview-wrapper {
-    --tp-card-scale: 1;
+    --card-scale: var(--screen-card-scale);
     flex: 0 0 45%;
-    width: calc(100% / var(--tp-card-scale));
+    width: calc(100% / var(--card-scale));
     max-width: 280px;
     aspect-ratio: 2 / 3;
     position: relative;
     transition: var(--transition);
     border-radius: var(--border-radius);
     background: var(--surface-dark);
-    transform: scale(var(--tp-card-scale));
+    transform: scale(var(--card-scale));
     transform-origin: top left;
 }
 
@@ -468,11 +443,8 @@
     }
 }
 
-@media (max-width: 700px) {
-    .tp-card-preview-wrapper {
-        --tp-card-scale: 0.71;
-    }
 
+@media (max-width: 700px) {
     .tp-cards-grid {
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 0.75rem;
@@ -532,10 +504,6 @@
 }
 
 @media (max-width: 400px) {
-    .tp-card-preview-wrapper {
-        --tp-card-scale: 0.6;
-    }
-
     .tp-card-item .card-container {
         transform: scale(0.9);
         transform-origin: top center;
