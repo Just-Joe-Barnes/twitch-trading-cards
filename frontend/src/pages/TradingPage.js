@@ -339,7 +339,7 @@ const TradingPage = ({ userId }) => {
                                             <option value="desc">Descending</option>
                                         </select>
                                     </div>
-                                    <div className="tp-cards-grid" style={{ '--user-card-scale': 1 }}>
+                                    <div className="tp-cards-grid">
                                         {applyFilters(userCollection, leftSearch, leftRarity, leftSort, leftSortDir).map((card) => (
                                             <div
                                                 key={card._id}
@@ -387,7 +387,7 @@ const TradingPage = ({ userId }) => {
                                             <option value="desc">Descending</option>
                                         </select>
                                     </div>
-                                    <div className="tp-cards-grid" style={{ '--user-card-scale': 1 }}>
+                                    <div className="tp-cards-grid">
                                         {applyFilters(recipientCollection, rightSearch, rightRarity, rightSort, rightSortDir).map((card) => (
                                             <div
                                                 key={card._id}
