@@ -12,7 +12,6 @@ import {
     fetchUserMarketListings,
 } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner';
-import '../styles/App.css';
 import '../styles/ProfilePage.css';
 import '../styles/MarketPage.css';
 import { rarities } from '../constants/rarities';
