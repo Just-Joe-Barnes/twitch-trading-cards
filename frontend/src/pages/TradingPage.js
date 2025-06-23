@@ -30,6 +30,12 @@ const TradingPage = ({ userId }) => {
     const [rightSort, setRightSort] = useState("mintNumber");
     const [rightSortDir, setRightSortDir] = useState("asc");
 
+    const defaultCardScale = 1;
+    const [cardScale] = useState(() => {
+        const storedScale = localStorage.getItem("cardScale");
+        return storedScale !== null ? parseFloat(storedScale) : defaultCardScale;
+    });
+
     // Fetch logged-in user data
     useEffect(() => {
         fetchWithAuth("/api/users/me")
@@ -337,7 +343,7 @@ const TradingPage = ({ userId }) => {
                                             <option value="desc">Descending</option>
                                         </select>
                                     </div>
-                                    <div className="tp-cards-grid">
+                                    <div className="tp-cards-grid" style={{ '--user-card-scale': cardScale }}>
                                         {applyFilters(userCollection, leftSearch, leftRarity, leftSort, leftSortDir).map((card) => (
                                             <div
                                                 key={card._id}
@@ -385,7 +391,7 @@ const TradingPage = ({ userId }) => {
                                             <option value="desc">Descending</option>
                                         </select>
                                     </div>
-                                    <div className="tp-cards-grid">
+                                    <div className="tp-cards-grid" style={{ '--user-card-scale': cardScale }}>
                                         {applyFilters(recipientCollection, rightSearch, rightRarity, rightSort, rightSortDir).map((card) => (
                                             <div
                                                 key={card._id}

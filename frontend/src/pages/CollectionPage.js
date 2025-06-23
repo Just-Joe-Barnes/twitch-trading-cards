@@ -376,7 +376,7 @@ const CollectionPage = ({
                             <label>Card Scale: </label>
                             <input
                                 type="range"
-                                min="0.5"
+                                min="0.1"
                                 max="2"
                                 step="0.05"
                                 value={cardScale}
