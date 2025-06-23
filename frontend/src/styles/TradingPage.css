@@ -196,7 +196,6 @@
 
 /* Cards Grid Container (using flex layout from Collection Page) */
 .tp-cards-grid {
-    --card-scale: var(--screen-card-scale);
     display: flex;
     gap: 1.5rem;
     background: var(--surface-darker);
@@ -208,9 +207,7 @@
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    width: calc(100% / var(--card-scale));
-    transform: scale(var(--card-scale));
-    transform-origin: top left;
+    width: 100%;
     box-sizing: border-box;
     min-width: 0;
 }
