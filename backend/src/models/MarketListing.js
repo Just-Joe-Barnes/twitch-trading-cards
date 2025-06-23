@@ -8,7 +8,9 @@ const offerSchema = new mongoose.Schema({
     imageUrl: { type: String, required: true },
     rarity: { type: String, required: true },
     mintNumber: { type: Number, required: true },
-    flavorText: { type: String }
+    flavorText: { type: String },
+    // Optional modifier information for the offered card
+    modifier: { type: mongoose.Schema.Types.Mixed, default: null }
   }],
   offeredPacks: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
@@ -22,7 +24,9 @@ const marketListingSchema = new mongoose.Schema({
     imageUrl: { type: String, required: true },
     rarity: { type: String, required: true },
     mintNumber: { type: Number, required: true },
-    flavorText: { type: String }
+    flavorText: { type: String },
+    // Include modifier details if present on the card being listed
+    modifier: { type: mongoose.Schema.Types.Mixed, default: null }
   },
   createdAt: { type: Date, default: Date.now },
   status: {
