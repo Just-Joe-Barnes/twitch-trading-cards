@@ -18,7 +18,9 @@ router.post('/listings', protect, sensitiveLimiter, async (req, res) => {
             imageUrl: Joi.string().required(),
             rarity: Joi.string().required(),
             mintNumber: Joi.number().integer().min(0).required(),
-            flavorText: Joi.string().allow('', null)
+            flavorText: Joi.string().allow('', null),
+            // Modifier may be an ObjectId or populated object; allow any value
+            modifier: Joi.any().optional()
         });
 
         const { error } = cardSchema.validate(req.body.card);
@@ -168,7 +170,9 @@ router.post('/listings/:id/offers', protect, sensitiveLimiter, async (req, res) 
                     imageUrl: Joi.string().uri().required(),
                     rarity: Joi.string().required(),
                     mintNumber: Joi.number().integer().min(0).required(),
-                    flavorText: Joi.string().allow('', null)
+                    flavorText: Joi.string().allow('', null),
+                    // Optional modifier info for each offered card
+                    modifier: Joi.any().optional()
                 })
             ).required(),
             offeredPacks: Joi.number().min(0).required()
