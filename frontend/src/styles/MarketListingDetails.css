@@ -115,8 +115,7 @@
 
 /* User Collection Grid */
 .market-user-collection-grid {
-    --user-card-scale: 1;
-    --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
+    --card-scale: var(--screen-card-scale);
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.25rem;
@@ -153,8 +152,7 @@
     }
 
 .market-selected-cards-grid {
-    --user-card-scale: 1;
-    --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
+    --card-scale: var(--screen-card-scale);
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.25rem;
@@ -221,8 +219,7 @@
 }
 
 .offered-cards-grid {
-    --user-card-scale: 1;
-    --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
+    --card-scale: var(--screen-card-scale);
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;

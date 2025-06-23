@@ -23,11 +23,7 @@ const MarketListingDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const defaultCardScale = 1;
-    const [cardScale] = useState(() => {
-        const storedScale = localStorage.getItem('cardScale');
-        return storedScale !== null ? parseFloat(storedScale) : defaultCardScale;
-    });
+    // Card scale is fixed on this page
 
     const [listing, setListing] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -280,7 +276,7 @@ const MarketListingDetails = () => {
                                     ))}
                                 </select>
                             </div>
-                            <div className="market-user-collection-grid" style={{ '--user-card-scale': cardScale }}>
+                            <div className="market-user-collection-grid" style={{ '--user-card-scale': 1 }}>
                                 {filteredCollection.map((card) => {
                                     const isSelected = selectedOfferedCards.some(c => c._id === card._id);
                                     return (
@@ -305,7 +301,7 @@ const MarketListingDetails = () => {
 
                         <div className="market-selected-cards-panel">
                             <h3>Selected Cards for Offer</h3>
-                            <div className="market-selected-cards-grid" style={{ '--user-card-scale': cardScale }}>
+                            <div className="market-selected-cards-grid" style={{ '--user-card-scale': 1 }}>
                                 {selectedOfferedCards.length > 0 ? (
                                     selectedOfferedCards.map((card) => (
                                         <div key={card._id} className="market-card-wrapper">
@@ -347,7 +343,7 @@ const MarketListingDetails = () => {
                             {offer.offeredCards && offer.offeredCards.length > 0 && (
                                 <div className="offered-cards">
                                     <strong>Offered Cards:</strong>
-                                    <div className="offered-cards-grid" style={{ '--user-card-scale': cardScale }}>
+                                    <div className="offered-cards-grid" style={{ '--user-card-scale': 1 }}>
                                         {offer.offeredCards.map(card => (
                                             <div key={card._id || card.name} className="offered-card-item">
                                                 <BaseCard

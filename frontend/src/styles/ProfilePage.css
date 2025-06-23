@@ -237,8 +237,7 @@ body {
 
 /* Featured Cards Section */
 .featured-cards {
-    --user-card-scale: 1;
-    --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
+    --card-scale: var(--screen-card-scale);
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -279,8 +278,7 @@ body {
 }
 
 .favorite-card-display {
-    --user-card-scale: 1;
-    --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
+    --card-scale: var(--screen-card-scale);
     display: flex;
     justify-content: center;
     margin-bottom: 1rem;
@@ -423,8 +421,7 @@ body {
 }
 
 .user-listings {
-    --user-card-scale: 1;
-    --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
+    --card-scale: var(--screen-card-scale);
     display: flex;
     flex-wrap: wrap;
     justify-content: center;

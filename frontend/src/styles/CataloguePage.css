@@ -140,8 +140,7 @@
 
 /* Grid layout for catalogue cards */
 .cata-grid {
-    --user-card-scale: 1;
-    --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale));
+    --card-scale: var(--screen-card-scale);
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
