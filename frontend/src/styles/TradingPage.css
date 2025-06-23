@@ -208,7 +208,9 @@
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    width: 100%;
+    width: calc(100% / var(--card-scale));
+    transform: scale(var(--card-scale));
+    transform-origin: top left;
     box-sizing: border-box;
     min-width: 0;
 }
