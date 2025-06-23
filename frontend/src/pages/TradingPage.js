@@ -30,7 +30,7 @@ const TradingPage = ({ userId }) => {
     const [rightSort, setRightSort] = useState("mintNumber");
     const [rightSortDir, setRightSortDir] = useState("asc");
 
-    // This page ignores the user's collection scale preference
+    // Card scaling is handled responsively based on screen size
 
     // Fetch logged-in user data
     useEffect(() => {
