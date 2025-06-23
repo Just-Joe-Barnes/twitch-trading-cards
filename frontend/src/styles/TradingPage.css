@@ -196,6 +196,7 @@
 
 /* Cards Grid Container (using flex layout from Collection Page) */
 .tp-cards-grid {
+    --tp-card-scale: 1;
     display: flex;
     gap: 1.5rem;
     background: var(--surface-darker);
@@ -207,9 +208,35 @@
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    width: 100%;
+    width: calc(100% / var(--tp-card-scale));
+    transform: scale(var(--tp-card-scale));
+    transform-origin: top left;
     box-sizing: border-box;
     min-width: 0;
+}
+
+@media (max-width: 1200px) {
+    .tp-cards-grid {
+        --tp-card-scale: 0.85;
+    }
+}
+
+@media (max-width: 992px) {
+    .tp-cards-grid {
+        --tp-card-scale: 0.75;
+    }
+}
+
+@media (max-width: 768px) {
+    .tp-cards-grid {
+        --tp-card-scale: 0.65;
+    }
+}
+
+@media (max-width: 480px) {
+    .tp-cards-grid {
+        --tp-card-scale: 0.3;
+    }
 }
 
 /* Individual Card Item */
