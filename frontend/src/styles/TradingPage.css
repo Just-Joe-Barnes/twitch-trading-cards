@@ -100,10 +100,36 @@
     box-sizing: border-box;
 }
 
+.tp-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.tp-collapse-toggle {
+    background: none;
+    border: none;
+    color: var(--brand-primary);
+    cursor: pointer;
+    font-weight: 600;
+    display: none;
+}
+
+.tp-panel-content.collapsed {
+    display: none;
+}
+
+@media (max-width: 700px) {
+    .tp-collapse-toggle {
+        display: block;
+    }
+}
+
 .tp-collection-header {
     text-align: center;
     font-size: 1.25rem;
-    margin-bottom: 1rem;
+    margin: 0;
     color: var(--text-primary);
 }
 
