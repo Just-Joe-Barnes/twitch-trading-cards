@@ -118,8 +118,7 @@ const TradingPage = ({ userId }) => {
                         result = 0;
                 }
                 return sortDir === "asc" ? result : -result;
-            })
-            .slice(0, 15);
+            });
     };
 
     const handleSelectItem = (item, type) => {
