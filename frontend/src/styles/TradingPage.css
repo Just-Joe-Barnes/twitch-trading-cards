@@ -424,6 +424,7 @@
     .tp-cards-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        justify-items: center;
         gap: 1rem;
     }
 
@@ -454,6 +455,7 @@
 @media (max-width: 700px) {
     .tp-cards-grid {
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        justify-items: center;
         gap: 0.75rem;
     }
     /* Mobile tweaks for card internals */
@@ -508,6 +510,7 @@
     .tp-cards-grid {
         gap: 0.5rem;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        justify-items: center;
     }
 }
 
