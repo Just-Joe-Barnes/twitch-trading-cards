@@ -100,10 +100,36 @@
     box-sizing: border-box;
 }
 
+.tp-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.tp-collapse-toggle {
+    background: none;
+    border: none;
+    color: var(--brand-primary);
+    cursor: pointer;
+    font-weight: 600;
+    display: none;
+}
+
+.tp-panel-content.collapsed {
+    display: none;
+}
+
+@media (max-width: 700px) {
+    .tp-collapse-toggle {
+        display: block;
+    }
+}
+
 .tp-collection-header {
     text-align: center;
     font-size: 1.25rem;
-    margin-bottom: 1rem;
+    margin: 0;
     color: var(--text-primary);
 }
 
@@ -208,8 +234,7 @@
     border: 1px solid var(--border-dark);
     margin-bottom: 2rem;
     padding: 1rem;
-    min-height: calc(450px / var(--card-scale));
-    overflow: hidden;
+    overflow: visible;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
@@ -424,6 +449,7 @@
     .tp-cards-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        justify-items: center;
         gap: 1rem;
     }
 
@@ -454,6 +480,7 @@
 @media (max-width: 700px) {
     .tp-cards-grid {
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        justify-items: center;
         gap: 0.75rem;
     }
     /* Mobile tweaks for card internals */
@@ -508,6 +535,7 @@
     .tp-cards-grid {
         gap: 0.5rem;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        justify-items: center;
     }
 }
 
