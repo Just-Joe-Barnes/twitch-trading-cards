@@ -42,7 +42,7 @@
 
 @media (max-width: 480px) {
     :root {
-        --screen-card-scale: 0.55;
+        --screen-card-scale: 0.3;
     }
 }
 

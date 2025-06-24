@@ -30,6 +30,10 @@ const TradingPage = ({ userId }) => {
     const [rightSort, setRightSort] = useState("mintNumber");
     const [rightSortDir, setRightSortDir] = useState("asc");
 
+    const [isMobile, setIsMobile] = useState(false);
+    const [leftCollapsed, setLeftCollapsed] = useState(false);
+    const [rightCollapsed, setRightCollapsed] = useState(false);
+
     // Card scaling is handled responsively based on screen size
 
     // Fetch logged-in user data
@@ -70,6 +74,26 @@ const TradingPage = ({ userId }) => {
             setUserSuggestions([]);
         }
     }, [searchQuery]);
+
+    // Detect mobile screen size and collapse panels by default on mobile
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 700);
+        };
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    useEffect(() => {
+        if (isMobile) {
+            setLeftCollapsed(true);
+            setRightCollapsed(true);
+        } else {
+            setLeftCollapsed(false);
+            setRightCollapsed(false);
+        }
+    }, [isMobile]);
 
     // Fetch collections for logged-in user and selected user
     useEffect(() => {
@@ -118,8 +142,7 @@ const TradingPage = ({ userId }) => {
                         result = 0;
                 }
                 return sortDir === "asc" ? result : -result;
-            })
-            .slice(0, 15);
+            });
     };
 
     const handleSelectItem = (item, type) => {
@@ -313,8 +336,19 @@ const TradingPage = ({ userId }) => {
 
                             <div className="tp-collections-wrapper">
                                 <div className="tp-collection-panel">
-                                    <h3 className="tp-collection-header">Your Collection</h3>
-                                    <div className="tp-filters">
+                                    <div className="tp-panel-header">
+                                        <h3 className="tp-collection-header">Your Collection</h3>
+                                        {isMobile && (
+                                            <button
+                                                className="tp-collapse-toggle"
+                                                onClick={() => setLeftCollapsed(!leftCollapsed)}
+                                            >
+                                                {leftCollapsed ? "Expand" : "Collapse"}
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className={`tp-panel-content ${leftCollapsed ? "collapsed" : ""}`}> 
+                                        <div className="tp-filters">
                                         <input
                                             type="text"
                                             placeholder="Search your collection..."
@@ -361,8 +395,19 @@ const TradingPage = ({ userId }) => {
                                 </div>
 
                                 <div className="tp-collection-panel">
-                                    <h3 className="tp-collection-header">{selectedUser}'s Collection</h3>
-                                    <div className="tp-filters">
+                                    <div className="tp-panel-header">
+                                        <h3 className="tp-collection-header">{selectedUser}'s Collection</h3>
+                                        {isMobile && (
+                                            <button
+                                                className="tp-collapse-toggle"
+                                                onClick={() => setRightCollapsed(!rightCollapsed)}
+                                            >
+                                                {rightCollapsed ? "Expand" : "Collapse"}
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className={`tp-panel-content ${rightCollapsed ? "collapsed" : ""}`}> 
+                                        <div className="tp-filters">
                                         <input
                                             type="text"
                                             placeholder={`Search ${selectedUser}'s collection...`}
