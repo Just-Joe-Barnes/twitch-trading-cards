@@ -15,6 +15,7 @@ const BaseCard = ({
   onDoubleClick,
   onClick,
   inspectOnClick = true,
+  interactive = true,
   modifier,
 }) => {
   const cardRef = useRef(null);
@@ -212,8 +213,8 @@ const BaseCard = ({
     <div
       ref={cardRef}
       className={`card-container ${rarity.toLowerCase()}`}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+      onMouseMove={interactive ? handleMouseMove : undefined}
+      onMouseLeave={interactive ? handleMouseLeave : undefined}
       draggable={draggable}
       onDragStart={e => draggable && onDragStart?.(e)}
       onDoubleClick={onDoubleClick}
