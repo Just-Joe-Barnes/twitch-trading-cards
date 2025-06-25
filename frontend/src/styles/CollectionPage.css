@@ -26,6 +26,9 @@ body {
     padding: 4rem 1.5rem 2rem;
     max-width: 100%;
     margin: 0 auto;
+    color: var(--text-primary);
+    background: var(--background-dark);
+    min-height: 100vh;
 }
 
     /* Page Title */
@@ -33,7 +36,8 @@ body {
         font-size: 2.25rem;
         font-weight: 500;
         color: var(--text-primary);
-        margin: 2rem 0 2.5rem;
+        margin-top: 4rem;
+        margin-bottom: 1rem;
         position: relative;
     }
 
@@ -43,7 +47,7 @@ body {
             bottom: -1rem;
             left: 50%;
             transform: translateX(-50%);
-            width: 120px;
+            width: 100px;
             height: 2px;
             background: var(--brand-primary);
             border-radius: 2px;
@@ -51,9 +55,16 @@ body {
 
 /* Catalogue Description */
 .cp-catalogue-description {
+    text-align: center;
     font-size: 1.1rem;
-    margin-bottom: 2.5rem;
+    margin: 0.5rem auto 1.5rem;
+    max-width: 800px;
     color: var(--text-primary);
+    background: var(--surface-dark);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    line-height: 1.6;
 }
 
 /* ------------------- New Top Section Styles ------------------- */
