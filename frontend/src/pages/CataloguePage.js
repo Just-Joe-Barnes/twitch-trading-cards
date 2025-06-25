@@ -121,71 +121,89 @@ const CataloguePage = () => {
         <div className="cata-page">
             <h1>Card Catalogue</h1>
             <p className="cata-description">
-                Explore our complete collection of trading cards. Use the search box to
-                find cards by name, and click on the rarity buttons below to preview each
-                card in a different style.
+                Explore our complete collection of trading cards. Use the search box to find cards by name, and use the rarity or modifier buttons below to preview each card in different styles.
             </p>
 
-            <div className="cata-rarity-selector">
-                {rarityData.map((r) => {
-                    const textColor = r.name === 'Divine' ? '#000' : '#fff';
-                    return (
-                        <button
-                            key={r.name}
-                            onClick={() => handleRarityChange(r.name)}
-                            className={`cata-rarity-button ${selectedRarity === r.name ? 'active' : ''}`}
-                            style={{
-                                backgroundColor: r.color,
-                                color: textColor,
-                                padding: '8px 12px',
-                                border: '2px solid #888',
-                            }}
-                        >
-                            {r.name}
-                        </button>
-                    );
-                })}
-            </div>
-
-            <div className="cata-modifier-selector">
-                {modifiers.map((m) => {
-                    const textColor = m.text || '#fff';
-                    return (
-                        <button
-                            key={m.name}
-                            onClick={() => handleModifierChange(m.name)}
-                            className={`cata-modifier-button ${selectedModifier === m.name ? 'active' : ''}`}
-                            style={{
-                                backgroundColor: m.color,
-                                color: textColor,
-                                padding: '8px 12px',
-                                border: '2px solid #888',
-                            }}
-                        >
-                            {m.name}
-                        </button>
-                    );
-                })}
-            </div>
-
-            <div className="cata-filters-container">
-                <div className="cata-search-box">
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={handleSearchChange}
-                        placeholder="Search cards..."
-                    />
+            <div className="cata-top-section">
+                <div className="cata-row">
+                    <div className="cata-filters-container">
+                        <h3>Filters</h3>
+                        <div className="cata-filters">
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={handleSearchChange}
+                                placeholder="Search cards..."
+                            />
+                            <label htmlFor="sortField">Sort by:</label>
+                            <select id="sortField" value={sortOption} onChange={handleSortChange}>
+                                <option value="name">Name</option>
+                            </select>
+                            <select id="sortOrder" value={sortOrder} onChange={handleSortOrderChange}>
+                                <option value="asc">Ascending</option>
+                                <option value="desc">Descending</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="cata-preview-container">
+                        <div className="cata-rarity-box">
+                            <h3>Rarity Preview</h3>
+                            <div className="cata-rarity-selector">
+                                {rarityData.map((r) => {
+                                    const textColor = r.name === 'Divine' ? '#000' : '#fff';
+                                    return (
+                                        <button
+                                            key={r.name}
+                                            onClick={() => handleRarityChange(r.name)}
+                                            className={`cata-rarity-button ${selectedRarity === r.name ? 'active' : ''}`}
+                                            style={{
+                                                backgroundColor: r.color,
+                                                color: textColor,
+                                                padding: '8px 12px',
+                                                border: '2px solid #888',
+                                            }}
+                                        >
+                                            {r.name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                        <div className="cata-modifier-box">
+                            <h3>Modifiers</h3>
+                            <div className="cata-modifier-selector">
+                                {modifiers.map((m) => {
+                                    const textColor = m.text || '#fff';
+                                    return (
+                                        <button
+                                            key={m.name}
+                                            onClick={() => handleModifierChange(m.name)}
+                                            className={`cata-modifier-button ${selectedModifier === m.name ? 'active' : ''}`}
+                                            style={{
+                                                backgroundColor: m.color,
+                                                color: textColor,
+                                                padding: '8px 12px',
+                                                border: '2px solid #888',
+                                            }}
+                                        >
+                                            {m.name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div className="cata-sort-box">
-                    <label htmlFor="sortField">Sort by:</label>
-                    <select id="sortField" value={sortOption} onChange={handleSortChange}>
-                        <option value="name">Name</option>
-                    </select>
-                    <select id="sortOrder" value={sortOrder} onChange={handleSortOrderChange}>
-                        <option value="asc">Ascending</option>
-                        <option value="desc">Descending</option>
-                    </select>
+            </div>
+
+            <div className="cata-stats-container">
+                <div className="cata-stats-item">
+                    <h4>Total Cards</h4>
+                    <p>{cards.length}</p>
+                </div>
+                <div className="cata-stats-item">
+                    <h4>Limited Cards</h4>
+                    <p>{limitedCards.length}</p>
                 </div>
             </div>
 
