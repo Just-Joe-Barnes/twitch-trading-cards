@@ -16,7 +16,7 @@ const CardInspector = ({ card, onClose }) => {
           mintNumber={mintNumber}
           modifier={modifier}
           inspectOnClick={false}
-          interactive={false}
+          interactive={true}
         />
       </div>
     </div>

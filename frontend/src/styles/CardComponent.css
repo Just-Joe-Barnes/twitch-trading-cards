@@ -9,6 +9,7 @@
  * Generic Card Styles (Layout Only)
  **************************************/
 .card-container {
+    --card-scale: 1;
     width: var(--card-width);
     height: var(--card-height);
     aspect-ratio: 2 / 3;
