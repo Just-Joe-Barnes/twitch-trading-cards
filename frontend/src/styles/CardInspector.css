@@ -1,0 +1,40 @@
+.card-inspector-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+
+.card-inspector {
+  --inspector-scale: 4;
+  --user-scale: 1;
+  --card-scale: calc(var(--screen-card-scale) * var(--user-scale) * var(--inspector-scale));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-inspector .card-container {
+  margin: 0;
+  animation: inspector-spin-in 0.5s ease forwards;
+  transform-style: preserve-3d;
+  transform: scale(var(--card-scale));
+}
+
+@keyframes inspector-spin-in {
+  from {
+    transform: scale(var(--card-scale)) perspective(1000px) rotateY(180deg);
+    opacity: 0;
+  }
+  to {
+    transform: scale(var(--card-scale)) perspective(1000px) rotateY(0deg);
+    opacity: 1;
+  }
+}
