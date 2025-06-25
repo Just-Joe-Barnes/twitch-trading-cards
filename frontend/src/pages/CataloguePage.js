@@ -121,9 +121,7 @@ const CataloguePage = () => {
         <div className="cata-page">
             <h1>Card Catalogue</h1>
             <p className="cata-description">
-                Explore our complete collection of trading cards. Use the search box to
-                find cards by name, and click on the rarity buttons below to preview each
-                card in a different style.
+                Explore our complete collection of trading cards. Use the search box to find cards by name, and use the rarity or modifier buttons below to preview each card in different styles.
             </p>
 
             <div className="cata-top-section">
@@ -148,46 +146,51 @@ const CataloguePage = () => {
                         </div>
                     </div>
                     <div className="cata-preview-container">
-                        <h3>Preview Options</h3>
-                        <div className="cata-rarity-selector">
-                            {rarityData.map((r) => {
-                                const textColor = r.name === 'Divine' ? '#000' : '#fff';
-                                return (
-                                    <button
-                                        key={r.name}
-                                        onClick={() => handleRarityChange(r.name)}
-                                        className={`cata-rarity-button ${selectedRarity === r.name ? 'active' : ''}`}
-                                        style={{
-                                            backgroundColor: r.color,
-                                            color: textColor,
-                                            padding: '8px 12px',
-                                            border: '2px solid #888',
-                                        }}
-                                    >
-                                        {r.name}
-                                    </button>
-                                );
-                            })}
+                        <div className="cata-rarity-box">
+                            <h3>Rarity Preview</h3>
+                            <div className="cata-rarity-selector">
+                                {rarityData.map((r) => {
+                                    const textColor = r.name === 'Divine' ? '#000' : '#fff';
+                                    return (
+                                        <button
+                                            key={r.name}
+                                            onClick={() => handleRarityChange(r.name)}
+                                            className={`cata-rarity-button ${selectedRarity === r.name ? 'active' : ''}`}
+                                            style={{
+                                                backgroundColor: r.color,
+                                                color: textColor,
+                                                padding: '8px 12px',
+                                                border: '2px solid #888',
+                                            }}
+                                        >
+                                            {r.name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
-                        <div className="cata-modifier-selector">
-                            {modifiers.map((m) => {
-                                const textColor = m.text || '#fff';
-                                return (
-                                    <button
-                                        key={m.name}
-                                        onClick={() => handleModifierChange(m.name)}
-                                        className={`cata-modifier-button ${selectedModifier === m.name ? 'active' : ''}`}
-                                        style={{
-                                            backgroundColor: m.color,
-                                            color: textColor,
-                                            padding: '8px 12px',
-                                            border: '2px solid #888',
-                                        }}
-                                    >
-                                        {m.name}
-                                    </button>
-                                );
-                            })}
+                        <div className="cata-modifier-box">
+                            <h3>Modifiers</h3>
+                            <div className="cata-modifier-selector">
+                                {modifiers.map((m) => {
+                                    const textColor = m.text || '#fff';
+                                    return (
+                                        <button
+                                            key={m.name}
+                                            onClick={() => handleModifierChange(m.name)}
+                                            className={`cata-modifier-button ${selectedModifier === m.name ? 'active' : ''}`}
+                                            style={{
+                                                backgroundColor: m.color,
+                                                color: textColor,
+                                                padding: '8px 12px',
+                                                border: '2px solid #888',
+                                            }}
+                                        >
+                                            {m.name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>

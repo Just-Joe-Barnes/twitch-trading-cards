@@ -67,17 +67,40 @@
     .cata-row {
         grid-template-columns: 1fr;
     }
+
+    .cata-preview-container {
+        grid-template-columns: 1fr;
+    }
 }
 
-.cata-filters-container,
-.cata-preview-container {
+.cata-filters-container {
     background: var(--surface-dark);
     padding: 1rem;
     border-radius: var(--border-radius);
 }
 
-    .cata-filters-container h3,
-    .cata-preview-container h3 {
+    .cata-filters-container h3 {
+        margin: 0;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+.cata-preview-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.cata-rarity-box,
+.cata-modifier-box {
+    background: var(--surface-dark);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+}
+
+    .cata-rarity-box h3,
+    .cata-modifier-box h3 {
         margin: 0;
         margin-bottom: 1rem;
         font-size: 1.2rem;
