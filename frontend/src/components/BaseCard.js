@@ -13,6 +13,8 @@ const BaseCard = ({
   draggable,
   onDragStart,
   onDoubleClick,
+  onClick,
+  inspectOnClick = true,
   modifier,
 }) => {
   const cardRef = useRef(null);
@@ -199,6 +201,13 @@ const BaseCard = ({
     card.style.removeProperty('--glitch-y');
   };
 
+  const handleClick = (e) => {
+    if (onClick) onClick(e);
+    if (inspectOnClick && window.inspectCard) {
+      window.inspectCard({ name, image, description, rarity, mintNumber, modifier });
+    }
+  };
+
   return (
     <div
       ref={cardRef}
@@ -208,6 +217,7 @@ const BaseCard = ({
       draggable={draggable}
       onDragStart={e => draggable && onDragStart?.(e)}
       onDoubleClick={onDoubleClick}
+      onClick={handleClick}
       style={{
         ...(rarity.toLowerCase()==='divine' ? { backgroundImage: `url(${image})` } : {}),
         ...(modifierData?.css ? JSON.parse(modifierData.css) : {}),
