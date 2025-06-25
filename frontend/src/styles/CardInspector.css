@@ -11,24 +11,28 @@
   z-index: 1000;
 }
 
+
 .card-inspector {
+  --inspector-scale: 2;
+  --card-scale: calc(var(--screen-card-scale) * var(--inspector-scale));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-inspector .card-container {
+  margin: 0;
   animation: inspector-spin-in 0.5s ease forwards;
   transform-style: preserve-3d;
 }
 
-.card-inspector .card-container {
-  --card-width: 420px;
-  --card-height: 630px;
-  margin: 0;
-}
-
 @keyframes inspector-spin-in {
   from {
-    transform: perspective(1000px) rotateY(180deg) scale(0.5);
+    transform: scale(var(--card-scale)) perspective(1000px) rotateY(180deg);
     opacity: 0;
   }
   to {
-    transform: perspective(1000px) rotateY(0deg) scale(1);
+    transform: scale(var(--card-scale)) perspective(1000px) rotateY(0deg);
     opacity: 1;
   }
 }
