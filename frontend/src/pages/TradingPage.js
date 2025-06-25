@@ -230,7 +230,7 @@ const TradingPage = ({ userId }) => {
             </div>
 
             {showTradeForm && (
-                <>
+                <div>
                     <div className="tp-user-search">
                         <input
                             type="text"
@@ -393,6 +393,7 @@ const TradingPage = ({ userId }) => {
                                         ))}
                                     </div>
                                 </div>
+                                </div>
 
                                 <div className="tp-collection-panel">
                                     <div className="tp-panel-header">
@@ -458,8 +459,9 @@ const TradingPage = ({ userId }) => {
                                 Confirm Trade
                             </button>
                         </div>
+                        </div>
                     )}
-                </>
+                </div>
             )}
         </div>
     );
