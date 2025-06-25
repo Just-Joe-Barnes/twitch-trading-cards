@@ -28,6 +28,7 @@
     --shadow: 0 4px 12px rgba(0,0,0,0.5);
     --transition: all 0.25s ease;
     --screen-card-scale: 1;
+    --card-scale: var(--screen-card-scale);
 
     --font-family: 'Inter', sans-serif;
     --font-size-base: 16px;
