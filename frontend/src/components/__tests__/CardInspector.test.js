@@ -7,6 +7,7 @@ describe('CardInspector', () => {
     const { container } = render(<CardInspector card={card} onClose={() => {}} />);
     const inspector = container.querySelector('.card-inspector');
     expect(inspector).not.toBeNull();
-    // Basic render check
+    const styles = getComputedStyle(inspector);
+    expect(styles.getPropertyValue('--card-scale')).not.toBe('');
   });
 });
