@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import Navbar from './components/Navbar';
 import LoadingSpinner from './components/LoadingSpinner';
 import Toast from './components/Toast';
+import CardInspector from './components/CardInspector';
 import 'normalize.css';
 import './styles/App.css';
 
@@ -29,6 +30,7 @@ const App = () => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [toasts, setToasts] = useState([]);
+    const [inspectedCard, setInspectedCard] = useState(null);
 
     const showToast = (message, type = 'info') => {
         const id = Date.now();
@@ -41,6 +43,7 @@ const App = () => {
 
     useEffect(() => {
         window.showToast = showToast;
+        window.inspectCard = (card) => setInspectedCard(card);
     }, []);
 
     useEffect(() => {
@@ -150,6 +153,7 @@ const App = () => {
                     onClose={() => removeToast(toast.id)}
                 />
             ))}
+            <CardInspector card={inspectedCard} onClose={() => setInspectedCard(null)} />
         </>
     );
 };
