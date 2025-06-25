@@ -22,6 +22,9 @@
     --color-border: #333;
 
     --border-radius: 10px;
+    --border-radius-sm: 6px;
+    --border-radius-lg: 12px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.5);
     --transition: all 0.25s ease;
     --screen-card-scale: 1;
 
@@ -183,4 +186,49 @@ button.secondary {
 
 button.secondary:hover {
     background-color: var(--color-primary);
+}
+
+/* Utility button classes */
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-bg);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-secondary);
+}
+
+.btn-secondary {
+    background-color: var(--color-secondary);
+    color: var(--color-bg);
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-primary);
+}
+
+/* Simple flex utilities */
+.flex {
+    display: flex;
+}
+
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.grid {
+    display: grid;
+    gap: 1rem;
 }

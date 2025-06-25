@@ -1,7 +1,7 @@
 
 body {
-  background: var(--base);
-  color: var(--text-primary);
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 .pending-page {
@@ -11,7 +11,7 @@ body {
 .page-header {
   position: sticky;
   top: 0;
-  background: var(--base);
+  background: var(--color-bg);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -22,7 +22,7 @@ body {
 .page-header h1 {
   font-size: 24px;
   font-weight: bold;
-  color: var(--text-primary);
+  color: var(--color-text);
 }
 
 .header-controls {
@@ -33,39 +33,39 @@ body {
 
 .segmented {
   display: flex;
-  background: var(--surface);
-  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border-radius: var(--border-radius);
 }
 .segmented button {
   width: 100px;
   height: 32px;
   background: none;
   border: none;
-  color: var(--text-primary);
+  color: var(--color-text);
   cursor: pointer;
 }
 .segmented button.active {
-  background: var(--accent);
+  background: var(--color-primary);
   color: #000;
-  border-radius: var(--radius-md);
+  border-radius: var(--border-radius);
 }
 
 .header-controls input {
   width: 200px;
-  background: var(--surface);
-  border: 1px solid var(--text-muted);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-text-muted);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text);
   padding: 4px 8px;
 }
 
 .filter-btn {
   display: flex;
   align-items: center;
-  background: var(--surface);
-  border: 1px solid var(--text-muted);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-text-muted);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text);
   padding: 4px 8px;
   cursor: pointer;
 }
@@ -76,14 +76,14 @@ body {
   background: #181818;
   border: 1px solid #2a2a2a;
   padding: 8px;
-  border-radius: var(--radius-md);
+  border-radius: var(--border-radius);
 }
 
 .filter-bar select {
-  background: var(--surface);
-  color: var(--text-primary);
-  border: 1px solid var(--text-muted);
-  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-text-muted);
+  border-radius: var(--border-radius-sm);
   height: 32px;
 }
 
@@ -92,16 +92,16 @@ body {
   gap: 8px;
 }
 .toggle-group button {
-  background: var(--surface);
-  border: 1px solid var(--text-muted);
-  color: var(--text-muted);
-  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-text-muted);
+  color: var(--color-text-muted);
+  border-radius: var(--border-radius-sm);
   height: 32px;
   padding: 0 12px;
   cursor: pointer;
 }
 .toggle-group button.active {
-  background: var(--accent-secondary);
+  background: var(--color-secondary);
   color: #000;
 }
 
@@ -123,7 +123,7 @@ body {
 /* improve readability with alternating backgrounds */
 .trade-table tbody tr {
   height: 96px;
-  background: var(--surface);
+  background: var(--color-surface);
 }
 .trade-table tbody tr:nth-child(even) {
   background: #181818;
@@ -134,34 +134,46 @@ body {
   cursor: pointer;
 }
 .trade-table tbody tr:focus {
-  outline: 2px solid var(--accent-secondary);
+  outline: 2px solid var(--color-secondary);
 }
 .trade-table img {
   width: 64px;
   height: 64px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--border-radius-sm);
   margin-right: 4px;
 }
 .badge {
   margin-left: 4px;
-  background: var(--accent);
+  background: var(--color-primary);
   color: #000;
   padding: 2px 6px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--border-radius-sm);
   font-size: 12px;
 }
 .packs {
   margin-left: 4px;
-  color: var(--accent-secondary);
+  color: var(--color-secondary);
 }
 .row-actions button {
-  background: var(--accent);
+  background: var(--color-primary);
   border: none;
   color: #000;
-  border-radius: var(--radius-sm);
+  border-radius: var(--border-radius-sm);
   padding: 4px 8px;
   margin-right: 8px;
   cursor: pointer;
+}
+.toggle-trade-button {
+  background: none;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  border-radius: var(--border-radius-sm);
+  padding: 2px 8px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+.toggle-trade-button:hover {
+  background: var(--color-surface);
 }
 .detail-panel footer .row-actions {
   width: 100%;
@@ -194,7 +206,7 @@ body {
   width: 40vw;
   max-width: 100%;
   height: calc(100% - 60px);
-  background: var(--surface);
+  background: var(--color-surface);
   box-shadow: var(--shadow);
   padding: 16px;
   display: flex;
@@ -213,7 +225,7 @@ body {
   right: 8px;
   background: none;
   border: none;
-  color: var(--text-primary);
+  color: var(--color-text);
   font-size: 20px;
   cursor: pointer;
 }
@@ -229,7 +241,7 @@ body {
 .detail-panel header button {
   background: none;
   border: none;
-  color: var(--text-primary);
+  color: var(--color-text);
   font-size: 24px;
   cursor: pointer;
 }
@@ -267,7 +279,7 @@ body {
 .pack-count {
   margin-bottom: 8px;
   font-style: italic;
-  color: var(--text-muted);
+  color: var(--color-text-muted);
 }
 .detail-panel footer {
   display: flex;
@@ -277,8 +289,8 @@ body {
 @media (max-width: 768px) {
   .trade-table { display: none; }
   .mobile-card {
-    background: var(--surface);
-    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    border-radius: var(--border-radius);
     padding: 16px;
     margin-bottom: 16px;
   }
