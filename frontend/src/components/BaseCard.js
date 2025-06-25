@@ -13,6 +13,9 @@ const BaseCard = ({
   draggable,
   onDragStart,
   onDoubleClick,
+  onClick,
+  inspectOnClick = true,
+  interactive = true,
   modifier,
 }) => {
   const cardRef = useRef(null);
@@ -27,6 +30,15 @@ const BaseCard = ({
   const [modifierData, setModifierData] = useState(null);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const isGlitch = modifierData?.name === 'Glitch';
+
+  // Apply initial transform so card-scale takes effect immediately
+  useEffect(() => {
+    const card = cardRef.current;
+    if (card) {
+      card.style.transform =
+        'scale(var(--card-scale, 1)) perspective(700px) rotateX(0deg) rotateY(0deg)';
+    }
+  }, []);
 
   useEffect(() => {
     const fetchModifier = async () => {
@@ -125,7 +137,7 @@ const BaseCard = ({
     const halfH = rect.height / 2;
     const rotateX = -((y - halfH) / 10);
     const rotateY = ((x - halfW) / 10);
-    card.style.transform = `perspective(700px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    card.style.transform = `scale(var(--card-scale, 1)) perspective(700px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
 
     if (["rare","legendary","epic","mythic"].includes(rarity.toLowerCase())) {
       card.style.setProperty('--cursor-x', `${(x/rect.width)*100}%`);
@@ -177,7 +189,7 @@ const BaseCard = ({
   const handleMouseLeave = () => {
     const card = cardRef.current;
     if (card) {
-      card.style.transform = 'perspective(700px) rotateX(0deg) rotateY(0deg)';
+      card.style.transform = 'scale(var(--card-scale, 1)) perspective(700px) rotateX(0deg) rotateY(0deg)';
       card.style.removeProperty('--cursor-x');
       card.style.removeProperty('--cursor-y');
     }
@@ -199,15 +211,23 @@ const BaseCard = ({
     card.style.removeProperty('--glitch-y');
   };
 
+  const handleClick = (e) => {
+    if (onClick) onClick(e);
+    if (inspectOnClick && window.inspectCard) {
+      window.inspectCard({ name, image, description, rarity, mintNumber, modifier });
+    }
+  };
+
   return (
     <div
       ref={cardRef}
       className={`card-container ${rarity.toLowerCase()}`}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+      onMouseMove={interactive ? handleMouseMove : undefined}
+      onMouseLeave={interactive ? handleMouseLeave : undefined}
       draggable={draggable}
       onDragStart={e => draggable && onDragStart?.(e)}
       onDoubleClick={onDoubleClick}
+      onClick={handleClick}
       style={{
         ...(rarity.toLowerCase()==='divine' ? { backgroundImage: `url(${image})` } : {}),
         ...(modifierData?.css ? JSON.parse(modifierData.css) : {}),
