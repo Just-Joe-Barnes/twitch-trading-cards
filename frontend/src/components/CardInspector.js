@@ -3,12 +3,12 @@ import BaseCard from './BaseCard';
 import '../styles/CardInspector.css';
 
 const CardInspector = ({ card, onClose }) => {
-  const [userScale, setUserScale] = useState(1);
+  const [userCardScale, setUserCardScale] = useState(1);
   useEffect(() => {
     const stored = localStorage.getItem('cardScale');
     if (stored) {
       const value = parseFloat(stored);
-      if (!Number.isNaN(value)) setUserScale(value);
+      if (!Number.isNaN(value)) setUserCardScale(value);
     }
   }, []);
 
@@ -18,7 +18,7 @@ const CardInspector = ({ card, onClose }) => {
     <div className="card-inspector-overlay" onClick={onClose}>
       <div
         className="card-inspector"
-        style={{ '--user-scale': userScale }}
+        style={{ '--user-card-scale': userCardScale }}
         onClick={(e) => e.stopPropagation()}
       >
         <BaseCard

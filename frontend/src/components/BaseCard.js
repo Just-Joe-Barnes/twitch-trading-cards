@@ -31,6 +31,15 @@ const BaseCard = ({
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const isGlitch = modifierData?.name === 'Glitch';
 
+  // Apply initial transform so card-scale takes effect immediately
+  useEffect(() => {
+    const card = cardRef.current;
+    if (card) {
+      card.style.transform =
+        'scale(var(--card-scale, 1)) perspective(700px) rotateX(0deg) rotateY(0deg)';
+    }
+  }, []);
+
   useEffect(() => {
     const fetchModifier = async () => {
       if (!modifier) {

@@ -13,9 +13,9 @@
 
 
 .card-inspector {
-  --inspector-scale: 4;
-  --user-scale: 1;
-  --card-scale: calc(var(--screen-card-scale) * var(--user-scale) * var(--inspector-scale));
+  --inspector-scale: 8;
+  --user-card-scale: 1;
+  --card-scale: calc(var(--screen-card-scale) * var(--user-card-scale) * var(--inspector-scale));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -25,7 +25,7 @@
   margin: 0;
   animation: inspector-spin-in 0.5s ease forwards;
   transform-style: preserve-3d;
-  transform: scale(var(--card-scale));
+  transform: scale(var(--card-scale)) perspective(700px) rotateX(0deg) rotateY(0deg);
 }
 
 @keyframes inspector-spin-in {
