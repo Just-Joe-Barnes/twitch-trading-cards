@@ -13,8 +13,9 @@
 
 :root {
     /* Minimal color palette */
-    --color-primary: #7b5cff;
-    --color-secondary: #5de2e5;
+    /* brand colors extracted from NedsDecks logo */
+    --color-primary: #e680a7;
+    --color-secondary: #7eb5bc;
     --color-bg: #121212;
     --color-surface: #1e1e1e;
     --color-text: #f5f5f5;
