@@ -1,20 +1,9 @@
-:root {
-    --brand-primary: #db88db;
-    --brand-secondary: #88cddb;
-    --background-dark: #0a0a0a;
-    --surface-dark: #1a1a1a;
-    --surface-darker: #141414;
-    --text-primary: rgba(255, 255, 255, 0.95);
-    --border-dark: rgba(255, 255, 255, 0.12);
-    --border-radius: 16px;
-    --transition: all 0.3s ease;
-}
 
 /* Global Reset & Body */
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Poppins', sans-serif;
+    font-family: var(--font-family);
     background: var(--background-dark);
 }
 
@@ -170,7 +159,7 @@ body {
         border-radius: 8px;
         padding: 0.75rem 1.5rem;
         color: var(--text-primary);
-        font-family: 'Poppins', sans-serif;
+        font-family: var(--font-family);
         width: 240px;
         transition: var(--transition);
         appearance: none;

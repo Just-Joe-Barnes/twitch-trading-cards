@@ -12,18 +12,30 @@
 }
 
 :root {
-    /* Global color palette used across the application */
-    --color-primary: #db88db;
-    --color-secondary: #88cddb;
-    --color-bg: #0a0a0a;        /* default page background */
-    --color-surface: #1a1a1a;   /* card and panel backgrounds */
-    --color-text: rgba(255, 255, 255, 0.95);
-    --color-text-muted: rgba(255, 255, 255, 0.6);
-    --color-border: rgba(255, 255, 255, 0.12);
+    /* Minimal color palette */
+    --color-primary: #7b5cff;
+    --color-secondary: #5de2e5;
+    --color-bg: #121212;
+    --color-surface: #1e1e1e;
+    --color-text: #f5f5f5;
+    --color-text-muted: #aaaaaa;
+    --color-border: #333;
 
-    --border-radius: 8px;
-    --transition: all 0.3s ease;
+    --border-radius: 10px;
+    --transition: all 0.25s ease;
     --screen-card-scale: 1;
+
+    --font-family: 'Inter', sans-serif;
+    --font-size-base: 16px;
+
+    /* legacy variable aliases for existing styles */
+    --brand-primary: var(--color-primary);
+    --brand-secondary: var(--color-secondary);
+    --background-dark: var(--color-bg);
+    --surface-dark: var(--color-surface);
+    --surface-darker: #181818;
+    --text-primary: var(--color-text);
+    --border-dark: var(--color-border);
 }
 
 @media (max-width: 1200px) {
