@@ -12,7 +12,11 @@
 }
 
 :root {
+    /* Global color palette used across the application */
+    --color-primary: #db88db;
     --color-secondary: #88cddb;
+    --color-bg: #0a0a0a;        /* default page background */
+    --color-surface: #1a1a1a;   /* card and panel backgrounds */
     --color-text: rgba(255, 255, 255, 0.95);
     --color-text-muted: rgba(255, 255, 255, 0.6);
     --color-border: rgba(255, 255, 255, 0.12);
