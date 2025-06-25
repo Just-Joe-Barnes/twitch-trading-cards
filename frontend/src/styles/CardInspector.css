@@ -13,7 +13,10 @@
 
 
 .card-inspector {
-  --inspector-scale: 2;
+  /* Scale card up while keeping it within the viewport */
+  --fit-height: calc(90vh / (var(--card-height) * var(--screen-card-scale)));
+  --fit-width: calc(90vw / (var(--card-width) * var(--screen-card-scale)));
+  --inspector-scale: min(var(--fit-height), var(--fit-width));
   --card-scale: calc(var(--screen-card-scale) * var(--inspector-scale));
   display: flex;
   align-items: center;
