@@ -33,6 +33,14 @@
   transform: scale(var(--card-scale));
 }
 
+.card-inspector.closing .card-container {
+  animation: inspector-spin-out 0.5s ease forwards;
+}
+
+.card-inspector-overlay.closing {
+  animation: overlay-fade-out 0.5s ease forwards;
+}
+
 @keyframes inspector-spin-in {
   from {
     transform: scale(var(--card-scale)) perspective(1000px) rotateY(180deg);
@@ -41,5 +49,25 @@
   to {
     transform: scale(var(--card-scale)) perspective(1000px) rotateY(0deg);
     opacity: 1;
+  }
+}
+
+@keyframes inspector-spin-out {
+  from {
+    transform: scale(var(--card-scale)) perspective(1000px) rotateY(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: scale(var(--card-scale)) perspective(1000px) rotateY(180deg);
+    opacity: 0;
+  }
+}
+
+@keyframes overlay-fade-out {
+  from {
+    background: rgba(0, 0, 0, 0.8);
+  }
+  to {
+    background: rgba(0, 0, 0, 0);
   }
 }
