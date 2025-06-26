@@ -3,11 +3,10 @@ import BaseCard from './BaseCard';
 import '../styles/CardInspector.css';
 
 const CardInspector = ({ card, onClose }) => {
-  if (!card) return null;
-  const { name, image, description, rarity, mintNumber, modifier } = card;
   const inspectorRef = useRef(null);
 
   useEffect(() => {
+    if (!card) return;
     const updateScale = () => {
       const root = getComputedStyle(document.documentElement);
       const cardHeight = parseFloat(root.getPropertyValue('--card-height')) || 450;
@@ -23,7 +22,10 @@ const CardInspector = ({ card, onClose }) => {
     updateScale();
     window.addEventListener('resize', updateScale);
     return () => window.removeEventListener('resize', updateScale);
-  }, []);
+  }, [card]);
+
+  if (!card) return null;
+  const { name, image, description, rarity, mintNumber, modifier } = card;
   return (
     <div className="card-inspector-overlay" onClick={onClose}>
       <div
