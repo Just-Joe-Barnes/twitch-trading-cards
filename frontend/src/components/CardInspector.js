@@ -1,12 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import BaseCard from './BaseCard';
 import '../styles/CardInspector.css';
 
-const ANIMATION_DURATION = 500; // ms
-
 const CardInspector = ({ card, onClose }) => {
   const inspectorRef = useRef(null);
-  const [closing, setClosing] = useState(false);
 
   useEffect(() => {
     if (!card) return;
@@ -27,18 +24,12 @@ const CardInspector = ({ card, onClose }) => {
     return () => window.removeEventListener('resize', updateScale);
   }, [card]);
 
-  const handleClose = () => {
-    if (closing) return;
-    setClosing(true);
-    setTimeout(onClose, ANIMATION_DURATION);
-  };
-
   if (!card) return null;
   const { name, image, description, rarity, mintNumber, modifier } = card;
   return (
-    <div className={`card-inspector-overlay${closing ? ' closing' : ''}`} onClick={handleClose}>
+    <div className="card-inspector-overlay" onClick={onClose}>
       <div
-        className={`card-inspector${closing ? ' closing' : ''}`}
+        className="card-inspector"
         ref={inspectorRef}
         onClick={(e) => e.stopPropagation()}
       >
