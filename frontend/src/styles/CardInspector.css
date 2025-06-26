@@ -18,7 +18,7 @@
   --fit-width: 1;
   --inspector-scale: min(2, var(--fit-height), var(--fit-width));
   /* Double the inspected card size but clamp to available space */
-  --card-scale: calc(var(--screen-card-scale) * var(--inspector-scale));
+  --card-scale: var(--inspector-scale);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -26,7 +26,7 @@
 
 .card-inspector .card-container {
   /* Override card scale from BaseCard */
-  --card-scale: calc(var(--screen-card-scale) * var(--inspector-scale));
+  --card-scale: var(--inspector-scale);
   margin: 0;
   animation: inspector-spin-in 0.5s ease;
   transform-style: preserve-3d;
