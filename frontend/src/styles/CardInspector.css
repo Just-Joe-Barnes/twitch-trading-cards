@@ -25,6 +25,8 @@
 }
 
 .card-inspector .card-container {
+  /* Reapply the inspector scale inside the card element */
+  --card-scale: calc(var(--screen-card-scale) * min(2, var(--inspector-scale)));
   margin: 0;
   animation: inspector-spin-in 0.5s ease;
   transform-style: preserve-3d;
