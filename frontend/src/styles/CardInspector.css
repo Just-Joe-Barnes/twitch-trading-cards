@@ -16,18 +16,21 @@
   /* Scale card up while keeping it within the viewport */
   --fit-height: calc(90vh / (var(--card-height) * var(--screen-card-scale)));
   --fit-width: calc(90vw / (var(--card-width) * var(--screen-card-scale)));
-  --inspector-scale: min(var(--fit-height), var(--fit-width));
+  --inspector-scale: min(2, var(--fit-height), var(--fit-width));
   /* Double the inspected card size but clamp to available space */
-  --card-scale: calc(var(--screen-card-scale) * min(2, var(--inspector-scale)));
+  --card-scale: calc(var(--screen-card-scale) * var(--inspector-scale));
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .card-inspector .card-container {
+  /* Override card scale from BaseCard */
+  --card-scale: calc(var(--screen-card-scale) * var(--inspector-scale));
   margin: 0;
   animation: inspector-spin-in 0.5s ease;
   transform-style: preserve-3d;
+  transform: scale(var(--card-scale));
 }
 
 @keyframes inspector-spin-in {
