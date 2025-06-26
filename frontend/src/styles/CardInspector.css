@@ -25,6 +25,8 @@
 }
 
 .card-inspector .card-container {
+  /* Override card scale from BaseCard */
+  --card-scale: calc(var(--screen-card-scale) * var(--inspector-scale));
   margin: 0;
   animation: inspector-spin-in 0.5s ease;
   transform-style: preserve-3d;
