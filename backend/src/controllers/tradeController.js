@@ -350,12 +350,12 @@ const getPendingTrades = async (req, res) => {
             const recipientData = trade.recipient || { cards: [] };
 
             const offeredCards = (senderData.cards || []).filter(card =>
-                trade.offeredItems.some(itemId =>
+                (trade.offeredItems || []).some(itemId =>
                     itemId.toString() === card._id.toString()
                 )
             );
             const requestedCards = (recipientData.cards || []).filter(card =>
-                trade.requestedItems.some(itemId =>
+                (trade.requestedItems || []).some(itemId =>
                     itemId.toString() === card._id.toString()
                 )
             );
@@ -390,12 +390,12 @@ const getTradesForUser = async (req, res) => {
             const recipientData = trade.recipient || { cards: [] };
 
             const offeredCards = (senderData.cards || []).filter(card =>
-                trade.offeredItems.some(itemId =>
+                (trade.offeredItems || []).some(itemId =>
                     itemId.toString() === card._id.toString()
                 )
             );
             const requestedCards = (recipientData.cards || []).filter(card =>
-                trade.requestedItems.some(itemId =>
+                (trade.requestedItems || []).some(itemId =>
                     itemId.toString() === card._id.toString()
                 )
             );
