@@ -214,7 +214,7 @@ const TradingPage = ({ userId }) => {
             <p className="tp-trading-info">
                 Welcome to the trading system! You can trade up to 3 cards and/or up to 10 packs with other users.
                 Double-click on any selected card to remove it from your trade. Make sure to review your offers
-                and requests carefully before confirming a trade. Pending trades can be managed through the "View Pending Trades" button below.
+                and requests carefully before confirming a trade. Existing trades can be managed through the "View Trades" button below.
             </p>
 
             <div className="tp-trade-control-buttons">
@@ -225,7 +225,7 @@ const TradingPage = ({ userId }) => {
                     {showTradeForm ? "Hide Trade Form" : "Create New Trade"}
                 </button>
                 <Link to="/trades/pending">
-                    <button className="tp-view-pending-button">View Pending Trades</button>
+                    <button className="tp-view-pending-button">View Trades</button>
                 </Link>
             </div>
 

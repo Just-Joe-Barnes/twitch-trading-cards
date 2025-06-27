@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   fetchUserProfile,
   fetchPendingTrades,
+  fetchTrades,
   acceptTrade,
   rejectTrade,
   cancelTrade,
@@ -25,14 +26,15 @@ const rarityColors = {
 };
 
 const PendingTrades = () => {
-  const [trades, setTrades] = useState([]);
+  const [pendingTrades, setPendingTrades] = useState([]);
+  const [completedTrades, setCompletedTrades] = useState([]);
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('incoming');
   const [openTrade, setOpenTrade] = useState(null);
-const [panelOpen, setPanelOpen] = useState(false);
-const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 useEffect(() => {
   if (!panelOpen && openTrade) {
     const t = setTimeout(() => setOpenTrade(null), 300);
@@ -46,11 +48,13 @@ const navigate = useNavigate();
       try {
         const profile = await fetchUserProfile();
         setUser(profile);
-        const data = await fetchPendingTrades(profile._id);
-        setTrades(data);
+        const pending = await fetchPendingTrades(profile._id);
+        setPendingTrades(pending);
+        const all = await fetchTrades(profile._id);
+        setCompletedTrades(all.filter(t => t.status !== 'pending'));
       } catch (err) {
         console.error('Failed to load trades:', err);
-        setError('Failed to load pending trades');
+        setError('Failed to load trades');
       }
     };
     load();
@@ -75,15 +79,15 @@ const navigate = useNavigate();
       cancel: 'Are you sure you want to cancel this trade?',
     }[action];
     if (!window.confirm(confirmMsg)) return;
-    const prev = trades;
-    setTrades(prev.filter((t) => t._id !== id));
+    const prev = pendingTrades;
+    setPendingTrades(prev.filter((t) => t._id !== id));
     try {
       if (action === 'accept') await acceptTrade(id);
       if (action === 'reject') await rejectTrade(id);
       if (action === 'cancel') await cancelTrade(id);
     } catch (err) {
       console.error(`Failed to ${action} trade:`, err);
-      setTrades(prev);
+      setPendingTrades(prev);
     }
   };
 
@@ -129,18 +133,22 @@ const navigate = useNavigate();
 
   const sortFn = (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
 
-  const incoming = trades
+  const incoming = pendingTrades
     .filter((t) => t.recipient._id === user._id)
     .filter((t) => t.sender.username.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort(sortFn);
 
-  const outgoing = trades
+  const outgoing = pendingTrades
 
     .filter((t) => t.sender._id === user._id)
     .filter((t) => t.recipient.username.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort(sortFn);
 
-  const tradesToShow = activeTab === 'incoming' ? incoming : outgoing;
+  const completed = completedTrades
+    .filter((t) => [t.sender.username, t.recipient.username].some(name => name.toLowerCase().includes(searchQuery.toLowerCase())))
+    .sort(sortFn);
+
+  const tradesToShow = activeTab === 'incoming' ? incoming : activeTab === 'outgoing' ? outgoing : completed;
 
   const RowActions = ({ trade, isOutgoing }) => (
     <div className="row-actions" onClick={(e) => e.stopPropagation()}>
@@ -155,6 +163,23 @@ const navigate = useNavigate();
       )}
     </div>
   );
+
+  const HistoryRow = ({ trade }) => {
+    const isOutgoing = trade.sender._id === user._id;
+    return (
+      <tr tabIndex={0} onClick={() => handleRowClick(trade)}>
+        <td className="status">{trade.status}</td>
+        <td className="who">
+          <strong>{isOutgoing ? 'you' : trade.sender.username}</strong>
+          <span className="arrow">→</span>
+          <strong>{isOutgoing ? trade.recipient.username : 'you'}</strong>
+        </td>
+        <td>{offerSummary(trade.offeredItems, trade.offeredPacks)}</td>
+        <td>{offerSummary(trade.requestedItems, trade.requestedPacks)}</td>
+        <td className="age">{timeAgo(trade.createdAt)}</td>
+      </tr>
+    );
+  };
 
   const handleRowClick = (trade) => {
     if (openTrade && openTrade._id === trade._id) {
@@ -206,7 +231,28 @@ const navigate = useNavigate();
     </div>
   );
 
-  const DetailPanel = ({ trade, isOutgoing, open }) => (
+  const MobileHistoryCard = ({ trade }) => {
+    const isOutgoing = trade.sender._id === user._id;
+    return (
+      <div className="mobile-card" tabIndex={0} onClick={() => handleRowClick(trade)}>
+        <div className="top">
+          <span>
+            {isOutgoing ? 'you' : trade.sender.username} →{' '}
+            {isOutgoing ? trade.recipient.username : 'you'}
+          </span>
+          <span className="age">{timeAgo(trade.createdAt)}</span>
+        </div>
+        <div className="preview">
+          {offerSummary(trade.offeredItems, trade.offeredPacks)}
+          <span className="arrow">→</span>
+          {offerSummary(trade.requestedItems, trade.requestedPacks)}
+        </div>
+        <div className="actions">Status: {trade.status}</div>
+      </div>
+    );
+  };
+
+  const DetailPanel = ({ trade, isOutgoing, open, showActions = true }) => (
     <aside
       className={`detail-panel${open ? ' open' : ''}`}
       role="dialog"
@@ -258,20 +304,23 @@ const navigate = useNavigate();
           </div>
         </section>
       </div>
-      <footer>
-        <RowActions trade={trade} isOutgoing={isOutgoing} />
-      </footer>
+      {showActions && (
+        <footer>
+          <RowActions trade={trade} isOutgoing={isOutgoing} />
+        </footer>
+      )}
     </aside>
   );
 
   return (
     <div className="pending-page">
       <header className="page-header">
-        <h1>Pending Trades</h1>
+        <h1>Trades</h1>
         <div className="header-controls">
           <div className="segmented" role="tablist">
             <button role="tab" aria-selected={activeTab === 'incoming'} className={activeTab==='incoming' ? 'active' : ''} onClick={() => setActiveTab('incoming')}>Incoming</button>
             <button role="tab" aria-selected={activeTab === 'outgoing'} className={activeTab==='outgoing' ? 'active' : ''} onClick={() => setActiveTab('outgoing')}>Outgoing</button>
+            <button role="tab" aria-selected={activeTab === 'completed'} className={activeTab==='completed' ? 'active' : ''} onClick={() => setActiveTab('completed')}>Completed</button>
           </div>
           <input type="search" placeholder="Search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
         </div>
@@ -280,12 +329,12 @@ const navigate = useNavigate();
 
       <div className="table-wrapper">
         {tradesToShow.length === 0 ? (
-          <p className="no-trades">No pending trades</p>
+          <p className="no-trades">No {activeTab === 'completed' ? 'completed' : 'pending'} trades</p>
         ) : !isMobile ? (
           <table className="trade-table">
             <thead>
               <tr>
-                <th>Action</th>
+                {activeTab === 'completed' ? <th>Status</th> : <th>Action</th>}
                 <th>Who</th>
                 <th>Offer</th>
                 <th>Want</th>
@@ -294,13 +343,21 @@ const navigate = useNavigate();
             </thead>
             <tbody>
               {tradesToShow.map((t) => (
-                <TradeRow key={t._id} trade={t} isOutgoing={activeTab==='outgoing'} />
+                activeTab === 'completed' ? (
+                  <HistoryRow key={t._id} trade={t} />
+                ) : (
+                  <TradeRow key={t._id} trade={t} isOutgoing={activeTab==='outgoing'} />
+                )
               ))}
             </tbody>
           </table>
         ) : (
           tradesToShow.map((t) => (
-            <MobileCard key={t._id} trade={t} isOutgoing={activeTab==='outgoing'} />
+            activeTab === 'completed' ? (
+              <MobileHistoryCard key={t._id} trade={t} />
+            ) : (
+              <MobileCard key={t._id} trade={t} isOutgoing={activeTab==='outgoing'} />
+            )
           ))
         )}
       </div>
@@ -309,6 +366,7 @@ const navigate = useNavigate();
           trade={openTrade}
           isOutgoing={openTrade.sender._id === user._id}
           open={panelOpen}
+          showActions={activeTab !== 'completed'}
         />
       )}
     </div>
