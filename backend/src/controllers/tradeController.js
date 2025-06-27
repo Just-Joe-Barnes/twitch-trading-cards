@@ -157,6 +157,7 @@ const updateTradeStatus = async (req, res) => {
                     const cardObj = sender.cards.splice(index, 1)[0];
                     removeFromFeaturedCards(sender, cardObj._id);
                     cardObj.status = 'available';
+                    cardObj.acquiredAt = new Date();
                     recipient.cards.push(cardObj);
                 } else {
                     console.warn(`Offered card with ID ${card._id} not found in sender's collection.`);
@@ -169,6 +170,7 @@ const updateTradeStatus = async (req, res) => {
                     const cardObj = recipient.cards.splice(index, 1)[0];
                     removeFromFeaturedCards(recipient, cardObj._id);
                     cardObj.status = 'available';
+                    cardObj.acquiredAt = new Date();
                     sender.cards.push(cardObj);
                 } else {
                     console.warn(`Requested card with ID ${card._id} not found in recipient's collection.`);
