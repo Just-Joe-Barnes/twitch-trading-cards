@@ -169,7 +169,7 @@ const navigate = useNavigate();
   );
 
   const HistoryRow = ({ trade }) => {
-    const isOutgoing = trade.sender._id === user._id;
+    const isOutgoing = trade.sender?._id === user._id;
     return (
       <tr tabIndex={0} onClick={() => handleRowClick(trade)}>
         <td className="status">{trade.status}</td>
@@ -236,7 +236,7 @@ const navigate = useNavigate();
   );
 
   const MobileHistoryCard = ({ trade }) => {
-    const isOutgoing = trade.sender._id === user._id;
+    const isOutgoing = trade.sender?._id === user._id;
     return (
       <div className="mobile-card" tabIndex={0} onClick={() => handleRowClick(trade)}>
         <div className="top">
@@ -368,7 +368,7 @@ const navigate = useNavigate();
       {openTrade && (
         <DetailPanel
           trade={openTrade}
-          isOutgoing={openTrade.sender._id === user._id}
+          isOutgoing={openTrade.sender?._id === user._id}
           open={panelOpen}
           showActions={activeTab !== 'completed'}
         />

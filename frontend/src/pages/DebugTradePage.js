@@ -93,8 +93,8 @@ const PendingTrades = () => {
 
     const filteredAndSortedTrades = pendingTrades
         .filter((trade) => {
-            const isIncoming = trade.recipient._id === loggedInUser._id;
-            const isOutgoing = trade.sender._id === loggedInUser._id;
+            const isIncoming = trade.recipient?._id === loggedInUser._id;
+            const isOutgoing = trade.sender?._id === loggedInUser._id;
 
             if (filter === 'incoming' && !isIncoming) return false;
             if (filter === 'outgoing' && !isOutgoing) return false;
@@ -136,7 +136,7 @@ const PendingTrades = () => {
                 <p className="no-trades">No pending trades.</p>
             ) : (
                 filteredAndSortedTrades.map((trade) => {
-                    const isOutgoing = trade.sender._id === loggedInUser._id;
+                    const isOutgoing = trade.sender?._id === loggedInUser._id;
                     const tradeStatusClass = `trade-card ${isOutgoing ? 'outgoing' : 'incoming'}`;
                     const isExpanded = expandedTrades[trade._id];
 
