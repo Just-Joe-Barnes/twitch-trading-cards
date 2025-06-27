@@ -91,12 +91,15 @@ const navigate = useNavigate();
     }
   };
 
+  const senderName = (trade) => trade.sender?.username || 'Unknown';
+  const recipientName = (trade) => trade.recipient?.username || 'Unknown';
+
   const handleCounter = (trade) => {
     navigate('/trading', {
       state: {
         counterOffer: {
           tradeId: trade._id,
-          selectedUser: trade.sender.username,
+          selectedUser: senderName(trade),
           tradeOffer: trade.requestedItems,
           tradeRequest: trade.offeredItems,
           offeredPacks: trade.requestedPacks,
@@ -134,18 +137,19 @@ const navigate = useNavigate();
   const sortFn = (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
 
   const incoming = pendingTrades
-    .filter((t) => t.recipient._id === user._id)
-    .filter((t) => t.sender.username.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter((t) => t.recipient?._id === user._id)
+    .filter((t) => (t.sender?.username || '').toLowerCase().includes(searchQuery.toLowerCase()))
     .sort(sortFn);
 
   const outgoing = pendingTrades
-
-    .filter((t) => t.sender._id === user._id)
-    .filter((t) => t.recipient.username.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter((t) => t.sender?._id === user._id)
+    .filter((t) => (t.recipient?.username || '').toLowerCase().includes(searchQuery.toLowerCase()))
     .sort(sortFn);
 
   const completed = completedTrades
-    .filter((t) => [t.sender.username, t.recipient.username].some(name => name.toLowerCase().includes(searchQuery.toLowerCase())))
+    .filter((t) => [t.sender?.username, t.recipient?.username]
+      .filter(Boolean)
+      .some((name) => name.toLowerCase().includes(searchQuery.toLowerCase())))
     .sort(sortFn);
 
   const tradesToShow = activeTab === 'incoming' ? incoming : activeTab === 'outgoing' ? outgoing : completed;
@@ -154,12 +158,12 @@ const navigate = useNavigate();
     <div className="row-actions" onClick={(e) => e.stopPropagation()}>
       {!isOutgoing ? (
         <>
-          <button onClick={() => handleAction(trade._id, 'accept')} aria-label={`Accept trade with ${trade.sender.username}`}>Accept</button>
-          <button onClick={() => handleCounter(trade)} aria-label={`Counter trade with ${trade.sender.username}`}>Counter</button>
-          <button onClick={() => handleAction(trade._id, 'reject')} aria-label={`Reject trade with ${trade.sender.username}`}>Reject</button>
+          <button onClick={() => handleAction(trade._id, 'accept')} aria-label={`Accept trade with ${senderName(trade)}`}>Accept</button>
+          <button onClick={() => handleCounter(trade)} aria-label={`Counter trade with ${senderName(trade)}`}>Counter</button>
+          <button onClick={() => handleAction(trade._id, 'reject')} aria-label={`Reject trade with ${senderName(trade)}`}>Reject</button>
         </>
       ) : (
-        <button onClick={() => handleAction(trade._id, 'cancel')} aria-label={`Cancel trade with ${trade.recipient.username}`}>Cancel</button>
+        <button onClick={() => handleAction(trade._id, 'cancel')} aria-label={`Cancel trade with ${recipientName(trade)}`}>Cancel</button>
       )}
     </div>
   );
@@ -170,9 +174,9 @@ const navigate = useNavigate();
       <tr tabIndex={0} onClick={() => handleRowClick(trade)}>
         <td className="status">{trade.status}</td>
         <td className="who">
-          <strong>{isOutgoing ? 'you' : trade.sender.username}</strong>
+          <strong>{isOutgoing ? 'you' : senderName(trade)}</strong>
           <span className="arrow">→</span>
-          <strong>{isOutgoing ? trade.recipient.username : 'you'}</strong>
+          <strong>{isOutgoing ? recipientName(trade) : 'you'}</strong>
         </td>
         <td>{offerSummary(trade.offeredItems, trade.offeredPacks)}</td>
         <td>{offerSummary(trade.requestedItems, trade.requestedPacks)}</td>
@@ -197,9 +201,9 @@ const navigate = useNavigate();
     >
       <td><RowActions trade={trade} isOutgoing={isOutgoing} /></td>
       <td className="who">
-        <strong>{isOutgoing ? 'you' : trade.sender.username}</strong>
+        <strong>{isOutgoing ? 'you' : senderName(trade)}</strong>
         <span className="arrow">→</span>
-        <strong>{isOutgoing ? trade.recipient.username : 'you'}</strong>
+        <strong>{isOutgoing ? recipientName(trade) : 'you'}</strong>
       </td>
       <td>{offerSummary(trade.offeredItems, trade.offeredPacks)}</td>
       <td>{offerSummary(trade.requestedItems, trade.requestedPacks)}</td>
@@ -215,8 +219,8 @@ const navigate = useNavigate();
     >
       <div className="top">
         <span>
-          {isOutgoing ? 'you' : trade.sender.username} →{' '}
-          {isOutgoing ? trade.recipient.username : 'you'}
+          {isOutgoing ? 'you' : senderName(trade)} →{' '}
+          {isOutgoing ? recipientName(trade) : 'you'}
         </span>
         <span className="age">{timeAgo(trade.createdAt)}</span>
       </div>
@@ -237,8 +241,8 @@ const navigate = useNavigate();
       <div className="mobile-card" tabIndex={0} onClick={() => handleRowClick(trade)}>
         <div className="top">
           <span>
-            {isOutgoing ? 'you' : trade.sender.username} →{' '}
-            {isOutgoing ? trade.recipient.username : 'you'}
+            {isOutgoing ? 'you' : senderName(trade)} →{' '}
+            {isOutgoing ? recipientName(trade) : 'you'}
           </span>
           <span className="age">{timeAgo(trade.createdAt)}</span>
         </div>
