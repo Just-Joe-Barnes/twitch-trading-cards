@@ -76,6 +76,7 @@ This document details the **refactored trading and market system**, including:
     - Swaps packs accordingly
     - Transfers card ownership
     - Marks cards as `'available'`
+    - Updates `acquiredAt` timestamp on transferred cards
     - Cancels other pending trades/listings involving these cards
     - Notifies both users
   - If **rejected/cancelled**:
@@ -121,6 +122,7 @@ This document details the **refactored trading and market system**, including:
 - **Process:**
   - Transfers packs and card ownership
   - Marks card as `'available'`
+  - Updates `acquiredAt` timestamp on transferred cards
   - Deletes listing
   - Cancels other listings for the same card
   - Notifies buyer and seller

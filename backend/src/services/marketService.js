@@ -78,6 +78,7 @@ async function acceptOffer(listingId, offerId, userId, session) {
   const [cardToTransfer] = seller.cards.splice(cardIndexInSeller, 1);
   removeFromFeaturedCards(seller, cardToTransfer._id);
   cardToTransfer.status = 'available'; // Ensure status is set correctly before pushing
+  cardToTransfer.acquiredAt = new Date();
   buyer.cards.push(cardToTransfer);
   console.log('[Accept Offer Service] Listed card added to buyer locally.');
 
@@ -130,6 +131,7 @@ async function acceptOffer(listingId, offerId, userId, session) {
           const [removedCard] = buyer.cards.splice(i, 1);
           removeFromFeaturedCards(buyer, removedCard._id);
           removedCard.status = 'available'; // Set status back to available for the seller
+          removedCard.acquiredAt = new Date();
           cardsToGiveSeller.push(removedCard);
       }
   }
