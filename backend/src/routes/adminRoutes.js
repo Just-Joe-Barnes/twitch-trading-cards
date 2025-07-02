@@ -467,7 +467,14 @@ router.get('/achievements', protect, adminOnly, async (req, res) => {
 
 router.post('/achievements', protect, adminOnly, async (req, res) => {
   try {
-    const achievement = new Achievement(req.body);
+    const { name, description, threshold, packs, card } = req.body;
+    const achievement = new Achievement({
+      name,
+      description,
+      threshold: Number(threshold) || 0,
+      packs: Number(packs) || 0,
+      card: card || null,
+    });
     await achievement.save();
     res.json({ achievement });
   } catch (err) {
@@ -480,7 +487,14 @@ router.put('/achievements/:id', protect, adminOnly, async (req, res) => {
   try {
     const achievement = await Achievement.findById(req.params.id);
     if (!achievement) return res.status(404).json({ message: 'Achievement not found' });
-    Object.assign(achievement, req.body);
+
+    const { name, description, threshold, packs, card } = req.body;
+    achievement.name = name;
+    achievement.description = description;
+    achievement.threshold = Number(threshold) || 0;
+    achievement.packs = Number(packs) || 0;
+    achievement.card = card || null;
+
     await achievement.save();
     res.json({ achievement });
   } catch (err) {
