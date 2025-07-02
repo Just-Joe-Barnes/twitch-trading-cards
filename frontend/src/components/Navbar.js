@@ -138,6 +138,15 @@ const Navbar = ({ isAdmin }) => {
                         Trading
                     </NavLink>
                 </li>
+                <li>
+                    <NavLink
+                        to="/achievements"
+                        className="nav-link"
+                        onClick={() => setMenuOpen(false)}
+                    >
+                        Achievements
+                    </NavLink>
+                </li>
                 {isAdmin && (
                     <>
                         <li>
