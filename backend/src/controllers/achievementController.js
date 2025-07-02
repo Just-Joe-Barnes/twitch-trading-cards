@@ -43,12 +43,14 @@ const getAchievements = async (req, res) => {
       if (a.type === 'fullSets') current = fullSets;
       if (a.type === 'logins') current = user.loginCount || 0;
       const achieved = current >= a.requirement;
+      const userAch = user.achievements?.find(ua => ua.name === a.name);
       return {
         name: a.name,
         description: a.description,
         requirement: a.requirement,
         current: Math.min(current, a.requirement),
-        achieved
+        achieved,
+        ...(userAch ? { dateEarned: userAch.dateEarned } : {})
       };
     });
 
