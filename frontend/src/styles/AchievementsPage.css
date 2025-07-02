@@ -45,3 +45,9 @@
   font-size: 0.9rem;
   color: var(--brand-secondary);
 }
+
+.ach-reward {
+  margin-top: 0.25rem;
+  font-size: 0.9rem;
+  color: var(--brand-primary);
+}

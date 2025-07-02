@@ -50,6 +50,7 @@ const getAchievements = async (req, res) => {
         requirement: a.requirement,
         current: Math.min(current, a.requirement),
         achieved,
+        reward: a.reward || {},
         ...(userAch ? { dateEarned: userAch.dateEarned } : {})
       };
     });
