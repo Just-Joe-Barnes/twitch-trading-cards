@@ -1,4 +1,6 @@
 const achievementsConfig = require('../../../config/achievements');
+const Trade = require('../models/tradeModel');
+const MarketListing = require('../models/MarketListing');
 const ALL_RARITIES = ['Basic','Common','Standard','Uncommon','Rare','Epic','Legendary','Mythic','Unique','Divine'];
 
 const checkAndGrantAchievements = async (user) => {
@@ -16,10 +18,20 @@ const checkAndGrantAchievements = async (user) => {
     if (ALL_RARITIES.every(r => rarities.has(r))) fullSets += 1;
   }
 
+  const [tradeCount, listingCount] = await Promise.all([
+    Trade.countDocuments({
+      $or: [{ sender: user._id }, { recipient: user._id }],
+      status: 'accepted',
+    }),
+    MarketListing.countDocuments({ owner: user._id, status: 'sold' }),
+  ]);
+
   for (const achievement of achievementsConfig) {
     let progress = 0;
     if (achievement.field === 'uniqueCards') progress = uniqueCards;
     else if (achievement.field === 'fullSets') progress = fullSets;
+    else if (achievement.field === 'completedTrades') progress = tradeCount;
+    else if (achievement.field === 'completedListings') progress = listingCount;
     else progress = user[achievement.field] || 0;
     const alreadyHas = user.achievements.some(a => a.name === achievement.name);
 
