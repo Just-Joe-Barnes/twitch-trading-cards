@@ -44,7 +44,8 @@ const AdminActions = () => {
 
     // Achievements state
     const [achievements, setAchievements] = useState([]);
-    const [newAchievement, setNewAchievement] = useState({ name: '', description: '', threshold: 0, packRewards: '', cardRewards: '' });
+    const [newAchievement, setNewAchievement] = useState({ name: '', description: '', threshold: 0, packs: 0, card: '', cardQuery: '' });
+    const [newAchievementResults, setNewAchievementResults] = useState([]);
 
     // Pack management state
 
@@ -77,7 +78,8 @@ const AdminActions = () => {
         const fetchAchievements = async () => {
             try {
                 const data = await fetchWithAuth('/api/admin/achievements');
-                setAchievements(data.achievements || []);
+                const mapped = (data.achievements || []).map(a => ({ ...a, cardQuery: a.card || '', cardResults: [] }));
+                setAchievements(mapped);
             } catch (err) {
                 console.error('Fetch achievements failed:', err);
             }
@@ -204,6 +206,36 @@ const AdminActions = () => {
         setEditResults([]);
     };
 
+    // Achievement card search helpers
+    const handleAchievementCardQueryChange = async (id, value) => {
+        setAchievements(prev => prev.map(a => a._id === id ? { ...a, cardQuery: value } : a));
+        if (value) {
+            const results = await searchCardsByName(value);
+            setAchievements(prev => prev.map(a => a._id === id ? { ...a, cardResults: results } : a));
+        } else {
+            setAchievements(prev => prev.map(a => a._id === id ? { ...a, cardResults: [] } : a));
+        }
+    };
+
+    const handleSelectAchievementCard = (id, card) => {
+        setAchievements(prev => prev.map(a => a._id === id ? { ...a, card: card._id, cardQuery: card.name, cardResults: [] } : a));
+    };
+
+    const handleNewAchievementCardQueryChange = async (value) => {
+        setNewAchievement({ ...newAchievement, cardQuery: value });
+        if (value) {
+            const results = await searchCardsByName(value);
+            setNewAchievementResults(results);
+        } else {
+            setNewAchievementResults([]);
+        }
+    };
+
+    const handleSelectNewAchievementCard = (card) => {
+        setNewAchievement({ ...newAchievement, card: card._id, cardQuery: card.name });
+        setNewAchievementResults([]);
+    };
+
     const handleSaveAchievement = async (ach) => {
         try {
             await fetchWithAuth(`/api/admin/achievements/${ach._id}`, {
@@ -212,8 +244,8 @@ const AdminActions = () => {
                     name: ach.name,
                     description: ach.description,
                     threshold: Number(ach.threshold) || 0,
-                    packRewards: ach.packRewards.split(',').map(s => s.trim()).filter(Boolean),
-                    cardRewards: ach.cardRewards.split(',').map(s => s.trim()).filter(Boolean),
+                    packs: Number(ach.packs) || 0,
+                    card: ach.card || null,
                 })
             });
             window.showToast('Achievement saved', 'success');
@@ -239,12 +271,13 @@ const AdminActions = () => {
                     name: newAchievement.name,
                     description: newAchievement.description,
                     threshold: Number(newAchievement.threshold) || 0,
-                    packRewards: newAchievement.packRewards.split(',').map(s => s.trim()).filter(Boolean),
-                    cardRewards: newAchievement.cardRewards.split(',').map(s => s.trim()).filter(Boolean),
+                    packs: Number(newAchievement.packs) || 0,
+                    card: newAchievement.card || null,
                 })
             });
-            setAchievements([...achievements, res.achievement]);
-            setNewAchievement({ name: '', description: '', threshold: 0, packRewards: '', cardRewards: '' });
+            setAchievements([...achievements, { ...res.achievement, cardQuery: res.achievement.card || '', cardResults: [] }]);
+            setNewAchievement({ name: '', description: '', threshold: 0, packs: 0, card: '', cardQuery: '' });
+            setNewAchievementResults([]);
         } catch {
             window.showToast('Error creating achievement', 'error');
         }
@@ -428,17 +461,33 @@ const AdminActions = () => {
                             placeholder="Threshold"
                         />
                         <input
-                            type="text"
-                            value={Array.isArray(ach.packRewards) ? ach.packRewards.join(',') : ach.packRewards}
-                            onChange={(e) => setAchievements(achievements.map(a => a._id === ach._id ? { ...a, packRewards: e.target.value } : a))}
-                            placeholder="Pack Rewards (IDs)"
+                            type="number"
+                            value={ach.packs || 0}
+                            onChange={(e) => setAchievements(achievements.map(a => a._id === ach._id ? { ...a, packs: e.target.value } : a))}
+                            placeholder="Pack Reward Quantity"
                         />
-                        <input
-                            type="text"
-                            value={Array.isArray(ach.cardRewards) ? ach.cardRewards.join(',') : ach.cardRewards}
-                            onChange={(e) => setAchievements(achievements.map(a => a._id === ach._id ? { ...a, cardRewards: e.target.value } : a))}
-                            placeholder="Card Rewards (IDs)"
-                        />
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                type="text"
+                                className="search-bar"
+                                value={ach.cardQuery}
+                                onChange={(e) => handleAchievementCardQueryChange(ach._id, e.target.value)}
+                                placeholder="Search reward card..."
+                            />
+                            {ach.cardResults && ach.cardResults.length > 0 && (
+                                <ul className="search-dropdown">
+                                    {ach.cardResults.map(card => (
+                                        <li
+                                            key={card._id}
+                                            className="search-result-item"
+                                            onMouseDown={() => handleSelectAchievementCard(ach._id, card)}
+                                        >
+                                            {card.name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
                         <div style={{ marginTop: '0.5rem' }}>
                             <button onClick={() => handleSaveAchievement(ach)}>Save</button>
                             <button style={{ marginLeft: '1rem' }} onClick={() => handleDeleteAchievement(ach._id)}>Delete</button>
@@ -466,17 +515,33 @@ const AdminActions = () => {
                     placeholder="Threshold"
                 />
                 <input
-                    type="text"
-                    value={newAchievement.packRewards}
-                    onChange={(e) => setNewAchievement({ ...newAchievement, packRewards: e.target.value })}
-                    placeholder="Pack Rewards (IDs)"
+                    type="number"
+                    value={newAchievement.packs}
+                    onChange={(e) => setNewAchievement({ ...newAchievement, packs: e.target.value })}
+                    placeholder="Pack Reward Quantity"
                 />
-                <input
-                    type="text"
-                    value={newAchievement.cardRewards}
-                    onChange={(e) => setNewAchievement({ ...newAchievement, cardRewards: e.target.value })}
-                    placeholder="Card Rewards (IDs)"
-                />
+                <div style={{ position: 'relative' }}>
+                    <input
+                        type="text"
+                        className="search-bar"
+                        value={newAchievement.cardQuery}
+                        onChange={(e) => handleNewAchievementCardQueryChange(e.target.value)}
+                        placeholder="Search reward card..."
+                    />
+                    {newAchievementResults.length > 0 && (
+                        <ul className="search-dropdown">
+                            {newAchievementResults.map(card => (
+                                <li
+                                    key={card._id}
+                                    className="search-result-item"
+                                    onMouseDown={() => handleSelectNewAchievementCard(card)}
+                                >
+                                    {card.name}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
                 <button onClick={handleCreateAchievement}>Create</button>
             </section>
 
