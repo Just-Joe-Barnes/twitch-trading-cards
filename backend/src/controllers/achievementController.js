@@ -1,6 +1,5 @@
 const User = require('../models/userModel');
 const Trade = require('../models/tradeModel');
-const MarketListing = require('../models/MarketListing');
 const ACHIEVEMENTS = require('../data/achievements');
 
 const getAchievements = async (req, res) => {
@@ -10,7 +9,7 @@ const getAchievements = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Count completed trades and sold listings
+    // Count completed trades; listing progress comes from user.completedListings
     const tradeCountPromise = Trade.countDocuments({
       $or: [{ sender: user._id }, { recipient: user._id }],
       status: 'accepted'
