@@ -8,7 +8,7 @@ const getUserProfile = async (req, res) => {
     try {
         const dbStart = process.hrtime();
         const user = await User.findById(req.user._id).select(
-            'username email isAdmin packs openedPacks featuredCards favoriteCard cards twitchProfilePic xp level achievements'
+            'username email isAdmin packs openedPacks loginCount featuredCards favoriteCard cards twitchProfilePic xp level achievements'
         ).lean();
         const dbEnd = process.hrtime(dbStart);
         console.log(`[PERF] [getUserProfile] DB query took ${dbEnd[0] * 1000 + dbEnd[1] / 1e6} ms`);
@@ -42,7 +42,7 @@ const getProfileByUsername = async (req, res) => {
 
         // Base fields returned for any profile lookup
         const baseFields =
-            'username isAdmin openedPacks featuredCards favoriteCard cards twitchProfilePic xp level achievements';
+            'username isAdmin openedPacks loginCount featuredCards favoriteCard cards twitchProfilePic xp level achievements';
 
         // Only include the email if the requester is viewing their own profile
         // or has admin privileges
