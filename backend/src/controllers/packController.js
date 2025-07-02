@@ -161,6 +161,9 @@ const openPacksForUser = async (req, res) => {
         user.cards.push(...newCards);
         await user.save();
 
+        const { checkAndGrantAchievements } = require('../helpers/achievementHelper');
+        await checkAndGrantAchievements(user);
+
         res.status(200).json({ message: 'Pack opened successfully', newCards });
     } catch (error) {
         console.error('[openPacksForUser] Error:', error.message);
