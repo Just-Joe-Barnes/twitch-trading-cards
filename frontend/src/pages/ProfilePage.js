@@ -208,8 +208,8 @@ const ProfilePage = () => {
                         { name: 'Level 50', description: 'Reached Level 50' },
                         { name: 'Trader I', description: 'Completed 10 trades' },
                         { name: 'Trader II', description: 'Completed 50 trades' },
-                        { name: 'Seller I', description: 'Created 10 listings' },
-                        { name: 'Seller II', description: 'Created 50 listings' },
+                        { name: 'Seller I', description: 'Sold 10 listings' },
+                        { name: 'Seller II', description: 'Sold 50 listings' },
                         { name: 'Opener I', description: 'Opened 10 packs' },
                         { name: 'Opener II', description: 'Opened 50 packs' },
                     ].map((ach, idx) => {
