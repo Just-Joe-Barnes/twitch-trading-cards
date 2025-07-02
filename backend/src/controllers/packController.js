@@ -56,6 +56,7 @@ const openPack = async (req, res) => {
             newCard.name = `${prefix} ${newCard.name}`;
         }
 
+        newCard.acquiredAt = new Date();
         user.cards.push(newCard);
         user.openedPacks += 1;
         user.packs -= 1;
@@ -149,6 +150,7 @@ const openPacksForUser = async (req, res) => {
                 const prefix = mod.name === 'Glitch' ? 'Glitched' : mod.name;
                 newCard.name = `${prefix} ${newCard.name}`;
             }
+            newCard.acquiredAt = new Date();
         }
 
         user.packs -= 1;

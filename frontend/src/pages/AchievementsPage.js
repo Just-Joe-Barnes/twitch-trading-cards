@@ -29,7 +29,15 @@ const AchievementsPage = () => {
     try {
       const res = await claimAchievement(ach.name);
       if (res.card) {
-        window.inspectCard(res.card);
+        const { name, imageUrl, flavorText, rarity, mintNumber, modifier } = res.card;
+        window.inspectCard({
+          name,
+          image: imageUrl,
+          description: flavorText,
+          rarity,
+          mintNumber,
+          modifier,
+        });
       }
       window.showToast('Reward claimed!', 'success');
       setAchievements((prev) =>
