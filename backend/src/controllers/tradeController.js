@@ -257,6 +257,8 @@ const updateTradeStatus = async (req, res) => {
             recipient.xp = (recipient.xp || 0) + 20;
             sender.level = Math.floor(sender.xp / 100) + 1;
             recipient.level = Math.floor(recipient.xp / 100) + 1;
+            sender.completedTrades = (sender.completedTrades || 0) + 1;
+            recipient.completedTrades = (recipient.completedTrades || 0) + 1;
             await sender.save({ session });
             await recipient.save({ session });
         }
