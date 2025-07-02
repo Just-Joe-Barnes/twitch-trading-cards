@@ -9,10 +9,10 @@ module.exports = [
   { key: 'TRADER_I', name: 'Trader I', description: 'Completed 10 trades', field: 'completedTrades', threshold: 10, reward: {} },
   { key: 'TRADER_II', name: 'Trader II', description: 'Completed 50 trades', field: 'completedTrades', threshold: 50, reward: {} },
   { key: 'TRADER_III', name: 'Trader III', description: 'Completed 100 trades', field: 'completedTrades', threshold: 100, reward: {} },
-  // Listing achievements
-  { key: 'SELLER_I', name: 'Seller I', description: 'Created 10 listings', field: 'createdListings', threshold: 10, reward: {} },
-  { key: 'SELLER_II', name: 'Seller II', description: 'Created 50 listings', field: 'createdListings', threshold: 50, reward: {} },
-  { key: 'SELLER_III', name: 'Seller III', description: 'Created 100 listings', field: 'createdListings', threshold: 100, reward: {} },
+  // Listing achievements (based on completed sales)
+  { key: 'SELLER_I', name: 'Seller I', description: 'Sold 10 cards on the market', field: 'completedListings', threshold: 10, reward: {} },
+  { key: 'SELLER_II', name: 'Seller II', description: 'Sold 50 cards on the market', field: 'completedListings', threshold: 50, reward: {} },
+  { key: 'SELLER_III', name: 'Seller III', description: 'Sold 100 cards on the market', field: 'completedListings', threshold: 100, reward: {} },
   // Market sales achievements
   { key: 'MERCHANT_I', name: 'Merchant I', description: 'Sold 10 cards on the market', field: 'completedListings', threshold: 10, reward: {} },
   { key: 'MERCHANT_II', name: 'Merchant II', description: 'Sold 50 cards on the market', field: 'completedListings', threshold: 50, reward: {} },
