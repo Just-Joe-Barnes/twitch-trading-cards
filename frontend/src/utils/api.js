@@ -357,3 +357,16 @@ export const fetchAchievements = async () => {
         throw error;
     }
 };
+
+// Claim a reward for a specific achievement name
+export const claimAchievement = async (name) => {
+    try {
+        return await fetchWithAuth('/api/achievements/claim', {
+            method: 'POST',
+            body: JSON.stringify({ name }),
+        });
+    } catch (error) {
+        console.error('[API] Error claiming achievement reward:', error.message);
+        throw error;
+    }
+};

@@ -2,6 +2,7 @@ const User = require('../models/userModel');
 const Trade = require('../models/tradeModel');
 const MarketListing = require('../models/MarketListing');
 const ACHIEVEMENTS = require('../data/achievements');
+const { generateCardWithProbability } = require('../helpers/cardHelpers');
 const ALL_RARITIES = ['Basic','Common','Standard','Uncommon','Rare','Epic','Legendary','Mythic','Unique','Divine'];
 
 const getAchievements = async (req, res) => {
@@ -51,7 +52,7 @@ const getAchievements = async (req, res) => {
         current: Math.min(current, a.requirement),
         achieved,
         reward: a.reward || {},
-        ...(userAch ? { dateEarned: userAch.dateEarned } : {})
+        ...(userAch ? { dateEarned: userAch.dateEarned, claimed: userAch.claimed } : { claimed: false })
       };
     });
 
@@ -62,4 +63,40 @@ const getAchievements = async (req, res) => {
   }
 };
 
-module.exports = { getAchievements };
+const claimAchievementReward = async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) {
+      return res.status(400).json({ message: 'Achievement name required' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const ach = user.achievements.find(a => a.name === name);
+    if (!ach) return res.status(400).json({ message: 'Achievement not unlocked' });
+    if (ach.claimed) return res.status(400).json({ message: 'Reward already claimed' });
+
+    const reward = ach.reward || {};
+    let rewardCard = null;
+    if (reward.packs) {
+      user.packs = (user.packs || 0) + reward.packs;
+    }
+    if (reward.card) {
+      rewardCard = await generateCardWithProbability();
+      if (rewardCard) {
+        user.cards.push(rewardCard);
+      }
+    }
+
+    ach.claimed = true;
+    await user.save();
+
+    res.json({ success: true, packs: user.packs, card: rewardCard });
+  } catch (err) {
+    console.error('Error claiming achievement:', err.message);
+    res.status(500).json({ message: 'Failed to claim achievement reward' });
+  }
+};
+
+module.exports = { getAchievements, claimAchievementReward };

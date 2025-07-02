@@ -1,5 +1,4 @@
 const achievementsConfig = require('../../../config/achievements');
-const { generateCardWithProbability } = require('./cardHelpers');
 const ALL_RARITIES = ['Basic','Common','Standard','Uncommon','Rare','Epic','Legendary','Mythic','Unique','Divine'];
 
 const checkAndGrantAchievements = async (user) => {
@@ -43,27 +42,23 @@ const checkAndGrantAchievements = async (user) => {
     console.log(`Granting ${newlyUnlocked.length} achievements to user ${user.username}`);
     newlyUnlocked.forEach(a => console.log(`- ${a.name}`));
 
-    for (const a of newlyUnlocked) {
-      if (a.reward && a.reward.packs) {
-        user.packs = (user.packs || 0) + a.reward.packs;
-      }
-      if (a.reward && a.reward.card) {
-        const newCard = await generateCardWithProbability();
-        if (newCard) {
-          user.cards.push(newCard);
-        }
-      }
-    }
-
-    user.achievements.push(...newlyUnlocked.map(a => ({ name: a.name, description: a.description, dateEarned: new Date() })));
+    user.achievements.push(
+      ...newlyUnlocked.map(a => ({
+        name: a.name,
+        description: a.description,
+        reward: a.reward || {},
+        claimed: false,
+        dateEarned: new Date(),
+      }))
+    );
     await user.save();
 
     const { sendNotificationToUser } = require('../../notificationService');
     for (const a of newlyUnlocked) {
       sendNotificationToUser(user._id, {
         type: 'Achievement Unlocked',
-        message: `You unlocked "${a.name}"!`,
-        link: '/profile',
+        message: `You unlocked "${a.name}"! Claim your reward on the Achievements page.`,
+        link: '/achievements',
       });
     }
   } else {
