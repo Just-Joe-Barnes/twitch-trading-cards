@@ -94,6 +94,7 @@ const claimAchievementReward = async (req, res) => {
     if (reward.card) {
       rewardCard = await generateCardWithProbability();
       if (rewardCard) {
+        rewardCard.acquiredAt = new Date();
         user.cards.push(rewardCard);
       }
     }
