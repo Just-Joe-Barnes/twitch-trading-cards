@@ -11,13 +11,13 @@ const getAchievements = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-  // Count completed trades and created listings
+  // Count completed trades and sold listings
   const [tradeCount, listingCount] = await Promise.all([
       Trade.countDocuments({
         $or: [{ sender: user._id }, { recipient: user._id }],
         status: 'accepted'
       }),
-      MarketListing.countDocuments({ owner: user._id })
+      MarketListing.countDocuments({ owner: user._id, status: 'sold' })
     ]);
 
   const uniqueCards = new Set((user.cards || []).map(c => c.name)).size;
