@@ -59,6 +59,9 @@ const userSchema = new mongoose.Schema({
     // Gamification fields
     xp: { type: Number, default: 0 },
     level: { type: Number, default: 1 },
+    completedTrades: { type: Number, default: 0 },
+    createdListings: { type: Number, default: 0 },
+    completedListings: { type: Number, default: 0 },
     achievements: [
         {
             name: String,
