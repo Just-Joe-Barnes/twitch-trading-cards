@@ -62,6 +62,10 @@ exports.login = async (req, res) => {
             await user.save();
         }
 
+        // Increment login counter on successful login
+        user.loginCount = (user.loginCount || 0) + 1;
+        await user.save();
+
         // Generate JWT token
         const token = jwt.sign(
             { id: user._id, isAdmin: user.isAdmin },

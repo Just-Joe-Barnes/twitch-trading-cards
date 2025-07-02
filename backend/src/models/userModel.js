@@ -55,6 +55,7 @@ const userSchema = new mongoose.Schema({
     firstLogin: { type: Boolean, default: false },
     isAdmin: { type: Boolean, default: false },
     lastActive: { type: Date }, // Last active in chat
+    loginCount: { type: Number, default: 0 },
 
     // Gamification fields
     xp: { type: Number, default: 0 },
