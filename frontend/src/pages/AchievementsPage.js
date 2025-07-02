@@ -33,6 +33,12 @@ const AchievementsPage = () => {
           <div key={idx} className={`ach-tile ${ach.achieved ? 'achieved' : ''}`}> 
             <h3>{ach.name}</h3>
             <p>{ach.description}</p>
+            {ach.reward && (
+              <div className="ach-reward">
+                Reward:{' '}
+                {ach.reward.packs ? `${ach.reward.packs} Pack` : 'Random Card'}
+              </div>
+            )}
             {ach.achieved ? (
               <div className="ach-earned">
                 Achieved on {new Date(ach.dateEarned).toLocaleDateString()}
