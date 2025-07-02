@@ -6,8 +6,21 @@ module.exports = [
   { name: 'Level 50', description: 'Reach Level 50', type: 'level', requirement: 50 },
   { name: 'Trader I', description: 'Complete 10 trades', type: 'trades', requirement: 10 },
   { name: 'Trader II', description: 'Complete 50 trades', type: 'trades', requirement: 50 },
+  { name: 'Trader III', description: 'Complete 100 trades', type: 'trades', requirement: 100 },
   { name: 'Seller I', description: 'Create 10 listings', type: 'listings', requirement: 10 },
   { name: 'Seller II', description: 'Create 50 listings', type: 'listings', requirement: 50 },
+  { name: 'Seller III', description: 'Create 100 listings', type: 'listings', requirement: 100 },
+  { name: 'Merchant I', description: 'Sell 10 cards on the market', type: 'sales', requirement: 10 },
+  { name: 'Merchant II', description: 'Sell 50 cards on the market', type: 'sales', requirement: 50 },
+  { name: 'Merchant III', description: 'Sell 100 cards on the market', type: 'sales', requirement: 100 },
   { name: 'Opener I', description: 'Open 10 packs', type: 'packs', requirement: 10 },
-  { name: 'Opener II', description: 'Open 50 packs', type: 'packs', requirement: 50 }
+  { name: 'Opener II', description: 'Open 50 packs', type: 'packs', requirement: 50 },
+  { name: 'Opener III', description: 'Open 100 packs', type: 'packs', requirement: 100 },
+  { name: 'Collector I', description: 'Own 10 unique cards', type: 'uniqueCards', requirement: 10 },
+  { name: 'Collector II', description: 'Own 50 unique cards', type: 'uniqueCards', requirement: 50 },
+  { name: 'Collector III', description: 'Own 100 unique cards', type: 'uniqueCards', requirement: 100 },
+  { name: 'Full Set Achiever', description: 'Own every rarity of a single card', type: 'fullSets', requirement: 1 },
+  { name: 'Regular I', description: 'Login 10 times', type: 'logins', requirement: 10 },
+  { name: 'Regular II', description: 'Login 50 times', type: 'logins', requirement: 50 },
+  { name: 'Regular III', description: 'Login 100 times', type: 'logins', requirement: 100 }
 ];

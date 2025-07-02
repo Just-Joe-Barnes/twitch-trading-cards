@@ -1,11 +1,26 @@
 const achievementsConfig = require('../../../config/achievements');
+const ALL_RARITIES = ['Basic','Common','Standard','Uncommon','Rare','Epic','Legendary','Mythic','Unique','Divine'];
 
 const checkAndGrantAchievements = async (user) => {
   const newlyUnlocked = [];
   const progressMap = {};
 
+  const uniqueCards = new Set((user.cards || []).map(c => c.name)).size;
+  const setsByName = {};
+  (user.cards || []).forEach(card => {
+    if (!setsByName[card.name]) setsByName[card.name] = new Set();
+    setsByName[card.name].add(card.rarity);
+  });
+  let fullSets = 0;
+  for (const rarities of Object.values(setsByName)) {
+    if (ALL_RARITIES.every(r => rarities.has(r))) fullSets += 1;
+  }
+
   for (const achievement of achievementsConfig) {
-    const progress = user[achievement.field] || 0;
+    let progress = 0;
+    if (achievement.field === 'uniqueCards') progress = uniqueCards;
+    else if (achievement.field === 'fullSets') progress = fullSets;
+    else progress = user[achievement.field] || 0;
     const alreadyHas = user.achievements.some(a => a.name === achievement.name);
 
     progressMap[achievement.key] = {

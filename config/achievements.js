@@ -8,10 +8,26 @@ module.exports = [
   // Trade achievements
   { key: 'TRADER_I', name: 'Trader I', description: 'Completed 10 trades', field: 'completedTrades', threshold: 10, reward: {} },
   { key: 'TRADER_II', name: 'Trader II', description: 'Completed 50 trades', field: 'completedTrades', threshold: 50, reward: {} },
+  { key: 'TRADER_III', name: 'Trader III', description: 'Completed 100 trades', field: 'completedTrades', threshold: 100, reward: {} },
   // Listing achievements
   { key: 'SELLER_I', name: 'Seller I', description: 'Created 10 listings', field: 'createdListings', threshold: 10, reward: {} },
   { key: 'SELLER_II', name: 'Seller II', description: 'Created 50 listings', field: 'createdListings', threshold: 50, reward: {} },
+  { key: 'SELLER_III', name: 'Seller III', description: 'Created 100 listings', field: 'createdListings', threshold: 100, reward: {} },
+  // Market sales achievements
+  { key: 'MERCHANT_I', name: 'Merchant I', description: 'Sold 10 cards on the market', field: 'completedListings', threshold: 10, reward: {} },
+  { key: 'MERCHANT_II', name: 'Merchant II', description: 'Sold 50 cards on the market', field: 'completedListings', threshold: 50, reward: {} },
+  { key: 'MERCHANT_III', name: 'Merchant III', description: 'Sold 100 cards on the market', field: 'completedListings', threshold: 100, reward: {} },
   // Pack opening achievements
   { key: 'OPENER_I', name: 'Opener I', description: 'Opened 10 packs', field: 'openedPacks', threshold: 10, reward: {} },
   { key: 'OPENER_II', name: 'Opener II', description: 'Opened 50 packs', field: 'openedPacks', threshold: 50, reward: {} },
+  { key: 'OPENER_III', name: 'Opener III', description: 'Opened 100 packs', field: 'openedPacks', threshold: 100, reward: {} },
+  // Collection achievements
+  { key: 'COLLECTOR_I', name: 'Collector I', description: 'Own 10 unique cards', field: 'uniqueCards', threshold: 10, reward: {} },
+  { key: 'COLLECTOR_II', name: 'Collector II', description: 'Own 50 unique cards', field: 'uniqueCards', threshold: 50, reward: {} },
+  { key: 'COLLECTOR_III', name: 'Collector III', description: 'Own 100 unique cards', field: 'uniqueCards', threshold: 100, reward: {} },
+  { key: 'FULL_SET', name: 'Full Set Achiever', description: 'Own every rarity of a single card', field: 'fullSets', threshold: 1, reward: {} },
+  // Login milestones
+  { key: 'LOGIN_I', name: 'Regular I', description: 'Login 10 times', field: 'loginCount', threshold: 10, reward: {} },
+  { key: 'LOGIN_II', name: 'Regular II', description: 'Login 50 times', field: 'loginCount', threshold: 50, reward: {} },
+  { key: 'LOGIN_III', name: 'Regular III', description: 'Login 100 times', field: 'loginCount', threshold: 100, reward: {} },
 ];
