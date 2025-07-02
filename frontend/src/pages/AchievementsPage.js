@@ -30,18 +30,26 @@ const AchievementsPage = () => {
       <h1>Achievements</h1>
       <div className="achievements-grid">
         {achievements.map((ach, idx) => (
-          <div key={idx} className={`ach-tile ${ach.achieved ? 'achieved' : ''}`}>
+          <div key={idx} className={`ach-tile ${ach.achieved ? 'achieved' : ''}`}> 
             <h3>{ach.name}</h3>
             <p>{ach.description}</p>
-            <div className="ach-progress">
-              <div
-                className="ach-progress-bar"
-                style={{ width: `${(ach.current / ach.requirement) * 100}%` }}
-              ></div>
-            </div>
-            <div className="ach-progress-text">
-              {ach.current} / {ach.requirement}
-            </div>
+            {ach.achieved ? (
+              <div className="ach-earned">
+                Achieved on {new Date(ach.dateEarned).toLocaleDateString()}
+              </div>
+            ) : (
+              <>
+                <div className="ach-progress">
+                  <div
+                    className="ach-progress-bar"
+                    style={{ width: `${(ach.current / ach.requirement) * 100}%` }}
+                  ></div>
+                </div>
+                <div className="ach-progress-text">
+                  {ach.current} / {ach.requirement}
+                </div>
+              </>
+            )}
           </div>
         ))}
       </div>
