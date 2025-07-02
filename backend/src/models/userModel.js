@@ -67,6 +67,11 @@ const userSchema = new mongoose.Schema({
         {
             name: String,
             description: String,
+            reward: {
+                packs: { type: Number, default: 0 },
+                card: { type: Boolean, default: false },
+            },
+            claimed: { type: Boolean, default: false },
             dateEarned: { type: Date, default: Date.now }
         }
     ]

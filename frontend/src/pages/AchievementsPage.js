@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { fetchAchievements } from '../utils/api';
+import { fetchAchievements, claimAchievement } from '../utils/api';
 import '../styles/AchievementsPage.css';
 
 const AchievementsPage = () => {
   const [achievements, setAchievements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [claiming, setClaiming] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -22,6 +23,26 @@ const AchievementsPage = () => {
     load();
   }, []);
 
+  const handleClaim = async (ach) => {
+    if (claiming) return;
+    setClaiming(true);
+    try {
+      const res = await claimAchievement(ach.name);
+      if (res.card) {
+        window.inspectCard(res.card);
+      }
+      window.showToast('Reward claimed!', 'success');
+      setAchievements((prev) =>
+        prev.map((a) => (a.name === ach.name ? { ...a, claimed: true } : a))
+      );
+    } catch (err) {
+      console.error('Failed to claim reward:', err);
+      window.showToast('Failed to claim reward', 'error');
+    } finally {
+      setClaiming(false);
+    }
+  };
+
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error">{error}</div>;
 
@@ -30,7 +51,11 @@ const AchievementsPage = () => {
       <h1>Achievements</h1>
       <div className="achievements-grid">
         {achievements.map((ach, idx) => (
-          <div key={idx} className={`ach-tile ${ach.achieved ? 'achieved' : ''}`}> 
+          <div
+            key={idx}
+            className={`ach-tile ${ach.achieved ? 'achieved' : ''} ${ach.achieved && !ach.claimed ? 'claimable' : ''}`}
+            onClick={() => ach.achieved && !ach.claimed && handleClaim(ach)}
+          >
             <h3>{ach.name}</h3>
             <p>{ach.description}</p>
             {ach.reward && (
@@ -41,7 +66,11 @@ const AchievementsPage = () => {
             )}
             {ach.achieved ? (
               <div className="ach-earned">
-                Achieved on {new Date(ach.dateEarned).toLocaleDateString()}
+                {ach.claimed ? (
+                  'Reward claimed'
+                ) : (
+                  <>Achieved on {new Date(ach.dateEarned).toLocaleDateString()} - Click to claim!</>
+                )}
               </div>
             ) : (
               <>

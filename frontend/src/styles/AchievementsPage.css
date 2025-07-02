@@ -20,6 +20,17 @@
   border-color: var(--brand-secondary);
 }
 
+.ach-tile.claimable {
+  cursor: pointer;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); }
+  70% { box-shadow: 0 0 0 10px rgba(255,255,255,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+}
+
 .ach-progress {
   width: 100%;
   height: 12px;
