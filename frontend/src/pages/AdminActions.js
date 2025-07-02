@@ -42,6 +42,10 @@ const AdminActions = () => {
     const [editResults, setEditResults] = useState([]);
     const [editCard, setEditCard] = useState(null);
 
+    // Achievements state
+    const [achievements, setAchievements] = useState([]);
+    const [newAchievement, setNewAchievement] = useState({ name: '', description: '', threshold: 0, packRewards: '', cardRewards: '' });
+
     // Pack management state
 
 
@@ -70,8 +74,18 @@ const AdminActions = () => {
             }
         };
 
+        const fetchAchievements = async () => {
+            try {
+                const data = await fetchWithAuth('/api/admin/achievements');
+                setAchievements(data.achievements || []);
+            } catch (err) {
+                console.error('Fetch achievements failed:', err);
+            }
+        };
+
         checkAdmin();
         fetchUsers();
+        fetchAchievements();
     }, [navigate]);
 
     // Filter users for pack management
@@ -188,6 +202,52 @@ const AdminActions = () => {
         setEditCard({ ...card });
         setEditQuery(card.name);
         setEditResults([]);
+    };
+
+    const handleSaveAchievement = async (ach) => {
+        try {
+            await fetchWithAuth(`/api/admin/achievements/${ach._id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    name: ach.name,
+                    description: ach.description,
+                    threshold: Number(ach.threshold) || 0,
+                    packRewards: ach.packRewards.split(',').map(s => s.trim()).filter(Boolean),
+                    cardRewards: ach.cardRewards.split(',').map(s => s.trim()).filter(Boolean),
+                })
+            });
+            window.showToast('Achievement saved', 'success');
+        } catch {
+            window.showToast('Error saving achievement', 'error');
+        }
+    };
+
+    const handleDeleteAchievement = async (id) => {
+        try {
+            await fetchWithAuth(`/api/admin/achievements/${id}`, { method: 'DELETE' });
+            setAchievements(achievements.filter(a => a._id !== id));
+        } catch {
+            window.showToast('Error deleting achievement', 'error');
+        }
+    };
+
+    const handleCreateAchievement = async () => {
+        try {
+            const res = await fetchWithAuth('/api/admin/achievements', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: newAchievement.name,
+                    description: newAchievement.description,
+                    threshold: Number(newAchievement.threshold) || 0,
+                    packRewards: newAchievement.packRewards.split(',').map(s => s.trim()).filter(Boolean),
+                    cardRewards: newAchievement.cardRewards.split(',').map(s => s.trim()).filter(Boolean),
+                })
+            });
+            setAchievements([...achievements, res.achievement]);
+            setNewAchievement({ name: '', description: '', threshold: 0, packRewards: '', cardRewards: '' });
+        } catch {
+            window.showToast('Error creating achievement', 'error');
+        }
     };
 
     if (!isAdmin) {
@@ -342,6 +402,82 @@ const AdminActions = () => {
                         />
                     </div>
                 </div>
+            </section>
+
+            {/* Achievement Management */}
+            <section className="aa-panel">
+                <h2>Achievements</h2>
+                {achievements.map((ach) => (
+                    <div key={ach._id} style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-dark)', paddingBottom: '1rem' }}>
+                        <input
+                            type="text"
+                            value={ach.name}
+                            onChange={(e) => setAchievements(achievements.map(a => a._id === ach._id ? { ...a, name: e.target.value } : a))}
+                            placeholder="Name"
+                        />
+                        <input
+                            type="text"
+                            value={ach.description || ''}
+                            onChange={(e) => setAchievements(achievements.map(a => a._id === ach._id ? { ...a, description: e.target.value } : a))}
+                            placeholder="Description"
+                        />
+                        <input
+                            type="number"
+                            value={ach.threshold || 0}
+                            onChange={(e) => setAchievements(achievements.map(a => a._id === ach._id ? { ...a, threshold: e.target.value } : a))}
+                            placeholder="Threshold"
+                        />
+                        <input
+                            type="text"
+                            value={Array.isArray(ach.packRewards) ? ach.packRewards.join(',') : ach.packRewards}
+                            onChange={(e) => setAchievements(achievements.map(a => a._id === ach._id ? { ...a, packRewards: e.target.value } : a))}
+                            placeholder="Pack Rewards (IDs)"
+                        />
+                        <input
+                            type="text"
+                            value={Array.isArray(ach.cardRewards) ? ach.cardRewards.join(',') : ach.cardRewards}
+                            onChange={(e) => setAchievements(achievements.map(a => a._id === ach._id ? { ...a, cardRewards: e.target.value } : a))}
+                            placeholder="Card Rewards (IDs)"
+                        />
+                        <div style={{ marginTop: '0.5rem' }}>
+                            <button onClick={() => handleSaveAchievement(ach)}>Save</button>
+                            <button style={{ marginLeft: '1rem' }} onClick={() => handleDeleteAchievement(ach._id)}>Delete</button>
+                        </div>
+                    </div>
+                ))}
+
+                <h3>Add Achievement</h3>
+                <input
+                    type="text"
+                    value={newAchievement.name}
+                    onChange={(e) => setNewAchievement({ ...newAchievement, name: e.target.value })}
+                    placeholder="Name"
+                />
+                <input
+                    type="text"
+                    value={newAchievement.description}
+                    onChange={(e) => setNewAchievement({ ...newAchievement, description: e.target.value })}
+                    placeholder="Description"
+                />
+                <input
+                    type="number"
+                    value={newAchievement.threshold}
+                    onChange={(e) => setNewAchievement({ ...newAchievement, threshold: e.target.value })}
+                    placeholder="Threshold"
+                />
+                <input
+                    type="text"
+                    value={newAchievement.packRewards}
+                    onChange={(e) => setNewAchievement({ ...newAchievement, packRewards: e.target.value })}
+                    placeholder="Pack Rewards (IDs)"
+                />
+                <input
+                    type="text"
+                    value={newAchievement.cardRewards}
+                    onChange={(e) => setNewAchievement({ ...newAchievement, cardRewards: e.target.value })}
+                    placeholder="Card Rewards (IDs)"
+                />
+                <button onClick={handleCreateAchievement}>Create</button>
             </section>
 
 

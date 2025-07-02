@@ -294,6 +294,7 @@ router.post('/grant-pack', protect, adminOnly, async (req, res) => {
 
 const Card = require('../models/cardModel');
 const Pack = require('../models/packModel');
+const Achievement = require('../models/achievementModel');
 
 router.get('/packs', async (req, res) => {
   try {
@@ -450,6 +451,52 @@ router.put('/cards/:cardId', protect, adminOnly, async (req, res) => {
   } catch (error) {
     console.error('Error updating card:', error);
     res.status(500).json({ message: 'Failed to update card' });
+  }
+});
+
+// ----- Achievement Management Endpoints -----
+router.get('/achievements', protect, adminOnly, async (req, res) => {
+  try {
+    const achievements = await Achievement.find();
+    res.json({ achievements });
+  } catch (err) {
+    console.error('Error fetching achievements:', err);
+    res.status(500).json({ message: 'Failed to fetch achievements' });
+  }
+});
+
+router.post('/achievements', protect, adminOnly, async (req, res) => {
+  try {
+    const achievement = new Achievement(req.body);
+    await achievement.save();
+    res.json({ achievement });
+  } catch (err) {
+    console.error('Error creating achievement:', err);
+    res.status(500).json({ message: 'Failed to create achievement' });
+  }
+});
+
+router.put('/achievements/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const achievement = await Achievement.findById(req.params.id);
+    if (!achievement) return res.status(404).json({ message: 'Achievement not found' });
+    Object.assign(achievement, req.body);
+    await achievement.save();
+    res.json({ achievement });
+  } catch (err) {
+    console.error('Error updating achievement:', err);
+    res.status(500).json({ message: 'Failed to update achievement' });
+  }
+});
+
+router.delete('/achievements/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const deleted = await Achievement.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ message: 'Achievement not found' });
+    res.json({ message: 'Achievement deleted' });
+  } catch (err) {
+    console.error('Error deleting achievement:', err);
+    res.status(500).json({ message: 'Failed to delete achievement' });
   }
 });
 
