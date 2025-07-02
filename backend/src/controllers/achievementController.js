@@ -7,10 +7,16 @@ const ALL_RARITIES = ['Basic','Common','Standard','Uncommon','Rare','Epic','Lege
 
 const getAchievements = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).lean();
-    if (!user) {
+    const userDoc = await User.findById(req.user._id);
+    if (!userDoc) {
       return res.status(404).json({ message: 'User not found' });
     }
+
+    // Ensure any newly met achievements are granted
+    const { checkAndGrantAchievements } = require('../helpers/achievementHelper');
+    await checkAndGrantAchievements(userDoc);
+
+    const user = userDoc.toObject();
 
   // Count completed trades and sold listings
   const [tradeCount, listingCount] = await Promise.all([
@@ -72,6 +78,9 @@ const claimAchievementReward = async (req, res) => {
 
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const { checkAndGrantAchievements } = require('../helpers/achievementHelper');
+    await checkAndGrantAchievements(user);
 
     const ach = user.achievements.find(a => a.name === name);
     if (!ach) return res.status(400).json({ message: 'Achievement not unlocked' });
