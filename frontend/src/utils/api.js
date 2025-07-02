@@ -346,3 +346,14 @@ export const fetchUserMarketListings = async (userId, limit = 3) => {
         throw error;
     }
 };
+
+// Fetch achievements and progress for the logged in user
+export const fetchAchievements = async () => {
+    try {
+        const response = await fetchWithAuth('/api/achievements', { method: 'GET' });
+        return response;
+    } catch (error) {
+        console.error('[API] Error fetching achievements:', error.message);
+        throw error;
+    }
+};

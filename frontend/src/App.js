@@ -23,6 +23,7 @@ const MarketListingDetails = lazy(() => import('./pages/MarketListingDetails'));
 const AdminActions = lazy(() => import('./pages/AdminActions'));
 const CardEditor = lazy(() => import('./components/CardEditor'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const AchievementsPage = lazy(() => import('./pages/AchievementsPage'));
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
@@ -130,6 +131,10 @@ const App = () => {
                     <Route
                         path="/trades/pending"
                         element={user ? <PendingTrades userId={user._id} /> : <Navigate to="/login" />}
+                    />
+                    <Route
+                        path="/achievements"
+                        element={user ? <AchievementsPage /> : <Navigate to="/login" />}
                     />
                     <Route
                         path="/admin/actions"
