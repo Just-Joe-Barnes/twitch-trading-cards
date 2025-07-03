@@ -57,6 +57,10 @@ const AchievementsPage = () => {
   return (
     <div className="achievements-page">
       <h1>Achievements</h1>
+      <p className="ach-description">
+        Earn achievements by completing various tasks. Click on an unlocked
+        achievement to claim your reward.
+      </p>
       <div className="achievements-grid">
         {achievements.map((ach, idx) => (
           <div
