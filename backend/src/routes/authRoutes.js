@@ -30,6 +30,7 @@ router.get(
                 username: user.display_name,
                 packs: 1,
                 firstLogin: false,
+                loginCount: 1,
                 twitchProfilePic: user.profile_image_url // NEW: Save Twitch profile image URL
             };
             if (user.email) {
@@ -45,13 +46,15 @@ router.get(
                 console.log(`User ${dbUser.username} is logging in for the first time.`);
                 dbUser = await User.findOneAndUpdate(
                     { twitchId: user.id },
-                    { $inc: { packs: 1 }, firstLogin: false },
+                    { $inc: { packs: 1, loginCount: 1 }, firstLogin: false },
                     { new: true }
                 );
                 console.log("1 pack awarded. Updated user:", dbUser);
             } else {
                 console.log(`User ${dbUser.username} has already logged in before. No pack awarded.`);
             }
+            dbUser.loginCount = (dbUser.loginCount || 0) + 1;
+            await dbUser.save();
         }
 
         // (Optional) Persist admin status if not already set
@@ -77,7 +80,7 @@ router.get(
     }
 );
 
-// Validate JWT token route – returns the full user profile.
+// Validate JWT token route â€“ returns the full user profile.
 router.post("/validate", async (req, res) => {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
