@@ -1,5 +1,48 @@
 .achievements-page {
-  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 1.5rem 2rem;
+  max-width: 100%;
+  margin: 0 auto;
+  color: var(--text-primary);
+  background: var(--background-dark);
+  min-height: 100vh;
+}
+
+.achievements-page h1 {
+  text-align: center;
+  margin-top: 4rem;
+  margin-bottom: 1rem;
+  font-size: 2.25rem;
+  font-weight: 500;
+  position: relative;
+  color: var(--text-primary);
+}
+
+.achievements-page h1::after {
+  content: '';
+  position: absolute;
+  bottom: -0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 2px;
+  background: var(--brand-primary);
+  border-radius: 2px;
+}
+
+.ach-description {
+  text-align: center;
+  font-size: 1.1rem;
+  margin: 0.5rem auto 1.5rem;
+  max-width: 800px;
+  color: var(--text-primary);
+  background: var(--surface-dark);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  line-height: 1.6;
 }
 
 .achievements-grid {
