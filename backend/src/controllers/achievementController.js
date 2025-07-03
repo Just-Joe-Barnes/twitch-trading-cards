@@ -62,6 +62,29 @@ const getAchievements = async (req, res) => {
       };
     });
 
+    if (user.isAdmin) {
+      achievements.push(
+        {
+          name: 'Debug: Free Pack',
+          description: 'Admin only - grants one pack',
+          requirement: 1,
+          current: 1,
+          achieved: true,
+          reward: { packs: 1 },
+          claimed: false,
+        },
+        {
+          name: 'Debug: Random Card',
+          description: 'Admin only - grants a random card',
+          requirement: 1,
+          current: 1,
+          achieved: true,
+          reward: { card: true },
+          claimed: false,
+        },
+      );
+    }
+
     res.json({ achievements });
   } catch (err) {
     console.error('Error fetching achievements:', err.message);
@@ -74,6 +97,26 @@ const claimAchievementReward = async (req, res) => {
     const { name } = req.body;
     if (!name) {
       return res.status(400).json({ message: 'Achievement name required' });
+    }
+
+    // Debug achievements - admin only and repeatable
+    if (name === 'Debug: Free Pack' || name === 'Debug: Random Card') {
+      const user = await User.findById(req.user._id);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: 'Admin only' });
+      }
+      let rewardCard = null;
+      if (name === 'Debug: Free Pack') {
+        user.packs = (user.packs || 0) + 1;
+      } else {
+        rewardCard = await generateCardWithProbability();
+        if (rewardCard) {
+          rewardCard.acquiredAt = new Date();
+          user.cards.push(rewardCard);
+        }
+      }
+      await user.save();
+      return res.json({ success: true, packs: user.packs, card: rewardCard });
     }
 
     const user = await User.findById(req.user._id);
