@@ -23,12 +23,12 @@ const TradingPage = ({ userId }) => {
 
     const [leftSearch, setLeftSearch] = useState("");
     const [leftRarity, setLeftRarity] = useState("");
-    const [leftSort, setLeftSort] = useState("mintNumber");
-    const [leftSortDir, setLeftSortDir] = useState("asc");
+    const [leftSort, setLeftSort] = useState("acquiredAt");
+    const [leftSortDir, setLeftSortDir] = useState("desc");
     const [rightSearch, setRightSearch] = useState("");
     const [rightRarity, setRightRarity] = useState("");
-    const [rightSort, setRightSort] = useState("mintNumber");
-    const [rightSortDir, setRightSortDir] = useState("asc");
+    const [rightSort, setRightSort] = useState("acquiredAt");
+    const [rightSortDir, setRightSortDir] = useState("desc");
 
     const [isMobile, setIsMobile] = useState(false);
     const [leftCollapsed, setLeftCollapsed] = useState(false);
@@ -137,6 +137,9 @@ const TradingPage = ({ userId }) => {
                         const rarityA = rarities.findIndex((r) => r.name === a.rarity);
                         const rarityB = rarities.findIndex((r) => r.name === b.rarity);
                         result = rarityA - rarityB;
+                        break;
+                    case "acquiredAt":
+                        result = new Date(a.acquiredAt) - new Date(b.acquiredAt);
                         break;
                     default:
                         result = 0;
@@ -367,6 +370,7 @@ const TradingPage = ({ userId }) => {
                                             <option value="mintNumber">Mint Number</option>
                                             <option value="name">Name</option>
                                             <option value="rarity">Rarity</option>
+                                            <option value="acquiredAt">Acquisition Date</option>
                                         </select>
                                         <select value={leftSortDir} onChange={(e) => setLeftSortDir(e.target.value)}>
                                             <option value="asc">Ascending</option>
@@ -427,6 +431,7 @@ const TradingPage = ({ userId }) => {
                                             <option value="mintNumber">Mint Number</option>
                                             <option value="name">Name</option>
                                             <option value="rarity">Rarity</option>
+                                            <option value="acquiredAt">Acquisition Date</option>
                                         </select>
                                         <select value={rightSortDir} onChange={(e) => setRightSortDir(e.target.value)}>
                                             <option value="asc">Ascending</option>

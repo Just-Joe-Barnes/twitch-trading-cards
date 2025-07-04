@@ -56,8 +56,8 @@ const CollectionPage = ({
     // Filter states
     const [search, setSearch] = useState('');
     const [rarityFilter, setRarityFilter] = useState('');
-    const [sortOption, setSortOption] = useState('');
-    const [order, setOrder] = useState('asc');
+    const [sortOption, setSortOption] = useState('acquiredAt');
+    const [order, setOrder] = useState('desc');
 
     // Featured states
     const [featuredCards, setFeaturedCards] = useState([]);
