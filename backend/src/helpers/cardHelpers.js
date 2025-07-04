@@ -29,6 +29,25 @@ const pickRarity = () => {
 
 // Generate a card with probabilities and ensure uniqueness across all user collections
 const generateCardWithProbability = async () => {
+    const currentTime = new Date();
+    const anyAvailable = await Card.exists({
+        'rarities.remainingCopies': { $gt: 0 },
+        'rarities.availableMintNumbers.0': { $exists: true },
+        $or: [
+            { availableFrom: null },
+            { availableFrom: { $lte: currentTime } }
+        ],
+        $or: [
+            { availableTo: null },
+            { availableTo: { $gte: currentTime } }
+        ]
+    });
+
+    if (!anyAvailable) {
+        console.error('[generateCardWithProbability] No cards available');
+        return null;
+    }
+
     while (true) {
         try {
             const selectedRarity = pickRarity();

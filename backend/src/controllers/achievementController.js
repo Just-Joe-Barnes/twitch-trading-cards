@@ -136,10 +136,11 @@ const claimAchievementReward = async (req, res) => {
     }
     if (reward.card) {
       rewardCard = await generateCardWithProbability();
-      if (rewardCard) {
-        rewardCard.acquiredAt = new Date();
-        user.cards.push(rewardCard);
+      if (!rewardCard) {
+        return res.status(500).json({ message: 'Failed to generate card reward: no cards available' });
       }
+      rewardCard.acquiredAt = new Date();
+      user.cards.push(rewardCard);
     }
 
     ach.claimed = true;
