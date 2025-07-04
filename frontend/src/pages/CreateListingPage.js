@@ -32,8 +32,8 @@ const CreateListingPage = () => {
     // Filter/sort states
     const [search, setSearch] = useState('');
     const [rarityFilter, setRarityFilter] = useState('');
-    const [sortOption, setSortOption] = useState('name');
-    const [sortOrder, setSortOrder] = useState('asc');
+    const [sortOption, setSortOption] = useState('acquiredAt');
+    const [sortOrder, setSortOrder] = useState('desc');
 
     const navigate = useNavigate();
 
