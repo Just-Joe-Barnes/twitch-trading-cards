@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchAchievements, claimAchievement } from '../utils/api';
+import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/AchievementsPage.css';
 
 const AchievementsPage = () => {
@@ -51,11 +52,12 @@ const AchievementsPage = () => {
     }
   };
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) return <LoadingSpinner />;
   if (error) return <div className="error">{error}</div>;
 
   return (
     <div className="achievements-page">
+      {claiming && <LoadingSpinner />}
       <h1>Achievements</h1>
       <p className="ach-description">
         Earn achievements by completing various tasks. Click on an unlocked
