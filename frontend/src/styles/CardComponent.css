@@ -732,6 +732,13 @@
     opacity: 0.2;
 }
 
+/* Unique rarity + Prismatic modifier */
+.card-container.unique .prismatic-overlay {
+    mix-blend-mode: screen;
+    opacity: 0.4;
+    filter: saturate(1.8);
+}
+
 .negative-overlay {
     position: absolute;
     inset: 8px;
