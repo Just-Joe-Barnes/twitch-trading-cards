@@ -340,61 +340,6 @@ body {
     z-index: 10;
 }
 
-/* Star toggle button for featuring cards */
-.cp-feature-toggle-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 28px;
-    height: 28px;
-    border: none;
-    border-radius: 50%;
-    background: var(--surface-dark);
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 11;
-    transition: var(--transition);
-}
-
-.cp-feature-toggle-btn.active {
-    color: var(--brand-primary);
-}
-
-/* Double-click Highlight Animation */
-.cp-double-clicked {
-    animation: cpHighlightPop 1s ease;
-    z-index: 2;
-}
-
-@keyframes cpHighlightPop {
-    0% {
-        transform: scale(1);
-        box-shadow: none;
-    }
-
-    20% {
-        transform: scale(1.1);
-        box-shadow: 0 0 16px var(--brand-primary);
-    }
-
-    40% {
-        transform: scale(1.1);
-        box-shadow: 0 0 24px var(--brand-primary);
-    }
-
-    60% {
-        transform: scale(1.05);
-        box-shadow: 0 0 12px var(--brand-primary);
-    }
-
-    100% {
-        transform: scale(1);
-        box-shadow: none;
-    }
-}
 
 /* Responsive Styles */
 @media (max-width: 768px) {

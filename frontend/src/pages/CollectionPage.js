@@ -1,6 +1,5 @@
 // src/pages/CollectionPage.js
-import React, { useState, useEffect, useRef } from 'react';
-import { FaStar, FaRegStar } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import {
     fetchUserCollection,
@@ -173,7 +172,7 @@ const CollectionPage = ({
     }, [allCards, search, rarityFilter, sortOption, order, showFeaturedOnly, featuredCards]);
 
     // Single-click -> select card for deck builder
-    const handleCardClick = (card) => {
+const handleCardClick = (card) => {
         if (onSelectItem) {
             const alreadySelected = selectedItems.find((item) => item.itemId === card._id);
             let updatedSelection = [];
@@ -217,9 +216,29 @@ const CollectionPage = ({
         }
     };
 
+    // Inspect card and pass extra info
+    const handleInspect = (card) => {
+        const isFeatured = featuredCards.some((fc) => fc._id === card._id);
+        if (window.inspectCard) {
+            window.inspectCard({
+                ...card,
+                name: card.name,
+                image: card.imageUrl,
+                description: card.flavorText,
+                rarity: card.rarity,
+                mintNumber: card.mintNumber,
+                modifier: card.modifier,
+                isFeatured,
+                isOwner,
+                onToggleFeatured: () => handleToggleFeatured(card),
+            });
+        }
+    };
+
     // Single-click handler for card selection
     const handleClick = (card) => {
         handleCardClick(card);
+        handleInspect(card);
     };
 
     // Clear all featured cards
@@ -258,7 +277,7 @@ const CollectionPage = ({
 
             <p className="cp-catalogue-description">
                 Browse your entire collection here! Use the filters below to search by name, rarity, or mint number.
-                Use the star icon on a card to add or remove it from your list of featured cards. You can feature up to 4 cards.
+                Click a card to inspect it. From the inspector you can add or remove the card from your featured list (up to 4 cards).
                 Clicking the "Clear Featured Cards" button will remove all featured selections.
             </p>
 
@@ -370,18 +389,6 @@ const CollectionPage = ({
                                 className={`cp-card-item ${isSelected ? 'cp-selected' : ''}`}
                                 onClick={() => handleClick(card)}
                             >
-                                {isOwner && (
-                                    <button
-                                        className={`cp-feature-toggle-btn ${isFeatured ? 'active' : ''}`}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleToggleFeatured(card);
-                                        }}
-                                        title={isFeatured ? 'Remove from featured' : 'Add to featured'}
-                                    >
-                                        {isFeatured ? <FaStar /> : <FaRegStar />}
-                                    </button>
-                                )}
                                 {isFeatured && <div className="cp-featured-badge">Featured</div>}
                                 <BaseCard
                                     name={card.name}
@@ -395,6 +402,7 @@ const CollectionPage = ({
                                             (r) => r.name.toLowerCase() === card.rarity.toLowerCase()
                                         )?.totalCopies || '???'
                                     }
+                                    inspectOnClick={false}
                                 />
                             </div>
                         );
