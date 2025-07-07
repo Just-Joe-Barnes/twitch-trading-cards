@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import BaseCard from './BaseCard';
+import { FaStar, FaRegStar } from 'react-icons/fa';
 import '../styles/CardInspector.css';
 
 const CardInspector = ({ card, onClose }) => {
@@ -25,7 +26,17 @@ const CardInspector = ({ card, onClose }) => {
   }, [card]);
 
   if (!card) return null;
-  const { name, image, description, rarity, mintNumber, modifier } = card;
+  const {
+    name,
+    image,
+    description,
+    rarity,
+    mintNumber,
+    modifier,
+    isFeatured = false,
+    isOwner = false,
+    onToggleFeatured,
+  } = card;
   return (
     <div className="card-inspector-overlay" onClick={onClose}>
       <div
@@ -33,16 +44,28 @@ const CardInspector = ({ card, onClose }) => {
         ref={inspectorRef}
         onClick={(e) => e.stopPropagation()}
       >
-        <BaseCard
-          name={name}
-          image={image}
-          description={description}
-          rarity={rarity}
-          mintNumber={mintNumber}
-          modifier={modifier}
-          inspectOnClick={false}
-          interactive={true}
-        />
+        <div className="card-inspector-card-wrapper">
+          <BaseCard
+            name={name}
+            image={image}
+            description={description}
+            rarity={rarity}
+            mintNumber={mintNumber}
+            modifier={modifier}
+            inspectOnClick={false}
+            interactive={true}
+          />
+          {isOwner && (
+            <button
+              className={`card-inspector-feature-btn ${isFeatured ? 'active' : ''}`}
+              onClick={() => onToggleFeatured?.(card)}
+              title={isFeatured ? 'Remove from featured' : 'Add to featured'}
+            >
+              {isFeatured ? <FaStar /> : <FaRegStar />}
+              {isFeatured ? ' Unfeature' : ' Feature'}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
