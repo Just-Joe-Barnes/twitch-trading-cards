@@ -340,6 +340,29 @@ body {
     z-index: 10;
 }
 
+/* Star toggle button for featuring cards */
+.cp-feature-toggle-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 50%;
+    background: var(--surface-dark);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 11;
+    transition: var(--transition);
+}
+
+.cp-feature-toggle-btn.active {
+    color: var(--brand-primary);
+}
+
 /* Double-click Highlight Animation */
 .cp-double-clicked {
     animation: cpHighlightPop 1s ease;

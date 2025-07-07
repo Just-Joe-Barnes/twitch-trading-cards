@@ -1,5 +1,6 @@
 // src/pages/CollectionPage.js
 import React, { useState, useEffect, useRef } from 'react';
+import { FaStar, FaRegStar } from 'react-icons/fa';
 import { useParams } from 'react-router-dom';
 import {
     fetchUserCollection,
@@ -63,8 +64,6 @@ const CollectionPage = ({
     const [featuredCards, setFeaturedCards] = useState([]);
     const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
 
-    // For distinguishing single vs. double-click
-    const clickTimerRef = useRef(null);
 
     // 1) Fetch logged-in user
     useEffect(() => {
@@ -218,61 +217,9 @@ const CollectionPage = ({
         }
     };
 
-    // Double-click -> add/remove from featured
-    const handleCardDoubleClick = async (card) => {
-        if (!loggedInUser) return;
-        const isCurrentlyFeatured = featuredCards.some((fc) => fc._id === card._id);
-        if (!isCurrentlyFeatured && featuredCards.length >= 4) {
-            alert('You can only feature up to 4 cards.');
-            if (window.showToast) {
-                window.showToast('You can only feature up to 4 cards.', 'warning');
-            }
-            return;
-        }
-        const cardElement = document.getElementById(`cp-card-${card._id}`);
-        if (cardElement) {
-            cardElement.classList.add('cp-double-clicked');
-            setTimeout(() => {
-                cardElement.classList.remove('cp-double-clicked');
-            }, 1000);
-        }
-        try {
-            await handleToggleFeatured(card);
-            alert(
-                isCurrentlyFeatured
-                    ? 'Card removed from featured collection.'
-                    : 'Card added to featured collection.'
-            );
-            if (window.showToast) {
-                window.showToast(
-                    isCurrentlyFeatured
-                        ? 'Card removed from featured collection.'
-                        : 'Card added to featured collection.',
-                    'success'
-                );
-            }
-        } catch (error) {
-            console.error(error);
-            if (window.showToast) {
-                window.showToast('Error updating featured cards.', 'error');
-            }
-        }
-    };
-
-    // Distinguish single vs. double-click logic
+    // Single-click handler for card selection
     const handleClick = (card) => {
-        if (clickTimerRef.current) return;
-        clickTimerRef.current = setTimeout(() => {
-            handleCardClick(card);
-            clickTimerRef.current = null;
-        }, 250);
-    };
-    const handleDoubleClick = (card) => {
-        if (clickTimerRef.current) {
-            clearTimeout(clickTimerRef.current);
-            clickTimerRef.current = null;
-        }
-        handleCardDoubleClick(card);
+        handleCardClick(card);
     };
 
     // Clear all featured cards
@@ -311,8 +258,8 @@ const CollectionPage = ({
 
             <p className="cp-catalogue-description">
                 Browse your entire collection here! Use the filters below to search by name, rarity, or mint number.
-                You can also add up to 4 cards to your profile page as "featured cards" by double clicking them.
-                Double clicking a card again, or clicking the "Clear Featured Cards" button, will remove it.
+                Use the star icon on a card to add or remove it from your list of featured cards. You can feature up to 4 cards.
+                Clicking the "Clear Featured Cards" button will remove all featured selections.
             </p>
 
             {/* New Top Section Container */}
@@ -422,8 +369,19 @@ const CollectionPage = ({
                                 id={`cp-card-${card._id}`}
                                 className={`cp-card-item ${isSelected ? 'cp-selected' : ''}`}
                                 onClick={() => handleClick(card)}
-                                onDoubleClick={() => handleDoubleClick(card)}
                             >
+                                {isOwner && (
+                                    <button
+                                        className={`cp-feature-toggle-btn ${isFeatured ? 'active' : ''}`}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleToggleFeatured(card);
+                                        }}
+                                        title={isFeatured ? 'Remove from featured' : 'Add to featured'}
+                                    >
+                                        {isFeatured ? <FaStar /> : <FaRegStar />}
+                                    </button>
+                                )}
                                 {isFeatured && <div className="cp-featured-badge">Featured</div>}
                                 <BaseCard
                                     name={card.name}
