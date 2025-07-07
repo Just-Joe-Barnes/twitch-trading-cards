@@ -34,10 +34,9 @@
 
 .card-inspector-feature-btn {
   position: absolute;
-  bottom: 100%;
+  bottom: calc(100% + 0.5rem); /* keep button above card */
   right: 0;
-  transform: translateY(-0.5rem);
-  padding: 0.5rem 1rem;
+  padding: 1rem 1.5rem; /* larger click target */
   background: var(--surface-dark);
   color: var(--text-primary);
   border: none;
@@ -46,7 +45,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1rem;
+  font-size: 2rem; /* twice original size */
   transition: var(--transition);
   z-index: 10;
 }
