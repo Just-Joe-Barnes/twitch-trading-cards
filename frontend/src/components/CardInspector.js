@@ -44,26 +44,28 @@ const CardInspector = ({ card, onClose }) => {
         ref={inspectorRef}
         onClick={(e) => e.stopPropagation()}
       >
-        <BaseCard
-          name={name}
-          image={image}
-          description={description}
-          rarity={rarity}
-          mintNumber={mintNumber}
-          modifier={modifier}
-          inspectOnClick={false}
-          interactive={true}
-        />
-        {isOwner && (
-          <button
-            className={`card-inspector-feature-btn ${isFeatured ? 'active' : ''}`}
-            onClick={() => onToggleFeatured?.(card)}
-            title={isFeatured ? 'Remove from featured' : 'Add to featured'}
-          >
-            {isFeatured ? <FaStar /> : <FaRegStar />}
-            {isFeatured ? ' Unfeature' : ' Feature'}
-          </button>
-        )}
+        <div className="card-inspector-card-wrapper">
+          <BaseCard
+            name={name}
+            image={image}
+            description={description}
+            rarity={rarity}
+            mintNumber={mintNumber}
+            modifier={modifier}
+            inspectOnClick={false}
+            interactive={true}
+          />
+          {isOwner && (
+            <button
+              className={`card-inspector-feature-btn ${isFeatured ? 'active' : ''}`}
+              onClick={() => onToggleFeatured?.(card)}
+              title={isFeatured ? 'Remove from featured' : 'Add to featured'}
+            >
+              {isFeatured ? <FaStar /> : <FaRegStar />}
+              {isFeatured ? ' Unfeature' : ' Feature'}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
