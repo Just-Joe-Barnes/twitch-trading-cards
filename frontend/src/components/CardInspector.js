@@ -1,10 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import BaseCard from './BaseCard';
 import { FaStar, FaRegStar } from 'react-icons/fa';
 import '../styles/CardInspector.css';
 
 const CardInspector = ({ card, onClose }) => {
   const inspectorRef = useRef(null);
+  const [localFeatured, setLocalFeatured] = useState(card?.isFeatured ?? false);
 
   useEffect(() => {
     if (!card) return;
@@ -37,19 +38,25 @@ const CardInspector = ({ card, onClose }) => {
     isOwner = false,
     onToggleFeatured,
   } = card;
+  useEffect(() => {
+    setLocalFeatured(card?.isFeatured ?? false);
+  }, [card]);
+
   return (
     <div className="card-inspector-overlay" onClick={onClose}>
       {isOwner && (
         <button
-          className={`card-inspector-feature-btn ${isFeatured ? 'active' : ''}`}
+          className={`card-inspector-feature-btn ${localFeatured ? 'active' : ''}`}
           onClick={(e) => {
             e.stopPropagation();
+            const newState = !localFeatured;
+            setLocalFeatured(newState);
             onToggleFeatured?.(card);
           }}
-          title={isFeatured ? 'Remove from featured' : 'Add to featured'}
+          title={localFeatured ? 'Remove from featured' : 'Add to featured'}
         >
-          {isFeatured ? <FaStar /> : <FaRegStar />}
-          {isFeatured ? ' Unfeature' : ' Feature'}
+          {localFeatured ? <FaStar /> : <FaRegStar />}
+          {localFeatured ? ' Unfeature' : ' Feature'}
         </button>
       )}
       <div
