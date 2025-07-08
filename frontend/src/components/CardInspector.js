@@ -39,6 +39,19 @@ const CardInspector = ({ card, onClose }) => {
   } = card;
   return (
     <div className="card-inspector-overlay" onClick={onClose}>
+      {isOwner && (
+        <button
+          className={`card-inspector-feature-btn ${isFeatured ? 'active' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFeatured?.(card);
+          }}
+          title={isFeatured ? 'Remove from featured' : 'Add to featured'}
+        >
+          {isFeatured ? <FaStar /> : <FaRegStar />}
+          {isFeatured ? ' Unfeature' : ' Feature'}
+        </button>
+      )}
       <div
         className="card-inspector"
         ref={inspectorRef}
@@ -55,16 +68,6 @@ const CardInspector = ({ card, onClose }) => {
             inspectOnClick={false}
             interactive={true}
           />
-          {isOwner && (
-            <button
-              className={`card-inspector-feature-btn ${isFeatured ? 'active' : ''}`}
-              onClick={() => onToggleFeatured?.(card)}
-              title={isFeatured ? 'Remove from featured' : 'Add to featured'}
-            >
-              {isFeatured ? <FaStar /> : <FaRegStar />}
-              {isFeatured ? ' Unfeature' : ' Feature'}
-            </button>
-          )}
         </div>
       </div>
     </div>

@@ -208,11 +208,20 @@ const handleCardClick = (card) => {
             const response = await updateFeaturedCards(newFeaturedIds);
             if (response.featuredCards) {
                 setFeaturedCards(response.featuredCards);
+                if (window.showToast) {
+                    const msg = isCurrentlyFeatured
+                        ? 'Card removed from featured.'
+                        : 'Card added to featured.';
+                    window.showToast(msg, 'success');
+                }
             }
         } catch (error) {
             console.error('Error updating featured cards:', error);
             alert('Error updating featured cards.');
             setFeaturedCards(previousFeatured); // revert on failure
+            if (window.showToast) {
+                window.showToast('Error updating featured cards.', 'error');
+            }
         }
     };
 
