@@ -33,10 +33,10 @@
 }
 
 .card-inspector-feature-btn {
-  position: absolute;
-  bottom: calc(100% + 0.5rem); /* keep button above card */
-  right: 0;
-  padding: 1rem 1.5rem; /* larger click target */
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  padding: 1rem 1.5rem;
   background: var(--surface-dark);
   color: var(--text-primary);
   border: none;
@@ -45,9 +45,9 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 2rem; /* twice original size */
+  font-size: 2rem;
   transition: var(--transition);
-  z-index: 10;
+  z-index: 1001;
 }
 
 .card-inspector-feature-btn.active {
