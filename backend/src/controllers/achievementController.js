@@ -39,6 +39,10 @@ const getAchievements = async (req, res) => {
     if (ALL_RARITIES.every(r => rarities.has(r))) fullSets += 1;
   }
 
+  const featuredCount = (user.featuredCards || []).length;
+  const modifierCards = (user.cards || []).filter(c => c.modifier).length;
+  const raritiesOwned = new Set((user.cards || []).map(c => c.rarity)).size;
+
   const hasModifierCard = (user.cards || []).some(c => c.modifier);
   const hasLegendaryCard = (user.cards || []).some(c =>
     ['Legendary', 'Mythic', 'Unique', 'Divine'].includes(c.rarity)
@@ -53,6 +57,9 @@ const getAchievements = async (req, res) => {
       else if (a.field === 'hasModifierCard') current = hasModifierCard ? 1 : 0;
       else if (a.field === 'hasLegendaryCard') current = hasLegendaryCard ? 1 : 0;
       else if (a.field === 'favoriteCard') current = user.favoriteCard ? 1 : 0;
+      else if (a.field === 'featuredCardsCount') current = featuredCount;
+      else if (a.field === 'modifierCards') current = modifierCards;
+      else if (a.field === 'raritiesOwned') current = raritiesOwned;
       else current = user[a.field] || 0;
       const achieved = current >= a.threshold;
       const userAch = user.achievements?.find(ua => ua.name === a.name);

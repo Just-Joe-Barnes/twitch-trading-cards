@@ -31,6 +31,8 @@ router.get(
                 packs: 1,
                 firstLogin: false,
                 loginCount: 1,
+                loginStreak: 1,
+                lastLogin: new Date(),
                 twitchProfilePic: user.profile_image_url // NEW: Save Twitch profile image URL
             };
             if (user.email) {
@@ -54,6 +56,13 @@ router.get(
                 console.log(`User ${dbUser.username} has already logged in before. No pack awarded.`);
             }
             dbUser.loginCount = (dbUser.loginCount || 0) + 1;
+            const now = new Date();
+            if (dbUser.lastLogin && (now - dbUser.lastLogin) <= 24 * 60 * 60 * 1000) {
+                dbUser.loginStreak = (dbUser.loginStreak || 0) + 1;
+            } else {
+                dbUser.loginStreak = 1;
+            }
+            dbUser.lastLogin = now;
             await dbUser.save();
         }
 
