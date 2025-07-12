@@ -10,6 +10,7 @@ import {
     updateFavoriteCard,
     searchCardsByName,
     fetchUserMarketListings,
+    fetchAchievements,
 } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/ProfilePage.css';
@@ -63,7 +64,6 @@ const ProfilePage = () => {
                 setOpenedPacks(profile.openedPacks || 0);
                 setXp(profile.xp || 0);
                 setLevel(profile.level || 1);
-                setAchievements(profile.achievements || []);
 
                 const ownProfile = me && profile && me.username === profile.username;
                 setIsOwnProfile(ownProfile);
@@ -99,6 +99,18 @@ const ProfilePage = () => {
         };
         fetchProfileData();
     }, [routeUsername]);
+
+    useEffect(() => {
+        const loadAchievements = async () => {
+            try {
+                const data = await fetchAchievements();
+                setAchievements(data.achievements || []);
+            } catch (err) {
+                console.error('Failed to load achievements:', err);
+            }
+        };
+        loadAchievements();
+    }, []);
 
     useEffect(() => {
         const fetchListings = async () => {
@@ -200,31 +212,16 @@ const ProfilePage = () => {
                 <div className="achievements-container">
                     {achievements.length === 0 && <p>No achievements yet.</p>}
 
-                    {[
-                        { name: 'Level 1', description: 'Reached Level 1' },
-                        { name: 'Level 5', description: 'Reached Level 5' },
-                        { name: 'Level 10', description: 'Reached Level 10' },
-                        { name: 'Level 20', description: 'Reached Level 20' },
-                        { name: 'Level 50', description: 'Reached Level 50' },
-                        { name: 'Trader I', description: 'Completed 10 trades' },
-                        { name: 'Trader II', description: 'Completed 50 trades' },
-                        { name: 'Seller I', description: 'Sold 10 cards on the market' },
-                        { name: 'Seller II', description: 'Sold 50 cards on the market' },
-                        { name: 'Opener I', description: 'Opened 10 packs' },
-                        { name: 'Opener II', description: 'Opened 50 packs' },
-                    ].map((ach, idx) => {
-                        const unlocked = achievements.some(a => a.name === ach.name);
-                        return (
-                            <div
-                                key={idx}
-                                className="achievement-badge"
-                                title={ach.description}
-                                style={{ opacity: unlocked ? 1 : 0.4 }}
-                            >
-                                <span>{ach.name}</span>
-                            </div>
-                        );
-                    })}
+                    {achievements.map((ach, idx) => (
+                        <div
+                            key={idx}
+                            className="achievement-badge"
+                            title={ach.description}
+                            style={{ opacity: ach.achieved ? 1 : 0.4 }}
+                        >
+                            <span>{ach.name}</span>
+                        </div>
+                    ))}
                 </div>
             </div>
 
