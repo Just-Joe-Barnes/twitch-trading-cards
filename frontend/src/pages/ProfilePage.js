@@ -10,6 +10,9 @@ import {
     updateFavoriteCard,
     searchCardsByName,
     fetchUserMarketListings,
+    fetchAllPacks,
+    fetchPreferredPack,
+    updatePreferredPack,
 } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/ProfilePage.css';
@@ -22,6 +25,8 @@ const ProfilePage = () => {
     const [cardQuery, setCardQuery] = useState('');
     const [cardResults, setCardResults] = useState([]);
     const [selectedRarity, setSelectedRarity] = useState('');
+    const [preferredPackId, setPreferredPackId] = useState('');
+    const [packOptions, setPackOptions] = useState([]);
     const [editingFavorite, setEditingFavorite] = useState(false);
     const [isOwnProfile, setIsOwnProfile] = useState(false);
     const [collectionCount, setCollectionCount] = useState(0);
@@ -42,6 +47,9 @@ const ProfilePage = () => {
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
+                const packs = await fetchAllPacks();
+                setPackOptions(packs);
+
                 // Determine if the logged-in user is viewing their own profile
                 let me = null;
                 try {
@@ -63,6 +71,7 @@ const ProfilePage = () => {
                 setOpenedPacks(profile.openedPacks || 0);
                 setXp(profile.xp || 0);
                 setLevel(profile.level || 1);
+                setPreferredPackId(profile.preferredPack?._id || '');
 
                 const ownProfile = me && profile && me.username === profile.username;
                 setIsOwnProfile(ownProfile);
@@ -72,6 +81,8 @@ const ProfilePage = () => {
                     try {
                         const fav = await fetchFavoriteCard();
                         setFavoriteCard(fav);
+                        const pref = await fetchPreferredPack();
+                        setPreferredPackId(pref?._id || '');
                     } catch (e) {
                         console.error('Error fetching favorite card:', e);
                     }
@@ -283,6 +294,31 @@ const ProfilePage = () => {
                     View Full Collection
                 </button>
             </div>
+
+            {isOwnProfile && (
+                <div className="preferred-pack-container">
+                    <h2>Preferred Pack</h2>
+                    <select
+                        value={preferredPackId}
+                        onChange={async (e) => {
+                            const id = e.target.value;
+                            setPreferredPackId(id);
+                            try {
+                                await updatePreferredPack(id);
+                            } catch (err) {
+                                console.error('Error updating preferred pack:', err);
+                            }
+                        }}
+                    >
+                        <option value="">Select a pack</option>
+                        {packOptions.map((p) => (
+                            <option key={p._id} value={p._id}>
+                                {p.name || p.type || 'Unnamed'}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            )}
 
             <div className="featured-cards-container">
                 <h2>Featured Cards</h2>

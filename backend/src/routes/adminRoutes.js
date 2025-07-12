@@ -97,7 +97,9 @@ router.get('/users', protect, adminOnly, async (req, res) => {
     const start = process.hrtime();
     try {
         const dbStart = process.hrtime();
-        const users = await User.find({}, 'username packs').lean();
+        const users = await User.find({}, 'username packs preferredPack')
+                               .populate('preferredPack', 'name')
+                               .lean();
         const dbEnd = process.hrtime(dbStart);
         console.log(`[PERF] [admin/users] DB query took ${dbEnd[0] * 1000 + dbEnd[1] / 1e6} ms`);
         const total = process.hrtime(start);
@@ -139,7 +141,8 @@ router.get('/users-activity', protect, adminOnly, async (req, res) => {
             query = { lastActive: { $gte: cutoff } };
         }
 
-        const users = await User.find(query, 'username packs lastActive')
+        const users = await User.find(query, 'username packs lastActive preferredPack')
+                                .populate('preferredPack', 'name')
                                 .sort({ lastActive: -1 }); // Sort by last active, most recent first
 
         res.json(users);

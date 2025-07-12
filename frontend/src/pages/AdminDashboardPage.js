@@ -133,6 +133,14 @@ const AdminDashboardPage = ({ user }) => {
             return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
         }
 
+        if (sortColumn === 'preferredPack') {
+            const nameA = aValue?.name || '';
+            const nameB = bValue?.name || '';
+            return sortDirection === 'asc'
+                ? nameA.localeCompare(nameB)
+                : nameB.localeCompare(nameA);
+        }
+
         if (aValue < bValue) {
             return sortDirection === 'asc' ? -1 : 1;
         }
@@ -303,6 +311,7 @@ const AdminDashboardPage = ({ user }) => {
                             <tr>
                                 <th onClick={() => handleSort('username')}>Username</th>
                                 <th onClick={() => handleSort('packs')}>Unopened Packs</th>
+                                <th onClick={() => handleSort('preferredPack')}>Preferred Pack</th>
                                 <th onClick={() => handleSort('lastActive')}>Last Active</th>
                             </tr>
                         </thead>
@@ -315,6 +324,7 @@ const AdminDashboardPage = ({ user }) => {
                                 >
                                     <td>{u.username}</td>
                                     <td>{u.packs}</td>
+                                    <td>{u.preferredPack ? (u.preferredPack.name || u.preferredPack.type || 'Unnamed') : '-'}</td>
                                     <td>{u.lastActive ? moment(u.lastActive).fromNow() : 'Never'}</td>
                                 </tr>
                             ))}

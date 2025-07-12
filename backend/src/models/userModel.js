@@ -51,6 +51,8 @@ const userSchema = new mongoose.Schema({
         name: String,
         rarity: String,
     },
+    // User's preferred pack template for admin openings
+    preferredPack: { type: mongoose.Schema.Types.ObjectId, ref: 'Pack', default: null },
     notifications: [notificationSchema], // NEW: Notifications for the user
     firstLogin: { type: Boolean, default: false },
     isAdmin: { type: Boolean, default: false },

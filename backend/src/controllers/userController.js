@@ -8,8 +8,8 @@ const getUserProfile = async (req, res) => {
     try {
         const dbStart = process.hrtime();
         const user = await User.findById(req.user._id).select(
-            'username email isAdmin packs openedPacks loginCount featuredCards favoriteCard cards twitchProfilePic xp level achievements featuredAchievements'
-        ).lean();
+            'username email isAdmin packs openedPacks loginCount featuredCards favoriteCard preferredPack cards twitchProfilePic xp level achievements featuredAchievements'
+        ).populate('preferredPack', 'name').lean();
         const dbEnd = process.hrtime(dbStart);
         console.log(`[PERF] [getUserProfile] DB query took ${dbEnd[0] * 1000 + dbEnd[1] / 1e6} ms`);
         if (!user) {
@@ -42,14 +42,17 @@ const getProfileByUsername = async (req, res) => {
 
         // Base fields returned for any profile lookup
         const baseFields =
-            'username isAdmin openedPacks loginCount featuredCards favoriteCard cards twitchProfilePic xp level achievements featuredAchievements';
+            'username isAdmin openedPacks loginCount featuredCards favoriteCard preferredPack cards twitchProfilePic xp level achievements featuredAchievements';
 
         // Only include the email if the requester is viewing their own profile
         // or has admin privileges
         const includeEmail = req.username === username || req.isAdmin;
         const projection = includeEmail ? `${baseFields} email` : baseFields;
 
-        const user = await User.findOne({ username }).select(projection).lean();
+        const user = await User.findOne({ username })
+            .select(projection)
+            .populate('preferredPack', 'name')
+            .lean();
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -265,6 +268,41 @@ const updateFavoriteCard = async (req, res) => {
     }
 };
 
+// Get the preferred pack for the logged in user
+const getPreferredPack = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id)
+            .populate('preferredPack', 'name')
+            .select('preferredPack')
+            .lean();
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        res.status(200).json({ preferredPack: user.preferredPack });
+    } catch (error) {
+        console.error('[getPreferredPack] Error:', error.message);
+        res.status(500).json({ message: 'Failed to fetch preferred pack' });
+    }
+};
+
+// Update the preferred pack for the logged in user
+const updatePreferredPack = async (req, res) => {
+    try {
+        const { packId } = req.body;
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        user.preferredPack = packId || null;
+        await user.save();
+        const populated = await user.populate('preferredPack', 'name');
+        res.status(200).json({ preferredPack: populated.preferredPack });
+    } catch (error) {
+        console.error('[updatePreferredPack] Error:', error.message);
+        res.status(500).json({ message: 'Failed to update preferred pack' });
+    }
+};
+
 // Search for users by username
 const searchUsers = async (req, res) => {
     const { query } = req.query;
@@ -292,5 +330,7 @@ module.exports = {
     updateFeaturedAchievements,
     getFavoriteCard,
     updateFavoriteCard,
+    getPreferredPack,
+    updatePreferredPack,
     searchUsers,
 };
