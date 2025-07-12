@@ -105,8 +105,8 @@ const ProfilePage = () => {
             try {
                 const data = await fetchAchievements();
                 setAchievements(data.achievements || []);
-            } catch (err) {
-                console.error('Failed to load achievements:', err);
+            } catch (e) {
+                console.error('Error fetching achievements:', e);
             }
         };
         loadAchievements();
@@ -211,18 +211,13 @@ const ProfilePage = () => {
                 <h3>Achievements</h3>
                 <div className="achievements-container">
                     {achievements.length === 0 && <p>No achievements yet.</p>}
-
-                    {achievements.map((ach, idx) => (
-                        <div
-                            key={idx}
-                            className="achievement-badge"
-                            title={ach.description}
-                            style={{ opacity: ach.achieved ? 1 : 0.4 }}
-                        >
+                {achievements.map((ach, idx) => (
+                        <div key={idx} className="achievement-badge" title={ach.description} style={{ opacity: ach.achieved ? 1 : 0.4 }}>
                             <span>{ach.name}</span>
                         </div>
                     ))}
                 </div>
+
             </div>
 
             <div className="favorite-card-container">

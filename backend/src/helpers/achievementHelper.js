@@ -18,6 +18,10 @@ const checkAndGrantAchievements = async (user) => {
     if (ALL_RARITIES.every(r => rarities.has(r))) fullSets += 1;
   }
 
+  const featuredCount = (user.featuredCards || []).length;
+  const modifierCards = (user.cards || []).filter(c => c.modifier).length;
+  const raritiesOwned = new Set((user.cards || []).map(c => c.rarity)).size;
+
   const hasModifierCard = (user.cards || []).some(c => c.modifier);
   const hasLegendaryCard = (user.cards || []).some(c =>
     ['Legendary', 'Mythic', 'Unique', 'Divine'].includes(c.rarity)
@@ -40,6 +44,9 @@ const checkAndGrantAchievements = async (user) => {
     else if (achievement.field === 'hasModifierCard') progress = hasModifierCard ? 1 : 0;
     else if (achievement.field === 'hasLegendaryCard') progress = hasLegendaryCard ? 1 : 0;
     else if (achievement.field === 'favoriteCard') progress = user.favoriteCard ? 1 : 0;
+    else if (achievement.field === 'featuredCardsCount') progress = featuredCount;
+    else if (achievement.field === 'modifierCards') progress = modifierCards;
+    else if (achievement.field === 'raritiesOwned') progress = raritiesOwned;
     else progress = user[achievement.field] || 0;
     const alreadyHas = user.achievements.some(a => a.name === achievement.name);
 

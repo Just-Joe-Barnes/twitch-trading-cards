@@ -36,4 +36,21 @@ module.exports = [
   { key: 'LOGIN_I', name: 'Regular I', description: 'Login 10 times', field: 'loginCount', threshold: 10, reward: { card: true } },
   { key: 'LOGIN_II', name: 'Regular II', description: 'Login 50 times', field: 'loginCount', threshold: 50, reward: { card: true } },
   { key: 'LOGIN_III', name: 'Regular III', description: 'Login 100 times', field: 'loginCount', threshold: 100, reward: { packs: 1 } },
+  { key: 'FIRST_LOGIN', name: 'First Login', description: 'Login for the first time', field: 'loginCount', threshold: 1, reward: { card: true } },
+  { key: 'DAILY_STREAK', name: 'Daily Streak', description: 'Log in 7 days in a row', field: 'loginStreak', threshold: 7, reward: { packs: 1 } },
+  // Profile customization
+  { key: 'FEATURED_FAN', name: 'Featured Fan', description: 'Feature any card on your profile', field: 'featuredCardsCount', threshold: 1, reward: { card: true } },
+  { key: 'SHOWCASE_PRO', name: 'Showcase Pro', description: 'Feature four cards at once', field: 'featuredCardsCount', threshold: 4, reward: { packs: 1 } },
+  // Market purchases
+  { key: 'FIRST_PURCHASE', name: 'First Purchase', description: 'Buy your first card from the market', field: 'completedPurchases', threshold: 1, reward: { card: true } },
+  { key: 'BUYER_I', name: 'Buyer I', description: 'Buy 10 cards from listings', field: 'completedPurchases', threshold: 10, reward: { card: true } },
+  { key: 'BUYER_II', name: 'Buyer II', description: 'Buy 50 cards from listings', field: 'completedPurchases', threshold: 50, reward: { card: true } },
+  { key: 'BUYER_III', name: 'Buyer III', description: 'Buy 100 cards from listings', field: 'completedPurchases', threshold: 100, reward: { packs: 1 } },
+  // Additional milestones
+  { key: 'MASTER_TRADER', name: 'Master Trader', description: 'Complete 200 trades', field: 'completedTrades', threshold: 200, reward: { packs: 1 } },
+  { key: 'PACK_ADDICT', name: 'Pack Addict', description: 'Open 500 packs', field: 'openedPacks', threshold: 500, reward: { packs: 2 } },
+  { key: 'MODIFIER_HUNTER', name: 'Modifier Hunter', description: 'Own 10 cards with modifiers', field: 'modifierCards', threshold: 10, reward: { card: true } },
+  { key: 'RARITY_HUNTER', name: 'Rarity Hunter', description: 'Collect at least one card of every rarity', field: 'raritiesOwned', threshold: 10, reward: { packs: 1 } },
+  { key: 'SET_MASTER', name: 'Set Master', description: 'Own 10 full card sets', field: 'fullSets', threshold: 10, reward: { packs: 2 } },
+  { key: 'LEGEND_HOARDER', name: 'Legend Hoarder', description: 'Own 250 unique cards', field: 'uniqueCards', threshold: 250, reward: { packs: 2 } },
 ];

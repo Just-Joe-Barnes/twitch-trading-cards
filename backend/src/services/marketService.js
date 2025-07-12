@@ -236,6 +236,7 @@ async function finalizeOfferAcceptance({ seller, buyer, listing, offer }) {
   console.log('[Accept Offer Service] Notifications created.');
 
   seller.completedListings = (seller.completedListings || 0) + 1;
+  buyer.completedPurchases = (buyer.completedPurchases || 0) + 1;
 
   console.log('[Accept Offer Service] Awarding XP.');
   seller.xp = (seller.xp || 0) + 15;
