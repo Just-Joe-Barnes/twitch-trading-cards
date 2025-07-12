@@ -8,7 +8,7 @@ const getUserProfile = async (req, res) => {
     try {
         const dbStart = process.hrtime();
         const user = await User.findById(req.user._id).select(
-            'username email isAdmin packs openedPacks loginCount featuredCards favoriteCard cards twitchProfilePic xp level achievements'
+            'username email isAdmin packs openedPacks loginCount featuredCards favoriteCard cards twitchProfilePic xp level achievements featuredAchievements'
         ).lean();
         const dbEnd = process.hrtime(dbStart);
         console.log(`[PERF] [getUserProfile] DB query took ${dbEnd[0] * 1000 + dbEnd[1] / 1e6} ms`);
@@ -42,7 +42,7 @@ const getProfileByUsername = async (req, res) => {
 
         // Base fields returned for any profile lookup
         const baseFields =
-            'username isAdmin openedPacks loginCount featuredCards favoriteCard cards twitchProfilePic xp level achievements';
+            'username isAdmin openedPacks loginCount featuredCards favoriteCard cards twitchProfilePic xp level achievements featuredAchievements';
 
         // Only include the email if the requester is viewing their own profile
         // or has admin privileges
@@ -153,6 +153,72 @@ const updateFeaturedCards = async (req, res) => {
     }
 };
 
+// Get featured achievements for logged-in user
+const getFeaturedAchievements = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id)
+            .select('featuredAchievements achievements')
+            .lean();
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        const ownedNames = new Set((user.achievements || []).map((a) => a.name));
+        const valid = (user.featuredAchievements || []).filter((a) =>
+            ownedNames.has(a.name)
+        );
+        if (valid.length !== (user.featuredAchievements || []).length) {
+            await User.updateOne(
+                { _id: req.user._id },
+                { $set: { featuredAchievements: valid } }
+            );
+        }
+        res.status(200).json({ featuredAchievements: valid });
+    } catch (error) {
+        console.error('[getFeaturedAchievements] Error:', error.message);
+        res.status(500).json({ message: 'Failed to fetch featured achievements' });
+    }
+};
+
+// Update featured achievements for logged-in user
+const updateFeaturedAchievements = async (req, res) => {
+    try {
+        const { achievements } = req.body; // array of achievement names
+
+        if (!Array.isArray(achievements) || achievements.length > 4) {
+            return res.status(400).json({
+                message: 'Invalid featured achievements. Provide up to 4 achievement names.',
+            });
+        }
+
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const newFeatured = [];
+        for (const name of achievements) {
+            const ach = user.achievements.find((a) => a.name === name);
+            if (!ach) {
+                return res.status(400).json({
+                    message: `You cannot feature achievement '${name}' because you have not unlocked it.`,
+                });
+            }
+            newFeatured.push(ach);
+        }
+
+        user.featuredAchievements = newFeatured;
+        await user.save();
+
+        return res.status(200).json({
+            message: 'Featured achievements updated successfully',
+            featuredAchievements: user.featuredAchievements,
+        });
+    } catch (error) {
+        console.error('[updateFeaturedAchievements] Error:', error.message);
+        res.status(500).json({ message: 'Failed to update featured achievements' });
+    }
+};
+
 // Get the logged in user's favorite card
 const getFavoriteCard = async (req, res) => {
     try {
@@ -222,6 +288,8 @@ module.exports = {
     getProfileByUsername,
     getFeaturedCards,
     updateFeaturedCards,
+    getFeaturedAchievements,
+    updateFeaturedAchievements,
     getFavoriteCard,
     updateFavoriteCard,
     searchUsers,

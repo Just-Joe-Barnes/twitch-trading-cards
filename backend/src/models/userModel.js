@@ -78,6 +78,19 @@ const userSchema = new mongoose.Schema({
             claimed: { type: Boolean, default: false },
             dateEarned: { type: Date, default: Date.now }
         }
+    ],
+    // Achievements selected to display on profile
+    featuredAchievements: [
+        {
+            name: String,
+            description: String,
+            reward: {
+                packs: { type: Number, default: 0 },
+                card: { type: Boolean, default: false },
+            },
+            claimed: { type: Boolean, default: false },
+            dateEarned: { type: Date, default: Date.now }
+        }
     ]
 });
 
