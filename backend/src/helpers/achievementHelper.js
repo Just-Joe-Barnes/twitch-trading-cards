@@ -18,6 +18,11 @@ const checkAndGrantAchievements = async (user) => {
     if (ALL_RARITIES.every(r => rarities.has(r))) fullSets += 1;
   }
 
+  const hasModifierCard = (user.cards || []).some(c => c.modifier);
+  const hasLegendaryCard = (user.cards || []).some(c =>
+    ['Legendary', 'Mythic', 'Unique', 'Divine'].includes(c.rarity)
+  );
+
   const [tradeCount, listingCount] = await Promise.all([
     Trade.countDocuments({
       $or: [{ sender: user._id }, { recipient: user._id }],
@@ -32,6 +37,9 @@ const checkAndGrantAchievements = async (user) => {
     else if (achievement.field === 'fullSets') progress = fullSets;
     else if (achievement.field === 'completedTrades') progress = tradeCount;
     else if (achievement.field === 'completedListings') progress = listingCount;
+    else if (achievement.field === 'hasModifierCard') progress = hasModifierCard ? 1 : 0;
+    else if (achievement.field === 'hasLegendaryCard') progress = hasLegendaryCard ? 1 : 0;
+    else if (achievement.field === 'favoriteCard') progress = user.favoriteCard ? 1 : 0;
     else progress = user[achievement.field] || 0;
     const alreadyHas = user.achievements.some(a => a.name === achievement.name);
 
