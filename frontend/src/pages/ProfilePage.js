@@ -293,32 +293,32 @@ const ProfilePage = () => {
                 <button className="profile-action-button" onClick={handleViewCollection}>
                     View Full Collection
                 </button>
-            </div>
 
-            {isOwnProfile && (
-                <div className="preferred-pack-container">
-                    <h2>Preferred Pack</h2>
-                    <select
-                        value={preferredPackId}
-                        onChange={async (e) => {
-                            const id = e.target.value;
-                            setPreferredPackId(id);
-                            try {
-                                await updatePreferredPack(id);
-                            } catch (err) {
-                                console.error('Error updating preferred pack:', err);
-                            }
-                        }}
-                    >
-                        <option value="">Select a pack</option>
-                        {packOptions.map((p) => (
-                            <option key={p._id} value={p._id}>
-                                {p.name || p.type || 'Unnamed'}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            )}
+                {isOwnProfile && (
+                    <div className="preferred-pack-container">
+                        <h2>Preferred Pack</h2>
+                        <select
+                            value={preferredPackId}
+                            onChange={async (e) => {
+                                const id = e.target.value;
+                                setPreferredPackId(id);
+                                try {
+                                    await updatePreferredPack(id);
+                                } catch (err) {
+                                    console.error('Error updating preferred pack:', err);
+                                }
+                            }}
+                        >
+                            <option value="">Select a pack</option>
+                            {packOptions.map((p) => (
+                                <option key={p._id} value={p._id}>
+                                    {p.name || p.type || 'Unnamed'}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+            </div>
 
             <div className="featured-cards-container">
                 <h2>Featured Cards</h2>

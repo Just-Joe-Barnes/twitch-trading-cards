@@ -267,7 +267,7 @@ body {
 }
 
 .preferred-pack-container {
-    margin-top: 2rem;
+    margin-top: 1rem;
     background: var(--surface-dark);
     border: 1px solid var(--border-dark);
     padding: 1rem;
