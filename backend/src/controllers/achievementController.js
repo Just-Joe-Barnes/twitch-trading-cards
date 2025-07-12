@@ -1,7 +1,7 @@
 const User = require('../models/userModel');
 const Trade = require('../models/tradeModel');
 const MarketListing = require('../models/MarketListing');
-const ACHIEVEMENTS = require('../data/achievements');
+const ACHIEVEMENTS = require('../../../config/achievements');
 const { generateCardWithProbability } = require('../helpers/cardHelpers');
 const ALL_RARITIES = ['Basic','Common','Standard','Uncommon','Rare','Epic','Legendary','Mythic','Unique','Divine'];
 
@@ -39,23 +39,28 @@ const getAchievements = async (req, res) => {
     if (ALL_RARITIES.every(r => rarities.has(r))) fullSets += 1;
   }
 
+  const hasModifierCard = (user.cards || []).some(c => c.modifier);
+  const hasLegendaryCard = (user.cards || []).some(c =>
+    ['Legendary', 'Mythic', 'Unique', 'Divine'].includes(c.rarity)
+  );
+
     const achievements = ACHIEVEMENTS.map(a => {
       let current = 0;
-      if (a.type === 'level') current = user.level || 0;
-      if (a.type === 'packs') current = user.openedPacks || 0;
-      if (a.type === 'trades') current = tradeCount;
-      if (a.type === 'listings') current = listingCount;
-      if (a.type === 'sales') current = user.completedListings || 0;
-      if (a.type === 'uniqueCards') current = uniqueCards;
-      if (a.type === 'fullSets') current = fullSets;
-      if (a.type === 'logins') current = user.loginCount || 0;
-      const achieved = current >= a.requirement;
+      if (a.field === 'completedTrades') current = tradeCount;
+      else if (a.field === 'completedListings') current = listingCount;
+      else if (a.field === 'uniqueCards') current = uniqueCards;
+      else if (a.field === 'fullSets') current = fullSets;
+      else if (a.field === 'hasModifierCard') current = hasModifierCard ? 1 : 0;
+      else if (a.field === 'hasLegendaryCard') current = hasLegendaryCard ? 1 : 0;
+      else if (a.field === 'favoriteCard') current = user.favoriteCard ? 1 : 0;
+      else current = user[a.field] || 0;
+      const achieved = current >= a.threshold;
       const userAch = user.achievements?.find(ua => ua.name === a.name);
       return {
         name: a.name,
         description: a.description,
-        requirement: a.requirement,
-        current: Math.min(current, a.requirement),
+        requirement: a.threshold,
+        current: Math.min(current, a.threshold),
         achieved,
         reward: a.reward || {},
         ...(userAch ? { dateEarned: userAch.dateEarned, claimed: userAch.claimed } : { claimed: false })
