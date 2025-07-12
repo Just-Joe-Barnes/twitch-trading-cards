@@ -469,7 +469,6 @@ const TradingPage = ({ userId }) => {
                                 Confirm Trade
                             </button>
                         </div>
-                        </div>
                     )}
                 </div>
             )}
