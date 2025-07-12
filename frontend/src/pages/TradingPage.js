@@ -350,53 +350,55 @@ const TradingPage = ({ userId }) => {
                                             </button>
                                         )}
                                     </div>
-                                    <div className={`tp-panel-content ${leftCollapsed ? "collapsed" : ""}`}> 
+                                    <div className={`tp-panel-content ${leftCollapsed ? "collapsed" : ""}`}>
                                         <div className="tp-filters">
-                                        <input
-                                            type="text"
-                                            placeholder="Search your collection..."
-                                            value={leftSearch}
-                                            onChange={(e) => setLeftSearch(e.target.value)}
-                                        />
-                                        <select value={leftRarity} onChange={(e) => setLeftRarity(e.target.value)}>
-                                            <option value="">All Rarities</option>
-                                            {rarities.map((r) => (
-                                                <option key={r.name} value={r.name}>
-                                                    {r.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <select value={leftSort} onChange={(e) => setLeftSort(e.target.value)}>
-                                            <option value="mintNumber">Mint Number</option>
-                                            <option value="name">Name</option>
-                                            <option value="rarity">Rarity</option>
-                                            <option value="acquiredAt">Acquisition Date</option>
-                                        </select>
-                                        <select value={leftSortDir} onChange={(e) => setLeftSortDir(e.target.value)}>
-                                            <option value="asc">Ascending</option>
-                                            <option value="desc">Descending</option>
-                                        </select>
-                                    </div>
-                                    <div className="tp-cards-grid">
-                                        {applyFilters(userCollection, leftSearch, leftRarity, leftSort, leftSortDir).map((card) => (
-                                            <div
-                                                key={card._id}
-                                                className={`tp-card-item ${tradeOffer.some((c) => c._id === card._id) ? "tp-selected" : ""}`}
-                                                onClick={() => handleSelectItem(card, "offer")}
-                                            >
-                                                <BaseCard
-                                                    name={card.name}
-                                                    image={card.imageUrl}
-                                                    description={card.flavorText}
-                                                    rarity={card.rarity}
-                                                    mintNumber={card.mintNumber}
-                                                    maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
-                                                    modifier={card.modifier}
-                                                />
+                                            <input
+                                                type="text"
+                                                placeholder="Search your collection..."
+                                                value={leftSearch}
+                                                onChange={(e) => setLeftSearch(e.target.value)}
+                                            />
+                                            <select value={leftRarity} onChange={(e) => setLeftRarity(e.target.value)}>
+                                                <option value="">All Rarities</option>
+                                                {rarities.map((r) => (
+                                                    <option key={r.name} value={r.name}>
+                                                        {r.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <select value={leftSort} onChange={(e) => setLeftSort(e.target.value)}>
+                                                <option value="mintNumber">Mint Number</option>
+                                                <option value="name">Name</option>
+                                                <option value="rarity">Rarity</option>
+                                                <option value="acquiredAt">Acquisition Date</option>
+                                            </select>
+                                            <select value={leftSortDir} onChange={(e) => setLeftSortDir(e.target.value)}>
+                                                <option value="asc">Ascending</option>
+                                                <option value="desc">Descending</option>
+                                            </select>
+                                        </div>
+                                        <div className="tp-grid-container">
+                                            <div className="tp-cards-grid">
+                                                {applyFilters(userCollection, leftSearch, leftRarity, leftSort, leftSortDir).map((card) => (
+                                                    <div
+                                                        key={card._id}
+                                                        className={`tp-card-item ${tradeOffer.some((c) => c._id === card._id) ? "tp-selected" : ""}`}
+                                                        onClick={() => handleSelectItem(card, "offer")}
+                                                    >
+                                                        <BaseCard
+                                                            name={card.name}
+                                                            image={card.imageUrl}
+                                                            description={card.flavorText}
+                                                            rarity={card.rarity}
+                                                            mintNumber={card.mintNumber}
+                                                            maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
+                                                            modifier={card.modifier}
+                                                        />
+                                                    </div>
+                                                ))}
                                             </div>
-                                        ))}
+                                        </div>
                                     </div>
-                                </div>
                                 </div>
 
                                 <div className="tp-collection-panel">
@@ -411,51 +413,54 @@ const TradingPage = ({ userId }) => {
                                             </button>
                                         )}
                                     </div>
-                                    <div className={`tp-panel-content ${rightCollapsed ? "collapsed" : ""}`}> 
+                                    <div className={`tp-panel-content ${rightCollapsed ? "collapsed" : ""}`}>
                                         <div className="tp-filters">
-                                        <input
-                                            type="text"
-                                            placeholder={`Search ${selectedUser}'s collection...`}
-                                            value={rightSearch}
-                                            onChange={(e) => setRightSearch(e.target.value)}
-                                        />
-                                        <select value={rightRarity} onChange={(e) => setRightRarity(e.target.value)}>
-                                            <option value="">All Rarities</option>
-                                            {rarities.map((r) => (
-                                                <option key={r.name} value={r.name}>
-                                                    {r.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <select value={rightSort} onChange={(e) => setRightSort(e.target.value)}>
-                                            <option value="mintNumber">Mint Number</option>
-                                            <option value="name">Name</option>
-                                            <option value="rarity">Rarity</option>
-                                            <option value="acquiredAt">Acquisition Date</option>
-                                        </select>
-                                        <select value={rightSortDir} onChange={(e) => setRightSortDir(e.target.value)}>
-                                            <option value="asc">Ascending</option>
-                                            <option value="desc">Descending</option>
-                                        </select>
-                                    </div>
-                                    <div className="tp-cards-grid">
-                                        {applyFilters(recipientCollection, rightSearch, rightRarity, rightSort, rightSortDir).map((card) => (
-                                            <div
-                                                key={card._id}
-                                                className={`tp-card-item ${tradeRequest.some((c) => c._id === card._id) ? "tp-selected" : ""}`}
-                                                onClick={() => handleSelectItem(card, "request")}
-                                            >
-                                                <BaseCard
-                                                    name={card.name}
-                                                    image={card.imageUrl}
-                                                    description={card.flavorText}
-                                                    rarity={card.rarity}
-                                                    mintNumber={card.mintNumber}
-                                                    maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
-                                                    modifier={card.modifier}
-                                                />
+                                            <input
+                                                type="text"
+                                                placeholder={`Search ${selectedUser}'s collection...`}
+                                                value={rightSearch}
+                                                onChange={(e) => setRightSearch(e.target.value)}
+                                            />
+                                            <select value={rightRarity} onChange={(e) => setRightRarity(e.target.value)}>
+                                                <option value="">All Rarities</option>
+                                                {rarities.map((r) => (
+                                                    <option key={r.name} value={r.name}>
+                                                        {r.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <select value={rightSort} onChange={(e) => setRightSort(e.target.value)}>
+                                                <option value="mintNumber">Mint Number</option>
+                                                <option value="name">Name</option>
+                                                <option value="rarity">Rarity</option>
+                                                <option value="acquiredAt">Acquisition Date</option>
+                                            </select>
+                                            <select value={rightSortDir} onChange={(e) => setRightSortDir(e.target.value)}>
+                                                <option value="asc">Ascending</option>
+                                                <option value="desc">Descending</option>
+                                            </select>
+                                        </div>
+                                        <div className="tp-grid-container">
+                                            <div className="tp-cards-grid">
+                                                {applyFilters(recipientCollection, rightSearch, rightRarity, rightSort, rightSortDir).map((card) => (
+                                                    <div
+                                                        key={card._id}
+                                                        className={`tp-card-item ${tradeRequest.some((c) => c._id === card._id) ? "tp-selected" : ""}`}
+                                                        onClick={() => handleSelectItem(card, "request")}
+                                                    >
+                                                        <BaseCard
+                                                            name={card.name}
+                                                            image={card.imageUrl}
+                                                            description={card.flavorText}
+                                                            rarity={card.rarity}
+                                                            mintNumber={card.mintNumber}
+                                                            maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
+                                                            modifier={card.modifier}
+                                                        />
+                                                    </div>
+                                                ))}
                                             </div>
-                                        ))}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -463,7 +468,6 @@ const TradingPage = ({ userId }) => {
                             <button className="tp-submit-button" onClick={handleSubmit}>
                                 Confirm Trade
                             </button>
-                        </div>
                         </div>
                     )}
                 </div>
