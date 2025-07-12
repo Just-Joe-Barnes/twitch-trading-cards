@@ -5,6 +5,8 @@ const {
     getProfileByUsername,
     getFeaturedCards,
     updateFeaturedCards,
+    getFeaturedAchievements,
+    updateFeaturedAchievements,
     getFavoriteCard,
     updateFavoriteCard,
     searchUsers,
@@ -43,6 +45,10 @@ router.get('/featured-cards', protect, getFeaturedCards);
 
 // Route to update user's featured cards
 router.put('/featured-cards', protect, updateFeaturedCards);
+
+// Routes for featured achievements
+router.get('/featured-achievements', protect, getFeaturedAchievements);
+router.put('/featured-achievements', protect, updateFeaturedAchievements);
 
 // Favorite card routes
 router.get('/favorite-card', protect, getFavoriteCard);

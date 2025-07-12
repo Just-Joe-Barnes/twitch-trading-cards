@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchAchievements, claimAchievement } from '../utils/api';
+import { fetchAchievements, claimAchievement, fetchFeaturedAchievements, updateFeaturedAchievements } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/AchievementsPage.css';
 
@@ -8,12 +8,15 @@ const AchievementsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [claiming, setClaiming] = useState(false);
+  const [featured, setFeatured] = useState([]);
 
   useEffect(() => {
     const load = async () => {
       try {
         const data = await fetchAchievements();
         setAchievements(data.achievements || []);
+        const feat = await fetchFeaturedAchievements();
+        setFeatured(feat.featuredAchievements || []);
       } catch (err) {
         console.error('Failed to load achievements:', err);
         setError('Failed to load achievements');
@@ -23,6 +26,31 @@ const AchievementsPage = () => {
     };
     load();
   }, []);
+
+  const toggleFeatured = async (ach) => {
+    const isFeatured = featured.some((f) => f.name === ach.name);
+    let newFeatured;
+    if (isFeatured) {
+      newFeatured = featured.filter((f) => f.name !== ach.name);
+    } else {
+      if (featured.length >= 4) {
+        if (window.showToast) window.showToast('You can only feature up to 4 achievements', 'error');
+        return;
+      }
+      newFeatured = [...featured, ach];
+    }
+    setFeatured(newFeatured);
+    try {
+      await updateFeaturedAchievements(newFeatured.map((f) => f.name));
+      if (window.showToast) {
+        window.showToast(isFeatured ? 'Achievement removed from profile.' : 'Achievement featured on profile.', 'success');
+      }
+    } catch (err) {
+      console.error('Failed to update featured achievements:', err);
+      if (window.showToast) window.showToast('Failed to update featured achievements', 'error');
+      setFeatured(featured);
+    }
+  };
 
   const handleClaim = async (ach) => {
     if (claiming) return;
@@ -70,6 +98,17 @@ const AchievementsPage = () => {
             className={`ach-tile ${ach.achieved ? 'achieved' : ''} ${ach.achieved && !ach.claimed ? 'claimable' : ''}`}
             onClick={() => ach.achieved && !ach.claimed && handleClaim(ach)}
           >
+            {ach.achieved && (
+              <div
+                className="feature-star"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFeatured(ach);
+                }}
+              >
+                {featured.some((f) => f.name === ach.name) ? '★' : '☆'}
+              </div>
+            )}
             <h3>{ach.name}</h3>
             <p>{ach.description}</p>
             {ach.reward && (

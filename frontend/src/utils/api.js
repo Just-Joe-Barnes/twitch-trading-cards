@@ -159,6 +159,31 @@ export const updateFeaturedCards = async (featuredCards) => {
     }
 };
 
+// Fetch featured achievements for the logged-in user
+export const fetchFeaturedAchievements = async () => {
+    try {
+        const response = await fetchWithAuth('/api/users/featured-achievements', { method: 'GET' });
+        return response;
+    } catch (error) {
+        console.error('[API] Error fetching featured achievements:', error.message);
+        throw error;
+    }
+};
+
+// Update the featured achievements for the logged-in user
+export const updateFeaturedAchievements = async (achievements) => {
+    try {
+        const response = await fetchWithAuth('/api/users/featured-achievements', {
+            method: 'PUT',
+            body: JSON.stringify({ achievements }),
+        });
+        return response;
+    } catch (error) {
+        console.error('[API] Error updating featured achievements:', error.message);
+        throw error;
+    }
+};
+
 // Fetch favorite card for the logged-in user
 export const fetchFavoriteCard = async () => {
     try {

@@ -10,7 +10,6 @@ import {
     updateFavoriteCard,
     searchCardsByName,
     fetchUserMarketListings,
-    fetchAchievements,
 } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/ProfilePage.css';
@@ -91,6 +90,7 @@ const ProfilePage = () => {
                     }
                 }
                 setFeaturedCards(tempFeatured);
+                setAchievements(profile.featuredAchievements || []);
             } catch (error) {
                 console.error('Error fetching user profile:', error);
             } finally {
@@ -100,17 +100,6 @@ const ProfilePage = () => {
         fetchProfileData();
     }, [routeUsername]);
 
-    useEffect(() => {
-        const loadAchievements = async () => {
-            try {
-                const data = await fetchAchievements();
-                setAchievements(data.achievements || []);
-            } catch (e) {
-                console.error('Error fetching achievements:', e);
-            }
-        };
-        loadAchievements();
-    }, []);
 
     useEffect(() => {
         const fetchListings = async () => {
