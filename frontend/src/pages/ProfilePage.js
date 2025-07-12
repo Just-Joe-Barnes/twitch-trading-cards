@@ -211,12 +211,14 @@ const ProfilePage = () => {
                 <h3>Achievements</h3>
                 <div className="achievements-container">
                     {achievements.length === 0 && <p>No achievements yet.</p>}
-                    {achievements.map((ach, idx) => (
+                {achievements.map((ach, idx) => (
                         <div key={idx} className="achievement-badge" title={ach.description} style={{ opacity: ach.achieved ? 1 : 0.4 }}>
                             <span>{ach.name}</span>
                         </div>
                     ))}
                 </div>
+
+            </div>
 
             <div className="favorite-card-container">
                 <h2>Favorite Card Wanted</h2>
