@@ -209,6 +209,42 @@ export const updateFavoriteCard = async (name, rarity) => {
     }
 };
 
+// Fetch preferred pack for the logged-in user
+export const fetchPreferredPack = async () => {
+    try {
+        const response = await fetchWithAuth('/api/users/preferred-pack', { method: 'GET' });
+        return response.preferredPack;
+    } catch (error) {
+        console.error('[API] Error fetching preferred pack:', error.message);
+        throw error;
+    }
+};
+
+// Update preferred pack for the logged-in user
+export const updatePreferredPack = async (packId) => {
+    try {
+        const response = await fetchWithAuth('/api/users/preferred-pack', {
+            method: 'PUT',
+            body: JSON.stringify({ packId }),
+        });
+        return response.preferredPack;
+    } catch (error) {
+        console.error('[API] Error updating preferred pack:', error.message);
+        throw error;
+    }
+};
+
+// Fetch list of all packs (public)
+export const fetchAllPacks = async () => {
+    try {
+        const res = await fetchWithAuth('/api/admin/packs', { method: 'GET' });
+        return res.packs || [];
+    } catch (err) {
+        console.error('[API] Error fetching packs:', err.message);
+        throw err;
+    }
+};
+
 // Create a new trade
 export const createTrade = async (tradeData) => {
     try {

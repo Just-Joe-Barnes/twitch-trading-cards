@@ -266,6 +266,26 @@ body {
     grid-column: span 1;
 }
 
+.preferred-pack-container {
+    margin-top: 2rem;
+    background: var(--surface-dark);
+    border: 1px solid var(--border-dark);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    grid-column: span 1;
+}
+
+.preferred-pack-container select {
+    padding: 0.5rem 1rem;
+    margin-top: 0.5rem;
+    background: var(--surface-darker);
+    color: var(--text-primary);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--border-radius);
+}
+
 .favorite-card-display {
     --card-scale: var(--screen-card-scale);
     display: flex;
