@@ -171,14 +171,13 @@
 /* Allow slab overlay to extend above the card */
 .card-container.slabbed {
     overflow: visible;
-    height: calc(var(--card-height) + 60px);
-    padding-top: 60px;
+
     background: none;
 }
 
 .card-container.slabbed .card-border {
-    margin: 20px;
-    height: calc(100% - 40px);
+    margin: 0;
+    height: 100%;
     background: #3a2525;
 }
 
@@ -813,7 +812,7 @@
     right: -20px;
     bottom: -20px;
     border-radius: 10px;
-    border: 16px solid rgba(255, 255, 255, 0.9);
+    border: 12px solid rgba(255, 255, 255, 0.9);
     background: rgba(255, 255, 255, 0.1);
     box-shadow:
         0 4px 8px rgba(0,0,0,0.6),
