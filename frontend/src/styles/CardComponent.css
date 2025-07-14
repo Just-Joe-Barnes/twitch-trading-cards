@@ -844,6 +844,8 @@
     justify-content: space-between;
     padding: 0 8px;
     pointer-events: none;
+    /* ensure header appears above slab background */
+    z-index: 1;
 }
 
 .slab-logo {
