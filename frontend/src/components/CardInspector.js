@@ -39,6 +39,8 @@ const CardInspector = ({ card, onClose }) => {
     rarity,
     mintNumber,
     modifier,
+    grade,
+    slabbed,
     isOwner = false,
     onToggleFeatured,
   } = card;
@@ -66,15 +68,17 @@ const CardInspector = ({ card, onClose }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="card-inspector-card-wrapper">
-          <BaseCard
-            name={name}
-            image={image}
-            description={description}
-            rarity={rarity}
-            mintNumber={mintNumber}
-            modifier={modifier}
-            inspectOnClick={false}
-            interactive={true}
+            <BaseCard
+              name={name}
+              image={image}
+              description={description}
+              rarity={rarity}
+              mintNumber={mintNumber}
+              modifier={modifier}
+              grade={grade}
+              slabbed={slabbed}
+              inspectOnClick={false}
+              interactive={true}
           />
         </div>
       </div>
