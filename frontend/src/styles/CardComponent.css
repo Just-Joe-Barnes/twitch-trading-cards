@@ -168,6 +168,13 @@
     visibility: hidden;
 }
 
+/* Allow slab overlay to extend above the card */
+.card-container.slabbed {
+    overflow: visible;
+    height: calc(var(--card-height) + 72px);
+    padding-top: 72px;
+}
+
 /**************************************
  * Glare for Lower Rarities (Basic → Uncommon)
  * Now matches the border color with alpha
