@@ -217,7 +217,16 @@ const BaseCard = ({
   const handleClick = (e) => {
     if (onClick) onClick(e);
     if (inspectOnClick && window.inspectCard) {
-      window.inspectCard({ name, image, description, rarity, mintNumber, modifier });
+      window.inspectCard({
+        name,
+        image,
+        description,
+        rarity,
+        mintNumber,
+        modifier,
+        grade,
+        slabbed,
+      });
     }
   };
 
