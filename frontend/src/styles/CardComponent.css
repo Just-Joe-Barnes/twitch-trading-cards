@@ -204,8 +204,8 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 150%;
-    height: 150%;
+    width: 120%;
+    height: 120%;
     border-radius: 50%;
     pointer-events: none;
     z-index: 3;
@@ -220,7 +220,7 @@
 .card-container.standard:hover .card-glare,
 .card-container.uncommon:hover .card-glare {
     opacity: 0.6;
-    transform: translate(-50%, -50%) scale(1.2);
+    transform: translate(-50%, -50%) scale(1.1);
 }
 
 /**************************************
