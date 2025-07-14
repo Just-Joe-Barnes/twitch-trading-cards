@@ -811,7 +811,8 @@
     right: -20px;
     bottom: -20px;
     border-radius: 10px;
-    border: 12px solid rgba(255, 255, 255, 0.9);
+    --slab-border-color: rgba(255, 255, 255, 0.9);
+    border: 12px solid var(--slab-border-color);
     background: rgba(255, 255, 255, 0.1);
     box-shadow:
         0 4px 8px rgba(0,0,0,0.6),
@@ -828,8 +829,8 @@
     left: 0;
     right: 0;
     height: 48px;
-    background: rgba(255,255,255,0.9);
-    border-bottom: 2px solid rgba(255,255,255,0.9);
+    background: var(--slab-border-color);
+    border-bottom: 2px solid var(--slab-border-color);
     border-radius: 6px 6px 0 0;
 }
 
@@ -839,6 +840,7 @@
     left: 0;
     right: 0;
     height: 48px;
+    background-color: var(--slab-border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
