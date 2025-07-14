@@ -223,7 +223,7 @@ const BaseCard = ({
   return (
     <div
       ref={cardRef}
-      className={`card-container ${rarity.toLowerCase()}`}
+      className={`card-container ${rarity.toLowerCase()}${slabbed ? ' slabbed' : ''}`}
       onMouseMove={interactive ? handleMouseMove : undefined}
       onMouseLeave={interactive ? handleMouseLeave : undefined}
       draggable={draggable}
@@ -377,6 +377,7 @@ const BaseCard = ({
         <div className="slab-overlay">
           <img src="/images/NedsDecksLogo.png" alt="logo" className="slab-logo" />
           <div className="slab-grade">{grade}</div>
+          <div className="slab-name">{name}</div>
         </div>
       )}
     </div>
