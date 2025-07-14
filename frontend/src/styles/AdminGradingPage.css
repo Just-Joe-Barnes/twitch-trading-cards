@@ -24,10 +24,20 @@
     justify-items: center;
 }
 
+.grading-card-list.slabbed {
+    overflow: visible;
+}
+
 .grading-card-item {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+/* Additional space when showing slab overlay */
+.grading-card-item.slabbed {
+    overflow: visible;
+    margin: 72px 30px 24px;
 }
 
 .grading-card-item button {

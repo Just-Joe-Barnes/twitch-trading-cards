@@ -46,6 +46,8 @@ const AdminGradingPage = () => {
         }
     };
 
+    const hasSlabbed = cards.some(card => card.slabbed);
+
     return (
         <div className="admin-grading-page">
             <h2>Admin Card Grading</h2>
@@ -59,9 +61,9 @@ const AdminGradingPage = () => {
                 </select>
             </label>
             {loading && <p>Loading cards...</p>}
-            <div className="grading-card-list">
+            <div className={`grading-card-list ${hasSlabbed ? 'slabbed' : ''}`}>
                 {cards.map(card => (
-                    <div key={card._id} className="grading-card-item">
+                    <div key={card._id} className={`grading-card-item ${card.slabbed ? 'slabbed' : ''}`}>
                         <BaseCard
                             name={card.name}
                             image={card.imageUrl}

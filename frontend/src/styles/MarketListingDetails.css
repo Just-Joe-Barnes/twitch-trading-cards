@@ -123,6 +123,11 @@
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
+        .market-user-collection-grid .market-card-wrapper.slabbed {
+            overflow: visible;
+            margin: 72px 30px 24px;
+        }
+
 
         .market-user-collection-grid .market-card-wrapper.selected {
             border: 2px solid var(--brand-primary);
@@ -221,6 +226,11 @@
 .offered-card-item {
     flex: 1 1 250px;
     max-width: 250px;
+}
+
+.offered-card-item.slabbed {
+    overflow: visible;
+    margin: 72px 30px 24px;
 }
 
 /* Fix invisible cards in market listing */

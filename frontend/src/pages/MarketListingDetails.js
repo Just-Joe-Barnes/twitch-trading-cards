@@ -282,7 +282,7 @@ const MarketListingDetails = () => {
                                     return (
                                         <div
                                             key={card._id}
-                                            className={`market-card-wrapper ${isSelected ? 'selected' : ''}`}
+                                            className={`market-card-wrapper ${isSelected ? 'selected' : ''} ${card.slabbed ? 'slabbed' : ''}`}
                                             onClick={() => toggleCardSelection(card)}
                                         >
                                             <BaseCard
@@ -292,6 +292,8 @@ const MarketListingDetails = () => {
                                                 description={card.flavorText}
                                                 mintNumber={card.mintNumber}
                                                 modifier={card.modifier}
+                                                slabbed={card.slabbed}
+                                                grade={card.grade}
                                             />
                                         </div>
                                     );
@@ -304,7 +306,7 @@ const MarketListingDetails = () => {
                             <div className="market-selected-cards-grid" style={{ '--user-card-scale': 1 }}>
                                 {selectedOfferedCards.length > 0 ? (
                                     selectedOfferedCards.map((card) => (
-                                        <div key={card._id} className="market-card-wrapper">
+                                        <div key={card._id} className={`market-card-wrapper ${card.slabbed ? 'slabbed' : ''}`}> 
                                             <BaseCard
                                                 name={card.name}
                                                 image={card.imageUrl}
@@ -312,6 +314,8 @@ const MarketListingDetails = () => {
                                                 description={card.flavorText}
                                                 mintNumber={card.mintNumber}
                                                 modifier={card.modifier}
+                                                slabbed={card.slabbed}
+                                                grade={card.grade}
                                             />
                                         </div>
                                     ))
@@ -345,7 +349,7 @@ const MarketListingDetails = () => {
                                     <strong>Offered Cards:</strong>
                                     <div className="offered-cards-grid" style={{ '--user-card-scale': 1 }}>
                                         {offer.offeredCards.map(card => (
-                                            <div key={card._id || card.name} className="offered-card-item">
+                                            <div key={card._id || card.name} className={`offered-card-item ${card.slabbed ? 'slabbed' : ''}`}>
                                                 <BaseCard
                                                     name={card.name}
                                                     image={card.imageUrl}
@@ -353,6 +357,8 @@ const MarketListingDetails = () => {
                                                     description={card.flavorText}
                                                     mintNumber={card.mintNumber}
                                                     modifier={card.modifier}
+                                                    slabbed={card.slabbed}
+                                                    grade={card.grade}
                                                 />
                                             </div>
                                         ))}

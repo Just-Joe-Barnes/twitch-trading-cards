@@ -311,6 +311,7 @@ body {
 .cp-card-item.slabbed {
     overflow: visible;
     z-index: 2;
+    margin: 72px 30px 24px;
 }
 
     .cp-card-item:hover {
