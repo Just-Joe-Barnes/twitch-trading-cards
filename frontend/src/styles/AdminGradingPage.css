@@ -1,0 +1,47 @@
+/* Admin Grading Page */
+.admin-grading-page {
+    padding: 40px 20px;
+    max-width: 1800px;
+    margin: 0 auto;
+    background-color: var(--background-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+}
+
+.admin-grading-page h2 {
+    text-align: center;
+    margin-top: 80px;
+    margin-bottom: 40px;
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.grading-card-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 2rem;
+    justify-items: center;
+}
+
+.grading-card-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.grading-card-item button {
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--brand-primary);
+    color: var(--background-dark);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.grading-card-item button:hover {
+    background: var(--brand-secondary);
+    transform: scale(1.05);
+}

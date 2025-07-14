@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchWithAuth, gradeCard } from '../utils/api';
 import BaseCard from '../components/BaseCard';
+import '../styles/AdminGradingPage.css';
 
 const AdminGradingPage = () => {
     const [users, setUsers] = useState([]);
