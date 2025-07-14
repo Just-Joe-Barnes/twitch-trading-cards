@@ -806,7 +806,7 @@
 
 .slab-overlay {
     position: absolute;
-    top: -56px; /* maintain 48px header spacing */
+    top: -64px; /* maintain 56px header spacing */
     left: -20px;
     right: -20px;
     bottom: -16px; /* keep bottom gap consistent */
@@ -828,7 +828,7 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 48px;
+    height: 56px;
     background: var(--slab-border-color);
     border-bottom: 2px solid var(--slab-border-color);
     border-radius: 6px 6px 0 0;
@@ -839,7 +839,7 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 48px;
+    height: 56px;
     background-color: var(--slab-border-color);
     display: flex;
     align-items: center;
@@ -869,6 +869,8 @@
     font-weight: bold;
     font-size: 0.9rem;
     color: #111;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     flex: 1 1 auto;
     text-align: center;
     white-space: nowrap;
@@ -898,6 +900,11 @@
     50% { transform: translate(-1px, 1px); }
     75% { transform: translate(1px, 1px); }
     100% { transform: translate(0); }
+}
+
+/* Ensure slabs display correctly above special rarity styles */
+.card-container.slabbed {
+    overflow: visible;
 }
 
 
