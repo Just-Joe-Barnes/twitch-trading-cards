@@ -173,6 +173,13 @@
     overflow: visible;
     height: calc(var(--card-height) + 72px);
     padding-top: 72px;
+    background: none;
+}
+
+.card-container.slabbed .card-border {
+    margin: 12px;
+    height: calc(100% - 24px);
+    background: #3a2525;
 }
 
 /**************************************
@@ -802,11 +809,11 @@
 .slab-overlay {
     position: absolute;
     top: -72px;
-    left: -12px;
-    right: -12px;
-    bottom: -12px;
-    border-radius: 25px;
-    border: 20px solid rgba(255, 255, 255, 0.9);
+    left: -24px;
+    right: -24px;
+    bottom: -24px;
+    border-radius: 12px;
+    border: 30px solid rgba(255, 255, 255, 0.9);
     background: rgba(255, 255, 255, 0.1);
     box-shadow:
         0 4px 12px rgba(0,0,0,0.7),
@@ -825,7 +832,7 @@
     height: 56px;
     background: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(255,255,255,0.6));
     border-bottom: 2px solid rgba(0,0,0,0.2);
-    border-radius: 10px 10px 0 0;
+    border-radius: 8px 8px 0 0;
 }
 
 .slab-header {
