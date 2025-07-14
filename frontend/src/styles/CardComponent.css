@@ -806,12 +806,12 @@
 
 .slab-overlay {
     position: absolute;
-    top: -60px;
+    top: -56px; /* maintain 48px header spacing */
     left: -20px;
     right: -20px;
-    bottom: -20px;
+    bottom: -16px; /* keep bottom gap consistent */
     border-radius: 10px;
-    border: 12px solid rgba(255, 255, 255, 0.9);
+    border: 8px solid rgba(255, 255, 255, 0.9);
     background: rgba(255, 255, 255, 0.1);
     box-shadow:
         0 4px 8px rgba(0,0,0,0.6),
