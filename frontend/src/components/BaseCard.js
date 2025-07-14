@@ -17,6 +17,8 @@ const BaseCard = ({
   inspectOnClick = true,
   interactive = true,
   modifier,
+  grade,
+  slabbed,
 }) => {
   const cardRef = useRef(null);
   const nameRef = useRef(null);
@@ -370,6 +372,12 @@ const BaseCard = ({
       )}
       {modifierData?.name === 'Prismatic' && (
         <div className="prismatic-overlay" />
+      )}
+      {slabbed && (
+        <div className="slab-overlay">
+          <img src="/images/NedsDecksLogo.png" alt="logo" className="slab-logo" />
+          <div className="slab-grade">{grade}</div>
+        </div>
       )}
     </div>
   );

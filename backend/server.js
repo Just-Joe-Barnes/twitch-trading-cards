@@ -35,6 +35,7 @@ const notificationRoutes = require('./src/routes/notificationRoutes');
 const testNotificationRoutes = require('./src/routes/testNotificationRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
 const achievementRoutes = require('./src/routes/achievementRoutes');
+const gradingRoutes = require('./src/routes/gradingRoutes');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -97,6 +98,7 @@ app.use('/api/market', marketRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/test-notification', testNotificationRoutes); // Ensure this is correctly set up
 app.use('/api/admin', adminRoutes);
+app.use('/api/grading', gradingRoutes);
 app.use('/api/modifiers', require('./src/routes/modifierRoutes'));
 app.use('/api/achievements', achievementRoutes);
 
