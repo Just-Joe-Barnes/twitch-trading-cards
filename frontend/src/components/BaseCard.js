@@ -2,6 +2,7 @@
 import React, { useRef, useEffect, useState, memo } from 'react';
 import '../styles/CardComponent.css';
 import { rarities } from '../constants/rarities';
+import { getRarityColor } from '../constants/rarityColors';
 import { fetchWithAuth } from '../utils/api';
 
 const BaseCard = ({
@@ -374,7 +375,7 @@ const BaseCard = ({
         <div className="prismatic-overlay" />
       )}
       {slabbed && (
-        <div className="slab-overlay">
+        <div className="slab-overlay" style={{ '--slab-color': getRarityColor(rarity) }}>
           <div className="slab-header">
             <img src="/images/NedsDecksLogo.png" alt="logo" className="slab-logo" />
             <div className="slab-name">{name}</div>
