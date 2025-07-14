@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchWithAuth, gradeCard } from '../utils/api';
 import BaseCard from '../components/BaseCard';
+import '../styles/AdminGradingPage.css';
 
 const AdminGradingPage = () => {
     const [users, setUsers] = useState([]);
@@ -61,7 +62,16 @@ const AdminGradingPage = () => {
             <div className="grading-card-list">
                 {cards.map(card => (
                     <div key={card._id} className="grading-card-item">
-                        <BaseCard {...card} grade={card.grade} slabbed={card.slabbed} />
+                        <BaseCard
+                            name={card.name}
+                            image={card.imageUrl}
+                            description={card.flavorText}
+                            rarity={card.rarity}
+                            mintNumber={card.mintNumber}
+                            modifier={card.modifier}
+                            grade={card.grade}
+                            slabbed={card.slabbed}
+                        />
                         {!card.slabbed && (
                             <button onClick={() => handleGrade(card._id)}>Grade</button>
                         )}
