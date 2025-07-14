@@ -157,7 +157,7 @@ const BaseCard = ({
     ) {
       const gx = ((x/rect.width)*100).toFixed(2);
       const gy = ((y/rect.height)*100).toFixed(2);
-      glareRef.current.style.transform = 'translate(-50%,-50%) scale(1.2)';
+      glareRef.current.style.transform = 'translate(-50%,-50%) scale(1.1)';
       glareRef.current.style.opacity = '0.6';
       glareRef.current.style.background = `radial-gradient(circle at ${gx}% ${gy}%, var(--glare-color), rgba(255,255,255,0))`;
     }
