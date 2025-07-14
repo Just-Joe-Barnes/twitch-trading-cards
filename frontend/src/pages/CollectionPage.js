@@ -39,6 +39,8 @@ const CollectionPage = ({
     const [loading, setLoading] = useState(true);
     const [totalPacks, setTotalPacks] = useState(0); // new state for packs
 
+    const hasSlabbed = filteredCards.some(card => card.slabbed);
+
     // Card Container Scale Slider
     const defaultCardScale = 1;
     const [cardScale, setCardScale] = useState(() => {
@@ -385,8 +387,8 @@ const handleCardClick = (card) => {
                 </div>
             </div>
 
-            {/* Cards Grid (unchanged) */}
-            <div className="cp-cards-grid" style={{ "--user-card-scale": cardScale }}>
+            {/* Cards Grid */}
+            <div className={`cp-cards-grid ${hasSlabbed ? 'slabbed' : ''}`} style={{ "--user-card-scale": cardScale }}>
                 {filteredCards.length > 0 ? (
                     filteredCards.map((card) => {
                         const isFeatured = featuredCards.some((fc) => fc._id === card._id);
@@ -395,7 +397,7 @@ const handleCardClick = (card) => {
                             <div
                                 key={card._id}
                                 id={`cp-card-${card._id}`}
-                                className={`cp-card-item ${isSelected ? 'cp-selected' : ''}`}
+                                className={`cp-card-item ${isSelected ? 'cp-selected' : ''} ${card.slabbed ? 'slabbed' : ''}`}
                                 onClick={() => handleClick(card)}
                             >
                                 {isFeatured && <div className="cp-featured-badge">Featured</div>}
@@ -406,6 +408,8 @@ const handleCardClick = (card) => {
                                     description={card.flavorText}
                                     mintNumber={card.mintNumber}
                                     modifier={card.modifier}
+                                    grade={card.grade}
+                                    slabbed={card.slabbed}
                                     maxMint={
                                         rarities.find(
                                             (r) => r.name.toLowerCase() === card.rarity.toLowerCase()
