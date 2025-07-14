@@ -70,3 +70,7 @@ Run these commands from the `backend` directory.
 
 Refer to [`backend/README_trading_market.md`](backend/README_trading_market.md) for additional backend documentation.
 
+## Card Grading (Admin Only)
+
+Admins can grade any card from the `/admin/grading` page. Selecting a user and card will assign a random grade from 1–10 and mark the card as slabbed. Graded cards display a plastic "slab" overlay with the project logo and grade value.
+

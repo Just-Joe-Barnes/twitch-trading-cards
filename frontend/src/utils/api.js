@@ -431,3 +431,16 @@ export const claimAchievement = async (name) => {
         throw error;
     }
 };
+
+// Grade a specific card for a user (admin only)
+export const gradeCard = async (userId, cardId) => {
+    try {
+        return await fetchWithAuth('/api/grading/grade-card', {
+            method: 'POST',
+            body: JSON.stringify({ userId, cardId }),
+        });
+    } catch (error) {
+        console.error('[API] Error grading card:', error.message);
+        throw error;
+    }
+};
