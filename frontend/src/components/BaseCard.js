@@ -375,9 +375,11 @@ const BaseCard = ({
       )}
       {slabbed && (
         <div className="slab-overlay">
-          <img src="/images/NedsDecksLogo.png" alt="logo" className="slab-logo" />
-          <div className="slab-grade">{grade}</div>
-          <div className="slab-name">{name}</div>
+          <div className="slab-header">
+            <img src="/images/NedsDecksLogo.png" alt="logo" className="slab-logo" />
+            <div className="slab-name">{name}</div>
+            <div className="slab-grade">{grade}</div>
+          </div>
         </div>
       )}
     </div>

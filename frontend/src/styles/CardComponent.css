@@ -794,9 +794,12 @@
 
 .slab-overlay {
     position: absolute;
-    inset: -6px;
-    border-radius: 18px;
-    border: 10px solid rgba(255, 255, 255, 0.9);
+    top: -72px;
+    left: -12px;
+    right: -12px;
+    bottom: -12px;
+    border-radius: 25px;
+    border: 20px solid rgba(255, 255, 255, 0.9);
     background: rgba(255, 255, 255, 0.1);
     box-shadow:
         0 4px 12px rgba(0,0,0,0.7),
@@ -818,36 +821,40 @@
     border-radius: 10px 10px 0 0;
 }
 
-.slab-logo {
+.slab-header {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    width: 40px;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
     pointer-events: none;
 }
 
+.slab-logo {
+    width: 40px;
+    flex: 0 0 auto;
+}
+
 .slab-grade {
-    position: absolute;
-    top: 12px;
-    right: 12px;
     font-size: 1.5rem;
     font-weight: bold;
     color: #111;
     background: none;
     padding: 0;
     text-shadow: 0 0 2px rgba(0,0,0,0.4);
-    pointer-events: none;
+    flex: 0 0 auto;
 }
 
 .slab-name {
-    position: absolute;
-    top: 32px;
-    left: 50%;
-    transform: translateX(-50%);
     font-weight: bold;
     font-size: 0.9rem;
     color: #111;
-    pointer-events: none;
+    flex: 1 1 auto;
+    text-align: center;
     white-space: nowrap;
 }
 
