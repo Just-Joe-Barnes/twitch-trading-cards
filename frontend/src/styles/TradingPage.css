@@ -135,6 +135,13 @@
     width: 100%;
 }
 
+.tp-slabbed-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+}
+
     .tp-filters input[type="text"],
     .tp-filters select {
         background: var(--surface-dark);

@@ -60,6 +60,7 @@ const CollectionPage = ({
     const [rarityFilter, setRarityFilter] = useState('');
     const [sortOption, setSortOption] = useState('acquiredAt');
     const [order, setOrder] = useState('desc');
+    const [showSlabbedOnly, setShowSlabbedOnly] = useState(false);
 
     // Featured states
     const [featuredCards, setFeaturedCards] = useState([]);
@@ -170,8 +171,13 @@ const CollectionPage = ({
             );
         }
 
+        // Slabbed filter
+        if (showSlabbedOnly) {
+            filtered = filtered.filter((card) => card.slabbed);
+        }
+
         setFilteredCards(filtered);
-    }, [allCards, search, rarityFilter, sortOption, order, showFeaturedOnly, featuredCards]);
+    }, [allCards, search, rarityFilter, sortOption, order, showFeaturedOnly, showSlabbedOnly, featuredCards]);
 
     // Single-click -> select card for deck builder
 const handleCardClick = (card) => {
@@ -325,6 +331,14 @@ const handleCardClick = (card) => {
                                 <option value="asc">Ascending</option>
                                 <option value="desc">Descending</option>
                             </select>
+                            <label className="cp-slabbed-toggle">
+                                <input
+                                    type="checkbox"
+                                    checked={showSlabbedOnly}
+                                    onChange={(e) => setShowSlabbedOnly(e.target.checked)}
+                                />
+                                Slabbed Only
+                            </label>
                         </div>
                     </div>
                     <div className="cp-featured-container">

@@ -25,10 +25,12 @@ const TradingPage = ({ userId }) => {
     const [leftRarity, setLeftRarity] = useState("");
     const [leftSort, setLeftSort] = useState("acquiredAt");
     const [leftSortDir, setLeftSortDir] = useState("desc");
+    const [leftSlabbedOnly, setLeftSlabbedOnly] = useState(false);
     const [rightSearch, setRightSearch] = useState("");
     const [rightRarity, setRightRarity] = useState("");
     const [rightSort, setRightSort] = useState("acquiredAt");
     const [rightSortDir, setRightSortDir] = useState("desc");
+    const [rightSlabbedOnly, setRightSlabbedOnly] = useState(false);
 
     const [isMobile, setIsMobile] = useState(false);
     const [leftCollapsed, setLeftCollapsed] = useState(false);
@@ -118,11 +120,12 @@ const TradingPage = ({ userId }) => {
         setUserSuggestions([]);
     };
 
-    const applyFilters = (collection, search, rarity, sortBy, sortDir) => {
+    const applyFilters = (collection, search, rarity, sortBy, sortDir, slabbedOnly = false) => {
         return collection
             .filter((card) =>
                 card.name.toLowerCase().includes(search.toLowerCase()) &&
-                (rarity ? card.rarity.toLowerCase() === rarity.toLowerCase() : true)
+                (rarity ? card.rarity.toLowerCase() === rarity.toLowerCase() : true) &&
+                (!slabbedOnly || card.slabbed)
             )
             .sort((a, b) => {
                 let result = 0;
@@ -376,10 +379,18 @@ const TradingPage = ({ userId }) => {
                                                 <option value="asc">Ascending</option>
                                                 <option value="desc">Descending</option>
                                             </select>
+                                            <label className="tp-slabbed-toggle">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={leftSlabbedOnly}
+                                                    onChange={(e) => setLeftSlabbedOnly(e.target.checked)}
+                                                />
+                                                Slabbed Only
+                                            </label>
                                         </div>
                                         <div className="tp-grid-container">
                                             <div className="tp-cards-grid">
-                                                {applyFilters(userCollection, leftSearch, leftRarity, leftSort, leftSortDir).map((card) => (
+                                                {applyFilters(userCollection, leftSearch, leftRarity, leftSort, leftSortDir, leftSlabbedOnly).map((card) => (
                                                     <div
                                                         key={card._id}
                                                         className={`tp-card-item ${tradeOffer.some((c) => c._id === card._id) ? "tp-selected" : ""}`}
@@ -439,10 +450,18 @@ const TradingPage = ({ userId }) => {
                                                 <option value="asc">Ascending</option>
                                                 <option value="desc">Descending</option>
                                             </select>
+                                            <label className="tp-slabbed-toggle">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={rightSlabbedOnly}
+                                                    onChange={(e) => setRightSlabbedOnly(e.target.checked)}
+                                                />
+                                                Slabbed Only
+                                            </label>
                                         </div>
                                         <div className="tp-grid-container">
                                             <div className="tp-cards-grid">
-                                                {applyFilters(recipientCollection, rightSearch, rightRarity, rightSort, rightSortDir).map((card) => (
+                                                {applyFilters(recipientCollection, rightSearch, rightRarity, rightSort, rightSortDir, rightSlabbedOnly).map((card) => (
                                                     <div
                                                         key={card._id}
                                                         className={`tp-card-item ${tradeRequest.some((c) => c._id === card._id) ? "tp-selected" : ""}`}
