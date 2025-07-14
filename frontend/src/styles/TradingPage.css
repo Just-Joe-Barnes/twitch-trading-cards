@@ -262,6 +262,12 @@
     align-items: center;
 }
 
+/* Extra spacing for slabbed cards */
+.tp-card-item.slabbed {
+    overflow: visible;
+    margin: 72px 30px 24px;
+}
+
     .tp-card-item:hover {
         transform: scale(1.1);
         border-color: var(--border-dark);

@@ -272,7 +272,7 @@ const TradingPage = ({ userId }) => {
                                             {tradeOffer.map((card) => (
                                                 <div
                                                     key={card._id}
-                                                    className="tp-card-item"
+                                                    className={`tp-card-item ${card.slabbed ? 'slabbed' : ''}`}
                                                     onDoubleClick={() => handleRemoveItem(card, "offer")}
                                                     onClick={() => handleSelectItem(card, "offer")}
                                                 >
@@ -284,6 +284,8 @@ const TradingPage = ({ userId }) => {
                                                         mintNumber={card.mintNumber}
                                                         maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
                                                         modifier={card.modifier}
+                                                        slabbed={card.slabbed}
+                                                        grade={card.grade}
                                                     />
                                                 </div>
                                             ))}
@@ -308,7 +310,7 @@ const TradingPage = ({ userId }) => {
                                             {tradeRequest.map((card) => (
                                                 <div
                                                     key={card._id}
-                                                    className="tp-card-item"
+                                                    className={`tp-card-item ${card.slabbed ? 'slabbed' : ''}`}
                                                     onDoubleClick={() => handleRemoveItem(card, "request")}
                                                     onClick={() => handleSelectItem(card, "request")}
                                                 >
@@ -320,6 +322,8 @@ const TradingPage = ({ userId }) => {
                                                         mintNumber={card.mintNumber}
                                                         maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
                                                         modifier={card.modifier}
+                                                        slabbed={card.slabbed}
+                                                        grade={card.grade}
                                                     />
                                                 </div>
                                             ))}
@@ -393,7 +397,7 @@ const TradingPage = ({ userId }) => {
                                                 {applyFilters(userCollection, leftSearch, leftRarity, leftSort, leftSortDir, leftSlabbedOnly).map((card) => (
                                                     <div
                                                         key={card._id}
-                                                        className={`tp-card-item ${tradeOffer.some((c) => c._id === card._id) ? "tp-selected" : ""}`}
+                                                        className={`tp-card-item ${tradeOffer.some((c) => c._id === card._id) ? "tp-selected" : ""} ${card.slabbed ? 'slabbed' : ''}`}
                                                         onClick={() => handleSelectItem(card, "offer")}
                                                     >
                                                         <BaseCard
@@ -404,6 +408,8 @@ const TradingPage = ({ userId }) => {
                                                             mintNumber={card.mintNumber}
                                                             maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
                                                             modifier={card.modifier}
+                                                            slabbed={card.slabbed}
+                                                            grade={card.grade}
                                                         />
                                                     </div>
                                                 ))}
@@ -464,7 +470,7 @@ const TradingPage = ({ userId }) => {
                                                 {applyFilters(recipientCollection, rightSearch, rightRarity, rightSort, rightSortDir, rightSlabbedOnly).map((card) => (
                                                     <div
                                                         key={card._id}
-                                                        className={`tp-card-item ${tradeRequest.some((c) => c._id === card._id) ? "tp-selected" : ""}`}
+                                                        className={`tp-card-item ${tradeRequest.some((c) => c._id === card._id) ? "tp-selected" : ""} ${card.slabbed ? 'slabbed' : ''}`}
                                                         onClick={() => handleSelectItem(card, "request")}
                                                     >
                                                         <BaseCard
@@ -475,6 +481,8 @@ const TradingPage = ({ userId }) => {
                                                             mintNumber={card.mintNumber}
                                                             maxMint={rarities.find((r) => r.name === card.rarity)?.totalCopies}
                                                             modifier={card.modifier}
+                                                            slabbed={card.slabbed}
+                                                            grade={card.grade}
                                                         />
                                                     </div>
                                                 ))}
