@@ -806,10 +806,10 @@
 
 .slab-overlay {
     position: absolute;
-    top: -64px; /* maintain 56px header spacing */
-    left: -20px;
-    right: -20px;
-    bottom: -16px; /* keep bottom gap consistent */
+    top: -72px; /* maintain 56px header spacing with extra margin */
+    left: -30px;
+    right: -30px;
+    bottom: -24px; /* keep bottom gap consistent with added space */
     border-radius: 10px;
     --slab-border-color: rgba(255, 255, 255, 0.9);
     border: 12px solid var(--slab-border-color);
