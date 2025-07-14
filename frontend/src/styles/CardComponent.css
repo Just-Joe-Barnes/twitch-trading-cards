@@ -171,6 +171,7 @@
 /* Allow slab overlay to extend above the card */
 .card-container.slabbed {
     overflow: visible;
+
     background: none;
 }
 
