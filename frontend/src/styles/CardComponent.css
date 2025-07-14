@@ -10,6 +10,7 @@
  **************************************/
 .card-container {
     --card-scale: 1;
+    --card-bg-color: #3a2525;
     width: var(--card-width);
     height: var(--card-height);
     aspect-ratio: 2 / 3;
@@ -21,7 +22,7 @@
     font-family: var(--font-family);
     margin: 10px;
     position: relative;
-    background: #3a2525;
+    background: var(--card-bg-color);
     transition: transform 0.1s ease;
     transform-style: preserve-3d;
     will-change: transform;
@@ -177,7 +178,7 @@
 .card-container.slabbed .card-border {
     margin: 0;
     height: 100%;
-    background: #3a2525;
+    background: var(--card-bg-color);
 }
 
 /**************************************
@@ -508,7 +509,7 @@
  **************************************/
 
 .card-container.card-container.unique {
-    background-color: black;
+    --card-bg-color: black;
 }
 
 
@@ -848,8 +849,8 @@
     left: 0;
     right: 0;
     height: 56px;
-    background: hotpink;
-    border-bottom: 2px solid hotpink;
+    background: var(--slab-color, hotpink);
+    border-bottom: 2px solid var(--slab-color, hotpink);
     border-radius: 6px 6px 0 0;
 }
 
@@ -859,7 +860,7 @@
     left: 0;
     right: 0;
     height: 56px;
-    background-color: hotpink;
+    background-color: var(--slab-color, hotpink);
     display: flex;
     align-items: center;
     justify-content: space-between;
