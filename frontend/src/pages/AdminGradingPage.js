@@ -137,7 +137,9 @@ const AdminGradingPage = () => {
                 <div className="collection-section">
                     {loading && <p>Loading cards...</p>}
                     <div className={`grading-card-list ${hasSlabbed ? 'slabbed' : ''}`}>
-                        {sortedCards.map(card => (
+                    {sortedCards
+                        .filter(card => !gradingCard || card._id !== gradingCard._id)
+                        .map(card => (
                             <div key={card._id} className={`grading-card-item ${card.slabbed ? 'slabbed' : ''}`}>
                                 <BaseCard
                                     name={card.name}
@@ -160,7 +162,6 @@ const AdminGradingPage = () => {
                 <div className="reveal-zone">
                     {gradingCard ? (
                         <div className="grading-area" data-testid="grading-area">
-                            <h3>Graded Card</h3>
                             <div
                                 className={`card-wrapper ${revealGrade ? 'face-up' : 'face-down'}`}
                                 onClick={() => setRevealGrade(r => !r)}
