@@ -40,13 +40,17 @@ test('grading workflow reveals card', async () => {
     .mockImplementationOnce(() => Promise.resolve({ cards: mockCards }))
     .mockImplementationOnce(() => Promise.resolve({ cards: updatedCards }));
 
-  const { getByTestId } = render(<AdminGradingPage />);
+  const { getByTestId, queryByTestId } = render(<AdminGradingPage />);
   const select = getByTestId('user-select');
   await waitFor(() => select.querySelector('option[value="1"]'));
   fireEvent.change(select, { target: { value: '1' } });
-  await waitFor(() => getByTestId('grade-btn-c1'));
+  await waitFor(() => getByTestId('select-btn-c1'));
 
-  fireEvent.click(getByTestId('grade-btn-c1'));
+  fireEvent.click(getByTestId('select-btn-c1'));
+  await waitFor(() => getByTestId('selected-card-area'));
+  expect(queryByTestId('collection-list')).toBeNull();
+
+  fireEvent.click(getByTestId('grade-btn'));
   await waitFor(() => getByTestId('graded-card-wrapper'));
 
   const wrapper = getByTestId('graded-card-wrapper');

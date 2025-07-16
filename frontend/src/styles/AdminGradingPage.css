@@ -109,6 +109,7 @@
     transition: transform 0.6s ease;
     cursor: pointer;
     width: 300px;
+    height: 450px;
     margin: 0 auto;
 }
 
@@ -121,7 +122,11 @@
 }
 
 .card-content {
+    width: 300px;
+    aspect-ratio: 2 / 3;
+    position: relative;
     perspective: 1000px;
+    overflow: visible;
 }
 
 .card-inner {
@@ -143,6 +148,11 @@
     border-radius: var(--border-radius);
 }
 
+.card-back {
+    transform: rotateY(0deg);
+    z-index: 2;
+}
+
 .card-back img {
     width: 100%;
     height: 100%;
@@ -155,4 +165,54 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 1;
+}
+
+.slab-back-overlay {
+    position: absolute;
+    top: -72px;
+    left: -30px;
+    right: -30px;
+    bottom: -24px;
+    border-radius: 10px;
+    --slab-border-color: rgba(255, 255, 255, 0.9);
+    border: 12px solid var(--slab-border-color);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow:
+        0 4px 8px rgba(0,0,0,0.6),
+        inset 0 0 12px rgba(255,255,255,0.5),
+        inset 0 0 4px rgba(0,0,0,0.6);
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 8;
+}
+
+.slab-back-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: var(--slab-color, hotpink);
+    border-bottom: 2px solid var(--slab-color, hotpink);
+    border-radius: 6px 6px 0 0;
+}
+
+.slab-back-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(60deg, rgba(255,255,255,0.4), rgba(255,255,255,0) 60%),
+        linear-gradient(-60deg, rgba(255,255,255,0.3), rgba(255,255,255,0) 60%);
+    background-size: 200% 200%;
+    background-repeat: no-repeat;
+    background-position:
+        var(--cursor-x, 50%) var(--cursor-y, 50%),
+        var(--cursor-x, 50%) var(--cursor-y, 50%);
+    mix-blend-mode: screen;
+    transition: background-position 0.1s ease;
+    z-index: 2;
 }
