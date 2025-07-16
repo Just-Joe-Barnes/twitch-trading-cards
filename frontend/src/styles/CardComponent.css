@@ -184,6 +184,11 @@
     background: var(--card-bg-color);
 }
 
+/* Don't cover divine background when slabbed */
+.card-container.slabbed.divine .card-border {
+    background: none;
+}
+
 /**************************************
  * Glare for Lower Rarities (Basic → Uncommon)
  * Now matches the border color with alpha
