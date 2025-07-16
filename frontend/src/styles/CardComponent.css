@@ -172,6 +172,9 @@
 /* Allow slab overlay to extend above the card */
 .card-container.slabbed {
     overflow: visible;
+}
+
+.card-container.slabbed:not(.divine) {
     background: none;
 }
 
