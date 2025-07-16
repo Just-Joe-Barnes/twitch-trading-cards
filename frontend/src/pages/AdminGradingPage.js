@@ -64,7 +64,7 @@ const AdminGradingPage = () => {
             if (graded) {
                 setGradedCard(graded);
                 setSelectedCard(null);
-                setRevealGrade(false);
+                setRevealGrade(true);
             }
         } catch (err) {
             console.error('Error grading card', err);
