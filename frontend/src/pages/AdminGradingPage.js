@@ -3,6 +3,7 @@ import { fetchWithAuth, gradeCard } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { rarities } from '../constants/rarities';
+import { getRarityColor } from '../constants/rarityColors';
 import '../styles/AdminGradingPage.css';
 
 const AdminGradingPage = () => {
@@ -64,7 +65,7 @@ const AdminGradingPage = () => {
             if (graded) {
                 setGradedCard(graded);
                 setSelectedCard(null);
-                setRevealGrade(true);
+                setRevealGrade(false);
             }
         } catch (err) {
             console.error('Error grading card', err);
@@ -199,6 +200,7 @@ const AdminGradingPage = () => {
                                 <div className="card-inner">
                                     <div className="card-back">
                                         <img src="/images/card-back-placeholder.png" alt="Card Back" />
+                                        <div className="slab-back-overlay" style={{ '--slab-color': getRarityColor(gradedCard.rarity) }} />
                                     </div>
                                     <div className="card-front">
                                         <BaseCard
