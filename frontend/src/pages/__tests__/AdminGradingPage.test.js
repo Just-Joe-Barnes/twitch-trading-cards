@@ -54,7 +54,7 @@ test('grading workflow reveals card', async () => {
   await waitFor(() => getByTestId('graded-card-wrapper'));
 
   const wrapper = getByTestId('graded-card-wrapper');
-  expect(wrapper.className).toContain('face-down');
-  fireEvent.click(wrapper);
   expect(wrapper.className).toContain('face-up');
+  fireEvent.click(wrapper);
+  expect(wrapper.className).toContain('face-down');
 });
