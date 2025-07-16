@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchWithAuth, gradeCard } from '../utils/api';
 import BaseCard from '../components/BaseCard';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { rarities } from '../constants/rarities';
 import '../styles/AdminGradingPage.css';
 
@@ -9,6 +10,7 @@ const AdminGradingPage = () => {
     const [selectedUser, setSelectedUser] = useState('');
     const [cards, setCards] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [gradingLoading, setGradingLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [rarityFilter, setRarityFilter] = useState('All');
     const [sortOption, setSortOption] = useState('name');
@@ -45,6 +47,7 @@ const AdminGradingPage = () => {
     };
 
     const handleGrade = async (cardId) => {
+        setGradingLoading(true);
         try {
             await gradeCard(selectedUser, cardId);
             const data = await fetchWithAuth(`/api/users/${selectedUser}/collection`);
@@ -56,6 +59,8 @@ const AdminGradingPage = () => {
             }
         } catch (err) {
             console.error('Error grading card', err);
+        } finally {
+            setGradingLoading(false);
         }
     };
 
@@ -84,6 +89,7 @@ const AdminGradingPage = () => {
 
     return (
         <div className="admin-grading-page">
+            {gradingLoading && <LoadingSpinner />}
             <h2>Admin Card Grading</h2>
             <label>
                 Select User:
@@ -131,7 +137,9 @@ const AdminGradingPage = () => {
                 <div className="collection-section">
                     {loading && <p>Loading cards...</p>}
                     <div className={`grading-card-list ${hasSlabbed ? 'slabbed' : ''}`}>
-                        {sortedCards.map(card => (
+                    {sortedCards
+                        .filter(card => !gradingCard || card._id !== gradingCard._id)
+                        .map(card => (
                             <div key={card._id} className={`grading-card-item ${card.slabbed ? 'slabbed' : ''}`}>
                                 <BaseCard
                                     name={card.name}
@@ -154,7 +162,6 @@ const AdminGradingPage = () => {
                 <div className="reveal-zone">
                     {gradingCard ? (
                         <div className="grading-area" data-testid="grading-area">
-                            <h3>Graded Card</h3>
                             <div
                                 className={`card-wrapper ${revealGrade ? 'face-up' : 'face-down'}`}
                                 onClick={() => setRevealGrade(r => !r)}
