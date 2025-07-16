@@ -193,7 +193,7 @@ const AdminGradingPage = () => {
                         <div
                             className={`card-wrapper ${revealGrade ? 'face-up' : 'face-down'}`}
                             onClick={() => setRevealGrade(r => !r)}
-                            style={{ '--rarity-color': 'white' }}
+                            style={{ '--rarity-color': getRarityColor(gradedCard.rarity) }}
                             data-testid="graded-card-wrapper"
                         >
                             <div className="card-content">

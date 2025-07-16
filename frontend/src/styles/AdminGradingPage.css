@@ -176,6 +176,18 @@
     z-index: 8;
 }
 
+.slab-back-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: var(--slab-color, hotpink);
+    border-bottom: 2px solid var(--slab-color, hotpink);
+    border-radius: 6px 6px 0 0;
+}
+
 .slab-back-overlay::after {
     content: '';
     position: absolute;
