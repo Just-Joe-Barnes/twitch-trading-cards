@@ -3,6 +3,7 @@ import { fetchWithAuth, gradeCard, completeGrading } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { rarities } from '../constants/rarities';
+import { getRarityColor } from '../constants/rarityColors';
 import '../styles/AdminGradingPage.css';
 
 const AdminGradingPage = () => {
@@ -17,6 +18,7 @@ const AdminGradingPage = () => {
     const [showSlabbedOnly, setShowSlabbedOnly] = useState(false);
 
     const [selectedCard, setSelectedCard] = useState(null);
+    const [revealedCards, setRevealedCards] = useState({});
 
     useEffect(() => {
         const loadUsers = async () => {
@@ -77,14 +79,23 @@ const AdminGradingPage = () => {
         }
     };
 
+    const toggleReveal = (cardId) => {
+        setRevealedCards((prev) => ({
+            ...prev,
+            [cardId]: !prev[cardId],
+        }));
+    };
+
     const rarityRank = rarities.reduce((acc, r, idx) => {
         acc[r.name] = idx;
         return acc;
     }, {});
 
-    const inProcessCards = cards.filter(c => c.gradingRequestedAt && !c.slabbed);
+    // Cards with a gradingRequestedAt timestamp stay in the in-process
+    // section even after being slabbed so the grade can be revealed.
+    const inProcessCards = cards.filter(c => c.gradingRequestedAt);
 
-    const collectionCards = cards.filter(c => !c.gradingRequestedAt || c.slabbed);
+    const collectionCards = cards.filter(c => !c.gradingRequestedAt);
 
     const filteredCards = collectionCards
         .filter(card => card.name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -164,6 +175,42 @@ const AdminGradingPage = () => {
                                         const minutes = Math.max(Math.floor(diff / (1000 * 60)) % 60, 0);
                                         const hours = Math.max(Math.floor(diff / (1000 * 60 * 60)) % 24, 0);
                                         const days = Math.max(Math.floor(diff / (1000 * 60 * 60 * 24)), 0);
+
+                                        if (card.slabbed) {
+                                            const faceUp = revealedCards[card._id];
+                                            return (
+                                                <div key={card._id} className="grading-card-item slabbed">
+                                                    <div
+                                                        className={`card-wrapper ${faceUp ? 'face-up' : 'face-down'}`}
+                                                        onClick={() => toggleReveal(card._id)}
+                                                        style={{ '--rarity-color': getRarityColor(card.rarity) }}
+                                                    >
+                                                        <div className="card-content">
+                                                            <div className="card-inner">
+                                                                <div className="card-back">
+                                                                    <img src="/images/card-back-placeholder.png" alt="Card Back" />
+                                                                    <div className="slab-back-overlay" style={{ '--slab-color': getRarityColor(card.rarity) }} />
+                                                                </div>
+                                                                <div className="card-front">
+                                                                    <BaseCard
+                                                                        name={card.name}
+                                                                        image={card.imageUrl}
+                                                                        description={card.flavorText}
+                                                                        rarity={card.rarity}
+                                                                        mintNumber={card.mintNumber}
+                                                                        modifier={card.modifier}
+                                                                        grade={card.grade}
+                                                                        slabbed={card.slabbed}
+                                                                        interactive={false}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+
                                         return (
                                             <div key={card._id} className="grading-card-item">
                                                 <BaseCard

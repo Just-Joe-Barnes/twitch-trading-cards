@@ -16,7 +16,11 @@ const finalizeGrade = (card) => {
     card.grade = grade;
     card.slabbed = true;
     card.gradedAt = new Date();
-    card.gradingRequestedAt = undefined;
+    // Keep gradingRequestedAt so the frontend knows this card's
+    // grade has not been revealed yet. Previously the field was
+    // cleared which caused the card to immediately move back to
+    // the collection list. Retaining it allows the card to stay
+    // in the "grading" section until manually revealed.
 };
 
 const startGrading = async (req, res) => {
