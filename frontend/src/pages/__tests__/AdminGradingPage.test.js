@@ -34,13 +34,13 @@ test('filters cards by search and rarity', async () => {
   expect(queryByText('Alpha')).toBeNull();
 });
 
-test('grading workflow reveals card', async () => {
-  const updatedCards = [{ ...mockCards[0], slabbed: true, grade: 9 }, mockCards[1]];
+test('grading workflow moves card to in-progress list', async () => {
+  const inProcess = [{ ...mockCards[0], gradingRequestedAt: new Date().toISOString() }, mockCards[1]];
   fetchWithAuth.mockImplementationOnce(() => Promise.resolve(mockUsers))
     .mockImplementationOnce(() => Promise.resolve({ cards: mockCards }))
-    .mockImplementationOnce(() => Promise.resolve({ cards: updatedCards }));
+    .mockImplementationOnce(() => Promise.resolve({ cards: inProcess }));
 
-  const { getByTestId, queryByTestId } = render(<AdminGradingPage />);
+  const { getByTestId } = render(<AdminGradingPage />);
   const select = getByTestId('user-select');
   await waitFor(() => select.querySelector('option[value="1"]'));
   fireEvent.change(select, { target: { value: '1' } });
@@ -48,13 +48,8 @@ test('grading workflow reveals card', async () => {
 
   fireEvent.click(getByTestId('select-btn-c1'));
   await waitFor(() => getByTestId('selected-card-area'));
-  expect(queryByTestId('collection-list')).toBeNull();
 
   fireEvent.click(getByTestId('grade-btn'));
-  await waitFor(() => getByTestId('graded-card-wrapper'));
-
-  const wrapper = getByTestId('graded-card-wrapper');
-  expect(wrapper.className).toContain('face-up');
-  fireEvent.click(wrapper);
-  expect(wrapper.className).toContain('face-down');
+  await waitFor(() => getByTestId('inprocess-list'));
+  expect(getByTestId('inprocess-list')).toBeDefined();
 });

@@ -17,6 +17,7 @@ const cardSchema = new mongoose.Schema({
     grade: { type: Number, min: 1, max: 10 },
     slabbed: { type: Boolean, default: false },
     gradedAt: Date,
+    gradingRequestedAt: Date,
 });
 
 // Index nested card id for faster $elemMatch queries

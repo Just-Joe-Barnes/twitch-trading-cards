@@ -11,7 +11,15 @@ function weightedRandomGrade() {
     return 5;
 }
 
-const gradeCard = async (req, res) => {
+const finalizeGrade = (card) => {
+    const grade = weightedRandomGrade();
+    card.grade = grade;
+    card.slabbed = true;
+    card.gradedAt = new Date();
+    card.gradingRequestedAt = undefined;
+};
+
+const startGrading = async (req, res) => {
     const { userId, cardId } = req.body;
     if (!userId || !cardId) {
         return res.status(400).json({ message: 'userId and cardId are required' });
@@ -21,16 +29,38 @@ const gradeCard = async (req, res) => {
         if (!user) return res.status(404).json({ message: 'User not found' });
         const card = user.cards.id(cardId);
         if (!card) return res.status(404).json({ message: 'Card not found' });
-        const grade = weightedRandomGrade();
-        card.grade = grade;
-        card.slabbed = true;
-        card.gradedAt = new Date();
+        if (card.slabbed) {
+            return res.status(400).json({ message: 'Card already graded' });
+        }
+        card.gradingRequestedAt = new Date();
         await user.save();
         res.json({ card });
     } catch (err) {
-        console.error('Error grading card:', err);
-        res.status(500).json({ message: 'Failed to grade card' });
+        console.error('Error starting grading:', err);
+        res.status(500).json({ message: 'Failed to start grading' });
     }
 };
 
-module.exports = { gradeCard };
+const completeGrading = async (req, res) => {
+    const { userId, cardId } = req.body;
+    if (!userId || !cardId) {
+        return res.status(400).json({ message: 'userId and cardId are required' });
+    }
+    try {
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        const card = user.cards.id(cardId);
+        if (!card) return res.status(404).json({ message: 'Card not found' });
+        if (card.slabbed) {
+            return res.status(400).json({ message: 'Card already graded' });
+        }
+        finalizeGrade(card);
+        await user.save();
+        res.json({ card });
+    } catch (err) {
+        console.error('Error completing grading:', err);
+        res.status(500).json({ message: 'Failed to complete grading' });
+    }
+};
+
+module.exports = { startGrading, completeGrading, finalizeGrade };

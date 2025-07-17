@@ -72,5 +72,5 @@ Refer to [`backend/README_trading_market.md`](backend/README_trading_market.md) 
 
 ## Card Grading (Admin Only)
 
-Admins can grade any card from the `/admin/grading` page. Selecting a user and card will assign a random grade from 1–10 and mark the card as slabbed. Graded cards display a plastic "slab" overlay with the project logo and grade value.
+Admins can initiate grading for any card from the `/admin/grading` page. Once started, grading takes 24 hours to complete unless an admin overrides the timer. When finished, the card is slabbed with a random grade from 1–10 and displays a plastic "slab" overlay with the grade value.
 
