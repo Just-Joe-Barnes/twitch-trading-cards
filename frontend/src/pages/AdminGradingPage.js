@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { fetchWithAuth, gradeCard } from '../utils/api';
+import { fetchWithAuth, gradeCard, completeGrading } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { rarities } from '../constants/rarities';
-import { getRarityColor } from '../constants/rarityColors';
 import '../styles/AdminGradingPage.css';
 
 const AdminGradingPage = () => {
@@ -18,8 +17,6 @@ const AdminGradingPage = () => {
     const [showSlabbedOnly, setShowSlabbedOnly] = useState(false);
 
     const [selectedCard, setSelectedCard] = useState(null);
-    const [gradedCard, setGradedCard] = useState(null);
-    const [revealGrade, setRevealGrade] = useState(false);
 
     useEffect(() => {
         const loadUsers = async () => {
@@ -50,8 +47,6 @@ const AdminGradingPage = () => {
 
     const handleSelectCard = (card) => {
         setSelectedCard(card);
-        setGradedCard(null);
-        setRevealGrade(false);
     };
 
     const handleGrade = async () => {
@@ -61,14 +56,22 @@ const AdminGradingPage = () => {
             await gradeCard(selectedUser, selectedCard._id);
             const data = await fetchWithAuth(`/api/users/${selectedUser}/collection`);
             setCards(data.cards || []);
-            const graded = (data.cards || []).find(c => c._id === selectedCard._id);
-            if (graded) {
-                setGradedCard(graded);
-                setSelectedCard(null);
-                setRevealGrade(false);
-            }
+            setSelectedCard(null);
         } catch (err) {
             console.error('Error grading card', err);
+        } finally {
+            setGradingLoading(false);
+        }
+    };
+
+    const handleOverride = async (cardId) => {
+        setGradingLoading(true);
+        try {
+            await completeGrading(selectedUser, cardId);
+            const data = await fetchWithAuth(`/api/users/${selectedUser}/collection`);
+            setCards(data.cards || []);
+        } catch (err) {
+            console.error('Error completing grading', err);
         } finally {
             setGradingLoading(false);
         }
@@ -79,7 +82,11 @@ const AdminGradingPage = () => {
         return acc;
     }, {});
 
-    const filteredCards = cards
+    const inProcessCards = cards.filter(c => c.gradingRequestedAt && !c.slabbed);
+
+    const collectionCards = cards.filter(c => !c.gradingRequestedAt || c.slabbed);
+
+    const filteredCards = collectionCards
         .filter(card => card.name.toLowerCase().includes(searchQuery.toLowerCase()))
         .filter(card => rarityFilter === 'All' || card.rarity === rarityFilter)
         .filter(card => (showSlabbedOnly ? card.slabbed : true));
@@ -144,30 +151,64 @@ const AdminGradingPage = () => {
             )}
 
             <div className="grading-layout">
-                {!selectedCard && !gradedCard && (
-                    <div className="collection-section" data-testid="collection-list">
-                        {loading && <p>Loading cards...</p>}
-                        <div className={`grading-card-list ${hasSlabbed ? 'slabbed' : ''}`}>
-                        {sortedCards.map(card => (
-                            <div key={card._id} className={`grading-card-item ${card.slabbed ? 'slabbed' : ''}`}>
-                                <BaseCard
-                                    name={card.name}
-                                    image={card.imageUrl}
-                                    description={card.flavorText}
-                                    rarity={card.rarity}
-                                    mintNumber={card.mintNumber}
-                                    modifier={card.modifier}
-                                    grade={card.grade}
-                                    slabbed={card.slabbed}
-                                />
-                                {!card.slabbed && (
-                                    <button onClick={() => handleSelectCard(card)} data-testid={`select-btn-${card._id}`}>Select</button>
-                                )}
-                                {card.slabbed && <span>Grade: {card.grade}</span>}
+                {!selectedCard && (
+                    <>
+                        {inProcessCards.length > 0 && (
+                            <div className="inprocess-section" data-testid="inprocess-list">
+                                <h3>Grading In Progress</h3>
+                                <div className="grading-card-list">
+                                    {inProcessCards.map(card => {
+                                        const end = new Date(card.gradingRequestedAt).getTime() + 24 * 60 * 60 * 1000;
+                                        const diff = end - Date.now();
+                                        const seconds = Math.max(Math.floor(diff / 1000) % 60, 0);
+                                        const minutes = Math.max(Math.floor(diff / (1000 * 60)) % 60, 0);
+                                        const hours = Math.max(Math.floor(diff / (1000 * 60 * 60)) % 24, 0);
+                                        const days = Math.max(Math.floor(diff / (1000 * 60 * 60 * 24)), 0);
+                                        return (
+                                            <div key={card._id} className="grading-card-item">
+                                                <BaseCard
+                                                    name={card.name}
+                                                    image={card.imageUrl}
+                                                    description={card.flavorText}
+                                                    rarity={card.rarity}
+                                                    mintNumber={card.mintNumber}
+                                                    modifier={card.modifier}
+                                                    slabbed={false}
+                                                />
+                                                <div className="grading-timeleft-badge">
+                                                    {days}d {hours}h {minutes}m {seconds}s
+                                                </div>
+                                                <button onClick={() => handleOverride(card._id)}>Override</button>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        ))}
+                        )}
+                        <div className="collection-section" data-testid="collection-list">
+                            {loading && <p>Loading cards...</p>}
+                            <div className={`grading-card-list ${hasSlabbed ? 'slabbed' : ''}`}>
+                                {sortedCards.map(card => (
+                                    <div key={card._id} className={`grading-card-item ${card.slabbed ? 'slabbed' : ''}`}>
+                                        <BaseCard
+                                            name={card.name}
+                                            image={card.imageUrl}
+                                            description={card.flavorText}
+                                            rarity={card.rarity}
+                                            mintNumber={card.mintNumber}
+                                            modifier={card.modifier}
+                                            grade={card.grade}
+                                            slabbed={card.slabbed}
+                                        />
+                                        {!card.slabbed && (
+                                            <button onClick={() => handleSelectCard(card)} data-testid={`select-btn-${card._id}`}>Select</button>
+                                        )}
+                                        {card.slabbed && <span>Grade: {card.grade}</span>}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    </>
                 )}
                 {selectedCard && (
                     <div className="reveal-zone" data-testid="selected-card-area">
@@ -185,37 +226,6 @@ const AdminGradingPage = () => {
                             {!selectedCard.slabbed && (
                                 <button onClick={handleGrade} data-testid="grade-btn">Grade Card</button>
                             )}
-                        </div>
-                    </div>
-                )}
-                {gradedCard && (
-                    <div className="reveal-zone" data-testid="grading-area">
-                        <div
-                            className={`card-wrapper ${revealGrade ? 'face-up' : 'face-down'}`}
-                            onClick={() => setRevealGrade(r => !r)}
-                            style={{ '--rarity-color': getRarityColor(gradedCard.rarity) }}
-                            data-testid="graded-card-wrapper"
-                        >
-                            <div className="card-content">
-                                <div className="card-inner">
-                                    <div className="card-back">
-                                        <img src="/images/card-back-placeholder.png" alt="Card Back" />
-                                        <div className="slab-back-overlay" style={{ '--slab-color': getRarityColor(gradedCard.rarity) }} />
-                                    </div>
-                                    <div className="card-front">
-                                        <BaseCard
-                                            name={gradedCard.name}
-                                            image={gradedCard.imageUrl}
-                                            description={gradedCard.flavorText}
-                                            rarity={gradedCard.rarity}
-                                            mintNumber={gradedCard.mintNumber}
-                                            modifier={gradedCard.modifier}
-                                            grade={gradedCard.grade}
-                                            slabbed={gradedCard.slabbed}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 )}

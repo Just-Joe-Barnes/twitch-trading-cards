@@ -76,6 +76,21 @@ router.get('/:userId/collection', protect, async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
+        let updated = false;
+        const now = Date.now();
+        const { finalizeGrade } = require('../controllers/gradingController');
+        user.cards.forEach(card => {
+            if (!card.slabbed && card.gradingRequestedAt) {
+                const diff = now - new Date(card.gradingRequestedAt).getTime();
+                if (diff >= 24 * 60 * 60 * 1000) {
+                    finalizeGrade(card);
+                    updated = true;
+                }
+            }
+        });
+        if (updated) {
+            await user.save();
+        }
         res.status(200).json({ cards: user.cards, packs: user.packs });
     } catch (err) {
         console.error('[GET /collection] Error:', err.message);

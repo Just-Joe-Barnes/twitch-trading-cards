@@ -440,7 +440,19 @@ export const gradeCard = async (userId, cardId) => {
             body: JSON.stringify({ userId, cardId }),
         });
     } catch (error) {
-        console.error('[API] Error grading card:', error.message);
+        console.error('[API] Error starting grading:', error.message);
+        throw error;
+    }
+};
+
+export const completeGrading = async (userId, cardId) => {
+    try {
+        return await fetchWithAuth('/api/grading/grade-card/complete', {
+            method: 'POST',
+            body: JSON.stringify({ userId, cardId }),
+        });
+    } catch (error) {
+        console.error('[API] Error completing grading:', error.message);
         throw error;
     }
 };

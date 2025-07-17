@@ -1,9 +1,10 @@
 const express = require('express');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
-const { gradeCard } = require('../controllers/gradingController');
+const { startGrading, completeGrading } = require('../controllers/gradingController');
 
 const router = express.Router();
 
-router.post('/grade-card', protect, adminOnly, gradeCard);
+router.post('/grade-card', protect, adminOnly, startGrading);
+router.post('/grade-card/complete', protect, adminOnly, completeGrading);
 
 module.exports = router;
