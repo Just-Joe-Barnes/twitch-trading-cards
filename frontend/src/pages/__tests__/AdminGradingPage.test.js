@@ -1,6 +1,6 @@
 import { render, fireEvent, waitFor } from '@testing-library/react';
 import AdminGradingPage from '../AdminGradingPage';
-import { fetchWithAuth, gradeCard } from '../../utils/api';
+import { fetchWithAuth, gradeCard, fetchUserProfile } from '../../utils/api';
 
 jest.mock('../../utils/api');
 
@@ -13,6 +13,8 @@ const mockCards = [
 beforeEach(() => {
   fetchWithAuth.mockReset();
   gradeCard.mockReset();
+  fetchUserProfile.mockReset();
+  fetchUserProfile.mockResolvedValue({ _id: '1' });
   fetchWithAuth.mockImplementation((endpoint) => {
     if (endpoint === '/api/admin/users') return Promise.resolve(mockUsers);
     if (endpoint === '/api/users/1/collection') return Promise.resolve({ cards: mockCards });
@@ -22,10 +24,9 @@ beforeEach(() => {
 
 test('filters cards by search and rarity', async () => {
   const { getByTestId, queryByText } = render(<AdminGradingPage />);
-  const select = getByTestId('user-select');
-  await waitFor(() => select.querySelector('option[value="1"]'));
-  fireEvent.change(select, { target: { value: '1' } });
   await waitFor(() => getByTestId('search-input'));
+  const select = getByTestId('user-select');
+  fireEvent.change(select, { target: { value: '1' } });
 
   fireEvent.change(getByTestId('search-input'), { target: { value: 'Alpha' } });
   expect(queryByText('Beta')).toBeNull();
@@ -36,9 +37,18 @@ test('filters cards by search and rarity', async () => {
 
 test('grading workflow moves card to in-progress list', async () => {
   const inProcess = [{ ...mockCards[0], gradingRequestedAt: new Date().toISOString() }, mockCards[1]];
-  fetchWithAuth.mockImplementationOnce(() => Promise.resolve(mockUsers))
-    .mockImplementationOnce(() => Promise.resolve({ cards: mockCards }))
-    .mockImplementationOnce(() => Promise.resolve({ cards: inProcess }));
+  let callCount = 0;
+  fetchWithAuth.mockImplementation((endpoint) => {
+    if (endpoint === '/api/admin/users') return Promise.resolve(mockUsers);
+    if (endpoint === '/api/users/1/collection') {
+      callCount += 1;
+      if (callCount >= 3) {
+        return Promise.resolve({ cards: inProcess });
+      }
+      return Promise.resolve({ cards: mockCards });
+    }
+    return Promise.resolve({});
+  });
 
   const { getByTestId } = render(<AdminGradingPage />);
   const select = getByTestId('user-select');

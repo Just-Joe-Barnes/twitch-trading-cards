@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchWithAuth, gradeCard, completeGrading, revealGradedCard } from '../utils/api';
+import { fetchWithAuth, gradeCard, completeGrading, revealGradedCard, fetchUserProfile } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { rarities } from '../constants/rarities';
@@ -14,22 +14,31 @@ const AdminGradingPage = () => {
     const [gradingLoading, setGradingLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [rarityFilter, setRarityFilter] = useState('All');
-    const [sortOption, setSortOption] = useState('name');
+    const [sortOption, setSortOption] = useState('acquiredAt');
+    const [order, setOrder] = useState('desc');
     const [showSlabbedOnly, setShowSlabbedOnly] = useState(false);
 
     const [selectedCard, setSelectedCard] = useState(null);
     const [revealedCards, setRevealedCards] = useState({});
 
     useEffect(() => {
-        const loadUsers = async () => {
+        const init = async () => {
             try {
+                setLoading(true);
+                const profile = await fetchUserProfile();
+                setSelectedUser(profile._id);
+                const userData = await fetchWithAuth(`/api/users/${profile._id}/collection`);
+                setCards(userData.cards || []);
+
                 const data = await fetchWithAuth('/api/admin/users');
                 setUsers(data);
             } catch (err) {
-                console.error('Error fetching users', err);
+                console.error('Error initializing grading page', err);
+            } finally {
+                setLoading(false);
             }
         };
-        loadUsers();
+        init();
     }, []);
 
     const handleSelectUser = async (e) => {
@@ -121,14 +130,17 @@ const AdminGradingPage = () => {
         .filter(card => (showSlabbedOnly ? card.slabbed : !card.slabbed));
 
     const sortedCards = [...filteredCards].sort((a, b) => {
-        if (sortOption === 'mint') {
-            return a.mintNumber - b.mintNumber;
+        let result = 0;
+        if (sortOption === 'mintNumber') {
+            result = a.mintNumber - b.mintNumber;
+        } else if (sortOption === 'rarity') {
+            result = rarityRank[a.rarity] - rarityRank[b.rarity];
+        } else if (sortOption === 'acquiredAt') {
+            result = new Date(a.acquiredAt) - new Date(b.acquiredAt);
+        } else {
+            result = a.name.localeCompare(b.name);
         }
-        if (sortOption === 'rarity') {
-            return rarityRank[a.rarity] - rarityRank[b.rarity];
-        }
-        // default name sort
-        return a.name.localeCompare(b.name);
+        return order === 'asc' ? result : -result;
     });
 
     const hasSlabbed = cards.some(card => card.slabbed);
@@ -173,8 +185,13 @@ const AdminGradingPage = () => {
                     </label>
                     <select value={sortOption} onChange={e => setSortOption(e.target.value)} data-testid="sort-select">
                         <option value="name">Name</option>
-                        <option value="mint">Mint #</option>
+                        <option value="mintNumber">Mint Number</option>
                         <option value="rarity">Rarity</option>
+                        <option value="acquiredAt">Acquisition Date</option>
+                    </select>
+                    <select value={order} onChange={e => setOrder(e.target.value)} data-testid="order-select">
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
                     </select>
                 </div>
             )}
