@@ -219,7 +219,7 @@ const AdminGradingPage = () => {
                                                                         modifier={card.modifier}
                                                                         grade={card.grade}
                                                                         slabbed={card.slabbed}
-                                                                        interactive={false}
+                                                                        interactive={faceUp}
                                                                     />
                                                                 </div>
                                                             </div>
