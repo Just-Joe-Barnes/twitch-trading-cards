@@ -59,6 +59,10 @@
     transform: scale(1.05);
 }
 
+.done-btn {
+    margin-top: 0.5rem;
+}
+
 /* Controls */
 .grading-controls {
     margin: 1rem 0 2rem;

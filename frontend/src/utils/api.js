@@ -456,3 +456,15 @@ export const completeGrading = async (userId, cardId) => {
         throw error;
     }
 };
+
+export const revealGradedCard = async (userId, cardId) => {
+    try {
+        return await fetchWithAuth('/api/grading/grade-card/reveal', {
+            method: 'POST',
+            body: JSON.stringify({ userId, cardId }),
+        });
+    } catch (error) {
+        console.error('[API] Error revealing grade:', error.message);
+        throw error;
+    }
+};

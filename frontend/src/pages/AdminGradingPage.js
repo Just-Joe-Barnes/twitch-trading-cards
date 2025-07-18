@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchWithAuth, gradeCard, completeGrading } from '../utils/api';
+import { fetchWithAuth, gradeCard, completeGrading, revealGradedCard } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { rarities } from '../constants/rarities';
@@ -79,6 +79,24 @@ const AdminGradingPage = () => {
         }
     };
 
+    const handleDone = async (cardId) => {
+        setGradingLoading(true);
+        try {
+            await revealGradedCard(selectedUser, cardId);
+            const data = await fetchWithAuth(`/api/users/${selectedUser}/collection`);
+            setCards(data.cards || []);
+            setRevealedCards(prev => {
+                const copy = { ...prev };
+                delete copy[cardId];
+                return copy;
+            });
+        } catch (err) {
+            console.error('Error marking grading done', err);
+        } finally {
+            setGradingLoading(false);
+        }
+    };
+
     const toggleReveal = (cardId) => {
         setRevealedCards((prev) => ({
             ...prev,
@@ -100,7 +118,7 @@ const AdminGradingPage = () => {
     const filteredCards = collectionCards
         .filter(card => card.name.toLowerCase().includes(searchQuery.toLowerCase()))
         .filter(card => rarityFilter === 'All' || card.rarity === rarityFilter)
-        .filter(card => (showSlabbedOnly ? card.slabbed : true));
+        .filter(card => (showSlabbedOnly ? card.slabbed : !card.slabbed));
 
     const sortedCards = [...filteredCards].sort((a, b) => {
         if (sortOption === 'mint') {
@@ -207,6 +225,11 @@ const AdminGradingPage = () => {
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    {faceUp && (
+                                                        <button className="done-btn" onClick={() => handleDone(card._id)}>
+                                                            Done
+                                                        </button>
+                                                    )}
                                                 </div>
                                             );
                                         }

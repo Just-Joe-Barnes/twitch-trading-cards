@@ -67,4 +67,23 @@ const completeGrading = async (req, res) => {
     }
 };
 
-module.exports = { startGrading, completeGrading, finalizeGrade };
+const revealGradedCard = async (req, res) => {
+    const { userId, cardId } = req.body;
+    if (!userId || !cardId) {
+        return res.status(400).json({ message: 'userId and cardId are required' });
+    }
+    try {
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        const card = user.cards.id(cardId);
+        if (!card) return res.status(404).json({ message: 'Card not found' });
+        card.gradingRequestedAt = undefined;
+        await user.save();
+        res.json({ card });
+    } catch (err) {
+        console.error('Error revealing grade:', err);
+        res.status(500).json({ message: 'Failed to reveal grade' });
+    }
+};
+
+module.exports = { startGrading, completeGrading, finalizeGrade, revealGradedCard };
