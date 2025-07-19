@@ -316,7 +316,7 @@ const AdminGradingPage = () => {
                                 slabbed={selectedCard.slabbed}
                             />
                             {!selectedCard.slabbed && (
-                                <button onClick={handleGrade} data-testid="grade-btn">Grade Card</button>
+                                <button className="grade-btn" onClick={handleGrade} data-testid="grade-btn">Grade Card</button>
                             )}
                         </div>
                     </div>
