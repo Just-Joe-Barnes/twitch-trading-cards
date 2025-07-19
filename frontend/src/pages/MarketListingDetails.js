@@ -112,6 +112,8 @@ const MarketListingDetails = () => {
                 imageUrl: card.imageUrl?.startsWith('http') ? card.imageUrl : `${window.location.origin}${card.imageUrl.startsWith('/') ? '' : '/'}${card.imageUrl}`,
                 rarity: card.rarity || (card.rarities && card.rarities[0]?.rarity) || '',
                 mintNumber: card.mintNumber != null ? card.mintNumber : 0,
+                grade: card.grade,
+                slabbed: card.slabbed,
                 flavorText: card.flavorText || ''
             }));
             const res = await fetchWithAuth(`/api/market/listings/${id}/offers`, {

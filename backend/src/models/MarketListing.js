@@ -8,6 +8,8 @@ const offerSchema = new mongoose.Schema({
     imageUrl: { type: String, required: true },
     rarity: { type: String, required: true },
     mintNumber: { type: Number, required: true },
+    grade: { type: Number, min: 1, max: 10 },
+    slabbed: { type: Boolean, default: false },
     flavorText: { type: String },
     // Optional modifier information for the offered card
     modifier: { type: mongoose.Schema.Types.Mixed, default: null }
@@ -24,6 +26,8 @@ const marketListingSchema = new mongoose.Schema({
     imageUrl: { type: String, required: true },
     rarity: { type: String, required: true },
     mintNumber: { type: Number, required: true },
+    grade: { type: Number, min: 1, max: 10 },
+    slabbed: { type: Boolean, default: false },
     flavorText: { type: String },
     // Include modifier details if present on the card being listed
     modifier: { type: mongoose.Schema.Types.Mixed, default: null }
