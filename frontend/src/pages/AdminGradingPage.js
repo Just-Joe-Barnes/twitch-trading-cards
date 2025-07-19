@@ -107,10 +107,14 @@ const AdminGradingPage = () => {
     };
 
     const toggleReveal = (cardId) => {
-        setRevealedCards((prev) => ({
-            ...prev,
-            [cardId]: !prev[cardId],
-        }));
+        setRevealedCards((prev) => {
+            // Only allow flipping from face-down to face-up once
+            if (prev[cardId]) return prev;
+            return {
+                ...prev,
+                [cardId]: true,
+            };
+        });
     };
 
     const rarityRank = rarities.reduce((acc, r, idx) => {
@@ -237,6 +241,7 @@ const AdminGradingPage = () => {
                                                                         grade={card.grade}
                                                                         slabbed={card.slabbed}
                                                                         interactive={faceUp}
+                                                                        inspectOnClick={faceUp}
                                                                     />
                                                                 </div>
                                                             </div>
