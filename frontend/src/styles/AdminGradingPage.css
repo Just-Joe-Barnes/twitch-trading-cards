@@ -63,6 +63,22 @@
     margin-top: 0.5rem;
 }
 
+.grade-btn {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background: var(--brand-primary);
+    color: var(--background-dark);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.grade-btn:hover {
+    background: var(--brand-secondary);
+    transform: scale(1.05);
+}
+
 /* Controls */
 .grading-controls {
     margin: 1rem 0 2rem;
