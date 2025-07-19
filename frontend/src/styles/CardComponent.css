@@ -904,6 +904,12 @@
     white-space: nowrap;
 }
 
+/* White text on slabs for Unique rarity */
+.card-container.unique.slabbed .slab-grade,
+.card-container.unique.slabbed .slab-name {
+    color: white;
+}
+
 @keyframes glitchTop {
     0% { transform: translate(0); }
     20% { transform: translate(-2px, -2px); }
