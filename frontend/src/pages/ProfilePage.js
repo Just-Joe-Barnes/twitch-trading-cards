@@ -334,6 +334,8 @@ const ProfilePage = () => {
                                 mintNumber={card.mintNumber}
                                 maxMint={card?.maxMint || '???'}
                                 modifier={card.modifier}
+                                grade={card.grade}
+                                slabbed={card.slabbed}
                             />
                         ))}
                     </div>
