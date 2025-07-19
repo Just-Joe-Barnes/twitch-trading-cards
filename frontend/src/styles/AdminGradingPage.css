@@ -79,6 +79,28 @@
     transform: scale(1.05);
 }
 
+.grading-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.cancel-btn {
+    padding: 0.5rem 1rem;
+    background: var(--surface-darker);
+    color: var(--text-primary);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.cancel-btn:hover {
+    background: var(--surface-dark);
+    transform: scale(1.05);
+}
+
 /* Controls */
 .grading-controls {
     margin: 1rem 0 2rem;

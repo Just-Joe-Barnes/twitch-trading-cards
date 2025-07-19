@@ -4,7 +4,6 @@ import { fetchWithAuth, gradeCard, fetchUserProfile } from '../../utils/api';
 
 jest.mock('../../utils/api');
 
-const mockUsers = [{ _id: '1', username: 'Alice' }];
 const mockCards = [
   { _id: 'c1', name: 'Alpha', rarity: 'Common', mintNumber: 10, slabbed: false },
   { _id: 'c2', name: 'Beta', rarity: 'Rare', mintNumber: 5, slabbed: true, grade: 8 },
@@ -16,7 +15,6 @@ beforeEach(() => {
   fetchUserProfile.mockReset();
   fetchUserProfile.mockResolvedValue({ _id: '1' });
   fetchWithAuth.mockImplementation((endpoint) => {
-    if (endpoint === '/api/admin/users') return Promise.resolve(mockUsers);
     if (endpoint === '/api/users/1/collection') return Promise.resolve({ cards: mockCards });
     return Promise.resolve({});
   });
@@ -25,8 +23,6 @@ beforeEach(() => {
 test('filters cards by search and rarity', async () => {
   const { getByTestId, queryByText } = render(<AdminGradingPage />);
   await waitFor(() => getByTestId('search-input'));
-  const select = getByTestId('user-select');
-  fireEvent.change(select, { target: { value: '1' } });
 
   fireEvent.change(getByTestId('search-input'), { target: { value: 'Alpha' } });
   expect(queryByText('Beta')).toBeNull();
@@ -39,10 +35,9 @@ test('grading workflow moves card to in-progress list', async () => {
   const inProcess = [{ ...mockCards[0], gradingRequestedAt: new Date().toISOString() }, mockCards[1]];
   let callCount = 0;
   fetchWithAuth.mockImplementation((endpoint) => {
-    if (endpoint === '/api/admin/users') return Promise.resolve(mockUsers);
     if (endpoint === '/api/users/1/collection') {
       callCount += 1;
-      if (callCount >= 3) {
+      if (callCount >= 2) {
         return Promise.resolve({ cards: inProcess });
       }
       return Promise.resolve({ cards: mockCards });
@@ -51,9 +46,6 @@ test('grading workflow moves card to in-progress list', async () => {
   });
 
   const { getByTestId } = render(<AdminGradingPage />);
-  const select = getByTestId('user-select');
-  await waitFor(() => select.querySelector('option[value="1"]'));
-  fireEvent.change(select, { target: { value: '1' } });
   await waitFor(() => getByTestId('select-btn-c1'));
 
   fireEvent.click(getByTestId('select-btn-c1'));
@@ -62,4 +54,15 @@ test('grading workflow moves card to in-progress list', async () => {
   fireEvent.click(getByTestId('grade-btn'));
   await waitFor(() => getByTestId('inprocess-list'));
   expect(getByTestId('inprocess-list')).toBeDefined();
+});
+
+test('cancel deselects the card', async () => {
+  fetchWithAuth.mockResolvedValueOnce({ cards: mockCards });
+  const { getByTestId, queryByTestId } = render(<AdminGradingPage />);
+  await waitFor(() => getByTestId('select-btn-c1'));
+  fireEvent.click(getByTestId('select-btn-c1'));
+  await waitFor(() => getByTestId('selected-card-area'));
+  fireEvent.click(getByTestId('cancel-btn'));
+  await waitFor(() => getByTestId('collection-list'));
+  expect(queryByTestId('selected-card-area')).toBeNull();
 });

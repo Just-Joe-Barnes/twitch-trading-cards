@@ -7,7 +7,6 @@ import { getRarityColor } from '../constants/rarityColors';
 import '../styles/AdminGradingPage.css';
 
 const AdminGradingPage = () => {
-    const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState('');
     const [cards, setCards] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -30,8 +29,6 @@ const AdminGradingPage = () => {
                 const userData = await fetchWithAuth(`/api/users/${profile._id}/collection`);
                 setCards(userData.cards || []);
 
-                const data = await fetchWithAuth('/api/admin/users');
-                setUsers(data);
             } catch (err) {
                 console.error('Error initializing grading page', err);
             } finally {
@@ -41,20 +38,6 @@ const AdminGradingPage = () => {
         init();
     }, []);
 
-    const handleSelectUser = async (e) => {
-        const id = e.target.value;
-        setSelectedUser(id);
-        if (!id) return;
-        setLoading(true);
-        try {
-            const data = await fetchWithAuth(`/api/users/${id}/collection`);
-            setCards(data.cards || []);
-        } catch (err) {
-            console.error('Error fetching collection', err);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleSelectCard = (card) => {
         setSelectedCard(card);
@@ -153,15 +136,7 @@ const AdminGradingPage = () => {
         <div className="admin-grading-page">
             {gradingLoading && <LoadingSpinner />}
             <h2>Admin Card Grading</h2>
-            <label>
-                Select User:
-                <select value={selectedUser} onChange={handleSelectUser} data-testid="user-select">
-                    <option value="">-- choose user --</option>
-                    {users.map(u => (
-                        <option key={u._id} value={u._id}>{u.username}</option>
-                    ))}
-                </select>
-            </label>
+
 
             {selectedUser && (
                 <div className="grading-controls">
@@ -315,9 +290,12 @@ const AdminGradingPage = () => {
                                 grade={selectedCard.grade}
                                 slabbed={selectedCard.slabbed}
                             />
-                            {!selectedCard.slabbed && (
-                                <button className="grade-btn" onClick={handleGrade} data-testid="grade-btn">Grade Card</button>
-                            )}
+                            <div className="grading-actions">
+                                {!selectedCard.slabbed && (
+                                    <button className="grade-btn" onClick={handleGrade} data-testid="grade-btn">Grade Card</button>
+                                )}
+                                <button className="cancel-btn" onClick={() => setSelectedCard(null)} data-testid="cancel-btn">Cancel</button>
+                            </div>
                         </div>
                     </div>
                 )}
