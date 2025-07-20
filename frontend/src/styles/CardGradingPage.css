@@ -1,5 +1,5 @@
-/* Admin Grading Page */
-.admin-grading-page {
+/* Card Grading Page */
+.card-grading-page {
     padding: 40px 20px;
     max-width: 1800px;
     margin: 0 auto;
@@ -10,7 +10,7 @@
     flex-direction: column;
 }
 
-.admin-grading-page h1 {
+.card-grading-page h1 {
     text-align: center;
     margin-top: 4rem;
     margin-bottom: 1rem;
@@ -20,7 +20,7 @@
     color: var(--text-primary);
 }
 
-.admin-grading-page h1::after {
+.card-grading-page h1::after {
     content: '';
     position: absolute;
     bottom: -0.5rem;
