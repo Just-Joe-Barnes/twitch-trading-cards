@@ -1,4 +1,5 @@
 import { render, fireEvent, waitFor } from '@testing-library/react';
+jest.mock('react-router-dom', () => ({ useNavigate: jest.fn() }), { virtual: true });
 import AdminGradingPage from '../AdminGradingPage';
 import { fetchWithAuth, gradeCard, fetchUserProfile } from '../../utils/api';
 
@@ -13,7 +14,7 @@ beforeEach(() => {
   fetchWithAuth.mockReset();
   gradeCard.mockReset();
   fetchUserProfile.mockReset();
-  fetchUserProfile.mockResolvedValue({ _id: '1' });
+  fetchUserProfile.mockResolvedValue({ _id: '1', isAdmin: true });
   fetchWithAuth.mockImplementation((endpoint) => {
     if (endpoint === '/api/users/1/collection') return Promise.resolve({ cards: mockCards });
     return Promise.resolve({});
