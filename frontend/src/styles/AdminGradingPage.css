@@ -10,13 +10,39 @@
     flex-direction: column;
 }
 
-.admin-grading-page h2 {
+.admin-grading-page h1 {
     text-align: center;
-    margin-top: 80px;
-    margin-bottom: 40px;
-    font-size: 2.8rem;
-    font-weight: 700;
-    letter-spacing: 1px;
+    margin-top: 4rem;
+    margin-bottom: 1rem;
+    font-size: 2.25rem;
+    font-weight: 500;
+    position: relative;
+    color: var(--text-primary);
+}
+
+.admin-grading-page h1::after {
+    content: '';
+    position: absolute;
+    bottom: -0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 2px;
+    background: var(--brand-primary);
+    border-radius: 2px;
+}
+
+.grading-description {
+    text-align: center;
+    font-size: 1.1rem;
+    margin: 0.5rem auto 1.5rem;
+    max-width: 800px;
+    color: var(--text-primary);
+    background: var(--surface-dark);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    line-height: 1.6;
 }
 
 .grading-card-list {
