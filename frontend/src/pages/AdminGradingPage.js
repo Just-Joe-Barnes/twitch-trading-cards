@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { fetchWithAuth, gradeCard, completeGrading, revealGradedCard, fetchUserProfile } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -7,7 +8,9 @@ import { getRarityColor } from '../constants/rarityColors';
 import '../styles/AdminGradingPage.css';
 
 const AdminGradingPage = () => {
+    const navigate = useNavigate();
     const [selectedUser, setSelectedUser] = useState('');
+    const [isAdmin, setIsAdmin] = useState(false);
     const [cards, setCards] = useState([]);
     const [loading, setLoading] = useState(false);
     const [gradingLoading, setGradingLoading] = useState(false);
@@ -25,6 +28,11 @@ const AdminGradingPage = () => {
             try {
                 setLoading(true);
                 const profile = await fetchUserProfile();
+                if (!profile.isAdmin) {
+                    navigate('/');
+                    return;
+                }
+                setIsAdmin(true);
                 setSelectedUser(profile._id);
                 const userData = await fetchWithAuth(`/api/users/${profile._id}/collection`);
                 setCards(userData.cards || []);
@@ -36,7 +44,7 @@ const AdminGradingPage = () => {
             }
         };
         init();
-    }, []);
+    }, [navigate]);
 
 
     const handleSelectCard = (card) => {
@@ -245,7 +253,11 @@ const AdminGradingPage = () => {
                                                 <div className="grading-timeleft-badge">
                                                     {days}d {hours}h {minutes}m {seconds}s
                                                 </div>
-                                                <button onClick={() => handleOverride(card._id)}>Override</button>
+                                                {isAdmin && (
+                                                    <button onClick={() => handleOverride(card._id)}>
+                                                        Override
+                                                    </button>
+                                                )}
                                             </div>
                                         );
                                     })}
