@@ -143,8 +143,12 @@ const AdminGradingPage = () => {
     return (
         <div className="admin-grading-page">
             {gradingLoading && <LoadingSpinner />}
-            <h2>Admin Card Grading</h2>
-
+            <h1>Admin Card Grading</h1>
+            <p className="grading-description">
+                Use the controls below to search a user's collection and select
+                cards for grading. Once a card is graded you can reveal the slab
+                to complete the process.
+            </p>
 
             {selectedUser && (
                 <div className="grading-controls">
