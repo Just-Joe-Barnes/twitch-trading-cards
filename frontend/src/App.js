@@ -21,7 +21,7 @@ const MarketPage = lazy(() => import('./pages/MarketPage'));
 const CreateListingPage = lazy(() => import('./pages/CreateListingPage'));
 const MarketListingDetails = lazy(() => import('./pages/MarketListingDetails'));
 const AdminActions = lazy(() => import('./pages/AdminActions'));
-const AdminGradingPage = lazy(() => import('./pages/AdminGradingPage'));
+const CardGradingPage = lazy(() => import('./pages/CardGradingPage'));
 const CardEditor = lazy(() => import('./components/CardEditor'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AchievementsPage = lazy(() => import('./pages/AchievementsPage'));
@@ -142,8 +142,8 @@ const App = () => {
                         element={user?.isAdmin ? <AdminActions user={user} /> : <Navigate to="/login" />}
                     />
                     <Route
-                        path="/admin/grading"
-                        element={user?.isAdmin ? <AdminGradingPage /> : <Navigate to="/login" />}
+                        path="/grading"
+                        element={user ? <CardGradingPage /> : <Navigate to="/login" />}
                     />
                     <Route path="/catalogue" element={<CataloguePage />} />
                     <Route path="/market" element={<MarketPage />} />

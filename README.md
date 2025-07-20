@@ -70,7 +70,7 @@ Run these commands from the `backend` directory.
 
 Refer to [`backend/README_trading_market.md`](backend/README_trading_market.md) for additional backend documentation.
 
-## Card Grading (Admin Only)
+## Card Grading
 
-Admins can initiate grading for any card from the `/admin/grading` page. Once started, grading takes 24 hours to complete unless an admin overrides the timer. When finished, the card is slabbed with a random grade from 1–10 and displays a plastic "slab" overlay with the grade value.
+Any logged in user can initiate grading for a card from the `/grading` page. Once started, grading takes 24 hours to complete unless an admin overrides the timer. When finished, the card is slabbed with a random grade from 1–10 and displays a plastic "slab" overlay with the grade value.
 

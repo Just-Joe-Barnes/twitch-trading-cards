@@ -5,9 +5,9 @@ import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { rarities } from '../constants/rarities';
 import { getRarityColor } from '../constants/rarityColors';
-import '../styles/AdminGradingPage.css';
+import '../styles/CardGradingPage.css';
 
-const AdminGradingPage = () => {
+const CardGradingPage = () => {
     const navigate = useNavigate();
     const [selectedUser, setSelectedUser] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
@@ -28,11 +28,7 @@ const AdminGradingPage = () => {
             try {
                 setLoading(true);
                 const profile = await fetchUserProfile();
-                if (!profile.isAdmin) {
-                    navigate('/');
-                    return;
-                }
-                setIsAdmin(true);
+                setIsAdmin(profile.isAdmin);
                 setSelectedUser(profile._id);
                 const userData = await fetchWithAuth(`/api/users/${profile._id}/collection`);
                 setCards(userData.cards || []);
@@ -141,9 +137,9 @@ const AdminGradingPage = () => {
     const hasSlabbed = cards.some(card => card.slabbed);
 
     return (
-        <div className="admin-grading-page">
+        <div className="card-grading-page">
             {gradingLoading && <LoadingSpinner />}
-            <h1>Admin Card Grading</h1>
+            <h1>Card Grading</h1>
             <p className="grading-description">
                 Use the controls below to search a user's collection and select
                 cards for grading. Once a card is graded you can reveal the slab
@@ -320,4 +316,4 @@ const AdminGradingPage = () => {
     );
 };
 
-export default AdminGradingPage;
+export default CardGradingPage;

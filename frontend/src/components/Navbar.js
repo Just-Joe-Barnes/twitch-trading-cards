@@ -167,17 +167,17 @@ const Navbar = ({ isAdmin }) => {
                                 Admin Actions
                             </NavLink>
                         </li>
-                        <li>
-                            <NavLink
-                                to="/admin/grading"
-                                className="nav-link"
-                                onClick={() => setMenuOpen(false)}
-                            >
-                                Admin Grading
-                            </NavLink>
-                        </li>
                     </>
                 )}
+                <li>
+                    <NavLink
+                        to="/grading"
+                        className="nav-link"
+                        onClick={() => setMenuOpen(false)}
+                    >
+                        Card Grading
+                    </NavLink>
+                </li>
                 <li>
                     <NavLink
                         to="/market"
