@@ -8,8 +8,32 @@ const router = express.Router();
 
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
-// Initiate Twitch login
-router.get("/twitch", passport.authenticate("twitch"));
+// Initiate Twitch login - bypass authentication when running locally
+router.get("/twitch", async (req, res, next) => {
+    const host = req.hostname || req.get('host');
+    if (host && (host.includes('localhost') || host.startsWith('127.0.0.1'))) {
+        try {
+            const devUser = await User.findById('67902369038799d79f21246f');
+            if (!devUser) {
+                return res.status(404).json({ message: 'Dev user not found' });
+            }
+            const token = jwt.sign(
+                {
+                    id: devUser.twitchId || devUser._id,
+                    isAdmin: devUser.isAdmin,
+                },
+                process.env.JWT_SECRET,
+                { expiresIn: '1h' }
+            );
+
+            const redirectUrl = `${FRONTEND_URL}/login?token=${token}`;
+            return res.redirect(redirectUrl);
+        } catch (err) {
+            return next(err);
+        }
+    }
+    return passport.authenticate('twitch')(req, res, next);
+});
 
 // Twitch callback
 router.get(
