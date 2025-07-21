@@ -7,15 +7,25 @@ body {
     box-sizing: border-box;
 }
 
-/* Profile page container with extra top padding to clear the navbar */
+/* Profile page container with mobile-first responsive design */
 .profile-page {
-    padding: 6rem 1.5rem 2rem;
+    padding: 4rem 1.5rem 2rem;
     max-width: 1600px;
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     grid-auto-rows: auto;
     gap: 2rem;
+}
+
+@media (max-width: 1200px) {
+    .profile-page {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .profile-overview {
+        grid-column: span 3;
+    }
 }
 
 @media (max-width: 1024px) {
@@ -31,6 +41,8 @@ body {
 @media (max-width: 768px) {
     .profile-page {
         grid-template-columns: 1fr;
+        padding: 3rem 1rem 2rem;
+        gap: 1.5rem;
     }
 
     .profile-overview,
@@ -39,6 +51,19 @@ body {
     .featured-cards-container,
     .user-listings-container {
         grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-page {
+        padding: 2rem 0.75rem 1.5rem;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 390px) {
+    .profile-page {
+        padding: 2rem 0.5rem 1rem;
     }
 }
 
@@ -141,6 +166,45 @@ body {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         min-width: 120px;
     }
+
+@media (max-width: 768px) {
+    .profile-overview .stats {
+        gap: 1rem;
+    }
+
+    .profile-overview .stat {
+        min-width: 100px;
+        padding: 0.75rem;
+    }
+
+    .profile-overview h2 {
+        font-size: 1.5rem;
+    }
+
+    .title-container h1 {
+        font-size: 1.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-overview .stats {
+        gap: 0.75rem;
+    }
+
+    .profile-overview .stat {
+        min-width: 90px;
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .profile-overview .stat span {
+        font-size: 1rem;
+    }
+
+    .title-container h1 {
+        font-size: 1.5rem;
+    }
+}
 
     .profile-overview .stat:hover {
         transform: translateY(-4px);
@@ -245,12 +309,27 @@ body {
 
 @media (max-width: 768px) {
     .featured-cards {
-        gap: 4rem;
+        gap: 2rem;
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .featured-cards {
+        gap: 1.5rem;
     }
 }
 
 .featured-cards > * {
     flex: 1 1 250px;
+}
+
+@media (max-width: 768px) {
+    .featured-cards > * {
+        flex: 0 0 auto;
+        max-width: 280px;
+    }
 }
 
 
@@ -439,6 +518,20 @@ body {
     width: calc(100% / var(--card-scale));
     transform: scale(var(--card-scale));
     transform-origin: top left;
+}
+
+@media (max-width: 768px) {
+    .user-listings {
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-listings {
+        gap: 1rem;
+    }
 }
 
 
