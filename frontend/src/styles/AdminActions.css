@@ -1,6 +1,6 @@
 /* Admin Actions Page */
 .aa-admin-actions-page {
-    padding: 40px 20px;
+    padding: 4rem 1.5rem 2rem;
     max-width: 1800px;
     margin: 0 auto;
     background-color: #1a1a1a;
@@ -10,8 +10,8 @@
 
 .page-title {
     text-align: center;
-    margin-top: 80px;
-    margin-bottom: 40px;
+    margin-top: 4rem;
+    margin-bottom: 2.5rem;
     font-size: 2.8rem;
     font-weight: 700;
     letter-spacing: 1px;
@@ -37,6 +37,74 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+}
+
+/* Enhanced mobile responsive styles */
+@media (max-width: 768px) {
+    .aa-admin-actions-page {
+        padding: 3rem 1rem 2rem;
+    }
+
+    .page-title {
+        font-size: 2.2rem;
+        margin-top: 3rem;
+        margin-bottom: 2rem;
+    }
+
+    .aa-admin-panels {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .aa-panel {
+        min-width: auto;
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .aa-admin-actions-page {
+        padding: 2rem 0.75rem 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+        margin-top: 2.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .aa-panel {
+        padding: 1.25rem;
+        min-height: auto;
+    }
+
+    .aa-form-group input,
+    .aa-form-group textarea,
+    .aa-form-group select {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .aa-admin-actions-form button,
+    .aa-admin-packs-form button,
+    .aa-reset-button {
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 390px) {
+    .aa-admin-actions-page {
+        padding: 2rem 0.5rem 1rem;
+    }
+
+    .page-title {
+        font-size: 1.6rem;
+    }
+
+    .aa-panel {
+        padding: 1rem;
+    }
 }
 
 /* Form styling */
@@ -235,4 +303,3 @@
   background: var(--brand-secondary);
   transform: scale(1.05);
 }
-

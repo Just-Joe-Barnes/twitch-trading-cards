@@ -137,6 +137,7 @@ body {
 
     .dashboard-grid {
         grid-template-columns: 1fr;
+        gap: 1.5rem;
     }
 
     .section-card {
@@ -158,18 +159,61 @@ body {
     .earning-info {
         font-size: 1rem;
     }
+
+    .twitch-section iframe {
+        height: 300px;
+    }
 }
 
 @media (max-width: 480px) {
     .dashboard {
-        padding: 2rem 0.5rem 1.5rem;
+        padding: 2rem 0.75rem 1.5rem;
     }
 
     .dashboard h1 {
         font-size: 1.75rem;
+        margin: 1.5rem 0 2rem;
+    }
+
+    .dashboard h1::after {
+        width: 80px;
+    }
+
+    .section-card {
+        padding: 1.25rem;
+    }
+
+    .info-section h2,
+    .twitch-section h2 {
+        font-size: 1.5rem;
+    }
+
+    .pack-count {
+        font-size: 1.4rem;
+    }
+
+    .app-info,
+    .pack-opening-info,
+    .twitch-details,
+    .earning-info {
+        font-size: 0.9rem;
     }
 
     .twitch-section iframe {
-        height: 250px;
+        height: 200px;
+    }
+}
+
+@media (max-width: 390px) {
+    .dashboard {
+        padding: 2rem 0.5rem 1rem;
+    }
+
+    .dashboard h1 {
+        font-size: 1.5rem;
+    }
+
+    .twitch-section iframe {
+        height: 180px;
     }
 }

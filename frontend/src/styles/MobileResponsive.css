@@ -1,0 +1,338 @@
+/* Global Mobile Responsive Styles for Twitch Trading Cards App */
+
+/* Base mobile-first approach */
+:root {
+    --mobile-padding: 1rem;
+    --mobile-padding-sm: 0.75rem;
+    --mobile-padding-xs: 0.5rem;
+    --mobile-border-radius: 12px;
+    --mobile-border-radius-sm: 8px;
+    --mobile-font-size-base: 14px;
+    --mobile-font-size-sm: 12px;
+    --mobile-font-size-lg: 16px;
+    --mobile-font-size-xl: 18px;
+}
+
+/* Global mobile reset */
+* {
+    box-sizing: border-box;
+}
+
+/* Touch-friendly improvements */
+@media (max-width: 768px) {
+    button, 
+    input, 
+    select, 
+    textarea,
+    .nav-link,
+    .search-result-item {
+        min-height: 44px;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+}
+
+/* Global container improvements */
+.mobile-container {
+    padding: var(--mobile-padding);
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* Global grid improvements */
+.mobile-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .mobile-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Global flex improvements */
+.mobile-flex {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+@media (min-width: 769px) {
+    .mobile-flex {
+        flex-direction: row;
+    }
+}
+
+/* Card scaling improvements */
+@media (max-width: 768px) {
+    :root {
+        --screen-card-scale: 0.85;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --screen-card-scale: 0.75;
+    }
+}
+
+@media (max-width: 390px) {
+    :root {
+        --screen-card-scale: 0.65;
+    }
+}
+
+/* Touch-friendly buttons */
+.mobile-button {
+    padding: 0.75rem 1.5rem;
+    min-height: 44px;
+    border-radius: var(--mobile-border-radius);
+    font-size: var(--mobile-font-size-base);
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.mobile-button:active {
+    transform: scale(0.98);
+}
+
+/* Mobile form improvements */
+.mobile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.mobile-form input,
+.mobile-form select,
+.mobile-form textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--mobile-border-radius-sm);
+    font-size: var(--mobile-font-size-base);
+    background: var(--surface-dark);
+    color: var(--text-primary);
+}
+
+/* Mobile card improvements */
+.mobile-card {
+    background: var(--surface-dark);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--mobile-border-radius);
+    padding: var(--mobile-padding);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Mobile navigation improvements */
+.mobile-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(30, 30, 30, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border-dark);
+}
+
+/* Mobile scroll improvements */
+.mobile-scroll {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    max-height: 70vh;
+}
+
+/* Mobile spacing utilities */
+.mobile-mt-1 { margin-top: 0.5rem; }
+.mobile-mt-2 { margin-top: 1rem; }
+.mobile-mt-3 { margin-top: 1.5rem; }
+.mobile-mb-1 { margin-bottom: 0.5rem; }
+.mobile-mb-2 { margin-bottom: 1rem; }
+.mobile-mb-3 { margin-bottom: 1.5rem; }
+
+/* Mobile text utilities */
+.mobile-text-center { text-align: center; }
+.mobile-text-left { text-align: left; }
+.mobile-text-right { text-align: right; }
+
+.mobile-text-sm { font-size: var(--mobile-font-size-sm); }
+.mobile-text-base { font-size: var(--mobile-font-size-base); }
+.mobile-text-lg { font-size: var(--mobile-font-size-lg); }
+.mobile-text-xl { font-size: var(--mobile-font-size-xl); }
+
+/* Mobile responsive utilities */
+@media (max-width: 768px) {
+    .mobile-hide { display: none !important; }
+    .mobile-show { display: block !important; }
+    .mobile-flex { display: flex !important; }
+}
+
+@media (min-width: 769px) {
+    .desktop-hide { display: none !important; }
+    .desktop-show { display: block !important; }
+}
+
+/* Mobile safe areas for modern devices */
+@supports (padding-top: env(safe-area-inset-top)) {
+    .mobile-safe-area {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+}
+
+/* Improved touch targets */
+.mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Mobile loading states */
+.mobile-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    padding: 2rem;
+}
+
+/* Mobile error states */
+.mobile-error {
+    text-align: center;
+    padding: 2rem;
+    color: var(--brand-primary);
+}
+
+/* Mobile empty states */
+.mobile-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+}
+
+/* Mobile card grid improvements */
+.mobile-card-grid {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+@media (max-width: 768px) {
+    .mobile-card-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .mobile-card-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 390px) {
+    .mobile-card-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Mobile modal improvements */
+.mobile-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 1rem;
+}
+
+.mobile-modal-content {
+    background: var(--surface-dark);
+    border-radius: var(--mobile-border-radius);
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: var(--mobile-padding);
+}
+
+/* Mobile dropdown improvements */
+.mobile-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--surface-dark);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--mobile-border-radius-sm);
+    max-height: 50vh;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+/* Mobile search improvements */
+.mobile-search {
+    position: relative;
+    width: 100%;
+}
+
+.mobile-search input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--mobile-border-radius-sm);
+    font-size: var(--mobile-font-size-base);
+}
+
+/* Mobile notification improvements */
+.mobile-notification {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    right: 1rem;
+    padding: 1rem;
+    background: var(--surface-dark);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--mobile-border-radius-sm);
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Mobile accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* Mobile dark mode improvements */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --surface-dark: #1a1a1a;
+        --border-dark: #333;
+        --text-primary: #f5f5dc;
+    }
+}
+
+/* Mobile landscape improvements */
+@media (max-width: 768px) and (orientation: landscape) {
+    .mobile-landscape-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile portrait improvements */
+@media (max-width: 768px) and (orientation: portrait) {
+    .mobile-portrait-grid {
+        grid-template-columns: 1fr;
+    }
+}

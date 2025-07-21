@@ -5,6 +5,31 @@
     --card-artwork-height: 216px;
 }
 
+/* Mobile-responsive card sizing */
+@media (max-width: 768px) {
+    :root {
+        --card-width: 250px;
+        --card-height: 375px;
+        --card-artwork-height: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --card-width: 200px;
+        --card-height: 300px;
+        --card-artwork-height: 144px;
+    }
+}
+
+@media (max-width: 390px) {
+    :root {
+        --card-width: 180px;
+        --card-height: 270px;
+        --card-artwork-height: 130px;
+    }
+}
+
 /**************************************
  * Generic Card Styles (Layout Only)
  **************************************/
