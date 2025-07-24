@@ -253,9 +253,9 @@ const CardGradingPage = () => {
                                                 <div className="grading-timeleft-badge">
                                                     {days}d {hours}h {minutes}m {seconds}s
                                                 </div>
-                                                {isAdmin && (
+                                                {(isAdmin || diff <= 0) && (
                                                     <button onClick={() => handleOverride(card._id)}>
-                                                        Override
+                                                        Finish Grading
                                                     </button>
                                                 )}
                                             </div>
