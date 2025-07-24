@@ -5,40 +5,45 @@ const User = require('../models/userModel');
 
 exports.getCardAvailability = async (req, res) => {
     try {
-        const cards = await Card.find({}).lean();
-        const users = await User.find({}, { cards: 1 }).lean();
+        // Count owned cards grouped by name and rarity
+        const ownedCounts = await User.aggregate([
+            { $unwind: '$cards' },
+            {
+                $group: {
+                    _id: { name: '$cards.name', rarity: '$cards.rarity' },
+                    owned: { $sum: 1 }
+                }
+            }
+        ]);
 
-        const ownedCountMap = {};
-
-        users.forEach(user => {
-            user.cards.forEach(userCard => {
-                const name = userCard.name;
-                const rarity = userCard.rarity;
-                if (!ownedCountMap[name]) ownedCountMap[name] = {};
-                if (!ownedCountMap[name][rarity]) ownedCountMap[name][rarity] = 0;
-                ownedCountMap[name][rarity]++;
-            });
+        const ownedMap = {};
+        ownedCounts.forEach((c) => {
+            ownedMap[`${c._id.name}|${c._id.rarity}`] = c.owned;
         });
 
-        const result = [];
-        cards.forEach(card => {
-            if (!card.rarities) return;
-            card.rarities.forEach(rarityObj => {
-                const cardName = card.name;
-                const rarity = rarityObj.rarity;
-                const total = rarityObj.totalCopies;
-                const owned = ownedCountMap[cardName]?.[rarity] || 0;
-                const remaining = total - owned;
+        const cards = await Card.aggregate([
+            { $unwind: '$rarities' },
+            {
+                $project: {
+                    cardId: '$_id',
+                    name: '$name',
+                    rarity: '$rarities.rarity',
+                    total: '$rarities.totalCopies'
+                }
+            }
+        ]);
 
-                result.push({
-                    cardId: card._id,
-                    name: cardName,
-                    rarity: rarity,
-                    total: total,
-                    owned: owned,
-                    remaining: remaining < 0 ? 0 : remaining
-                });
-            });
+        const result = cards.map((c) => {
+            const key = `${c.name}|${c.rarity}`;
+            const owned = ownedMap[key] || 0;
+            return {
+                cardId: c.cardId,
+                name: c.name,
+                rarity: c.rarity,
+                total: c.total,
+                owned,
+                remaining: c.total - owned < 0 ? 0 : c.total - owned
+            };
         });
 
         res.json({ availability: result });
