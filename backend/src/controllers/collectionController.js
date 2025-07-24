@@ -6,44 +6,53 @@ const getLoggedInUserCollection = async (req, res) => {
     try {
         const { search = '', rarity = '', sort = '', page = 1, limit = 30 } = req.query;
 
-        // Retrieve the logged-in user's collection and populate modifier data
-        const user = await User.findById(req.user._id)
-            .populate('cards.modifier')
-            .lean();
-        if (!user) {
-            console.error('[ERROR] Logged-in user not found:', req.user._id);
-            return res.status(404).json({ message: 'User not found' });
-        }
+        const match = { _id: req.user._id };
+        const pipeline = [
+            { $match: match },
+            { $unwind: '$cards' }
+        ];
 
-        let cards = user.cards;
-
-        // Apply filters
         if (search) {
-            cards = cards.filter((card) =>
-                card.name.toLowerCase().includes(search.toLowerCase())
-            );
+            pipeline.push({ $match: { 'cards.name': { $regex: search, $options: 'i' } } });
         }
 
         if (rarity) {
-            cards = cards.filter((card) => card.rarity.toLowerCase() === rarity.toLowerCase());
+            pipeline.push({ $match: { 'cards.rarity': { $regex: `^${rarity}$`, $options: 'i' } } });
         }
 
-        // Sorting logic
-        if (sort === 'name') {
-            cards.sort((a, b) => a.name.localeCompare(b.name));
-        } else if (sort === 'rarity') {
-            cards.sort((a, b) => a.rarity.localeCompare(b.rarity));
-        }
+        const sortField = sort === 'rarity' ? 'cards.rarity' : 'cards.name';
+        pipeline.push({ $sort: { [sortField]: 1 } });
 
-        // Pagination
-        const startIndex = (page - 1) * limit;
-        const paginatedCards = cards.slice(startIndex, startIndex + limit);
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        pipeline.push({
+            $facet: {
+                data: [
+                    { $skip: skip },
+                    { $limit: parseInt(limit) },
+                    { $replaceRoot: { newRoot: '$cards' } },
+                    {
+                        $lookup: {
+                            from: 'modifiers',
+                            localField: 'modifier',
+                            foreignField: '_id',
+                            as: 'modifier'
+                        }
+                    },
+                    { $unwind: { path: '$modifier', preserveNullAndEmptyArrays: true } }
+                ],
+                total: [{ $count: 'count' }]
+            }
+        });
+
+        const result = await User.aggregate(pipeline);
+        const data = result[0].data;
+        const totalCards = result[0].total[0]?.count || 0;
 
         return res.status(200).json({
-            totalCards: cards.length,
-            totalPages: Math.ceil(cards.length / limit),
+            totalCards,
+            totalPages: Math.ceil(totalCards / limit),
             currentPage: parseInt(page, 10),
-            cards: paginatedCards,
+            cards: data
         });
     } catch (error) {
         console.error('[ERROR] in getLoggedInUserCollection:', error);

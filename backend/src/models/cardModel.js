@@ -18,6 +18,10 @@ const cardSchema = new mongoose.Schema({
     series: { type: String, default: 'Base' },
 });
 
+// Helpful indexes for frequent queries
+cardSchema.index({ name: 1 });
+cardSchema.index({ 'rarities.rarity': 1 });
+
 const Card = mongoose.model('Card', cardSchema);
 
 module.exports = Card;
