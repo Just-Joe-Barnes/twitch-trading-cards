@@ -296,8 +296,6 @@ const AdminDashboardPage = ({user}) => {
 
     return (
         <div className="dashboard-container">
-            <h1 style={{textAlign: "center"}} onClick={() => (setShowDebugControls(!showDebugControls))}>Dashboard</h1>
-
             {isOpeningAnimation && (
                 <div className="pack-opening-overlay">
                     <video
@@ -413,7 +411,7 @@ const AdminDashboardPage = ({user}) => {
 
                 {/* Card Rarity Key */}
                 <div className="card-rarity-key">
-                    <h2>Card Rarity Key</h2>
+                    <h2 onClick={() => (setShowDebugControls(!showDebugControls))}>Card Rarity Key</h2>
                     <div className="rarity-list">
                         {Object.entries(cardRarities).map(([rarity, color]) => (
                             <div key={rarity} className="rarity-item">
