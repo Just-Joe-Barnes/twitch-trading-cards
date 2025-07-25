@@ -7,9 +7,12 @@ const getUserProfile = async (req, res) => {
     const start = process.hrtime();
     try {
         const dbStart = process.hrtime();
-        const user = await User.findById(req.user._id).select(
-            'username email isAdmin packs openedPacks loginCount featuredCards favoriteCard preferredPack cards twitchProfilePic xp level achievements featuredAchievements'
-        ).populate('preferredPack', 'name').lean();
+        const user = await User.findById(req.user._id)
+            .select(
+                'username email isAdmin packs openedPacks loginCount featuredCards favoriteCard preferredPack twitchProfilePic xp level achievements featuredAchievements'
+            )
+            .populate('preferredPack', 'name')
+            .lean();
         const dbEnd = process.hrtime(dbStart);
         console.log(`[PERF] [getUserProfile] DB query took ${dbEnd[0] * 1000 + dbEnd[1] / 1e6} ms`);
         if (!user) {
