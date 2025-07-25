@@ -24,7 +24,11 @@ const protect = async (req, res, next) => {
             }
 
             // Attach user details to the request for downstream use
-            req.userId = req.user._id.toString();
+            // Assign both `_id` and `id` properties to support plain objects
+            // returned by `.lean()` while maintaining compatibility with
+            // existing controller logic that expects `req.user.id`.
+            req.user.id = req.user._id.toString();
+            req.userId = req.user.id;
             req.username = req.user.username; // Attach username to the request
             req.twitchId = req.user.twitchId; // Attach Twitch ID to the request
             req.isAdmin = req.user.isAdmin; // Attach admin status
