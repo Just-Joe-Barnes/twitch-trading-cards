@@ -155,6 +155,7 @@ const AdminDashboardPage = ({user}) => {
 
     const toggleUserSelection = (u) => {
         setSelectedUser((prev) => (prev?._id === u._id ? null : u));
+        setSelectedPackTypeId(u.preferredPack?._id || '67f68591c7560fa1a75f142c')
     };
 
     // Open a pack for the selected user
