@@ -22,6 +22,8 @@ const tradeSchema = new mongoose.Schema({
 tradeSchema.index({ status: 1 });
 tradeSchema.index({ sender: 1 });
 tradeSchema.index({ recipient: 1 });
+tradeSchema.index({ offeredItems: 1 });
+tradeSchema.index({ requestedItems: 1 });
 
 const Trade = mongoose.model('Trade', tradeSchema);
 module.exports = Trade;

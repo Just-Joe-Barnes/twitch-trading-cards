@@ -341,36 +341,78 @@ const updateTradeStatus = async (req, res) => {
 const getPendingTrades = async (req, res) => {
     const { userId } = req.params;
     try {
-        const pendingTrades = await Trade.find({
-            $or: [{ sender: userId }, { recipient: userId }],
-            status: 'pending'
-        })
-            .populate('sender', 'username cards')
-            .populate('recipient', 'username cards')
-            .lean();
+        const uid = new mongoose.Types.ObjectId(userId);
+        const pipeline = [
+            {
+                $match: {
+                    status: 'pending',
+                    $or: [{ sender: uid }, { recipient: uid }]
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { senderId: '$sender', offered: '$offeredItems' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$senderId'] } } },
+                        {
+                            $project: {
+                                username: 1,
+                                cards: {
+                                    $filter: {
+                                        input: '$cards',
+                                        as: 'c',
+                                        cond: { $in: ['$$c._id', '$$offered'] }
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    as: 'senderInfo'
+                }
+            },
+            { $unwind: { path: '$senderInfo', preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { recipientId: '$recipient', requested: '$requestedItems' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$recipientId'] } } },
+                        {
+                            $project: {
+                                username: 1,
+                                cards: {
+                                    $filter: {
+                                        input: '$cards',
+                                        as: 'c',
+                                        cond: { $in: ['$$c._id', '$$requested'] }
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    as: 'recipientInfo'
+                }
+            },
+            { $unwind: { path: '$recipientInfo', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    offeredItems: '$senderInfo.cards',
+                    requestedItems: '$recipientInfo.cards',
+                    sender: { username: '$senderInfo.username' },
+                    recipient: { username: '$recipientInfo.username' },
+                    offeredPacks: 1,
+                    requestedPacks: 1,
+                    status: 1,
+                    cancellationReason: 1,
+                    expiresAt: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ];
 
-        const enrichedTrades = pendingTrades.map(trade => {
-            const senderData = trade.sender || { cards: [] };
-            const recipientData = trade.recipient || { cards: [] };
-
-            const offeredCards = (senderData.cards || []).filter(card =>
-                (trade.offeredItems || []).some(itemId =>
-                    itemId.toString() === card._id.toString()
-                )
-            );
-            const requestedCards = (recipientData.cards || []).filter(card =>
-                (trade.requestedItems || []).some(itemId =>
-                    itemId.toString() === card._id.toString()
-                )
-            );
-
-            return {
-                ...trade,
-                offeredItems: offeredCards,
-                requestedItems: requestedCards
-            };
-        });
-
+        const enrichedTrades = await Trade.aggregate(pipeline);
         console.log("[Backend] Pending trades fetched:", enrichedTrades);
         res.status(200).json(enrichedTrades);
     } catch (err) {
@@ -382,35 +424,75 @@ const getPendingTrades = async (req, res) => {
 const getTradesForUser = async (req, res) => {
     const { userId } = req.params;
     try {
-        const trades = await Trade.find({
-            $or: [{ sender: userId }, { recipient: userId }]
-        })
-            .populate('sender', 'username cards')
-            .populate('recipient', 'username cards')
-            .lean();
+        const uid = new mongoose.Types.ObjectId(userId);
+        const pipeline = [
+            {
+                $match: { $or: [{ sender: uid }, { recipient: uid }] }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { senderId: '$sender', offered: '$offeredItems' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$senderId'] } } },
+                        {
+                            $project: {
+                                username: 1,
+                                cards: {
+                                    $filter: {
+                                        input: '$cards',
+                                        as: 'c',
+                                        cond: { $in: ['$$c._id', '$$offered'] }
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    as: 'senderInfo'
+                }
+            },
+            { $unwind: { path: '$senderInfo', preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { recipientId: '$recipient', requested: '$requestedItems' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$recipientId'] } } },
+                        {
+                            $project: {
+                                username: 1,
+                                cards: {
+                                    $filter: {
+                                        input: '$cards',
+                                        as: 'c',
+                                        cond: { $in: ['$$c._id', '$$requested'] }
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    as: 'recipientInfo'
+                }
+            },
+            { $unwind: { path: '$recipientInfo', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    offeredItems: '$senderInfo.cards',
+                    requestedItems: '$recipientInfo.cards',
+                    sender: { username: '$senderInfo.username' },
+                    recipient: { username: '$recipientInfo.username' },
+                    offeredPacks: 1,
+                    requestedPacks: 1,
+                    status: 1,
+                    cancellationReason: 1,
+                    expiresAt: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ];
 
-        const enrichedTrades = trades.map(trade => {
-            const senderData = trade.sender || { cards: [] };
-            const recipientData = trade.recipient || { cards: [] };
-
-            const offeredCards = (senderData.cards || []).filter(card =>
-                (trade.offeredItems || []).some(itemId =>
-                    itemId.toString() === card._id.toString()
-                )
-            );
-            const requestedCards = (recipientData.cards || []).filter(card =>
-                (trade.requestedItems || []).some(itemId =>
-                    itemId.toString() === card._id.toString()
-                )
-            );
-
-            return {
-                ...trade,
-                offeredItems: offeredCards,
-                requestedItems: requestedCards
-            };
-        });
-
+        const enrichedTrades = await Trade.aggregate(pipeline);
         res.status(200).json(enrichedTrades);
     } catch (error) {
         console.error("[Backend] Error fetching trades:", error);
