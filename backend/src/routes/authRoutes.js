@@ -122,7 +122,9 @@ router.post("/validate", async (req, res) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         // Note: decoded.id is actually the Twitch ID
-        const user = await User.findOne({ twitchId: decoded.id }).select("-password");
+        const user = await User.findOne({ twitchId: decoded.id })
+            .select("username email isAdmin packs loginCount xp level twitchProfilePic")
+            .lean();
         if (!user) {
             return res.status(401).json({ message: "User not found" });
         }
