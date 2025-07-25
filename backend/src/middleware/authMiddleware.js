@@ -28,9 +28,13 @@ const protect = async (req, res, next) => {
             req.isAdmin = req.user.isAdmin; // Attach admin status
             console.log('[AUTH VALIDATE] User validated:', req.user.username);
 
-            // Update lastActive timestamp on every authenticated request
-            req.user.lastActive = new Date();
-            await req.user.save();
+            // Update lastActive timestamp asynchronously without saving full document
+            User.updateOne(
+                { _id: req.user._id },
+                { $set: { lastActive: new Date() } }
+            ).catch((err) =>
+                console.error('[lastActive update failed]', err)
+            );
 
             next(); // Proceed to the next middleware or route
         } catch (error) {
