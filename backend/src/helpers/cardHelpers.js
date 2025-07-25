@@ -108,7 +108,8 @@ const generateCardWithProbability = async () => {
                 {
                     _id: selectedCard._id,
                     'rarities.rarity': selectedRarity,
-                    'rarities.remainingCopies': { $gt: 0 }
+                    'rarities.remainingCopies': { $gt: 0 },
+                    'rarities.availableMintNumbers': mintNumber
                 },
                 {
                     $inc: { 'rarities.$.remainingCopies': -1 },
@@ -239,7 +240,8 @@ const generateCardFromPool = async (poolIds) => {
                 {
                     _id: selectedCard._id,
                     'rarities.rarity': selectedRarity,
-                    'rarities.remainingCopies': { $gt: 0 }
+                    'rarities.remainingCopies': { $gt: 0 },
+                    'rarities.availableMintNumbers': mintNumber
                 },
                 {
                     $inc: { 'rarities.$.remainingCopies': -1 },

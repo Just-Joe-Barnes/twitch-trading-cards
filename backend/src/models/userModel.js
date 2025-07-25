@@ -92,6 +92,9 @@ const userSchema = new mongoose.Schema({
 userSchema.index({ 'cards._id': 1 });
 userSchema.index({ 'cards.status': 1 });
 userSchema.index({ 'cards.name': 1, 'cards.rarity': 1 });
+// New indexes to accelerate mint number lookups for duplicate checks
+userSchema.index({ 'cards.name': 1, 'cards.rarity': 1, 'cards.mintNumber': 1 });
+userSchema.index({ 'openedCards.name': 1, 'openedCards.rarity': 1, 'openedCards.mintNumber': 1 });
 
 const User = mongoose.model('User', userSchema);
 
