@@ -92,16 +92,25 @@ const getFeaturedCards = async (req, res) => {
                 { $set: { featuredCards: validFeatured } }
             );
         }
-        // Enrich the featured cards with flavorText from the Card model
-        const enrichedFeaturedCards = await Promise.all(
-            validFeatured.map(async (featuredCard) => {
-                const cardDoc = await Card.findOne({ name: featuredCard.name });
-                return {
-                    ...featuredCard,
-                    flavorText: cardDoc?.flavorText || 'No description available',
-                };
-            })
-        );
+
+        // Batch fetch card details to avoid N queries
+        const names = validFeatured.map((c) => c.name);
+        const cardDocs = await Card.find({ name: { $in: names } })
+            .select('name flavorText imageUrl')
+            .lean();
+        const map = {};
+        cardDocs.forEach((c) => {
+            map[c.name] = c;
+        });
+        const enrichedFeaturedCards = validFeatured.map((featuredCard) => {
+            const info = map[featuredCard.name] || {};
+            return {
+                ...featuredCard,
+                flavorText: info.flavorText || 'No description available',
+                imageUrl: info.imageUrl,
+            };
+        });
+
         res.status(200).json({ featuredCards: enrichedFeaturedCards });
     } catch (error) {
         console.error('[getFeaturedCards] Error:', error.message);

@@ -103,6 +103,7 @@ const userSchema = new mongoose.Schema({
 // Helpful indexes for frequent queries
 userSchema.index({ 'cards._id': 1 });
 userSchema.index({ 'cards.status': 1 });
+userSchema.index({ 'cards.name': 1, 'cards.rarity': 1 });
 userSchema.index({ 'notifications.isRead': 1 });
 
 const User = mongoose.model('User', userSchema);
