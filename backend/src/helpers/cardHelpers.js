@@ -14,16 +14,35 @@ const rarityProbabilities = [
     { rarity: 'Divine', probability: 0.001 },
 ];
 
-const pickRarity = () => {
+const highRollRarityProbabilities = [
+    { rarity: 'Rare', probability: 0.615 },
+    { rarity: 'Epic', probability: 0.30 },
+    { rarity: 'Legendary', probability: 0.07 },
+    { rarity: 'Mythic', probability: 0.004 },
+    { rarity: 'Unique', probability: 0.0009 },
+    { rarity: 'Divine', probability: 0.0001 },
+];
+
+const pickRarity = (highRoll = false) => {
+    let activeRarityProbabilities;
+
+    if (highRoll) {
+        activeRarityProbabilities = highRollRarityProbabilities;
+    } else {
+        activeRarityProbabilities = rarityProbabilities;
+    }
+
     const random = Math.random();
     let cumulativeProbability = 0;
-    for (const { rarity, probability } of rarityProbabilities) {
+
+    for (const { rarity, probability } of activeRarityProbabilities) {
         cumulativeProbability += probability;
         if (random <= cumulativeProbability) {
             return rarity;
         }
     }
-    return 'Basic'; // Fallback if probabilities don't sum exactly to 1
+
+    return activeRarityProbabilities[activeRarityProbabilities.length - 1]?.rarity || 'Basic';
 };
 
 // Generate a card with probabilities and ensure uniqueness across all user collections
@@ -349,54 +368,33 @@ const generatePackPreview = async (packSize = 5) => {
     return pack;
 };
 
-const generateCardPreviewFromPool = async (poolIds) => {
-    while (true) {
-        try {
-            const selectedRarity = pickRarity();
-            const now = new Date();
-            const cards = await Card.aggregate([
-                {
-                    $match: {
-                        _id: { $in: poolIds },
-                        'rarities.rarity': selectedRarity,
-                        'rarities.remainingCopies': { $gt: 0 },
-                        'rarities.availableMintNumbers.0': { $exists: true },
-                        $or: [
-                            { availableFrom: null },
-                            { availableFrom: { $lte: now } }
-                        ],
-                        $or: [
-                            { availableTo: null },
-                            { availableTo: { $gte: now } }
-                        ]
-                    }
-                },
-                { $sample: { size: 1 } }
-            ]);
+const generateCardPreviewFromPool = async (poolIds, randomHighRoll) => {
+    try {
+        const selectedRarity = pickRarity(randomHighRoll);
+        const randomCardId = poolIds[Math.floor(Math.random() * poolIds.length)]
+        const selectedCardArray = await Card.find({
+            _id: randomCardId
+        }).lean();
 
-            if (!cards || cards.length === 0) {
-                continue;
-            }
+        const selectedCard = selectedCardArray[0]
 
-            const selectedCard = cards[0];
-            const rarityObj = selectedCard.rarities.find(r => r.rarity === selectedRarity);
-            if (!rarityObj || !rarityObj.availableMintNumbers.length) {
-                continue;
-            }
-
-            const idx = Math.floor(Math.random() * rarityObj.availableMintNumbers.length);
-            const mintNumber = rarityObj.availableMintNumbers[idx];
-
-            return {
-                name: selectedCard.name,
-                rarity: selectedRarity,
-                mintNumber,
-                imageUrl: selectedCard.imageUrl,
-                flavorText: selectedCard.flavorText || 'No flavor text available',
-            };
-        } catch (err) {
-            console.error('[generateCardPreviewFromPool] Error:', err.message);
+        const rarityObj = selectedCard.rarities.find(r => r.rarity === selectedRarity);
+        if (!rarityObj || !rarityObj.availableMintNumbers.length) {
+            return null;
         }
+
+        const idx = Math.floor(Math.random() * rarityObj.availableMintNumbers.length);
+        const mintNumber = rarityObj.availableMintNumbers[idx];
+
+        return {
+            name: selectedCard.name,
+            rarity: selectedRarity,
+            mintNumber,
+            imageUrl: selectedCard.imageUrl,
+            flavorText: selectedCard.flavorText || 'No flavor text available',
+        };
+    } catch (err) {
+        console.error('[generateCardPreviewFromPool] Error:', err.message);
     }
 };
 
@@ -411,18 +409,16 @@ const generateRareCardPreviewFromPool = async (poolIds) => {
 
 const generatePackPreviewFromPool = async (poolIds, packSize = 5) => {
     const pack = [];
-    while (pack.length < packSize) {
-        const card = await generateCardPreviewFromPool(poolIds);
+    const randomHighRoll = Math.floor(Math.random() * packSize)
+    for (let x = 0; x < packSize; x) {
+        console.log(randomHighRoll, x, x===randomHighRoll);
+        const card = await generateCardPreviewFromPool(poolIds, x === randomHighRoll);
+        x += 1;
         if (card) {
             pack.push(card);
         }
     }
-    if (!pack.some(c => isRareOrAbove(c.rarity))) {
-        const rareCard = await generateRareCardPreviewFromPool(poolIds);
-        if (rareCard) {
-            pack[0] = rareCard;
-        }
-    }
+
     return pack;
 };
 

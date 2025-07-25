@@ -25,7 +25,7 @@ const getUsersWithPacks = async (req, res) => {
 const openPack = async (req, res) => {
     try {
         const userId = req.user.id;
-        const user = await User.findById(userId);
+        const user = await User.findById(userId).select("packs");
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -217,9 +217,10 @@ const debugOpenPackForUser = async (req, res) => {
                     { availableTo: null },
                     { availableTo: { $gte: now } }
                 ]
-            }).lean();
+            }).select('_id').lean();
 
-            const filteredIds = poolCards.map(c => c._id);
+            const filteredIds = poolCards.map(card => card._id.toString());
+
             pack = await generatePackPreviewFromPool(filteredIds, 5);
         } else {
             pack = await generatePackPreview(5);

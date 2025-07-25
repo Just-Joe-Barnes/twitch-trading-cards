@@ -1,27 +1,31 @@
 // src/pages/AdminDashboardPage.js
-import React, { useEffect, useState } from 'react';
-import { fetchWithAuth } from '../utils/api';
+import React, {useEffect, useState} from 'react';
+import {fetchWithAuth} from '../utils/api';
 import BaseCard from '../components/BaseCard';
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import '../styles/AdminDashboardPage.css';
 import moment from 'moment';
+import LoadingSpinner from "../components/LoadingSpinner";
 
-const AdminDashboardPage = ({ user }) => {
+const AdminDashboardPage = ({user}) => {
     const navigate = useNavigate();
 
     // User list state
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeFilter, setActiveFilter] = useState('all');
+    const [activeFilter, setActiveFilter] = useState('active');
     const [sortColumn, setSortColumn] = useState(null);
     const [sortDirection, setSortDirection] = useState('asc');
 
     // Loading & animation states
     const [loading, setLoading] = useState(true);
+    const [waitingOnPack, setWaitingOnPack] = useState(false);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
     const [packAnimationDone, setPackAnimationDone] = useState(false);
     const [cardsLoaded, setCardsLoaded] = useState(false);
+
+    const [showDebugControls, setShowDebugControls] = useState(false);
 
     // Cards state
     const [openedCards, setOpenedCards] = useState([]);
@@ -96,7 +100,7 @@ const AdminDashboardPage = ({ user }) => {
     useEffect(() => {
         const intervalId = setInterval(() => {
             fetchData();
-        }, 10000); // 10 seconds
+        }, 30000); // 30 seconds
 
         return () => clearInterval(intervalId);
     }, [user, navigate, activeFilter]);
@@ -123,8 +127,8 @@ const AdminDashboardPage = ({ user }) => {
 
         if (sortColumn === 'username') {
             return sortDirection === 'asc'
-                ? String(aValue).localeCompare(String(bValue), undefined, { sensitivity: 'base' })
-                : String(bValue).localeCompare(String(aValue), undefined, { sensitivity: 'base' });
+                ? String(aValue).localeCompare(String(bValue), undefined, {sensitivity: 'base'})
+                : String(bValue).localeCompare(String(aValue), undefined, {sensitivity: 'base'});
         }
 
         if (sortColumn === 'lastActive') {
@@ -156,7 +160,7 @@ const AdminDashboardPage = ({ user }) => {
     };
 
     // Open a pack for the selected user
-const openPackForUser = async () => {
+    const openPackForUser = async () => {
         if (!selectedUser) return;
         // Reset reveal index for new pack
         setPackAnimationDone(false);
@@ -174,10 +178,10 @@ const openPackForUser = async () => {
                 `/api/packs/admin/openPacksForUser/${selectedUser._id}`,
                 {
                     method: 'POST',
-                    body: JSON.stringify({ templateId: selectedPackTypeId, forceModifier })
+                    body: JSON.stringify({templateId: selectedPackTypeId, forceModifier})
                 }
             );
-            const { newCards } = res;
+            const {newCards} = res;
             console.log('New cards:', newCards);
             setOpenedCards(newCards);
             setRevealedCards(Array(newCards.length).fill(false));
@@ -187,7 +191,7 @@ const openPackForUser = async () => {
             // Decrement the user's pack count
             setUsers((prev) =>
                 prev.map((u) =>
-                    u._id === selectedUser._id ? { ...u, packs: u.packs - 1 } : u
+                    u._id === selectedUser._id ? {...u, packs: u.packs - 1} : u
                 )
             );
 
@@ -214,16 +218,17 @@ const openPackForUser = async () => {
         setOpenedCards([]);
         setRevealedCards([]);
         setFaceDownCards([]);
+        setWaitingOnPack(true);
 
         try {
             const res = await fetchWithAuth(
                 `/api/packs/admin/debugOpenPack/${selectedUser._id}`,
                 {
                     method: 'POST',
-                    body: JSON.stringify({ templateId: selectedPackTypeId, forceModifier })
+                    body: JSON.stringify({templateId: selectedPackTypeId, forceModifier})
                 }
             );
-            const { newCards } = res;
+            const {newCards} = res;
             console.log('[Debug] cards:', newCards);
             setOpenedCards(newCards);
             setRevealedCards(Array(newCards.length).fill(false));
@@ -292,7 +297,7 @@ const openPackForUser = async () => {
             } else {
                 window.addEventListener('load', () => {
                     revealAllCards(openedCards.length);
-                }, { once: true });
+                }, {once: true});
             }
         }
     }, [packAnimationDone, cardsLoaded, openedCards.length]);
@@ -303,6 +308,8 @@ const openPackForUser = async () => {
 
     return (
         <div className="dashboard-container">
+            <h1 style={{textAlign: "center"}} onClick={() => (setShowDebugControls(!showDebugControls))}>Dashboard</h1>
+
             {isOpeningAnimation && (
                 <div className="pack-opening-overlay">
                     <video
@@ -346,26 +353,26 @@ const openPackForUser = async () => {
                     </div>
                     <table className="users-table">
                         <thead>
-                            <tr>
-                                <th onClick={() => handleSort('username')}>Username</th>
-                                <th onClick={() => handleSort('packs')}>Unopened Packs</th>
-                                <th onClick={() => handleSort('preferredPack')}>Preferred Pack</th>
-                                <th onClick={() => handleSort('lastActive')}>Last Active</th>
-                            </tr>
+                        <tr>
+                            <th onClick={() => handleSort('username')}>Username</th>
+                            <th onClick={() => handleSort('packs')}>Unopened Packs</th>
+                            <th onClick={() => handleSort('preferredPack')}>Preferred Pack</th>
+                            <th onClick={() => handleSort('lastActive')}>Last Active</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            {sortedUsers.map((u) => (
-                                <tr
-                                    key={u._id}
-                                    className={selectedUser?._id === u._id ? 'selected' : ''}
-                                    onClick={() => toggleUserSelection(u)}
-                                >
-                                    <td>{u.username}</td>
-                                    <td>{u.packs}</td>
-                                    <td>{u.preferredPack ? (u.preferredPack.name || u.preferredPack.type || 'Unnamed') : '-'}</td>
-                                    <td>{u.lastActive ? moment(u.lastActive).fromNow() : 'Never'}</td>
-                                </tr>
-                            ))}
+                        {sortedUsers.map((u) => (
+                            <tr
+                                key={u._id}
+                                className={selectedUser?._id === u._id ? 'selected' : ''}
+                                onClick={() => toggleUserSelection(u)}
+                            >
+                                <td>{u.username}</td>
+                                <td>{u.packs}</td>
+                                <td>{u.preferredPack ? (u.preferredPack.name || u.preferredPack.type || 'Unnamed') : '-'}</td>
+                                <td>{u.lastActive ? moment(u.lastActive).fromNow() : 'Never'}</td>
+                            </tr>
+                        ))}
                         </tbody>
                     </table>
                 </div>
@@ -386,27 +393,32 @@ const openPackForUser = async () => {
                                     </option>
                                 ))}
                             </select>
-                            <label style={{ marginLeft: '1rem' }}>
-                                <input
-                                    type="checkbox"
-                                    checked={forceModifier}
-                                    onChange={(e) => setForceModifier(e.target.checked)}
-                                />
-                                Force Random Modifier
-                            </label>
                             <button
                                 onClick={openPackForUser}
                                 disabled={loading || isOpeningAnimation || selectedUser.packs <= 0}
                             >
                                 {loading ? 'Opening...' : 'Open Pack'}
                             </button>
-                            <button
-                                onClick={openDebugPackForUser}
-                                disabled={loading || isOpeningAnimation}
-                                style={{ marginLeft: '0.5rem' }}
-                            >
-                                {loading && isOpeningAnimation ? 'Opening...' : 'Debug Pack'}
-                            </button>
+                            {showDebugControls && (
+                                <div className="section-card">
+                                    <label style={{marginLeft: '1rem'}}>
+                                        <input
+                                            type="checkbox"
+                                            checked={forceModifier}
+                                            onChange={(e) => setForceModifier(e.target.checked)}
+                                        />
+                                        Force Random Modifier
+                                    </label>
+                                    <button
+                                        onClick={openDebugPackForUser}
+                                        disabled={loading || isOpeningAnimation}
+                                        style={{marginLeft: '0.5rem'}}
+                                        className="secondary-button"
+                                    >
+                                        {loading && isOpeningAnimation ? 'Opening...' : 'Debug Pack'}
+                                    </button>
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
@@ -417,7 +429,7 @@ const openPackForUser = async () => {
                     <div className="rarity-list">
                         {Object.entries(cardRarities).map(([rarity, color]) => (
                             <div key={rarity} className="rarity-item">
-                                <span className="color-box" style={{ backgroundColor: color }} />
+                                <span className="color-box" style={{backgroundColor: color}}/>
                                 <span className="rarity-text">{rarity}</span>
                             </div>
                         ))}
@@ -425,52 +437,55 @@ const openPackForUser = async () => {
                 </div>
 
                 {/* Opened Cards */}
-                <div className="opened-cards">
-                    <h2>Opened Cards</h2>
-                    <div className="cards-container">
-                        {openedCards.map((card, i) => {
-                            const visibleClass = revealedCards[i] ? 'visible' : '';
-                            const flipClass = faceDownCards[i] ? 'face-down' : 'face-up';
-                            return (
-                                <div
-                                    key={i}
-                                    className={`card-wrapper ${visibleClass} ${flipClass}`}
-                                    style={{ '--rarity-color': getRarityColor(card.rarity), transitionDelay: `${i * 0.2}s` }}
-                                    onClick={() => handleFlipCard(i)}
-                                >
-                                    <div className="card-content">
-                                        <div className="card-inner">
-                                            <div className="card-back">
-                                                <img
-                                                    src="/images/card-back-placeholder.png"
-                                                    alt="Card Back"
-                                                />
-                                            </div>
-                                            <div className="card-front">
-                                                <BaseCard
-                                                    name={card.name}
-                                                    image={card.imageUrl}
-                                                    description={card.flavorText}
-                                                    rarity={card.rarity}
-                                                    mintNumber={card.mintNumber}
-                                                    modifier={card.modifier}
-                                                />
+                {waitingOnPack && (
+                    <div className="opened-cards">
+                        <div className="cards-container">
+                            {openedCards.length === 0 && (
+                                <>
+                                    Ripping Packs...
+                                    <img src="/animations/loadingspinner.gif" alt="Loading..."
+                                         className="spinner-image"/>
+                                </>
+                            )}
+                            {openedCards.map((card, i) => {
+                                const visibleClass = revealedCards[i] ? 'visible' : '';
+                                const flipClass = faceDownCards[i] ? 'face-down' : 'face-up';
+                                return (
+                                    <div
+                                        key={i}
+                                        className={`card-wrapper ${visibleClass} ${flipClass}`}
+                                        style={{
+                                            '--rarity-color': getRarityColor(card.rarity),
+                                            transitionDelay: `${i * 0.2}s`
+                                        }}
+                                        onClick={() => handleFlipCard(i)}
+                                    >
+                                        <div className="card-content">
+                                            <div className="card-inner">
+                                                <div className="card-back">
+                                                    <img
+                                                        src="/images/card-back-placeholder.png"
+                                                        alt="Card Back"
+                                                    />
+                                                </div>
+                                                <div className="card-front">
+                                                    <BaseCard
+                                                        name={card.name}
+                                                        image={card.imageUrl}
+                                                        description={card.flavorText}
+                                                        rarity={card.rarity}
+                                                        mintNumber={card.mintNumber}
+                                                        modifier={card.modifier}
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
                     </div>
-                    {openedCards.length > 0 && !isOpeningAnimation && (
-                        <button
-                            onClick={handleResetPack}
-                            style={{ marginTop: '1rem', padding: '0.75rem 1.5rem', fontSize: '1rem' }}
-                        >
-                            Open Another Pack
-                        </button>
-                    )}
-                </div>
+                )}
             </div>
         </div>
     );
