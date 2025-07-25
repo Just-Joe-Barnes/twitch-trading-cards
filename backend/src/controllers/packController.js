@@ -1,7 +1,12 @@
 const Pack = require('../models/packModel');
 const User = require('../models/userModel');
 const Modifier = require('../models/modifierModel');
-const { generateCardWithProbability, generatePack } = require('../helpers/cardHelpers');
+const {
+    generateCardWithProbability,
+    generatePack,
+    generatePackPreview,
+    generatePackPreviewFromPool
+} = require('../helpers/cardHelpers');
 // Percentage chance that a card will receive a modifier when a pack is opened.
 // Default to 5% if the environment variable is not set.
 const MODIFIER_CHANCE = parseFloat(process.env.MODIFIER_CHANCE || '0.05');
@@ -180,6 +185,55 @@ const openPacksForUser = async (req, res) => {
     }
 };
 
+// Debug open pack for a user - does not modify user or card inventory
+const debugOpenPackForUser = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { templateId } = req.body;
+        console.log('[debugOpenPackForUser] start', { userId, templateId });
+        const start = Date.now();
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        let pack;
+        if (templateId) {
+            const templatePack = await Pack.findById(templateId);
+            if (!templatePack) {
+                return res.status(404).json({ message: 'Pack template not found' });
+            }
+
+            const Card = require('../models/cardModel');
+            const now = new Date();
+            const poolCards = await Card.find({
+                _id: { $in: templatePack.cardPool },
+                $or: [
+                    { availableFrom: null },
+                    { availableFrom: { $lte: now } }
+                ],
+                $or: [
+                    { availableTo: null },
+                    { availableTo: { $gte: now } }
+                ]
+            }).lean();
+
+            const filteredIds = poolCards.map(c => c._id);
+            pack = await generatePackPreviewFromPool(filteredIds, 5);
+        } else {
+            pack = await generatePackPreview(5);
+        }
+
+        const duration = Date.now() - start;
+        console.log('[debugOpenPackForUser] generated pack in', duration, 'ms');
+        res.status(200).json({ message: 'Debug pack generated', newCards: pack });
+    } catch (error) {
+        console.error('[debugOpenPackForUser] Error:', error.message);
+        res.status(500).json({ message: 'Failed to generate debug pack' });
+    }
+};
+
 // Fetch unopened packs for the authenticated user
 const getMyPacks = async (req, res) => {
     try {
@@ -256,6 +310,7 @@ module.exports = {
     openPack,
     getAllPacks,
     openPacksForUser,
+    debugOpenPackForUser,
     getMyPacks,
     openPackById,
 };

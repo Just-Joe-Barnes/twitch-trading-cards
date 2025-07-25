@@ -156,7 +156,7 @@ const AdminDashboardPage = ({ user }) => {
     };
 
     // Open a pack for the selected user
-    const openPackForUser = async () => {
+const openPackForUser = async () => {
         if (!selectedUser) return;
         // Reset reveal index for new pack
         setPackAnimationDone(false);
@@ -197,6 +197,44 @@ const AdminDashboardPage = ({ user }) => {
             }
         } catch (err) {
             console.error('Error opening pack:', err);
+            setIsOpeningAnimation(false);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Debug open pack without affecting inventory
+    const openDebugPackForUser = async () => {
+        if (!selectedUser) return;
+        setPackAnimationDone(false);
+        setCardsLoaded(false);
+        setPackCounter((prev) => prev + 1);
+        setLoading(true);
+        setIsOpeningAnimation(true);
+        setOpenedCards([]);
+        setRevealedCards([]);
+        setFaceDownCards([]);
+
+        try {
+            const res = await fetchWithAuth(
+                `/api/packs/admin/debugOpenPack/${selectedUser._id}`,
+                {
+                    method: 'POST',
+                    body: JSON.stringify({ templateId: selectedPackTypeId, forceModifier })
+                }
+            );
+            const { newCards } = res;
+            console.log('[Debug] cards:', newCards);
+            setOpenedCards(newCards);
+            setRevealedCards(Array(newCards.length).fill(false));
+            setFaceDownCards(Array(newCards.length).fill(true));
+            setCardsLoaded(true);
+
+            if (packAnimationDone) {
+                revealAllCards(newCards.length);
+            }
+        } catch (err) {
+            console.error('Error debugging pack:', err);
             setIsOpeningAnimation(false);
         } finally {
             setLoading(false);
@@ -361,6 +399,13 @@ const AdminDashboardPage = ({ user }) => {
                                 disabled={loading || isOpeningAnimation || selectedUser.packs <= 0}
                             >
                                 {loading ? 'Opening...' : 'Open Pack'}
+                            </button>
+                            <button
+                                onClick={openDebugPackForUser}
+                                disabled={loading || isOpeningAnimation}
+                                style={{ marginLeft: '0.5rem' }}
+                            >
+                                {loading && isOpeningAnimation ? 'Opening...' : 'Debug Pack'}
                             </button>
                         </>
                     )}
