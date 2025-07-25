@@ -4,6 +4,7 @@ const router = express.Router();
 const User = require('../models/userModel');
 const { protect } = require('../middleware/authMiddleware');
 const { broadcastNotification } = require('../../notificationService');
+const Notification = require('../models/notificationModel');
 
 // Middleware to check admin privileges
 const adminOnly = (req, res, next) => {
@@ -79,10 +80,12 @@ router.post('/notifications', protect, adminOnly, async (req, res) => {
 
         console.log("[AdminRoutes] Broadcasting notification:", notification);
 
-        // Update the database: push the notification into every user's notifications array
-        await User.updateMany({}, { $push: { notifications: notification } });
+        const users = await User.find({}, '_id').lean();
+        const docs = users.map(u => ({ ...notification, userId: u._id }));
+        if (docs.length > 0) {
+            await Notification.insertMany(docs);
+        }
 
-        // Emit a real-time notification event to all connected clients
         broadcastNotification(notification);
 
         res.status(200).json({ message: 'Notification broadcast successfully.' });

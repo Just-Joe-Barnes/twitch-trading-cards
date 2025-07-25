@@ -12,7 +12,6 @@ const cardSchema = new mongoose.Schema({
         type: String,
         enum: ['available', 'pending', 'escrow'],
         default: 'available',
-        index: true,
     }, // Card status
     grade: { type: Number, min: 1, max: 10 },
     slabbed: { type: Boolean, default: false },
@@ -21,17 +20,7 @@ const cardSchema = new mongoose.Schema({
 });
 
 // Index nested card id for faster $elemMatch queries
-cardSchema.index({ _id: 1 });
-
-// Notification schema
-const notificationSchema = new mongoose.Schema({
-    type: { type: String, required: true },
-    message: { type: String, required: true },
-    link: { type: String }, // Optional URL or route
-    isRead: { type: Boolean, default: false },
-    createdAt: { type: Date, default: Date.now },
-    extra: { type: Object, default: {} } // For any extra flags, e.g., priority
-});
+// Mongoose automatically indexes _id
 
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true, index: true },
@@ -57,7 +46,6 @@ const userSchema = new mongoose.Schema({
     },
     // User's preferred pack template for admin openings
     preferredPack: { type: mongoose.Schema.Types.ObjectId, ref: 'Pack', default: null },
-    notifications: [notificationSchema], // NEW: Notifications for the user
     firstLogin: { type: Boolean, default: false },
     isAdmin: { type: Boolean, default: false },
     lastActive: { type: Date }, // Last active in chat
@@ -104,7 +92,6 @@ const userSchema = new mongoose.Schema({
 userSchema.index({ 'cards._id': 1 });
 userSchema.index({ 'cards.status': 1 });
 userSchema.index({ 'cards.name': 1, 'cards.rarity': 1 });
-userSchema.index({ 'notifications.isRead': 1 });
 
 const User = mongoose.model('User', userSchema);
 

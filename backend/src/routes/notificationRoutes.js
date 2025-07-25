@@ -1,8 +1,8 @@
 // src/routes/notificationRoutes.js
 const express = require('express');
-const mongoose = require('mongoose'); // Add this line
+const mongoose = require('mongoose');
 const router = express.Router();
-const User = require('../models/userModel');
+const Notification = require('../models/notificationModel');
 const { protect } = require('../middleware/authMiddleware');
 
 // GET all notifications for the logged-in user
@@ -10,15 +10,15 @@ router.get('/', protect, async (req, res) => {
     const start = process.hrtime();
     try {
         const dbStart = process.hrtime();
-        // Only return the most recent 20 notifications, as a plain object
-        const user = await User.findById(req.user.id)
-            .select({ notifications: { $slice: -20 } })
+        const notifications = await Notification.find({ userId: req.user._id })
+            .sort({ createdAt: -1 })
+            .limit(20)
             .lean();
         const dbEnd = process.hrtime(dbStart);
         console.log(`[PERF] [notifications] DB query took ${dbEnd[0] * 1000 + dbEnd[1] / 1e6} ms`);
         const total = process.hrtime(start);
         console.log(`[PERF] [notifications] TOTAL: ${total[0] * 1000 + total[1] / 1e6} ms`);
-        res.status(200).json(user.notifications);
+        res.status(200).json(notifications);
     } catch (error) {
         const total = process.hrtime(start);
         console.error(`[PERF] [notifications] ERROR after ${total[0] * 1000 + total[1] / 1e6} ms:`, error.message);
@@ -29,9 +29,9 @@ router.get('/', protect, async (req, res) => {
 // PUT to mark all notifications as read
 router.put('/read', protect, async (req, res) => {
     try {
-        await User.updateOne(
-            { _id: req.user.id },
-            { $set: { 'notifications.$[].isRead': true } }
+        await Notification.updateMany(
+            { userId: req.user._id, isRead: false },
+            { $set: { isRead: true } }
         );
         res.status(200).json({ message: 'All notifications marked as read' });
     } catch (error) {
@@ -43,7 +43,7 @@ router.put('/read', protect, async (req, res) => {
 // DELETE all notifications (clear)
 router.delete('/clear', protect, async (req, res) => {
     try {
-        await User.updateOne({ _id: req.user.id }, { $set: { notifications: [] } });
+        await Notification.deleteMany({ userId: req.user._id });
         res.status(200).json({ message: 'All notifications cleared' });
     } catch (error) {
         console.error('Error clearing notifications:', error.message);
@@ -61,15 +61,12 @@ router.delete('/:notificationId', protect, async (req, res) => {
             return res.status(400).json({ message: 'Invalid notification ID format' });
         }
 
-        const userId = req.user.id;
-        const user = await User.findById(userId);
+        const userId = req.user._id;
+        const result = await Notification.deleteOne({ _id: notificationId, userId });
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: 'Notification not found' });
         }
-
-        user.notifications.pull({ _id: new mongoose.Types.ObjectId(notificationId) });
-        await user.save();
 
         res.status(200).json({ message: 'Notification deleted' });
     } catch (error) {
