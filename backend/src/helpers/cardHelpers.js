@@ -1,5 +1,4 @@
 const Card = require('../models/cardModel');
-const User = require('../models/userModel'); // Using the User model since cards are embedded
 
 // Updated rarity probabilities: Basic is most common, Divine is most rare.
 const rarityProbabilities = [
@@ -90,18 +89,6 @@ const generateCardWithProbability = async () => {
             // Select a random mint number from availableMintNumbers
             const randomIndex = Math.floor(Math.random() * rarityObj.availableMintNumbers.length);
             const mintNumber = rarityObj.availableMintNumbers[randomIndex];
-
-            // Check that no card with the same name, rarity, and mint number exists in any user's collection
-            const duplicate = await User.findOne({
-                $or: [
-                    { cards: { $elemMatch: { name: selectedCard.name, rarity: selectedRarity, mintNumber } } },
-                    { openedCards: { $elemMatch: { name: selectedCard.name, rarity: selectedRarity, mintNumber } } }
-                ]
-            });
-            if (duplicate) {
-                console.warn(`Duplicate card detected for ${selectedCard.name}, rarity: ${selectedRarity}, mint number: ${mintNumber}. Retrying...`);
-                continue;
-            }
 
             // Atomically update the card: decrement remainingCopies and remove the chosen mint number
             const updatedCard = await Card.findOneAndUpdate(
@@ -225,16 +212,6 @@ const generateCardFromPool = async (poolIds) => {
             const randomIndex = Math.floor(Math.random() * rarityObj.availableMintNumbers.length);
             const mintNumber = rarityObj.availableMintNumbers[randomIndex];
 
-            const duplicate = await User.findOne({
-                $or: [
-                    { cards: { $elemMatch: { name: selectedCard.name, rarity: selectedRarity, mintNumber } } },
-                    { openedCards: { $elemMatch: { name: selectedCard.name, rarity: selectedRarity, mintNumber } } }
-                ]
-            });
-            if (duplicate) {
-                console.warn(`[generateCardFromPool] Duplicate card detected. Retrying...`);
-                continue;
-            }
 
             const updatedCard = await Card.findOneAndUpdate(
                 {
