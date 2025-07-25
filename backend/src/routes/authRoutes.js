@@ -113,6 +113,28 @@ router.get(
     }
 );
 
+// Validate JWT token route – returns a minimal user profile
+router.post("/validate", async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "No token provided" });
+    }
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findOne({ twitchId: decoded.id })
+            .select(
+                "username email isAdmin packs loginCount xp level twitchProfilePic"
+            )
+            .lean();
+        if (!user) {
+            return res.status(401).json({ message: "User not found" });
+        }
+        return res.status(200).json(user);
+    } catch (err) {
+        return res.status(401).json({ message: "Invalid token" });
+    }
+});
+
 // Route to check authentication status via passport
 router.get("/user", (req, res) => {
     if (req.isAuthenticated()) {
