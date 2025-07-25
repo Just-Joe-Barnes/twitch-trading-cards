@@ -59,8 +59,8 @@ const openPack = async (req, res) => {
         newCard.acquiredAt = new Date();
 
         const xpGain = 10;
-        const newLevel = Math.floor((user.xp + xpGain) / 100) + 1;
-
+        const newXp = (user.xp || 0) + xpGain;
+        const newLevel = Math.floor(newXp / 100) + 1;
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             {
@@ -157,7 +157,8 @@ const openPacksForUser = async (req, res) => {
         }
 
         const xpGain = 10;
-        const newLevel = Math.floor((user.xp + xpGain) / 100) + 1;
+        const newXp = (user.xp || 0) + xpGain;
+        const newLevel = Math.floor(newXp / 100) + 1;
 
         const updatedUser = await User.findByIdAndUpdate(
             userId,
