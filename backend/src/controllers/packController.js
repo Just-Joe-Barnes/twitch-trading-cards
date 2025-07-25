@@ -238,7 +238,7 @@ const debugOpenPackForUser = async (req, res) => {
 const getMyPacks = async (req, res) => {
     try {
         const userId = req.user.id;
-        const user = await User.findById(userId);
+        const user = await User.findById(userId).select('packs');
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
