@@ -57,21 +57,24 @@ const openPack = async (req, res) => {
         }
 
         newCard.acquiredAt = new Date();
-        user.cards.push(newCard);
-        user.openedPacks += 1;
-        user.packs -= 1;
 
-        // Award XP for opening a pack
-        user.xp = (user.xp || 0) + 10;
-        // Level up logic (simple: 100 XP per level)
-        user.level = Math.floor(user.xp / 100) + 1;
+        const xpGain = 10;
+        const newLevel = Math.floor((user.xp + xpGain) / 100) + 1;
 
-        await user.save();
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            {
+                $push: { cards: newCard },
+                $inc: { packs: -1, openedPacks: 1, xp: xpGain },
+                $set: { level: newLevel }
+            },
+            { new: true }
+        );
 
         const { checkAndGrantAchievements } = require('../helpers/achievementHelper');
-        await checkAndGrantAchievements(user);
+        await checkAndGrantAchievements(updatedUser);
 
-        res.status(200).json({ message: 'Pack opened successfully', card: newCard, packs: user.packs });
+        res.status(200).json({ message: 'Pack opened successfully', card: newCard, packs: updatedUser.packs });
     } catch (error) {
         console.error('[openPack] Error:', error.message);
         res.status(500).json({ message: 'Failed to open pack' });
@@ -153,18 +156,21 @@ const openPacksForUser = async (req, res) => {
             newCard.acquiredAt = new Date();
         }
 
-        user.packs -= 1;
-        user.openedPacks += 1;
+        const xpGain = 10;
+        const newLevel = Math.floor((user.xp + xpGain) / 100) + 1;
 
-        // Award XP for admin opening pack
-        user.xp = (user.xp || 0) + 10;
-        user.level = Math.floor(user.xp / 100) + 1;
-
-        user.cards.push(...newCards);
-        await user.save();
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            {
+                $push: { cards: { $each: newCards } },
+                $inc: { packs: -1, openedPacks: 1, xp: xpGain },
+                $set: { level: newLevel }
+            },
+            { new: true }
+        );
 
         const { checkAndGrantAchievements } = require('../helpers/achievementHelper');
-        await checkAndGrantAchievements(user);
+        await checkAndGrantAchievements(updatedUser);
 
         res.status(200).json({ message: 'Pack opened successfully', newCards });
     } catch (error) {
