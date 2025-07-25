@@ -6,28 +6,20 @@ const Card = require('../models/cardModel');
 const getUserProfile = async (req, res) => {
     const start = process.hrtime();
     try {
-        const dbStart = process.hrtime();
-        const user = await User.findById(req.user._id)
-            .select(
-                'username email isAdmin packs openedPacks loginCount featuredCards favoriteCard preferredPack twitchProfilePic xp level achievements featuredAchievements'
-            )
-            .populate('preferredPack', 'name')
-            .lean();
-        const dbEnd = process.hrtime(dbStart);
-        console.log(`[PERF] [getUserProfile] DB query took ${dbEnd[0] * 1000 + dbEnd[1] / 1e6} ms`);
-        if (!user) {
-            const total = process.hrtime(start);
-            console.log(`[PERF] [getUserProfile] TOTAL (user not found): ${total[0] * 1000 + total[1] / 1e6} ms`);
-            return res.status(404).json({ message: 'User not found' });
-        }
+        const user = { ...req.user };
+        let dbStart = process.hrtime();
         if (user.favoriteCard && user.favoriteCard.name) {
-            const cardDoc = await Card.findOne({ name: user.favoriteCard.name });
+            const cardDoc = await Card.findOne({ name: user.favoriteCard.name })
+                .select('flavorText imageUrl')
+                .lean();
             user.favoriteCard = {
                 ...user.favoriteCard,
                 flavorText: cardDoc?.flavorText,
                 imageUrl: cardDoc?.imageUrl,
             };
         }
+        const dbEnd = process.hrtime(dbStart);
+        console.log(`[PERF] [getUserProfile] DB query took ${dbEnd[0] * 1000 + dbEnd[1] / 1e6} ms`);
         const total = process.hrtime(start);
         console.log(`[PERF] [getUserProfile] TOTAL: ${total[0] * 1000 + total[1] / 1e6} ms`);
         res.status(200).json(user);

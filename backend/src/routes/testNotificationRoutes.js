@@ -2,8 +2,8 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
-const User = require('../models/userModel');
-const { sendNotification } = require('../../notificationService'); // Updated path to notificationService
+const Notification = require('../models/notificationModel');
+const { sendNotificationToUser } = require('../../notificationService');
 
 // GET /api/test-notification
 // This route creates a test notification for the logged-in user.
@@ -24,15 +24,13 @@ router.get('/', protect, async (req, res) => {
         };
 
         // 1) Insert into DB
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        user.notifications.push(sampleNotification);
-        await user.save();
+        await Notification.create({
+            userId,
+            ...sampleNotification,
+        });
 
         // 2) Send real-time notification
-        sendNotification(userId, sampleNotification);
+        sendNotificationToUser(userId, sampleNotification);
 
         // 3) Return a JSON response
         res.json({
