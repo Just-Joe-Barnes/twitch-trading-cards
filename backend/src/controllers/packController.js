@@ -61,7 +61,6 @@ const openPack = async (req, res) => {
         const xpGain = 10;
         const newXp = (user.xp || 0) + xpGain;
         const newLevel = Math.floor(newXp / 100) + 1;
-
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             {
