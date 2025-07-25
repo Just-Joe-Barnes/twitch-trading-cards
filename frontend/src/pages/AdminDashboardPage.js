@@ -170,6 +170,7 @@ const AdminDashboardPage = ({user}) => {
         setOpenedCards([]);
         setRevealedCards([]);
         setFaceDownCards([]);
+        setWaitingOnPack(true);
 
         try {
             const res = await fetchWithAuth(

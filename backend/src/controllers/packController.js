@@ -100,7 +100,7 @@ const getAllPacks = async (req, res) => {
 const openPacksForUser = async (req, res) => {
     try {
         const { userId } = req.params;
-        const { templateId } = req.body;
+        const { templateId, forceModifier } = req.body;
 
         const user = await User.findById(userId);
         if (!user) {
@@ -110,7 +110,11 @@ const openPacksForUser = async (req, res) => {
             return res.status(400).json({ message: 'No unopened packs available for this user' });
         }
 
-        let packPromise;
+        let newCards; // This will hold the generated cards with rarity and modifiers
+
+        // Dynamically import helpers to avoid circular dependencies if they are in the same folder
+        const { generatePackPreviewFromPool, generatePackPreview } = require('../helpers/cardHelpers');
+        const Card = require('../models/cardModel');
 
         if (templateId) {
             const templatePack = await Pack.findById(templateId);
@@ -118,7 +122,6 @@ const openPacksForUser = async (req, res) => {
                 return res.status(404).json({ message: 'Pack template not found' });
             }
 
-            const Card = require('../models/cardModel');
             const now = new Date();
             const poolCards = await Card.find({
                 _id: { $in: templatePack.cardPool },
@@ -130,37 +133,27 @@ const openPacksForUser = async (req, res) => {
                     { availableTo: null },
                     { availableTo: { $gte: now } }
                 ]
-            }).lean();
+            }).select('_id').lean();
 
-            const filteredIds = poolCards.map(c => c._id);
+            const filteredIds = poolCards.map(card => card._id.toString());
 
-            const { generatePackFromPool } = require('../helpers/cardHelpers');
-            packPromise = generatePackFromPool(filteredIds, 5);
+            // Use generatePackPreviewFromPool which handles rarity and modifiers
+            newCards = await generatePackPreviewFromPool(filteredIds, 5, forceModifier);
         } else {
-            packPromise = generatePack(5);
+            // Use generatePackPreview for default packs
+            newCards = await generatePackPreview(5, forceModifier);
         }
-
-        const [newCards, mods] = await Promise.all([
-            packPromise,
-            Modifier.find().lean(),
-        ]);
 
         if (!newCards || !newCards.length) {
             return res.status(500).json({ message: 'Failed to generate cards for the pack' });
         }
-        const forceModifier = req.body?.forceModifier === true;
 
-        for (const newCard of newCards) {
-            if (mods && mods.length > 0 && (forceModifier || Math.random() < MODIFIER_CHANCE)) {
-                const idx = Math.floor(Math.random() * mods.length);
-                const mod = mods[idx];
-                newCard.modifier = mod._id;
-                const prefix = mod.name === 'Glitch' ? 'Glitched' : mod.name;
-                newCard.name = `${prefix} ${newCard.name}`;
-            }
-            newCard.acquiredAt = new Date();
+        // Add acquiredAt timestamp to each generated card
+        for (const card of newCards) {
+            card.acquiredAt = new Date();
         }
 
+        // User inventory update logic (kept intact)
         const xpGain = 10;
         const newXp = (user.xp || 0) + xpGain;
         const newLevel = Math.floor(newXp / 100) + 1;
@@ -168,7 +161,7 @@ const openPacksForUser = async (req, res) => {
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             {
-                $push: { cards: { $each: newCards } },
+                $push: { cards: { $each: newCards } }, // Push the fully generated cards
                 $inc: { packs: -1, openedPacks: 1, xp: xpGain },
                 $set: { level: newLevel }
             },
@@ -221,7 +214,7 @@ const debugOpenPackForUser = async (req, res) => {
 
             const filteredIds = poolCards.map(card => card._id.toString());
 
-            pack = await generatePackPreviewFromPool(filteredIds, 5);
+            pack = await generatePackPreviewFromPool(filteredIds, 5, req.body?.forceModifier);
         } else {
             pack = await generatePackPreview(5);
         }

@@ -1,4 +1,5 @@
 const Card = require('../models/cardModel');
+const Modifier = require("../models/modifierModel");
 
 // Updated rarity probabilities: Basic is most common, Divine is most rare.
 const rarityProbabilities = [
@@ -22,6 +23,8 @@ const highRollRarityProbabilities = [
     { rarity: 'Unique', probability: 0.0009 },
     { rarity: 'Divine', probability: 0.0001 },
 ];
+
+const MODIFIER_CHANCE = parseFloat(process.env.MODIFIER_CHANCE || '0.05');
 
 const pickRarity = (highRoll = false) => {
     let activeRarityProbabilities;
@@ -368,8 +371,9 @@ const generatePackPreview = async (packSize = 5) => {
     return pack;
 };
 
-const generateCardPreviewFromPool = async (poolIds, randomHighRoll) => {
+const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifier) => {
     try {
+        let appliedModifierId = null;
         const selectedRarity = pickRarity(randomHighRoll);
         const randomCardId = poolIds[Math.floor(Math.random() * poolIds.length)]
         const selectedCardArray = await Card.find({
@@ -386,10 +390,22 @@ const generateCardPreviewFromPool = async (poolIds, randomHighRoll) => {
         const idx = Math.floor(Math.random() * rarityObj.availableMintNumbers.length);
         const mintNumber = rarityObj.availableMintNumbers[idx];
 
+        if (Math.random() < MODIFIER_CHANCE || forceModifier) {
+            const modifiers = await Modifier.find().lean();
+            const modToApply = modifiers[Math.floor(Math.random() * modifiers.length)];
+
+            appliedModifierId = modToApply._id;
+
+            selectedCard.modifier = modToApply._id;
+            const prefix = modToApply.name === 'Glitch' ? 'Glitched' : modToApply.name;
+            selectedCard.name = `${prefix} ${selectedCard.name}`;
+        }
+
         return {
             name: selectedCard.name,
             rarity: selectedRarity,
             mintNumber,
+            modifier: appliedModifierId,
             imageUrl: selectedCard.imageUrl,
             flavorText: selectedCard.flavorText || 'No flavor text available',
         };
@@ -398,21 +414,12 @@ const generateCardPreviewFromPool = async (poolIds, randomHighRoll) => {
     }
 };
 
-const generateRareCardPreviewFromPool = async (poolIds) => {
-    while (true) {
-        const card = await generateCardPreviewFromPool(poolIds);
-        if (card && isRareOrAbove(card.rarity)) {
-            return card;
-        }
-    }
-};
-
-const generatePackPreviewFromPool = async (poolIds, packSize = 5) => {
+const generatePackPreviewFromPool = async (poolIds, packSize = 5, forceModifier = false) => {
     const pack = [];
     const randomHighRoll = Math.floor(Math.random() * packSize)
     for (let x = 0; x < packSize; x) {
         console.log(randomHighRoll, x, x===randomHighRoll);
-        const card = await generateCardPreviewFromPool(poolIds, x === randomHighRoll);
+        const card = await generateCardPreviewFromPool(poolIds, x === randomHighRoll, forceModifier);
         x += 1;
         if (card) {
             pack.push(card);
