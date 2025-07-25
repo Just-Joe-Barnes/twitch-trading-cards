@@ -1,11 +1,9 @@
-// src/pages/AdminDashboardPage.js
 import React, {useEffect, useState} from 'react';
 import {fetchWithAuth} from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import {useNavigate} from 'react-router-dom';
 import '../styles/AdminDashboardPage.css';
 import moment from 'moment';
-import LoadingSpinner from "../components/LoadingSpinner";
 
 const AdminDashboardPage = ({user}) => {
     const navigate = useNavigate();
@@ -276,17 +274,6 @@ const AdminDashboardPage = ({user}) => {
             updated[i] = false;
             return updated;
         });
-    };
-
-    // Reset pack state
-    const handleResetPack = () => {
-        console.log('Resetting pack state');
-        setOpenedCards([]);
-        setRevealedCards([]);
-        setFaceDownCards([]);
-        setIsOpeningAnimation(false);
-        setPackAnimationDone(false);
-        setCardsLoaded(false);
     };
 
     // When both animation and cards are ready, reveal cards
