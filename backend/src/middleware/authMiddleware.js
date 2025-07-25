@@ -15,7 +15,9 @@ const protect = async (req, res, next) => {
             console.log('[AUTH VALIDATE] Decoded token:', decoded);
 
             // Find the user by `twitchId` or `_id` based on the token payload
-            req.user = await User.findOne({ twitchId: decoded.id }).select('-password');
+            req.user = await User.findOne({ twitchId: decoded.id })
+                .select('username twitchId isAdmin')
+                .lean();
             if (!req.user) {
                 console.error('[AUTH VALIDATE] User not found for Twitch ID:', decoded.id);
                 return res.status(401).json({ message: 'User not found' });
