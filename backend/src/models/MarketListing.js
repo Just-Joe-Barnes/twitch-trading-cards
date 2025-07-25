@@ -44,5 +44,8 @@ const marketListingSchema = new mongoose.Schema({
 
 // Index status for faster retrieval of active listings
 marketListingSchema.index({ status: 1 });
+// Additional indexes to speed up owner and card searches
+marketListingSchema.index({ owner: 1 });
+marketListingSchema.index({ 'card.name': 1, 'card.mintNumber': 1 });
 
 module.exports = mongoose.model('MarketListing', marketListingSchema);
