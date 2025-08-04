@@ -1,972 +1,1682 @@
-:root {
-    --card-width: 300px;
-    --card-height: 450px;
-    /* Fixed artwork height so all images scale the same */
-    --card-artwork-height: 216px;
-}
-
-/* Mobile-responsive card sizing */
-@media (max-width: 768px) {
-    :root {
-        --card-width: 250px;
-        --card-height: 375px;
-        --card-artwork-height: 180px;
-    }
-}
-
-@media (max-width: 480px) {
-    :root {
-        --card-width: 200px;
-        --card-height: 300px;
-        --card-artwork-height: 144px;
-    }
-}
-
-@media (max-width: 390px) {
-    :root {
-        --card-width: 180px;
-        --card-height: 270px;
-        --card-artwork-height: 130px;
-    }
-}
-
-/**************************************
- * Generic Card Styles (Layout Only)
- **************************************/
 .card-container {
-    --card-scale: 1;
-    --card-bg-color: #3a2525;
-    width: var(--card-width);
-    height: var(--card-height);
-    aspect-ratio: 2 / 3;
-    max-width: var(--card-width);
-    border-radius: 15px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    font-family: var(--font-family);
-    margin: 10px;
-    position: relative;
-    background: var(--card-bg-color);
-    transition: transform 0.1s ease;
-    transform-style: preserve-3d;
-    will-change: transform;
+  --card-scale: 1;
+  --card-bg-color: #3a2525;
+  width: var(--card-width, 300px);
+  height: var(--card-height, 450px);
+  aspect-ratio: 2/3;
+  max-width: var(--card-width, 300px);
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-family), serif;
+  margin: 10px;
+  position: relative;
+  background: var(--card-bg-color);
+  transition: transform 1s ease-out;
+  will-change: transform;
+  user-select: none;
+  cursor: pointer;
 }
-
-/**************************************
- * Card Border and Rarity Borders
- **************************************/
-.card-border {
-    padding: 10px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    border-radius: 15px;
-    border: 8px solid;
-    position: relative;
-    z-index: 2;
+.card-container:hover, .card-container:active {
+  transition: transform 0.1s ease-out;
 }
-
-/* Updated Rarity Border Colors */
+.card-container .card-content-3d-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  display: flex;
+  flex-direction: column;
+}
+.card-container .overlay-badge {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.541);
+  color: #d4d0c0;
+  border-radius: 6px;
+  padding: 4px 9px;
+  font-size: 1rem;
+  font-family: inherit;
+  font-weight: bold;
+  z-index: 999999;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.082);
+  letter-spacing: 0.01em;
+}
+.card-container .overlay-badge.remaining-badge, .card-container .overlay-badge.featured-badge {
+  bottom: 10px;
+  left: 10px;
+}
+.card-container .overlay-badge.featured-badge {
+  background: #7eb5bc;
+  color: #1e1e1e;
+}
+.card-container .overlay-badge.timeleft-badge {
+  bottom: 46px;
+  left: 8px;
+}
+.card-container .overlay-badge.timeleft-badge.expired {
+  background: #e680a7;
+  color: darkslategrey;
+}
+.card-container .card-border {
+  padding: 10px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 15px;
+  border: 8px solid;
+  position: relative;
+  z-index: 2;
+  transform-style: preserve-3d;
+}
 .card-container.basic .card-border {
-    border-color: #8D8D8D;
+  border-color: #8D8D8D;
 }
-
 .card-container.common .card-border {
-    border-color: #64B5F6;
+  border-color: #64B5F6;
 }
-
 .card-container.standard .card-border {
-    border-color: #66BB6A;
+  border-color: #66BB6A;
 }
-
 .card-container.uncommon .card-border {
-    border-color: #1976D2;
+  border-color: #1976D2;
 }
-
 .card-container.rare .card-border {
-    border-color: #AB47BC;
+  border-color: #AB47BC;
 }
-
 .card-container.epic .card-border {
-    border-color: #FFA726;
+  border-color: #FFA726;
 }
-
 .card-container.legendary .card-border {
-    border-color: #e32232;
+  border-color: #e32232;
 }
-
 .card-container.mythic .card-border {
-    border-style: solid;
-    border-image-slice: 1;
-    border-image: linear-gradient(133deg, #ffcccb, #ffb6c1, #ff69b4, #ff1493, #c71585) 1;
+  border: 1px solid rgba(255, 20, 147, 0.4);
+  padding: 17px 12px;
+  background-image: linear-gradient(133deg, #ffcccb, #ffb6c1, #ff69b4, #ff1493, #c71585);
 }
-
 .card-container.unique .card-border {
-    border-color: black;
+  border-color: black;
 }
-
 .card-container.divine .card-border {
-    border-color: #ffd700;
+  border-color: #ffd700;
 }
-
-/**************************************
- * Artwork
- **************************************/
-.card-artwork {
-    flex: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 5px 0;
-    margin-top: -10px;
-    height: var(--card-artwork-height);
-    overflow: hidden;
-    border-radius: 10px;
-    border: 6px solid #6f4e37;
-    background: #6f4e37;
-    position: relative;
-    z-index: 2;
+.card-container .card-artwork {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: -10px 0 5px;
+  height: var(--card-artwork-height, 216px);
+  overflow: hidden;
+  border-radius: 10px;
+  position: relative;
+  z-index: 2;
+  transform-style: preserve-3d;
 }
-
-    .card-artwork img {
-        display: block;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center;
-        border-radius: 10px;
-        transition: filter 0.3s ease;
-    }
-
-/**************************************
- * Text Elements
- **************************************/
-/* Remove the brown background globally for .card-description & .card-mint */
-.card-description,
-.card-mint {
-    position: relative;
-    z-index: 4;
-    color: #f5f5dc;
-    text-shadow: 1px 1px 2px black;
-    font-style: italic;
-    border-radius: 10px;
-    background: transparent !important; /* Key fix: no more #3a2525 */
-    transition: none;
-    margin-top: auto;
+.card-container .card-artwork:after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  content: " ";
+  border: 6px solid #6f4e37;
 }
-
-/* Additional styling for .card-description */
-.card-description {
-    font-size: 0.9rem;
-    margin: 8px 10px;
-    max-height: 20%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 5px;
+.card-container .card-artwork img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 10px;
+  transition: all 0.3s ease;
 }
-
-/* Additional styling for .card-mint */
-.card-mint {
-    text-align: right;
-    font-size: 0.7rem;
-    margin-right: 10px;
-    margin-bottom: 5px;
-    padding: 3px 6px;
-    display: inline-block;
+.card-container .card-description,
+.card-container .card-mint {
+  position: relative;
+  z-index: 4;
+  color: #f5f5dc;
+  text-shadow: 1px 1px 2px black;
+  font-style: italic;
+  border-radius: 10px;
+  background: transparent !important;
+  transition: none;
+  margin-top: auto;
 }
-
-/* Name text */
-.card-name {
-    position: relative;
-    z-index: 4;
-    color: #f5f5dc;
-    text-shadow: 1px 1px 2px black;
-    font-size: 1.1rem;
-    white-space: nowrap;
-    margin-bottom: 15px;
-    text-transform: capitalize;
-    margin-left: 10px;
+.card-container .card-description {
+  font-size: 0.9rem;
+  margin: 8px 10px;
+  max-height: 25%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 5px;
 }
-
-/* Keep original card name visible when slabbed */
-.card-container.slabbed .card-name {
-    visibility: visible;
+.card-container .card-mint {
+  text-align: right;
+  font-size: 0.7rem;
+  margin-right: 10px;
+  margin-bottom: 5px;
+  padding: 3px 6px;
+  display: inline-block;
 }
-
-/* Allow slab overlay to extend above the card */
-.card-container.slabbed {
-    overflow: visible;
+.card-container .card-name {
+  position: relative;
+  z-index: 4;
+  color: #f5f5dc;
+  text-shadow: 1px 1px 2px black;
+  font-size: 1.1rem;
+  white-space: nowrap;
+  margin-bottom: 15px;
+  text-transform: capitalize;
+  margin-left: 10px;
 }
-
-.card-container.slabbed:not(.divine) {
-    background: none;
-}
-
-.card-container.slabbed .card-border {
-    margin: 0;
-    height: 100%;
-    background: var(--card-bg-color);
-}
-
-/* Don't cover divine background when slabbed */
-.card-container.slabbed.divine .card-border {
-    background: none;
-}
-
-/**************************************
- * Glare for Lower Rarities (Basic → Uncommon)
- * Now matches the border color with alpha
- **************************************/
 .card-container.basic {
-    --glare-color: rgba(141,141,141,0.3); /* #8D8D8D at 0.3 alpha */
+  --glare-color: rgba(141, 141, 141, 0.3);
 }
-
 .card-container.common {
-    --glare-color: rgba(100,181,246,0.3); /* #64B5F6 at 0.3 alpha */
+  --glare-color: rgba(100, 181, 246, 0.3);
 }
-
 .card-container.standard {
-    --glare-color: rgba(102,187,106,0.3); /* #66BB6A at 0.3 alpha */
+  --glare-color: rgba(102, 187, 106, 0.3);
 }
-
 .card-container.uncommon {
-    --glare-color: rgba(25,118,210,0.3); /* #1976D2 at 0.3 alpha */
+  --glare-color: rgba(25, 118, 210, 0.3);
 }
-
-.card-glare {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 120%;
-    height: 120%;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 3;
-    background: radial-gradient(circle at var(--glare-position, 50% 50%), var(--glare-color, rgba(255,255,255,0.5)) 0%, rgba(255,255,255,0) 70%);
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0);
-    transition: opacity 0.1s ease, transform 0.1s ease;
+.card-container .card-glare-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
 }
-
-.card-container.basic:hover .card-glare,
-.card-container.common:hover .card-glare,
-.card-container.standard:hover .card-glare,
-.card-container.uncommon:hover .card-glare {
-    opacity: 0.6;
-    transform: translate(-50%, -50%) scale(1.1);
+.card-container .card-glare {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%;
+  height: 120%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 3;
+  background: radial-gradient(circle at var(--glare-position, 50% 50%), var(--glare-color, rgba(255, 255, 255, 0.5)) 0%, rgba(255, 255, 255, 0) 70%);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0);
+  transition: opacity 0.1s ease, transform 0.1s ease;
 }
-
-/**************************************
- * Rare Rarity – Holo VStar Effect
- **************************************/
+.card-container.basic:hover .card-glare, .card-container.common:hover .card-glare, .card-container.standard:hover .card-glare, .card-container.uncommon:hover .card-glare {
+  opacity: 0.6;
+  transform: translate(-50%, -50%) scale(1.1);
+}
 .card-container.rare {
-    position: relative;
-    overflow: hidden;
+  position: relative;
 }
-
-    .card-container.rare::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-image: linear-gradient(130deg, transparent 40%, purple 50%, transparent 60%), url('../assets/textures/holo3.png'), linear-gradient(130deg, transparent 0%, purple 50%, transparent 100%), linear-gradient(130deg, transparent 0%, purple 50%, transparent 100%);
-        background-blend-mode: screen, multiply, color-dodge, color-dodge;
-        background-size: 200% 100%, cover, 200% 100%, 200% 100%;
-        background-repeat: no-repeat;
-        background-position: var(--cursor-x, 50%) 50%, center, var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%;
-        -webkit-mask-image: linear-gradient(130deg, transparent 40%, white 50%, transparent 60%);
-        mask-image: linear-gradient(130deg, transparent 40%, white 50%, transparent 60%);
-        -webkit-mask-size: 200% 100%;
-        mask-size: 200% 100%;
-        -webkit-mask-position: var(--cursor-x, 50%) 50%;
-        mask-position: var(--cursor-x, 50%) 50%;
-        pointer-events: none;
-        z-index: 3;
-        opacity: 0;
-        transition: opacity 0.3s ease, background-position 0.1s ease, mask-position 0.1s ease;
-    }
-
-    .card-container.rare:hover::after {
-        opacity: 0.1;
-    }
-
-/**************************************
- * Legendary Rarity – Red-Themed
- **************************************/
+.card-container.rare::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(130deg, transparent 40%, purple 50%, transparent 60%), url("../assets/textures/holo3.png"), linear-gradient(130deg, transparent 0%, purple 50%, transparent 100%), linear-gradient(130deg, transparent 0%, purple 50%, transparent 100%);
+  background-blend-mode: screen, multiply, color-dodge, color-dodge;
+  background-size: 200% 100%, cover, 200% 100%, 200% 100%;
+  background-repeat: no-repeat;
+  background-position: var(--cursor-x, 50%) 50%, center, var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%;
+  -webkit-mask-image: linear-gradient(130deg, transparent 40%, white 50%, transparent 60%);
+  mask-image: linear-gradient(130deg, transparent 40%, white 50%, transparent 60%);
+  -webkit-mask-size: 200% 100%;
+  mask-size: 200% 100%;
+  -webkit-mask-position: var(--cursor-x, 50%) 50%;
+  mask-position: var(--cursor-x, 50%) 50%;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.3s ease, background-position 0.1s ease, mask-position 0.1s ease;
+}
+.card-container.rare:hover::after {
+  opacity: 0.1;
+}
 .card-container.legendary {
-    position: relative;
-    overflow: hidden;
+  position: relative;
 }
-
-    .card-container.legendary .card-artwork::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: url('../assets/textures/lightning.gif') calc(50% + var(--lightning-x, 0)) calc(50% + var(--lightning-y, 0)) / cover no-repeat;
-        mix-blend-mode: screen;
-        pointer-events: none;
-        z-index: 5;
-        opacity: 0.5;
-        transition: opacity 0.3s ease;
-    }
-
-    .card-container.legendary .card-artwork:hover::before {
-        opacity: 0.9;
-    }
-
-    .card-container.legendary::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-image: linear-gradient(40deg, transparent 30%, rgba(255,0,0,0.4) 50%, transparent 90%), linear-gradient(40deg, transparent 35%, rgba(200,0,0,0.35) 50%, transparent 65%), linear-gradient(40deg, transparent 25%, rgba(220,20,60,0.3) 50%, transparent 75%), url('../assets/textures/holo3.png'), url('../assets/textures/holo3.png'), url('../assets/textures/galaxy.jpg');
-        background-blend-mode: screen, screen, screen, overlay, soft-light, multiply;
-        background-size: 200% 100%, 200% 100%, 200% 100%, cover, cover, cover;
-        background-repeat: no-repeat;
-        background-position: var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, center, center, center;
-        -webkit-mask-image: linear-gradient(40deg, transparent 40%, red 50%, transparent 60%);
-        mask-image: linear-gradient(40deg, transparent 35%, red 50%, transparent 65%);
-        -webkit-mask-size: 200% 100%;
-        mask-size: 200% 100%;
-        -webkit-mask-position: var(--cursor-x, 50%) 50%;
-        mask-position: var(--cursor-x, 50%) 50%;
-        pointer-events: none;
-        z-index: 3;
-        opacity: 0.1;
-        transition: opacity 0.3s ease, background-position 0.1s ease, mask-position 0.1s ease;
-    }
-
-    .card-container.legendary:hover::after {
-        opacity: 0.2;
-    }
-
-    .card-container.legendary .card-artwork img {
-        transition: filter 0.3s ease;
-    }
-
-    .card-container.legendary:hover .card-artwork img {
-        animation: legendaryGlow 2s infinite alternate;
-    }
-
-    /* Red glow on hover for entire Legendary card */
-    .card-container.legendary:hover {
-        box-shadow: 0 0 30px 10px rgba(255, 0, 0, 0.8);
-    }
-
+.card-container.legendary .card-artwork::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("../assets/textures/lightning.gif") calc(50% + var(--lightning-x, 0)) calc(50% + var(--lightning-y, 0))/cover no-repeat;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+.card-container.legendary .card-artwork:hover::before {
+  opacity: 0.9;
+}
+.card-container.legendary .card-artwork img {
+  transition: filter 0.3s ease;
+}
+.card-container.legendary::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(40deg, transparent 30%, rgba(255, 0, 0, 0.4) 50%, transparent 90%), linear-gradient(40deg, transparent 35%, rgba(200, 0, 0, 0.35) 50%, transparent 65%), linear-gradient(40deg, transparent 25%, rgba(220, 20, 60, 0.3) 50%, transparent 75%), url("../assets/textures/holo3.png"), url("../assets/textures/holo3.png"), url("../assets/textures/galaxy.jpg");
+  background-blend-mode: screen, screen, screen, overlay, soft-light, multiply;
+  background-size: 200% 100%, 200% 100%, 200% 100%, cover, cover, cover;
+  background-repeat: no-repeat;
+  background-position: var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, center, center, center;
+  -webkit-mask-image: linear-gradient(40deg, transparent 40%, red 50%, transparent 60%);
+  mask-image: linear-gradient(40deg, transparent 35%, red 50%, transparent 65%);
+  -webkit-mask-size: 200% 100%;
+  mask-size: 200% 100%;
+  -webkit-mask-position: var(--cursor-x, 50%) 50%;
+  mask-position: var(--cursor-x, 50%) 50%;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0.1;
+  transition: opacity 0.3s ease, background-position 0.1s ease, mask-position 0.1s ease;
+  overflow: hidden;
+  border-radius: 15px;
+}
+.card-container.legendary:hover {
+  box-shadow: 0 0 20px 6px rgba(255, 0, 0, 0.5);
+}
+.card-container.legendary:hover .card-artwork img {
+  animation: legendaryGlow 2s infinite alternate;
+}
+.card-container.legendary:hover::after {
+  opacity: 0.2;
+}
 @keyframes legendaryGlow {
-    0% {
-        filter: brightness(1.2) drop-shadow(0 0 10px #ff0000);
-    }
-
-    100% {
-        filter: brightness(1.3) drop-shadow(0 0 20px #ff0000);
-    }
+  0% {
+    filter: brightness(1.2) drop-shadow(0 0 10px #ff0000);
+  }
+  100% {
+    filter: brightness(1.3) drop-shadow(0 0 20px #ff0000);
+  }
 }
-
-/**************************************
- * Epic Rarity – Enhanced Effect
- **************************************/
 .card-container.epic {
-    position: relative;
-    overflow: hidden;
+  position: relative;
 }
-
-    .card-container.epic::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-image: linear-gradient(40deg, transparent 25%, rgba(255,165,0,0.35) 50%, transparent 75%), linear-gradient(40deg, transparent 30%, rgba(255,215,0,0.3) 50%, transparent 70%), linear-gradient(40deg, transparent 20%, rgba(255,180,0,0.25) 50%, transparent 80%), url('../assets/textures/subtle-sparkle.png'), url('../assets/textures/noise.png');
-        background-blend-mode: screen, screen, screen, overlay, multiply;
-        background-size: 200% 100%, 200% 100%, 200% 100%, cover, cover;
-        background-repeat: no-repeat;
-        background-position: var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, center, center;
-        pointer-events: none;
-        z-index: 3;
-        opacity: 0.2;
-        transition: opacity 0.3s ease, background-position 0.1s ease;
-    }
-
-    .card-container.epic:hover::after {
-        opacity: 0.4;
-    }
-
-    .card-container.epic::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: url('../assets/textures/stars-particle-effect.gif') center center / cover no-repeat;
-        mix-blend-mode: screen;
-        pointer-events: none;
-        z-index: 4;
-        opacity: 0.25;
-        transition: opacity 0.3s ease;
-    }
-
-    .card-container.epic:hover::before {
-        opacity: 0.6;
-    }
-
-/**************************************
- * Mythic Rarity – Enhanced Effect
- **************************************/
+.card-container.epic::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 15px;
+  background-image: linear-gradient(40deg, transparent 25%, rgba(255, 165, 0, 0.35) 50%, transparent 75%), linear-gradient(40deg, transparent 30%, rgba(255, 215, 0, 0.3) 50%, transparent 70%), linear-gradient(40deg, transparent 20%, rgba(255, 180, 0, 0.25) 50%, transparent 80%), url("../assets/textures/subtle-sparkle.png"), url("../assets/textures/noise.png");
+  background-blend-mode: screen, screen, screen, overlay, multiply;
+  background-size: 200% 100%, 200% 100%, 200% 100%, cover, cover;
+  background-repeat: no-repeat;
+  background-position: var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, center, center;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0.2;
+  transition: opacity 0.3s ease, background-position 0.1s ease;
+}
+.card-container.epic:hover::after {
+  opacity: 0.4;
+}
+.card-container.epic::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("../assets/textures/stars-particle-effect.gif") center center/cover no-repeat;
+  mix-blend-mode: screen;
+  border-radius: 15px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.25;
+  transition: opacity 0.3s ease;
+}
+.card-container.epic:hover::before {
+  opacity: 0.6;
+}
 .card-container.mythic {
-    position: relative;
-    transition: box-shadow 1s ease, border 1s ease;
-    animation: pulse-border 2s infinite;
-    background:#a24274;
+  position: relative;
+  transition: transform 1s ease, box-shadow 1s ease, border 1s ease;
+  animation: pulse-border 2s infinite;
+  background: #a24274;
 }
-
 @keyframes pulse-border {
-    0%, 100% {
-        box-shadow: 0 0 10px 2px rgba(255,105,180,0.5);
-    }
-
-    50% {
-        box-shadow: 0 0 20px 4px rgba(255,105,180,0.8);
-    }
+  0%, 100% {
+    box-shadow: 0 0 10px 2px rgba(255, 105, 180, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px 4px rgba(255, 105, 180, 0.8);
+  }
 }
-
-.card-artwork.mythic {
-    border: 6px solid #d95898;
+.card-container.mythic .card-artwork::after {
+  border: 6px solid #d95898;
 }
-
-.card-container.mythic::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(133deg, #ff69b4, #ff1493);
-    opacity: 0;
-    transition: opacity 1s ease;
-    z-index: 1;
-}
-
-.card-container.mythic:hover::before {
-    opacity: 1;
-}
-
 .card-container.mythic:hover {
-    box-shadow: 0 0 30px 15px rgba(255,105,180,1);
-    border: none;
+  box-shadow: 0 0 30px 15px rgb(255, 105, 180);
+  border: none;
+  transition: transform 0.1s ease;
 }
-
+.card-container.mythic:hover .mythic-particles {
+  opacity: 0.8;
+  background-size: 200% 200%;
+  animation: particleAnimation 2s linear infinite;
+}
 .card-container.mythic .mythic-particles,
 .card-container.mythic .mythic-holographic-overlay,
 .card-container.mythic .mythic-tint {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 5;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  overflow: hidden;
+  border-radius: 15px;
 }
-
 .card-container.mythic .mythic-particles {
-    background: url('../assets/textures/stars-particle-effect.gif') center center / cover no-repeat;
-    opacity: 0.1;
-    mix-blend-mode: screen;
-    filter: brightness(2) contrast(2);
-    background-size: 200% 200%;
-    transition: opacity 0.3s ease, background-size 0.3s ease, animation 0.3s ease;
-    animation: particleAnimation 20s linear infinite;
+  background: url("../assets/textures/stars-particle-effect.gif") center center/cover no-repeat;
+  opacity: 0.1;
+  mix-blend-mode: screen;
+  filter: brightness(2) contrast(2);
+  background-size: 200% 200%;
+  transition: opacity 0.3s ease, background-size 0.3s ease, animation 0.3s ease;
+  animation: particleAnimation 20s linear infinite;
 }
-
 @keyframes particleAnimation {
-    0% {
-        background-position: 0% 0%;
-    }
-
-    100% {
-        background-position: 100% 100%;
-    }
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
 }
-
-.card-container.mythic:hover .mythic-particles {
-    opacity: 0.8;
-    background-size: 200% 200%;
-    animation: particleAnimation 2s linear infinite;
-}
-
 .card-container.mythic .mythic-holographic-overlay {
-    background: linear-gradient(135deg, rgba(255,0,255,0.15), rgba(0,255,255,0.15), rgba(255,255,0,0.15));
-    background-size: 400% 400%;
-    mix-blend-mode: overlay;
-    opacity: 0.6;
-    animation: holographicAnimation 1s ease-in-out infinite;
+  background: linear-gradient(135deg, rgba(255, 0, 255, 0.15), rgba(0, 255, 255, 0.15), rgba(255, 255, 0, 0.15));
+  background-size: 400% 400%;
+  mix-blend-mode: overlay;
+  opacity: 0.6;
+  animation: holographicAnimation 1s ease-in-out infinite;
 }
-
 @keyframes holographicAnimation {
-    0% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
-    }
-
-    100% {
-        background-position: 0% 50%;
-    }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
-
 .card-container.mythic::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: url('../assets/textures/noise.png') repeat;
-    opacity: 0.3;
-    pointer-events: none;
-    z-index: 6;
-    mix-blend-mode: overlay;
-}
-
-.card-container.mythic::before,
-.card-container.mythic::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("../assets/textures/noise.png") repeat;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 6;
+  mix-blend-mode: overlay;
   border-radius: inherit;
 }
-
-
-/**************************************
- * Unique Effects – Gothic & Moody
- **************************************/
-
-.card-container.card-container.unique {
-    --card-bg-color: black;
+.card-container.unique {
+  --card-bg-color: black;
 }
-
-
-/* ── Unique Rarity: Two‐Layer + Three‐Band Invert Mask ── */
 .card-container.unique .card-artwork {
-    position: relative; /* ensure overlay stacks */
-    overflow: hidden;
-    border-color: whitesmoke;
+  position: relative;
+  overflow: hidden;
+  border-color: whitesmoke;
 }
 .card-container.unique .card-artwork .grayscale,
 .card-container.unique .card-artwork .invertband {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-    object-position: center;
-    border-radius: 10px;
-    pointer-events: none;
-    user-select: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 10px;
+  pointer-events: none;
+  user-select: none;
 }
 .card-container.unique .card-artwork .grayscale {
-    z-index: 1;
-    filter: grayscale(1) contrast(3.3) brightness(1.12);
+  z-index: 1;
+  filter: grayscale(1) contrast(3.3) brightness(1.12);
 }
 .card-container.unique .card-artwork .invertband {
-    z-index: 2;
-    opacity: 0;
-    transition: opacity 0.1s ease;
-    filter: grayscale(0.7) invert(0) contrast(3.3) brightness(3);
-    mask-image: none;
-    -webkit-mask-image: none;
-    mask-repeat: no-repeat;
-    -webkit-mask-repeat: no-repeat;
-    mask-size: 100% 100%;
-    -webkit-mask-size: 100% 100%;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 1s ease;
+  filter: grayscale(0.7) invert(0.1) contrast(3.3) brightness(3);
+  mask-image: none;
+  -webkit-mask-image: none;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-size: 200% 200%;
+  -webkit-mask-size: 200% 200%;
 }
-
-/* (Optional pure‐CSS fallback: fade in on hover) */
 .card-container.unique:hover .invertband {
-    opacity: 1;
+  opacity: 1;
 }
-
-
-/**************************************
- * Divine Effects (Unchanged)
- **************************************/
-.card-container.divine {
-    background: none;
-    position: relative;
-    overflow: hidden;
-    animation: divine-glow 3s infinite alternate;
-    filter: contrast(1.2) brightness(1.5);
+.card-container.unique.slabbed .slab-grade,
+.card-container.unique.slabbed .slab-name {
+  color: white;
 }
-
-.card-container.divine .card-border {
-    width: 100%;
-}
-
-@keyframes divine-glow {
-    0% {
-        box-shadow: 0 0 15px 5px rgba(255,255,255,0.2);
-    }
-
-    100% {
-        box-shadow: 0 0 15px 5px rgba(212,198,167,0.2);
-    }
-}
-
-@keyframes divine-glow-hover {
-    0%, 100% {
-        box-shadow: 0 0 10px 10px rgba(121,209,209,0.4), 0 0 20px 10px rgba(121,209,209,0.4);
-    }
-
-    50% {
-        box-shadow: 0 0 20px 10px rgba(202,121,209,0.4), 0 0 40px 20px rgba(202,121,209,0.4);
-    }
-}
-
-.card-container.divine:hover {
-    animation: divine-glow-hover 1.5s infinite alternate;
-}
-
-.card-container.divine::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('../assets/textures/divine-main.gif') center center / 125% 125% no-repeat;
-    mix-blend-mode: color-burn;
-    opacity: 0.2;
-    pointer-events: none;
-    z-index: 0;
-}
-
-.card-container.divine::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('../assets/textures/divine-border.gif') center center / 125% 125% no-repeat;
-    mix-blend-mode: screen;
-    opacity: 0;
-    pointer-events: none;
-    z-index: 1;
-    transition: opacity 0.3s ease;
-}
-
-.card-container.divine:hover::after {
-    opacity: 0.2;
-}
-
-.card-container.divine .card-artwork {
-    display: none;
-}
-
-.card-container.divine {
-    background-size: cover;
-    background-position: center;
-}
-
-    .card-container.divine .card-name {
-        font-size: 1.2rem;
-        margin-bottom: 20px;
-        color: black;
-        text-shadow: 1px 1px 5px white;
-        display: inline-block;
-        margin-left: 5px;
-        z-index: 2;
-        position: relative;
-        transition: text-shadow 0.3s ease, color 0.3s ease;
-        -webkit-text-stroke: 1px black;
-    }
-
-    .card-container.divine .card-mint {
-        font-size: 1rem;
-        margin-bottom: 10px;
-        color: black;
-        display: inline-block;
-        margin-left: auto;
-        margin-right: 10px;
-        background: none;
-        padding: 0;
-        z-index: 2;
-        position: relative;
-        transition: text-shadow 0.3s ease;
-        -webkit-text-stroke: 1px black;
-        text-shadow: 1px 1px 5px white;
-    }
-
-    .card-container.divine .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-        z-index: 2;
-        position: relative;
-    }
-
-    .card-container.divine .card-border {
-        border: none;
-        z-index: 2;
-        position: relative;
-    }
-
-    .card-container.divine:hover .card-name {
-        font-size: 1.2rem;
-        margin-bottom: 20px;
-        color: white;
-        text-shadow: 1px 1px 5px black;
-        display: inline-block;
-        margin-left: 5px;
-        z-index: 2;
-        position: relative;
-        transition: text-shadow 0.3s ease, color 0.3s ease;
-        -webkit-text-stroke: 1px white;
-    }
-
-.card-container.divine:hover .card-mint {
-        font-size: 1.2rem;
-        margin-bottom: 10px;
-        color: white;
-        display: inline-block;
-        margin-left: auto;
-        margin-right: 10px;
-        background: none;
-        padding: 0;
-        z-index: 2;
-        position: relative;
-        transition: text-shadow 0.3s ease;
-        -webkit-text-stroke: 1px white;
-        text-shadow: 1px 1px 5px black;
-}
-
-.glitch-overlay,
-.prismatic-overlay {
-    position: absolute;
-    inset: 8px;
-    border-radius: calc(15px - 8px);
-    pointer-events: none;
-    z-index: 1;
-}
-
-.glitch-overlay {
-    --glitch-x: 0px;
-    --glitch-y: 0px;
-    background: url('../assets/textures/static.gif') center/cover;
-    background-size: cover;
-    background-position: center;
-    mix-blend-mode: screen;
-    opacity: 0.5;
-    animation: glitchShift 1s steps(2, end) infinite;
-    transform: translate(var(--glitch-x), var(--glitch-y));
-    transition:
-        transform 0.1s ease,
-        opacity 0.1s ease;
-}
-
-.card-container:hover .glitch-overlay {
-    opacity: 0.4;
-}
-
-@keyframes glitchShift {
-    0% { transform: translate(0,0); }
-    20% { transform: translate(-2px, 2px); }
-    40% { transform: translate(2px, -2px); }
-    60% { transform: translate(-1px, 1px); }
-    80% { transform: translate(1px, -1px); }
-    100% { transform: translate(0,0); }
-}
-
-.prismatic-overlay {
-    background: url('../assets/textures/rainbowpop.gif') center/cover;
-    mix-blend-mode: color-dodge;
-    opacity: 0.2;
-}
-
-/* Unique rarity + Prismatic modifier */
 .card-container.unique .prismatic-overlay {
-    mix-blend-mode: screen;
-    opacity: 0.4;
-    filter: saturate(1.8);
+  mix-blend-mode: screen;
+  opacity: 0.4;
+  filter: saturate(1.8);
 }
-
-.negative-overlay {
-    position: absolute;
-    inset: 8px;
-    border-radius: calc(15px - 8px);
-    background: white;
-    mix-blend-mode: difference;
-    pointer-events: none;
-    z-index: 5;
-    animation: negativeCycle 4s ease-in-out infinite;
+.card-container.unique .limited-overlay {
+  mix-blend-mode: screen;
+  opacity: 0.4;
 }
-
+.card-container.divine {
+  position: relative;
+  overflow: hidden;
+  animation: divine-glow 3s infinite alternate;
+  filter: contrast(1.2) brightness(1.5);
+  background: transparent no-repeat center/cover;
+}
+.card-container.divine .card-border {
+  width: 100%;
+  border: transparent;
+  z-index: 2;
+  position: relative;
+}
+@keyframes divine-glow {
+  0% {
+    box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 15px 5px rgba(212, 198, 167, 0.2);
+  }
+}
+@keyframes divine-glow-hover {
+  0%, 100% {
+    box-shadow: 0 0 5px 10px rgba(121, 209, 209, 0.4), 0 0 10px 10px rgba(121, 209, 209, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 10px 10px rgba(202, 121, 209, 0.4), 0 0 20px 20px rgba(202, 121, 209, 0.4);
+  }
+}
+.card-container.divine:hover {
+  animation: divine-glow-hover 1.5s infinite alternate;
+}
+.card-container.divine:hover::after {
+  opacity: 0.2;
+}
+.card-container.divine::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("../assets/textures/divine-main.gif") center center/125% 125% no-repeat;
+  mix-blend-mode: color-burn;
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 0;
+}
+.card-container.divine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("../assets/textures/divine-border.gif") center center/125% 125% no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.3s ease;
+}
+.card-container.divine .card-artwork {
+  display: none;
+}
+.card-container.divine .card-name {
+  color: white;
+  display: block;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+  position: absolute;
+  text-shadow: 0 0 5px black;
+  overflow: hidden;
+}
+.card-container.divine .card-mint {
+  color: white;
+  background: none;
+  padding: 0;
+  z-index: 2;
+  position: absolute;
+  top: 0;
+  right: 4px;
+  font-size: 1.2rem;
+  text-shadow: 0 0 5px black, 0 0 5px black, 0 0 5px black;
+}
+.card-container.divine .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  z-index: 2;
+  position: relative;
+}
+.card-container .glitch-overlay,
+.card-container .prismatic-overlay,
+.card-container .limited-overlay {
+  position: absolute;
+  inset: 8px;
+  border-radius: 7px;
+  pointer-events: none;
+  z-index: 2;
+}
+.card-container .glitch-overlay {
+  --glitch-x: 0px;
+  --glitch-y: 0px;
+  background: url("../assets/textures/static.gif") center/cover;
+  background-size: cover;
+  background-position: center;
+  mix-blend-mode: screen;
+  opacity: 0.5;
+  animation: glitchShift 1s steps(2, end) infinite;
+  transform: translate(var(--glitch-x), var(--glitch-y));
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+.card-container:hover .glitch-overlay {
+  opacity: 0.4;
+}
+@keyframes glitchShift {
+  0% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(2px, -2px);
+  }
+  60% {
+    transform: translate(-1px, 1px);
+  }
+  80% {
+    transform: translate(1px, -1px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+.card-container .prismatic-overlay {
+  background: url("../assets/textures/rainbowpop.gif") center/cover;
+  mix-blend-mode: color-dodge;
+  opacity: 0.1;
+}
+.card-container.mythic .prismatic-overlay, .card-container.divine .prismatic-overlay {
+  opacity: 0.3;
+}
+.card-container.unique .prismatic-overlay {
+  opacity: 0.15;
+}
+.card-container .limited-overlay {
+  background: url("../assets/textures/limited-edition.png") center/cover;
+  mix-blend-mode: screen;
+  opacity: 0.1;
+  animation: glowlimited 10s ease-in-out infinite;
+}
+@keyframes glowlimited {
+  0%, 100% {
+    opacity: 0.1;
+    background-position: 0;
+  }
+  30% {
+    opacity: 0.2;
+  }
+  60% {
+    background-position: 10%;
+  }
+}
+.card-container .negative-overlay {
+  position: absolute;
+  inset: 2px;
+  border-radius: 7px;
+  background: white;
+  mix-blend-mode: difference;
+  pointer-events: none;
+  z-index: 50;
+  animation: negativeCycle 4s ease-in-out infinite;
+}
 @keyframes negativeCycle {
-    0%, 100% {
-        opacity: 0;
-    }
-    50% {
-        opacity: 1;
-    }
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
 }
-
-/* Glitch text effect */
-.glitch-text {
-    position: relative;
-    animation: glitchJitter 0.6s infinite steps(1, end);
+.card-container .glitch-text {
+  position: relative;
+  animation: glitchJitter 0.6s infinite steps(1, end);
 }
-
-.glitch-text::before,
-.glitch-text::after {
-    content: attr(data-text);
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    pointer-events: none;
+.card-container .glitch-text::before, .card-container .glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  pointer-events: none;
 }
-
-.glitch-text::before {
-    clip-path: inset(0 0 45% 0);
-    text-shadow: -2px 0 #ff0000;
-    animation: glitchTop 1.5s infinite linear alternate-reverse;
+.card-container .glitch-text::before {
+  clip-path: inset(0 0 45% 0);
+  text-shadow: -2px 0 #ff0000;
+  animation: glitchTop 1.5s infinite linear alternate-reverse;
 }
-
-.glitch-text::after {
-    clip-path: inset(55% 0 0 0);
-    text-shadow: -2px 0 #00ffff;
-    animation: glitchBottom 1.2s infinite linear alternate-reverse;
+.card-container .glitch-text::after {
+  clip-path: inset(55% 0 0 0);
+  text-shadow: -2px 0 #00ffff;
+  animation: glitchBottom 1.2s infinite linear alternate-reverse;
+}
+@keyframes glitchTop {
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, -2px);
+  }
+  40% {
+    transform: translate(-2px, 2px);
+  }
+  60% {
+    transform: translate(2px, -2px);
+  }
+  80% {
+    transform: translate(2px, 2px);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+@keyframes glitchBottom {
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(2px, 2px);
+  }
+  40% {
+    transform: translate(2px, -2px);
+  }
+  60% {
+    transform: translate(-2px, 2px);
+  }
+  80% {
+    transform: translate(-2px, -2px);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+@keyframes glitchJitter {
+  0% {
+    transform: translate(0);
+  }
+  25% {
+    transform: translate(1px, -1px);
+  }
+  50% {
+    transform: translate(-1px, 1px);
+  }
+  75% {
+    transform: translate(1px, 1px);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+.card-container.slabbed {
+  overflow: visible;
+}
+.card-container.slabbed .card-name {
+  visibility: visible;
+}
+.card-container.slabbed:not(.divine) {
+  background: none;
+}
+.card-container.slabbed .card-border {
+  margin: 0;
+  height: 100%;
+  background: var(--card-bg-color);
+}
+.card-container.slabbed.divine .card-border {
+  background: none;
 }
 
 .slab-overlay {
-    position: absolute;
-    top: -72px; /* maintain 56px header spacing with extra margin */
-    left: -30px;
-    right: -30px;
-    bottom: -24px; /* keep bottom gap consistent with added space */
-    border-radius: 10px;
-    --slab-border-color: rgba(255, 255, 255, 0.9);
-    border: 12px solid var(--slab-border-color);
-    background: rgba(255, 255, 255, 0.1);
-    box-shadow:
-        0 4px 8px rgba(0,0,0,0.6),
-        inset 0 0 12px rgba(255,255,255,0.5),
-        inset 0 0 4px rgba(0,0,0,0.6);
-    pointer-events: none;
-    z-index: 8; /* above other rarity effects */
-    overflow: hidden;
+  position: absolute;
+  top: -74px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+  border-radius: 10px;
+  --slab-border-color: rgba(255, 255, 255, 0.8);
+  border: 8px solid var(--slab-border-color);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), inset 0 0 12px rgba(255, 255, 255, 0.5), inset 0 0 4px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  z-index: 99999;
+  overflow: hidden;
+  transform: translateZ(10px) scale(1);
 }
-
 .slab-overlay::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image:
-        linear-gradient(60deg, rgba(255,255,255,0.4), rgba(255,255,255,0) 60%),
-        linear-gradient(-60deg, rgba(255,255,255,0.3), rgba(255,255,255,0) 60%);
-    background-size: 200% 200%;
-    background-repeat: no-repeat;
-    background-position:
-        var(--cursor-x, 50%) var(--cursor-y, 50%),
-        var(--cursor-x, 50%) var(--cursor-y, 50%);
-    mix-blend-mode: screen;
-    transition: background-position 0.1s ease;
-    z-index: 2;
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(60deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 60%), linear-gradient(-60deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 60%);
+  background-size: 200% 200%;
+  background-repeat: no-repeat;
+  background-position: var(--cursor-x, 50%) var(--cursor-y, 50%), var(--cursor-x, 50%) var(--cursor-y, 50%);
+  mix-blend-mode: screen;
+  transition: background-position 0.1s ease;
+  z-index: 2;
 }
-
 .slab-overlay::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 56px;
-    background: var(--slab-color, hotpink);
-    border-bottom: 2px solid var(--slab-color, hotpink);
-    border-radius: 6px 6px 0 0;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: var(--slab-color, hotpink);
+  border-bottom: 2px solid var(--slab-color, hotpink);
+  border-radius: 6px 6px 0 0;
 }
 
 .slab-header {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 56px;
-    background-color: var(--slab-color, hotpink);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 8px;
-    pointer-events: none;
-    /* ensure header appears above slab background */
-    z-index: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background-color: var(--slab-color, hotpink);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  pointer-events: none;
+  z-index: 1;
+}
+.slab-header .slab-logo {
+  width: 36px;
+  flex: 0 0 auto;
+  filter: brightness(0);
+}
+.slab-header .slab-logo.unique {
+  filter: brightness(50);
+}
+.slab-header .slab-grade {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #111;
+  background: none;
+  padding: 0;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+  flex: 0 0 auto;
+}
+.slab-header .slab-name {
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #111;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex: 1 1 auto;
+  text-align: center;
+  white-space: nowrap;
 }
 
-.slab-logo {
-    width: 36px;
-    flex: 0 0 auto;
+.mini-card-container {
+  position: relative;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  aspect-ratio: 0.7/1;
+  border-radius: 6px;
+  transform-style: preserve-3d;
+  transition: transform 1s ease-out;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  user-select: none;
+}
+.mini-card-container.slabbed {
+  overflow: unset;
+}
+.mini-card-container.slabbed .slab-overlay {
+  top: -37px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+}
+.mini-card-container.slabbed .slab-overlay:before {
+  height: 28px;
+}
+.mini-card-container.slabbed .slab-overlay .slab-header {
+  height: 28px;
+}
+.mini-card-container.slabbed .slab-overlay .slab-header .slab-name {
+  display: none;
+}
+.mini-card-container.slabbed .slab-overlay .slab-header .slab-grade {
+  font-size: 0.8rem;
+}
+.mini-card-container.slabbed .slab-overlay.unique .slab-header .slab-grade {
+  color: #fff;
+}
+.mini-card-container:hover, .mini-card-container:active {
+  transition: transform 0.1s ease-out;
+}
+.mini-card-container .mini-card-content-3d-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  display: flex;
+  flex-direction: column;
+}
+.mini-card-container .mini-card-border {
+  padding: 3px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  border: 2px solid;
+  position: relative;
+  z-index: 2;
+  transform-style: preserve-3d;
+  flex-grow: 1;
+}
+.mini-card-container.basic .mini-card-border {
+  border-color: #8D8D8D;
+}
+.mini-card-container.common .mini-card-border {
+  border-color: #64B5F6;
+}
+.mini-card-container.standard .mini-card-border {
+  border-color: #66BB6A;
+}
+.mini-card-container.uncommon .mini-card-border {
+  border-color: #1976D2;
+}
+.mini-card-container.rare .mini-card-border {
+  border-color: #AB47BC;
+}
+.mini-card-container.epic .mini-card-border {
+  border-color: #FFA726;
+}
+.mini-card-container.legendary .mini-card-border {
+  border-color: #e32232;
+}
+.mini-card-container.unique .mini-card-border {
+  border-color: black;
+}
+.mini-card-container.divine .mini-card-border {
+  border-color: #ffd700;
+}
+.mini-card-container.mythic .mini-card-border {
+  border: 1px solid rgba(255, 20, 147, 0.4);
+  padding: 8px 6px;
+  background-image: linear-gradient(133deg, #ffcccb, #ffb6c1, #ff69b4, #ff1493, #c71585);
+}
+.mini-card-container .mini-card-artwork {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: -5px 0 2px;
+  aspect-ratio: 1/1;
+  overflow: hidden;
+  border-radius: 6px;
+  position: relative;
+  z-index: 2;
+  transform-style: preserve-3d;
+  flex-grow: 1;
+}
+.mini-card-container .mini-card-artwork:after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  content: " ";
+  border: 3px solid #6f4e37;
+  border-radius: 6px;
+}
+.mini-card-container .mini-card-artwork img {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+.mini-card-container .mini-card-name {
+  position: relative;
+  height: auto;
+  z-index: 4;
+  color: #f5f5dc;
+  text-shadow: 1px 1px 2px black;
+  font-size: 0.6rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 6px 3px 26px;
+  text-transform: capitalize;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+.mini-card-container .mini-card-mint {
+  text-align: center;
+  font-size: 0.6rem;
+  color: #f5f5dc;
+  text-shadow: 1px 1px 2px black;
+  padding: 2px 5px;
+  margin-top: auto;
+  width: 100%;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mini-card-container.basic {
+  --glare-color: rgba(141, 141, 141, 0.3);
+}
+.mini-card-container.common {
+  --glare-color: rgba(100, 181, 246, 0.3);
+}
+.mini-card-container.standard {
+  --glare-color: rgba(102, 187, 106, 0.3);
+}
+.mini-card-container.uncommon {
+  --glare-color: rgba(25, 118, 210, 0.3);
+}
+.mini-card-container .mini-card-glare-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+  border-radius: inherit;
+}
+.mini-card-container .mini-card-glare {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%;
+  height: 120%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 3;
+  background: radial-gradient(circle at var(--glare-position, 50% 50%), var(--glare-color, rgba(255, 255, 255, 0.5)) 0%, rgba(255, 255, 255, 0) 70%);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0);
+  transition: opacity 0.1s ease, transform 0.1s ease;
+}
+.mini-card-container.basic:hover .mini-card-glare, .mini-card-container.common:hover .mini-card-glare, .mini-card-container.standard:hover .mini-card-glare, .mini-card-container.uncommon:hover .mini-card-glare {
+  opacity: 0.6;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+.mini-card-container.rare {
+  position: relative;
+}
+.mini-card-container.rare::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(130deg, transparent 40%, purple 50%, transparent 60%), url("../assets/textures/holo3.png"), linear-gradient(130deg, transparent 0%, purple 50%, transparent 100%), linear-gradient(130deg, transparent 0%, purple 50%, transparent 100%);
+  background-blend-mode: screen, multiply, color-dodge, color-dodge;
+  background-size: 200% 100%, cover, 200% 100%, 200% 100%;
+  background-repeat: no-repeat;
+  background-position: var(--cursor-x, 50%) 50%, center, var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%;
+  mask-image: linear-gradient(130deg, transparent 40%, white 50%, transparent 60%);
+  -webkit-mask-size: 200% 100%;
+  mask-size: 200% 100%;
+  -webkit-mask-position: var(--cursor-x, 50%) 50%;
+  mask-position: var(--cursor-x, 50%) 50%;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.3s ease, background-position 0.1s ease, mask-position 0.1s ease;
+  border-radius: inherit;
+}
+.mini-card-container.rare:hover::after {
+  opacity: 0.1;
+}
+.mini-card-container.legendary {
+  position: relative;
+}
+.mini-card-container.legendary .mini-card-artwork::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("../assets/textures/lightning.gif") calc(50% + var(--lightning-x, 0)) calc(50% + var(--lightning-y, 0))/cover no-repeat;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+.mini-card-container.legendary .mini-card-artwork:hover::before {
+  opacity: 0.9;
+}
+.mini-card-container.legendary .mini-card-artwork img {
+  transition: filter 0.3s ease;
+}
+.mini-card-container.legendary::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(40deg, transparent 30%, rgba(255, 0, 0, 0.4) 50%, transparent 90%), linear-gradient(40deg, transparent 35%, rgba(200, 0, 0, 0.35) 50%, transparent 65%), linear-gradient(40deg, transparent 25%, rgba(220, 20, 60, 0.3) 50%, transparent 75%), url("../assets/textures/holo3.png"), url("../assets/textures/holo3.png"), url("../assets/textures/galaxy.jpg");
+  background-blend-mode: screen, screen, screen, overlay, soft-light, multiply;
+  background-size: 200% 100%, 200% 100%, 200% 100%, cover, cover, cover;
+  background-repeat: no-repeat;
+  background-position: var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, center, center, center;
+  -webkit-mask-image: linear-gradient(40deg, transparent 40%, red 50%, transparent 60%);
+  mask-image: linear-gradient(40deg, transparent 35%, red 50%, transparent 65%);
+  -webkit-mask-size: 200% 100%;
+  mask-size: 200% 100%;
+  -webkit-mask-position: var(--cursor-x, 50%) 50%;
+  mask-position: var(--cursor-x, 50%) 50%;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0.1;
+  transition: opacity 0.3s ease, background-position 0.1s ease, mask-position 0.1s ease;
+  overflow: hidden;
+  border-radius: inherit;
+}
+.mini-card-container.legendary:hover {
+  box-shadow: 0 0 10px 3px rgba(255, 0, 0, 0.5);
+}
+.mini-card-container.legendary:hover .mini-card-artwork img {
+  animation: legendaryGlow 2s infinite alternate;
+}
+.mini-card-container.legendary:hover::after {
+  opacity: 0.2;
+}
+@keyframes legendaryGlow {
+  0% {
+    filter: brightness(1.2) drop-shadow(0 0 5px #ff0000);
+  }
+  100% {
+    filter: brightness(1.3) drop-shadow(0 0 10px #ff0000);
+  }
+}
+.mini-card-container.epic {
+  position: relative;
+}
+.mini-card-container.epic::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background-image: linear-gradient(40deg, transparent 25%, rgba(255, 165, 0, 0.35) 50%, transparent 75%), linear-gradient(40deg, transparent 30%, rgba(255, 215, 0, 0.3) 50%, transparent 70%), linear-gradient(40deg, transparent 20%, rgba(255, 180, 0, 0.25) 50%, transparent 80%), url("../assets/textures/subtle-sparkle.png"), url("../assets/textures/noise.png");
+  background-blend-mode: screen, screen, screen, overlay, multiply;
+  background-size: 200% 100%, 200% 100%, 200% 100%, cover, cover;
+  background-repeat: no-repeat;
+  background-position: var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, var(--cursor-x, 50%) 50%, center, center;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0.2;
+  transition: opacity 0.3s ease, background-position 0.1s ease;
+}
+.mini-card-container.epic:hover::after {
+  opacity: 0.4;
+}
+.mini-card-container.epic::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("../assets/textures/stars-particle-effect.gif") center center/cover no-repeat;
+  mix-blend-mode: screen;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.25;
+  transition: opacity 0.3s ease;
+}
+.mini-card-container.epic:hover::before {
+  opacity: 0.6;
+}
+.mini-card-container.mythic {
+  position: relative;
+  transition: transform 1s ease, box-shadow 1s ease, border 1s ease;
+  animation: pulse-border-mini 2s infinite;
+  background: #a24274;
+}
+@keyframes pulse-border-mini {
+  0%, 100% {
+    box-shadow: 0 0 5px 1px rgba(255, 105, 180, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 10px 2px rgba(255, 105, 180, 0.8);
+  }
+}
+.mini-card-container.mythic .mini-card-artwork::after {
+  border: 3px solid #d95898;
+}
+.mini-card-container.mythic:hover {
+  box-shadow: 0 0 15px 7px rgb(255, 105, 180);
+  border: none;
+  transition: transform 0.1s ease;
+}
+.mini-card-container.mythic:hover .mythic-particles {
+  opacity: 0.8;
+  background-size: 200% 200%;
+  animation: particleAnimation 2s linear infinite;
+}
+.mini-card-container.mythic .mythic-particles,
+.mini-card-container.mythic .mythic-holographic-overlay,
+.mini-card-container.mythic .mythic-tint {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  overflow: hidden;
+  border-radius: inherit;
+}
+.mini-card-container.mythic .mythic-particles {
+  background: url("../assets/textures/stars-particle-effect.gif") center center/cover no-repeat;
+  opacity: 0.1;
+  mix-blend-mode: screen;
+  filter: brightness(2) contrast(2);
+  background-size: 200% 200%;
+  transition: opacity 0.3s ease, background-size 0.3s ease, animation 0.3s ease;
+  animation: particleAnimation 20s linear infinite;
+}
+@keyframes particleAnimation {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+.mini-card-container.mythic .mythic-holographic-overlay {
+  background: linear-gradient(135deg, rgba(255, 0, 255, 0.15), rgba(0, 255, 255, 0.15), rgba(255, 255, 0, 0.15));
+  background-size: 400% 400%;
+  mix-blend-mode: overlay;
+  opacity: 0.6;
+  animation: holographicAnimation 1s ease-in-out infinite;
+}
+@keyframes holographicAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+.mini-card-container.mythic::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("../assets/textures/noise.png") repeat;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 6;
+  mix-blend-mode: overlay;
+  border-radius: inherit;
+}
+.mini-card-container.unique {
+  --card-bg-color: black;
+}
+.mini-card-container.unique .mini-card-artwork .grayscale,
+.mini-card-container.unique .mini-card-artwork .invertband {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 6px;
+  pointer-events: none;
+  user-select: none;
+}
+.mini-card-container.unique .mini-card-artwork .grayscale {
+  z-index: 1;
+  filter: grayscale(1) contrast(3.3) brightness(1.12);
+}
+.mini-card-container.unique .mini-card-artwork .invertband {
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 1s ease;
+  filter: grayscale(0.7) invert(0.1) contrast(3.3) brightness(3);
+  mask-image: none;
+  -webkit-mask-image: none;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-size: 200% 200%;
+  -webkit-mask-size: 200% 200%;
+}
+.mini-card-container.unique:hover .invertband {
+  opacity: 1;
+}
+.mini-card-container.unique .prismatic-overlay {
+  mix-blend-mode: screen;
+  opacity: 0.4;
+  filter: saturate(1.8);
+}
+.mini-card-container.unique .limited-overlay {
+  mix-blend-mode: screen;
+  opacity: 0.4;
+}
+.mini-card-container.divine {
+  position: relative;
+  overflow: hidden;
+  animation: divine-glow-mini 3s infinite alternate;
+  filter: contrast(1.2) brightness(1.5);
+  background: transparent no-repeat center/cover;
+}
+.mini-card-container.divine .mini-card-border {
+  width: 100%;
+  border: transparent;
+  z-index: 2;
+  position: relative;
+}
+@keyframes divine-glow-mini {
+  0% {
+    box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 5px 2px rgba(212, 198, 167, 0.2);
+  }
+}
+@keyframes divine-glow-hover-mini {
+  0%, 100% {
+    box-shadow: 0 0 2px 4px rgba(121, 209, 209, 0.4), 0 0 5px 5px rgba(121, 209, 209, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 5px 5px rgba(202, 121, 209, 0.4), 0 0 10px 10px rgba(202, 121, 209, 0.4);
+  }
+}
+.mini-card-container.divine:hover {
+  animation: divine-glow-hover-mini 1.5s infinite alternate;
+}
+.mini-card-container.divine:hover::after {
+  opacity: 0.2;
+}
+.mini-card-container.divine::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("../assets/textures/divine-main.gif") center center/125% 125% no-repeat;
+  mix-blend-mode: color-burn;
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 0;
+}
+.mini-card-container.divine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("../assets/textures/divine-border.gif") center center/125% 125% no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.3s ease;
+}
+.mini-card-container.divine .mini-card-artwork {
+  display: none;
+}
+.mini-card-container.divine .mini-card-name {
+  color: white;
+  display: block;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+  position: absolute;
+  text-shadow: 0 0 2px black;
+  overflow: hidden;
+}
+.mini-card-container.divine .mini-card-mint {
+  color: white;
+  background: transparent;
+  padding: 0;
+  z-index: 2;
+  position: absolute;
+  bottom: -178px;
+  right: 0;
+  font-size: 0.8rem;
+  text-shadow: 0 0 2px black, 0 0 2px black, 0 0 2px black;
+}
+.mini-card-container.divine .mini-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  z-index: 2;
+  position: relative;
+}
+.mini-card-container .glitch-overlay,
+.mini-card-container .prismatic-overlay,
+.mini-card-container .limited-overlay {
+  position: absolute;
+  inset: 4px;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 2;
+}
+.mini-card-container .glitch-overlay {
+  --glitch-x: 0px;
+  --glitch-y: 0px;
+  background: url("../assets/textures/static.gif") center/cover;
+  background-size: cover;
+  background-position: center;
+  mix-blend-mode: screen;
+  opacity: 0.5;
+  animation: glitchShift 1s steps(2, end) infinite;
+  transform: translate(var(--glitch-x), var(--glitch-y));
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+.mini-card-container:hover .glitch-overlay {
+  opacity: 0.4;
+}
+@keyframes glitchShift {
+  0% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-1px, 1px);
+  }
+  40% {
+    transform: translate(1px, -1px);
+  }
+  60% {
+    transform: translate(-0.5px, 0.5px);
+  }
+  80% {
+    transform: translate(0.5px, -0.5px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+.mini-card-container .prismatic-overlay {
+  background: url("../assets/textures/rainbowpop.gif") center/cover;
+  mix-blend-mode: color-dodge;
+  opacity: 0.1;
+}
+.mini-card-container.mythic .prismatic-overlay, .mini-card-container.divine .prismatic-overlay {
+  opacity: 0.3;
+}
+.mini-card-container.unique .prismatic-overlay {
+  opacity: 0.15;
+}
+.mini-card-container .limited-overlay {
+  background: url("../assets/textures/limited-edition.png") center/cover;
+  mix-blend-mode: screen;
+  opacity: 0.1;
+  animation: glowlimited 10s ease-in-out infinite;
+}
+@keyframes glowlimited {
+  0%, 100% {
+    opacity: 0.1;
+    background-position: 0;
+  }
+  30% {
+    opacity: 0.2;
+  }
+  60% {
+    background-position: 10%;
+  }
+}
+.mini-card-container .negative-overlay {
+  position: absolute;
+  inset: 1px;
+  border-radius: 4px;
+  background: white;
+  mix-blend-mode: difference;
+  pointer-events: none;
+  z-index: 50;
+  animation: negativeCycle 4s ease-in-out infinite;
+}
+@keyframes negativeCycle {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.mini-card-container .glitch-text {
+  position: relative;
+  animation: glitchJitterMini 0.6s infinite steps(1, end);
+}
+.mini-card-container .glitch-text::before, .mini-card-container .glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  pointer-events: none;
+}
+.mini-card-container .glitch-text::before {
+  clip-path: inset(0 0 45% 0);
+  text-shadow: -1px 0 #ff0000;
+  animation: glitchTopMini 1.5s infinite linear alternate-reverse;
+}
+.mini-card-container .glitch-text::after {
+  clip-path: inset(55% 0 0 0);
+  text-shadow: -1px 0 #00ffff;
+  animation: glitchBottomMini 1.2s infinite linear alternate-reverse;
+}
+@keyframes glitchTopMini {
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-1px, -1px);
+  }
+  40% {
+    transform: translate(-1px, 1px);
+  }
+  60% {
+    transform: translate(1px, -1px);
+  }
+  80% {
+    transform: translate(1px, 1px);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+@keyframes glitchBottomMini {
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(1px, 1px);
+  }
+  40% {
+    transform: translate(1px, -1px);
+  }
+  60% {
+    transform: translate(-1px, 1px);
+  }
+  80% {
+    transform: translate(-1px, -1px);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+@keyframes glitchJitterMini {
+  0% {
+    transform: translate(0);
+  }
+  25% {
+    transform: translate(0.5px, -0.5px);
+  }
+  50% {
+    transform: translate(-0.5px, 0.5px);
+  }
+  75% {
+    transform: translate(0.5px, 0.5px);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+.mini-card-container .holographic-overlay,
+.mini-card-container .holo-v,
+.mini-card-container .mythic-holographic-overlay,
+.mini-card-container .epic-galaxy-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease-out;
+  background-blend-mode: overlay;
+  z-index: 3;
+}
+.mini-card-container .holographic-overlay {
+  background: url("../assets/textures/holo3.png") repeat;
+  background-size: 40px 40px;
+  filter: brightness(1.2) contrast(1.5) saturate(1.5);
+}
+.mini-card-container .holo-v {
+  background-image: linear-gradient(40deg, transparent 30%, rgba(255, 0, 0, 0.4) 50%, transparent 90%), linear-gradient(40deg, transparent 35%, rgba(200, 0, 0, 0.35) 50%, transparent 65%), linear-gradient(40deg, transparent 25%, rgba(220, 20, 60, 0.3) 50%, transparent 75%), url("../assets/textures/holo3.png"), url("../assets/textures/holo3.png"), url("../assets/textures/galaxy.jpg");
+  background-size: 40px 40px;
+  filter: brightness(1.2) contrast(1.5) saturate(1.5);
+}
+.mini-card-container .mythic-holographic-overlay {
+  background: linear-gradient(135deg, rgba(255, 0, 255, 0.15), rgba(0, 255, 255, 0.15), rgba(255, 255, 0, 0.15));
+  background-size: 400% 400%;
+  mix-blend-mode: overlay;
+  opacity: 0.6;
+  animation: holographicAnimation 1s ease-in-out infinite;
+}
+.mini-card-container .mythic-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("../assets/textures/stars-particle-effect.gif");
+  background-size: cover;
+  mix-blend-mode: screen;
+  opacity: 0.6;
+  z-index: 4;
+}
+.mini-card-container .mythic-tint {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 0, 0, 0.2);
+  mix-blend-mode: multiply;
+  animation: mythic-tint-pulse 3s infinite alternate;
+  z-index: 3;
+}
+@keyframes mythic-tint-pulse {
+  0% {
+    background-color: rgba(255, 0, 0, 0.2);
+  }
+  25% {
+    background-color: rgba(255, 165, 0, 0.2);
+  }
+  50% {
+    background-color: rgba(0, 0, 255, 0.2);
+  }
+  75% {
+    background-color: rgba(128, 0, 128, 0.2);
+  }
+  100% {
+    background-color: rgba(255, 0, 0, 0.2);
+  }
+}
+.mini-card-container .epic-galaxy-overlay {
+  background: url("../assets/textures/galaxy.jpg") no-repeat center center;
+  background-size: cover;
+  filter: brightness(1.2) contrast(1.5) saturate(1.5);
+  background-blend-mode: overlay;
 }
 
-.slab-grade {
-    font-size: 1.4rem;
-    font-weight: bold;
-    color: #111;
-    background: none;
-    padding: 0;
-    text-shadow: 0 0 2px rgba(0,0,0,0.4);
-    flex: 0 0 auto;
+.overlay-badge {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.541);
+  color: #d4d0c0;
+  border-radius: 3px;
+  padding: 2px 4px;
+  font-size: 0.6rem;
+  font-weight: bold;
+  z-index: 99;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.082);
+  letter-spacing: 0.01em;
+}
+.overlay-badge.limited-badge {
+  bottom: 5px;
+  left: 5px;
+  background: #7eb5bc;
+  color: white;
 }
 
-.slab-name {
-    font-weight: bold;
-    font-size: 0.9rem;
-    color: #111;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    flex: 1 1 auto;
-    text-align: center;
-    white-space: nowrap;
-}
-
-/* White text on slabs for Unique rarity */
-.card-container.unique.slabbed .slab-grade,
-.card-container.unique.slabbed .slab-name {
-    color: white;
-}
-
-@keyframes glitchTop {
-    0% { transform: translate(0); }
-    20% { transform: translate(-2px, -2px); }
-    40% { transform: translate(-2px, 2px); }
-    60% { transform: translate(2px, -2px); }
-    80% { transform: translate(2px, 2px); }
-    100% { transform: translate(0); }
-}
-
-@keyframes glitchBottom {
-    0% { transform: translate(0); }
-    20% { transform: translate(2px, 2px); }
-    40% { transform: translate(2px, -2px); }
-    60% { transform: translate(-2px, 2px); }
-    80% { transform: translate(-2px, -2px); }
-    100% { transform: translate(0); }
-}
-
-@keyframes glitchJitter {
-    0% { transform: translate(0); }
-    25% { transform: translate(1px, -1px); }
-    50% { transform: translate(-1px, 1px); }
-    75% { transform: translate(1px, 1px); }
-    100% { transform: translate(0); }
-}
-
-/* Ensure slabs display correctly above special rarity styles */
-.card-container.slabbed {
-    overflow: visible;
-}
-
-
-/**************************************
- * End of File
- **************************************/
+/*# sourceMappingURL=CardComponent.css.map */

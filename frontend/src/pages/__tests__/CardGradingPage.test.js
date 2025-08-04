@@ -1,8 +1,8 @@
 import { render, fireEvent, waitFor } from '@testing-library/react';
-jest.mock('react-router-dom', () => ({ useNavigate: jest.fn() }), { virtual: true });
 import CardGradingPage from '../CardGradingPage';
 import { fetchWithAuth, gradeCard, fetchUserProfile } from '../../utils/api';
 
+jest.mock('react-router-dom', () => ({ useNavigate: jest.fn() }), { virtual: true });
 jest.mock('../../utils/api');
 
 const mockCards = [

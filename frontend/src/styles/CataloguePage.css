@@ -1,345 +1,152 @@
-
 /* Overall page container */
 .cata-page {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 4rem 1.5rem 2rem;
-    max-width: 100%;
-    margin: 0 auto;
-    color: var(--text-primary);
-    background: var(--background-dark);
-    min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 1.5rem 2rem;
+  max-width: 100%;
+  margin: 0 auto;
+  color: var(--text-primary);
+  background: var(--background-dark);
+  min-height: 100vh;
+  /* ------------------- New Top Section Styles ------------------- */
+  /* Filters Container */
+  /* Rarity selector buttons */
+  /* Modifier selector buttons */
+}
+.cata-page .cata-top-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1800px;
+  margin-bottom: 2rem;
+}
+.cata-page .cata-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+.cata-page .cata-filters-container {
+  background: var(--surface-dark);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+}
+.cata-page .cata-filters-container h3 {
+  margin: 0;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  text-align: center;
+}
+.cata-page .cata-preview-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.cata-page .cata-rarity-box,
+.cata-page .cata-modifier-box {
+  background: var(--surface-dark);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+}
+.cata-page .cata-rarity-box h3,
+.cata-page .cata-modifier-box h3 {
+  margin: 0;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  text-align: center;
+}
+.cata-page .cata-filters {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1.25rem;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 800px;
+}
+.cata-page .cata-filters input[type=text],
+.cata-page .cata-filters select {
+  background: var(--surface-dark);
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  width: 240px;
+  transition: var(--transition);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2388cddb'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1em;
+  cursor: pointer;
+}
+.cata-page .cata-filters select {
+  cursor: pointer;
+  padding-right: 2.5rem;
+}
+.cata-page .cata-filters select::-ms-expand {
+  display: none;
+}
+.cata-page .cata-filters select option {
+  background: var(--surface-darker);
+  color: var(--text-primary);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-dark);
+}
+.cata-page .cata-filters select:focus {
+  outline: 2px solid var(--brand-secondary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(136, 205, 219, 0.1);
+}
+.cata-page .cata-filters ::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+.cata-page .cata-rarity-selector {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 10px;
+}
+.cata-page .cata-rarity-button {
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-size: 1rem;
+}
+.cata-page .cata-rarity-button:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+.cata-page .cata-rarity-button.active {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+.cata-page .cata-modifier-selector {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.cata-page .cata-modifier-button {
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-size: 1rem;
+}
+.cata-page .cata-modifier-button:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+.cata-page .cata-modifier-button.active {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
 }
 
-.cata-page h1 {
-    text-align: center;
-    margin-top: 4rem;
-    margin-bottom: 1rem;
-    font-size: 2.25rem;
-    font-weight: 500;
-    position: relative;
-    color: var(--text-primary);
-}
-
-.cata-page h1::after {
-    content: '';
-    position: absolute;
-    bottom: -0.5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 2px;
-    background: var(--brand-primary);
-    border-radius: 2px;
-}
-
-.cata-description {
-    text-align: center;
-    font-size: 1.1rem;
-    margin: 0.5rem auto 1.5rem;
-    max-width: 800px;
-    color: var(--text-primary);
-    background: var(--surface-dark);
-    border: 1px solid var(--border-dark);
-    border-radius: var(--border-radius);
-    padding: 1rem;
-    line-height: 1.6;
-}
-
-/* ------------------- New Top Section Styles ------------------- */
-.cata-top-section {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    width: 100%;
-    max-width: 1800px;
-    margin-bottom: 2rem;
-}
-
-.cata-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-}
-
-@media (max-width: 768px) {
-    .cata-row {
-        grid-template-columns: 1fr;
-    }
-
-    .cata-preview-container {
-        grid-template-columns: 1fr;
-    }
-}
-
-.cata-filters-container {
-    background: var(--surface-dark);
-    padding: 1rem;
-    border-radius: var(--border-radius);
-}
-
-    .cata-filters-container h3 {
-        margin: 0;
-        margin-bottom: 1rem;
-        font-size: 1.2rem;
-        text-align: center;
-    }
-
-.cata-preview-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
-
-.cata-rarity-box,
-.cata-modifier-box {
-    background: var(--surface-dark);
-    padding: 1rem;
-    border-radius: var(--border-radius);
-}
-
-    .cata-rarity-box h3,
-    .cata-modifier-box h3 {
-        margin: 0;
-        margin-bottom: 1rem;
-        font-size: 1.2rem;
-        text-align: center;
-    }
-
-/* Search box styling removed - using cata-filters */
-
-/* Filters Container */
-.cata-filters {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: center;
-    align-items: center;
-    gap: 1.25rem;
-    margin: 0 auto;
-    width: 100%;
-    max-width: 800px;
-}
-
-    .cata-filters input[type="text"],
-    .cata-filters select {
-        background: var(--surface-dark);
-        border: 1px solid var(--border-dark);
-        border-radius: 8px;
-        padding: 0.75rem 1.5rem;
-        color: var(--text-primary);
-        font-family: var(--font-family);
-        width: 240px;
-        transition: var(--transition);
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2388cddb'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 1rem center;
-        background-size: 1em;
-        cursor: pointer;
-    }
-
-    .cata-filters select {
-        cursor: pointer;
-        padding-right: 2.5rem;
-    }
-
-        .cata-filters select::-ms-expand {
-            display: none;
-        }
-
-        .cata-filters select option {
-            background: var(--surface-darker);
-            color: var(--text-primary);
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border-dark);
-        }
-
-        .cata-filters select:focus {
-            outline: 2px solid var(--brand-secondary);
-            outline-offset: 2px;
-            box-shadow: 0 0 0 3px rgba(136, 205, 219, 0.1);
-        }
-
-    .cata-filters ::placeholder {
-        color: rgba(255, 255, 255, 0.6);
-    }
-
-/* Rarity selector buttons */
-.cata-rarity-selector {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 10px;
-}
-
-.cata-rarity-button {
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    font-size: 1rem;
-}
-
-.cata-rarity-button:hover {
-    transform: scale(1.05);
-    opacity: 0.9;
-}
-
-.cata-rarity-button.active {
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
-}
-
-/* Modifier selector buttons */
-.cata-modifier-selector {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-.cata-modifier-button {
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    font-size: 1rem;
-}
-
-.cata-modifier-button:hover {
-    transform: scale(1.05);
-    opacity: 0.9;
-}
-
-.cata-modifier-button.active {
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
-}
-
-
-/* ------------------- Stats Container ------------------- */
-.cata-stats-container {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    width: 100%;
-    max-width: 800px;
-    background: var(--surface-dark);
-    padding: 1rem;
-    border-radius: var(--border-radius);
-    margin-bottom: 2rem;
-}
-
-.cata-stats-item {
-    text-align: center;
-}
-
-    .cata-stats-item h4 {
-        margin: 0;
-        font-size: 1.2rem;
-        color: var(--text-primary);
-    }
-
-    .cata-stats-item p {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: var(--text-primary);
-    }
-
-/* Grid layout for catalogue cards */
-.cata-grid {
-    --card-scale: var(--screen-card-scale);
-    display: flex;
-    gap: 1.5rem;
-    background: var(--surface-darker);
-    border-radius: 16px;
-    border: 1px solid var(--border-dark);
-    margin-bottom: 2rem;
-    padding: 1rem;
-    margin-right: auto;
-    overflow: hidden;
-    flex-wrap: wrap;
-    width: calc(100% / var(--card-scale));
-    transform: scale(var(--card-scale));
-    transform-origin: top left;
-    justify-content: center;
-    align-items: center;
-}
-
-.cata-card {
-    display: flex;
-    justify-content: center;
-    position: relative;
-}
-
-.cata-card-inner {
-    position: relative;
-    width: 100%;
-    max-width: 300px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-/* Shared overlay badge style for all overlays */
-.cata-overlay-badge {
-    position: absolute;
-    background: rgba(0, 0, 0, 0.541);
-    color: #d4d0c0;
-    border-radius: 6px;
-    padding: 4px 9px;
-    font-size: 1rem;
-    font-family: inherit;
-    font-weight: bold;
-    z-index: 2;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.082);
-    letter-spacing: 0.01em;
-}
-
-/* Specific positions for each badge */
-.cata-remaining-badge {
-    bottom: 10px;
-    right: 10px;
-}
-
-.cata-timeleft-badge {
-    top: 10px;
-    left: 10px;
-}
-
-/* Responsive Styles */
-@media (max-width: 768px) {
-    .cata-grid {
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        padding: 1.5rem;
-    }
-
-    .cata-page h1 {
-        font-size: 2rem;
-    }
-
-    .cata-filters {
-        flex-direction: column;
-        align-items: center;
-    }
-
-        .cata-filters input[type="text"],
-        .cata-filters select {
-            width: 100%;
-        }
-}
-
-@media (max-width: 480px) {
-    .cata-page {
-        padding: 1.5rem 1rem;
-    }
-
-    .cata-card-inner {
-        padding: 0.75rem;
-    }
-}
-
+/*# sourceMappingURL=CataloguePage.css.map */

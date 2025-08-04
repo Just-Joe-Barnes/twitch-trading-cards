@@ -1,16 +1,13 @@
-// frontend/src/pages/MarketPage.js
-import React, { useState, useEffect } from 'react';
-import { fetchWithAuth } from '../utils/api';
+import React, {useState, useEffect, useMemo} from 'react';
+import {fetchWithAuth} from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { Link } from 'react-router-dom';
-import { rarities } from '../constants/rarities';
+import {Link, useNavigate} from 'react-router-dom';
+import {rarities} from '../constants/rarities';
 import '../styles/MarketPage.css';
-import { io } from 'socket.io-client';
+import {io} from 'socket.io-client';
 
 const MarketPage = () => {
-    // Card scale on this page does not use the user's saved preference
-    // to ensure consistent layout across the market.
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -18,11 +15,20 @@ const MarketPage = () => {
     const [selectedRarity, setSelectedRarity] = useState('');
     const [sortOption, setSortOption] = useState('name');
     const [sortOrder, setSortOrder] = useState('asc');
+    const navigate = useNavigate();
 
-    // Pagination states
+    const [showFilters, setShowFilters] = useState(false);
+    const [showSlabbedOnly, setShowSlabbedOnly] = useState(false);
+    const [showLimitedOnly, setShowLimitedOnly] = useState(false);
+
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const listingsPerPage = 9; // Adjust as needed
+    const listingsPerPage = 50;
+
+    const [rarityCount, setRarityCount] = useState({
+        Basic: 0, Common: 0, Standard: 0, Uncommon: 0, Rare: 0,
+        Epic: 0, Legendary: 0, Mythic: 0, Unique: 0, Divine: 0
+    });
 
     const fetchListings = async (page = 1) => {
         try {
@@ -30,6 +36,16 @@ const MarketPage = () => {
             setListings(res.listings);
             setCurrentPage(res.page);
             setTotalPages(res.pages);
+
+            const newRarityCounts = rarities.reduce((acc, r) => ({...acc, [r.name]: 0}), {});
+
+            for (const listing of res.listings) {
+                const rarity = listing.card.rarity;
+                if (newRarityCounts.hasOwnProperty(rarity)) {
+                    newRarityCounts[rarity] += 1;
+                }
+            }
+            setRarityCount(newRarityCounts);
         } catch (err) {
             console.error('Error fetching market listings:', err);
             setError('Error fetching listings');
@@ -45,29 +61,48 @@ const MarketPage = () => {
             transports: ['websocket'],
         });
 
-        socket.on('connect', () => {
-            console.log('Connected to Socket.io server');
-        });
+        socket.on('connect', () => console.log('Connected to Socket.io server'));
+        socket.on('market:newListing', (newListing) => setListings((prev) => [newListing, ...prev]));
 
-        socket.on('market:newListing', (newListing) => {
-            console.log('Received new listing:', newListing);
-            setListings((prev) => [newListing, ...prev]);
-        });
+        return () => socket.disconnect();
+    }, [currentPage]);
 
-        return () => {
-            socket.disconnect();
-        };
-    }, []);
-
-    const filteredListings = listings.filter((listing) => {
-        const card = listing.card;
-        return (
-            card.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-            (selectedRarity ? card.rarity.toLowerCase() === selectedRarity.toLowerCase() : true)
+    const handleRarityChange = (rarityName) => {
+        const normalizedRarityName = rarityName.toLowerCase();
+        setSelectedRarity(prevRarity =>
+            prevRarity === normalizedRarityName ? '' : normalizedRarityName
         );
-    });
+    };
 
-    const sortedListings = [...filteredListings].sort((a, b) => {
+    const toggleSortOrder = () => {
+        setSortOrder(prevOrder => prevOrder === 'asc' ? 'desc' : 'asc');
+    };
+
+    const preFilteredListings = useMemo(() => {
+        return listings.filter((listing) => {
+            const card = listing.card;
+            return (
+                card.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+                (selectedRarity ? card.rarity.toLowerCase() === selectedRarity.toLowerCase() : true)
+            );
+        });
+    }, [listings, searchQuery, selectedRarity]);
+
+    const hasSlabbedCards = useMemo(() => preFilteredListings.some(listing => listing.card.slabbed), [preFilteredListings]);
+    const hasLimitedCards = useMemo(() => preFilteredListings.some(listing => !!listing.card.availableFrom && !!listing.card.availableTo), [preFilteredListings]);
+
+    const filteredListings = useMemo(() => {
+        return preFilteredListings.filter((listing) => {
+            const card = listing.card;
+            const isLimited = !!card.availableFrom && !!card.availableTo;
+            return (
+                (showSlabbedOnly ? card.slabbed === true : true) &&
+                (showLimitedOnly ? isLimited === true : true)
+            );
+        });
+    }, [preFilteredListings, showSlabbedOnly, showLimitedOnly]);
+
+    const sortedListings = useMemo(() => [...filteredListings].sort((a, b) => {
         const cardA = a.card;
         const cardB = b.card;
         if (sortOption === 'name') {
@@ -80,7 +115,7 @@ const MarketPage = () => {
             return sortOrder === 'asc' ? rarityA - rarityB : rarityB - rarityA;
         }
         return 0;
-    });
+    }), [filteredListings, sortOrder, sortOption]);
 
     const handlePreviousPage = () => {
         if (currentPage > 1) {
@@ -96,50 +131,123 @@ const MarketPage = () => {
         }
     };
 
-    if (loading) return <LoadingSpinner />;
+    const handleCreateNewListing = () => {
+        navigate(`/market/create`);
+    };
+
+    if (loading) return <LoadingSpinner/>;
     if (error) return <div className="market-page-error">{error}</div>;
 
     return (
-        <div className="market-page">
-            <h1>Market</h1>
-            <p className="market-description">
-                Welcome to the market! Here you can list your cards for trade offers and view offers from other users.
-                Browse listings, filter by card name or rarity, and make an offer on the ones you like.
-            </p>
-            <div className="market-controls">
-                <input
-                    type="text"
-                    placeholder="Search listings by card name..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <select value={selectedRarity} onChange={(e) => setSelectedRarity(e.target.value)}>
-                    <option value="">All Rarities</option>
-                    {rarities.map((r) => (
-                        <option key={r.name} value={r.name}>
-                            {r.name}
-                        </option>
-                    ))}
-                </select>
-                <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
-                    <option value="name">Name</option>
-                    <option value="rarity">Rarity</option>
-                </select>
-                <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
-                    <option value="asc">Ascending</option>
-                    <option value="desc">Descending</option>
-                </select>
+        <>
+            <div className="page" style={{paddingBottom: '0'}}>
+                <h1>Market</h1>
+                <div className="info-section section-card narrow">
+                    Welcome to the market! Here you can list your cards for trade offers and view offers from other
+                    users.
+                    Browse listings, filter by card name or rarity, and make an offer on the ones you like.
+                </div>
+
+                <div className="stats">
+                    <div className="stat" data-tooltip="Total listings currently on the market">
+                        <div>Total Listings</div>
+                        <span>{listings.length}</span>
+                    </div>
+                    {totalPages > 1 && (
+                        <div className="stat" data-tooltip="The number of pages available based on current filters">
+                            <div>Total Pages</div>
+                            <span>{totalPages}</span>
+                        </div>
+                    )}
+                    <button onClick={() => setShowFilters(!showFilters)} className="stat">
+                        {showFilters ? "Hide Filters" : "Show Filters"}
+                        <i className={`fa-solid ${showFilters ? 'fa-filter' : 'fa-filter'}`}/>
+                    </button>
+                    <div className="button-group">
+                        <button className="primary-button" onClick={handleCreateNewListing} style={{margin: '0'}}>
+                            Create New Listing
+                        </button>
+                    </div>
+                </div>
+                <br/>
+                {showFilters && (
+                    <div className="section-card" style={{marginBottom: "2rem"}}>
+                        <div className="filters">
+                            <div className="filter-card">
+                                <input
+                                    type="text"
+                                    placeholder="Search listings by card name..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="filter-input"
+                                />
+                                <div className="sort-controls">
+                                    <div className="filter-button-group horizontal">
+                                        <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}
+                                                className="filter-select">
+                                            <option value="name">Name</option>
+                                            <option value="rarity">Rarity</option>
+                                        </select>
+                                        <div className="checkbox-group button-row">
+                                            <div className="sort-order-toggle checkbox-wrapper">
+                                                <label htmlFor="sortOrderToggle">
+                                                    <i className={`fa-regular ${sortOrder === 'asc' ? 'fa-arrow-down-a-z' : 'fa-arrow-up-a-z'}`}></i>
+                                                </label>
+                                                <input
+                                                    type="checkbox"
+                                                    id="sortOrderToggle"
+                                                    checked={sortOrder === 'asc'}
+                                                    onChange={toggleSortOrder}
+                                                />
+                                            </div>
+                                            <div className={`checkbox-wrapper ${!hasSlabbedCards ? 'disabled' : ''}`}>
+                                                <label htmlFor="slabbedCheckbox" data-tooltip="Show only Slabbed Cards">
+                                                    <i className={`fa-${showSlabbedOnly ? 'solid' : 'regular'} fa-square`}/>
+                                                </label>
+                                                <input type="checkbox" id="slabbedCheckbox"
+                                                       checked={showSlabbedOnly}
+                                                       onChange={(e) => setShowSlabbedOnly(e.target.checked)}
+                                                       disabled={!hasSlabbedCards}/>
+                                            </div>
+                                            <div className={`checkbox-wrapper ${!hasLimitedCards ? 'disabled' : ''}`}>
+                                                <label htmlFor="limitedCheckbox" data-tooltip="Show only Limited Cards">
+                                                    <i className={`fa-${showLimitedOnly ? 'solid' : 'regular'} fa-crown`}/>
+                                                </label>
+                                                <input type="checkbox" id="limitedCheckbox"
+                                                       checked={showLimitedOnly}
+                                                       onChange={(e) => setShowLimitedOnly(e.target.checked)}
+                                                       disabled={!hasLimitedCards}/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="rarity-key">
+                                {rarities.map((r) => {
+                                    const normalizedRarityName = r.name.toLowerCase();
+                                    return (
+                                        <button
+                                            key={normalizedRarityName}
+                                            onClick={() => handleRarityChange(r.name)}
+                                            className={`rarity-item ${normalizedRarityName} ${selectedRarity === normalizedRarityName ? 'active' : ''}`}
+                                            disabled={rarityCount[r.name] === 0}
+                                            style={{"--item-color": r.color}}
+                                        >
+                                            {r.name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
-            <div className="create-listing-container">
-                <Link to="/market/create">
-                    <button className="create-listing-button">Create New Listing</button>
-                </Link>
-            </div>
-            <div className="listings-grid" style={{ '--user-card-scale': 1 }}>
-                {sortedListings.length > 0 ? (
-                    sortedListings.map((listing) => (
-                        <div key={listing._id} className="listing-card">
-                            <div className="listing-card-content">
+
+            <div className="page full" style={{paddingTop: '0'}}>
+                <div className="card-tile-grid mini" style={{marginTop: '0'}}>
+                    {sortedListings.length > 0 ? (
+                        sortedListings.map((listing) => (
+                            <div key={listing._id} className="card-tile">
                                 <BaseCard
                                     name={listing.card.name}
                                     image={listing.card.imageUrl}
@@ -147,31 +255,38 @@ const MarketPage = () => {
                                     description={listing.card.flavorText}
                                     mintNumber={listing.card.mintNumber}
                                     modifier={listing.card.modifier}
+                                    slabbed={listing.card.slabbed}
+                                    limited={!!listing.card.availableFrom && !!listing.card.availableTo}
                                 />
+                                <div className="actions">
+                                    <p className="listing-owner">Listed by: <Link to={`/profile/${listing.owner.username}`}>{listing.owner.username}</Link></p>
+                                    <p className="offers-count">Offers: {listing.offers ? listing.offers.length : 0}</p>
+                                    <Link to={`/market/listing/${listing._id}`}>
+                                        <button className="primary-button">View &amp; Make Offer</button>
+                                    </Link>
+                                </div>
                             </div>
-                            <p className="listing-owner">Listed by: {listing.owner.username}</p>
-                            <p className="offers-count">Offers: {listing.offers ? listing.offers.length : 0}</p>
-                            <Link to={`/market/listing/${listing._id}`}>
-                                <button className="view-listing-button">View &amp; Make Offer</button>
-                            </Link>
-                        </div>
-                    ))
-                ) : (
-                    <p>No listings found.</p>
+                        ))
+                    ) : (
+                        <p>No listings found.</p>
+                    )}
+                </div>
+
+                {totalPages > 1 && (
+                    <div className="market-pagination" style={{marginTop: '1.5rem', textAlign: 'center'}}>
+                        <button onClick={handlePreviousPage} disabled={currentPage === 1}>
+                            Previous
+                        </button>
+                        <span style={{margin: '0 1rem'}}>
+                            Page {currentPage} of {totalPages}
+                        </span>
+                        <button onClick={handleNextPage} disabled={currentPage === totalPages}>
+                            Next
+                        </button>
+                    </div>
                 )}
             </div>
-            <div className="market-pagination" style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-                <button onClick={handlePreviousPage} disabled={currentPage === 1}>
-                    Previous
-                </button>
-                <span style={{ margin: '0 1rem' }}>
-                    Page {currentPage} of {totalPages}
-                </span>
-                <button onClick={handleNextPage} disabled={currentPage === totalPages}>
-                    Next
-                </button>
-            </div>
-        </div>
+        </>
     );
 };
 

@@ -1,25 +1,28 @@
-// src/components/Navbar.js
-import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import React, {useState, useEffect, useRef} from 'react';
+import {NavLink, useNavigate, useLocation} from 'react-router-dom';
 import '../styles/Navbar.css';
-import { searchUsers, fetchUserProfile } from '../utils/api';
+import {searchUsers, fetchUserProfile} from '../utils/api';
 import NotificationDropdown from './NotificationDropdown';
 
-const Navbar = ({ isAdmin }) => {
+const Navbar = ({isAdmin}) => {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
+    const location = useLocation();
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
     const [loggedInUser, setLoggedInUser] = useState({});
     const [menuOpen, setMenuOpen] = useState(false);
-    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 480 : false);
+    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
+    const navbarRef = useRef(null);
+    const desktopDropdownRef = useRef(null);
+    const mobileDropdownRef = useRef(null);
 
-    // Fetch logged-in user data including profile picture
+    const [activeIndex, setActiveIndex] = useState(-1);
+
     useEffect(() => {
         const fetchUsername = async () => {
             try {
                 const profile = await fetchUserProfile();
-                console.log('Fetched profile:', profile);
                 setLoggedInUser(profile);
             } catch (error) {
                 console.error('Error fetching user profile:', error.message);
@@ -29,12 +32,43 @@ const Navbar = ({ isAdmin }) => {
     }, []);
 
     useEffect(() => {
+        handleClearSearch();
+        setMenuOpen(false);
+    }, [location.pathname]);
+
+    useEffect(() => {
         const handleResize = () => {
-            setIsMobile(window.innerWidth <= 480);
+            setIsMobile(window.innerWidth <= 768);
         };
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuOpen && navbarRef.current && !navbarRef.current.contains(event.target)) {
+                setMenuOpen(false);
+                handleClearSearch();
+            }
+        };
+        if (menuOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [menuOpen]);
+
+    useEffect(() => {
+        const dropdownRef = isMobile ? mobileDropdownRef : desktopDropdownRef;
+        if (activeIndex < 0 || !dropdownRef.current) return;
+        const activeItem = dropdownRef.current.children[activeIndex];
+        if (activeItem) {
+            activeItem.scrollIntoView({
+                block: 'nearest',
+            });
+        }
+    }, [activeIndex, isMobile]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -48,6 +82,7 @@ const Navbar = ({ isAdmin }) => {
     const handleSearchChange = async (e) => {
         const query = e.target.value;
         setSearchQuery(query);
+        setActiveIndex(-1);
         if (query.length > 1) {
             try {
                 const results = await searchUsers(query);
@@ -62,14 +97,42 @@ const Navbar = ({ isAdmin }) => {
         }
     };
 
+    const handleKeyDown = (e) => {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setActiveIndex((prevIndex) =>
+                prevIndex < searchResults.length - 1 ? prevIndex + 1 : prevIndex
+            );
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setActiveIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : 0));
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (activeIndex >= 0 && searchResults[activeIndex]) {
+                handleSearchSelect(searchResults[activeIndex].username);
+            }
+        } else if (e.key === 'Escape') {
+            handleClearSearch();
+        }
+    };
+
     const handleSearchSelect = (username) => {
         setSearchQuery('');
+        setSearchResults([]);
         setIsDropdownVisible(false);
+        setActiveIndex(-1);
         navigate(`/profile/${username}`);
     };
 
+    const handleClearSearch = () => {
+        setSearchQuery('');
+        setSearchResults([]);
+        setIsDropdownVisible(false);
+        setActiveIndex(-1);
+    };
+
     return (
-        <nav className="navbar">
+        <nav className="navbar" ref={navbarRef}>
             <button
                 className="burger-button"
                 aria-expanded={menuOpen}
@@ -82,27 +145,30 @@ const Navbar = ({ isAdmin }) => {
             </button>
 
             <div className="navbar-logo" onClick={() => navigate('/dashboard')} style={{cursor: 'pointer'}}>
-                <img src="/images/NedsDecksLogo.png" alt="Ned's Decks" />
+                <img src="/images/logo-horizontal.png" alt="Ned's Decks"/>
             </div>
 
             {!isMobile && (
                 <div className="navbar-search">
                     <div className="search-wrapper">
                         <input
-                            type="text"
+                            type="search"
+                            id="desktop-search-bar"
                             value={searchQuery}
                             onChange={handleSearchChange}
+                            onKeyDown={handleKeyDown}
                             placeholder="Search for users..."
                             className="search-bar"
+                            autoComplete="off"
                         />
                         {isDropdownVisible && (
-                            <ul className="search-dropdown">
+                            <ul className="search-dropdown" ref={desktopDropdownRef}>
                                 {searchResults.length > 0 ? (
-                                    searchResults.map((user) => (
+                                    searchResults.map((user, index) => (
                                         <li
                                             key={user._id}
                                             onClick={() => handleSearchSelect(user.username)}
-                                            className="search-result-item"
+                                            className={`search-result-item ${index === activeIndex ? 'active' : ''}`}
                                         >
                                             {user.username}
                                         </li>
@@ -116,107 +182,37 @@ const Navbar = ({ isAdmin }) => {
                 </div>
             )}
 
-            <ul
-                id="primary-navigation"
-                className={`navbar-links ${menuOpen ? 'open' : ''}`}
-            >
-                <li>
-                    <NavLink
-                        to={`/collection/${loggedInUser.username}`}
-                        className="nav-link"
-                        onClick={() => setMenuOpen(false)}
-                    >
-                        Collection
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink
-                        to="/trading"
-                        className="nav-link"
-                        onClick={() => setMenuOpen(false)}
-                    >
-                        Trading
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink
-                        to="/achievements"
-                        className="nav-link"
-                        onClick={() => setMenuOpen(false)}
-                    >
-                        Achievements
-                    </NavLink>
-                </li>
-                {isAdmin && (
-                    <>
-                        <li>
-                            <NavLink
-                                to="/admin-dashboard"
-                                className="nav-link"
-                                onClick={() => setMenuOpen(false)}
-                            >
-                                Admin Dashboard
-                            </NavLink>
-                        </li>
-                        <li>
-                            <NavLink
-                                to="/admin/actions"
-                                className="nav-link"
-                                onClick={() => setMenuOpen(false)}
-                            >
-                                Admin Actions
-                            </NavLink>
-                        </li>
-                    </>
-                )}
-                <li>
-                    <NavLink
-                        to="/grading"
-                        className="nav-link"
-                        onClick={() => setMenuOpen(false)}
-                    >
-                        Card Grading
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink
-                        to="/market"
-                        className="nav-link"
-                        onClick={() => setMenuOpen(false)}
-                    >
-                        Market
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink
-                        to="/catalogue"
-                        className="nav-link"
-                        onClick={() => setMenuOpen(false)}
-                    >
-                        Catalogue
-                    </NavLink>
-                </li>
+            <ul id="primary-navigation" className={`navbar-links ${menuOpen ? 'open' : ''}`}>
+                <li><NavLink to={`/collection/${loggedInUser.username}`} className="nav-link" onClick={() => { setMenuOpen(false); handleClearSearch(); }}>My Collection</NavLink></li>
+                <li><NavLink to="/trading" className="nav-link" onClick={() => { setMenuOpen(false); handleClearSearch(); }}>Trading</NavLink></li>
+                <li><NavLink to="/achievements" className="nav-link" style={{position: "relative"}} onClick={() => { setMenuOpen(false); handleClearSearch(); }}>Achievements</NavLink></li>
+                <li><NavLink to="/grading" className="nav-link" onClick={() => { setMenuOpen(false); handleClearSearch(); }}>Card Grading</NavLink></li>
+                <li><NavLink to="/market" className="nav-link" onClick={() => { setMenuOpen(false); handleClearSearch(); }}>Market</NavLink></li>
+                <li><NavLink to="/catalogue" className="nav-link" onClick={() => { setMenuOpen(false); handleClearSearch(); }}>Catalogue</NavLink></li>
+
                 {isMobile && (
-                    <li className="mobile-search">
-                        <div className="search-wrapper">
+                    <li className="mobile-search-item">
+                        <div className="search-wrapper mobile-search-wrapper">
                             <input
-                                type="text"
+                                type="search"
                                 value={searchQuery}
                                 onChange={handleSearchChange}
+                                onKeyDown={handleKeyDown}
                                 placeholder="Search for users..."
                                 className="search-bar"
+                                autoComplete="off"
                             />
                             {isDropdownVisible && (
-                                <ul className="search-dropdown">
+                                <ul className="search-dropdown mobile-search-dropdown" ref={mobileDropdownRef}>
                                     {searchResults.length > 0 ? (
-                                        searchResults.map((user) => (
+                                        searchResults.map((user, index) => (
                                             <li
                                                 key={user._id}
                                                 onClick={() => {
                                                     handleSearchSelect(user.username);
                                                     setMenuOpen(false);
                                                 }}
-                                                className="search-result-item"
+                                                className={`search-result-item ${index === activeIndex ? 'active' : ''}`}
                                             >
                                                 {user.username}
                                             </li>
@@ -231,17 +227,14 @@ const Navbar = ({ isAdmin }) => {
                 )}
             </ul>
 
-            {/* Render NotificationDropdown only when loggedInUser._id is available */}
             {loggedInUser._id && (
-                <div className="navbar-notifications">
-                    <span className="navbar-username">{loggedInUser.username}</span>
-                    <NotificationDropdown
-                        profilePic={loggedInUser.twitchProfilePic || '/images/defaultProfile.png'}
-                        userId={loggedInUser._id}
-                        username={loggedInUser.username}
-                        onLogout={handleLogout}
-                    />
-                </div>
+                <NotificationDropdown
+                    profilePic={loggedInUser.twitchProfilePic || '/images/defaultProfile.png'}
+                    userId={loggedInUser._id}
+                    username={loggedInUser.username}
+                    onLogout={handleLogout}
+                    isAdmin={isAdmin}
+                />
             )}
         </nav>
     );

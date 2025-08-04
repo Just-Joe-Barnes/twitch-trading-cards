@@ -1,307 +1,293 @@
 /* Card Grading Page */
 .card-grading-page {
-    padding: 40px 20px;
-    max-width: 1800px;
-    margin: 0 auto;
-    background-color: var(--background-dark);
-    color: var(--text-primary);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+  padding: 40px 20px;
+  max-width: 1800px;
+  margin: 0 auto;
+  background-color: var(--background-dark);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .card-grading-page h1 {
-    text-align: center;
-    margin-top: 4rem;
-    margin-bottom: 1rem;
-    font-size: 2.25rem;
-    font-weight: 500;
-    position: relative;
-    color: var(--text-primary);
+  text-align: center;
+  margin-top: 4rem;
+  margin-bottom: 1rem;
+  font-size: 2.25rem;
+  font-weight: 500;
+  position: relative;
+  color: var(--text-primary);
 }
 
 .card-grading-page h1::after {
-    content: '';
-    position: absolute;
-    bottom: -0.5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 2px;
-    background: var(--brand-primary);
-    border-radius: 2px;
+  content: "";
+  position: absolute;
+  bottom: -0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 2px;
+  background: var(--brand-primary);
+  border-radius: 2px;
 }
 
 .grading-description {
-    text-align: center;
-    font-size: 1.1rem;
-    margin: 0.5rem auto 1.5rem;
-    max-width: 800px;
-    color: var(--text-primary);
-    background: var(--surface-dark);
-    border: 1px solid var(--border-dark);
-    border-radius: var(--border-radius);
-    padding: 1rem;
-    line-height: 1.6;
+  text-align: center;
+  font-size: 1.1rem;
+  margin: 0.5rem auto 1.5rem;
+  max-width: 800px;
+  color: var(--text-primary);
+  background: var(--surface-dark);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  line-height: 1.6;
 }
 
 .grading-card-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    justify-items: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  justify-items: center;
 }
 
 .grading-card-list.slabbed {
-    overflow: visible;
+  overflow: visible;
 }
 
 .grading-card-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
 }
 
 /* Additional space when showing slab overlay */
 .grading-card-item.slabbed {
-    overflow: visible;
-    margin: 72px 30px 24px;
+  overflow: visible;
+  margin: 72px 30px 24px;
 }
 
 .grading-card-item button {
-    margin-top: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: var(--brand-primary);
-    color: var(--background-dark);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--brand-primary);
+  color: var(--background-dark);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .grading-card-item button:hover {
-    background: var(--brand-secondary);
-    transform: scale(1.05);
+  background: var(--brand-secondary);
+  transform: scale(1.05);
 }
 
 .done-btn {
-    margin-top: 3rem;
+  margin-top: 3rem;
 }
 
 .grade-btn {
-    margin-top: 1rem;
-    padding: 0.5rem 1rem;
-    background: var(--brand-primary);
-    color: var(--background-dark);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: var(--brand-primary);
+  color: var(--background-dark);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .grade-btn:hover {
-    background: var(--brand-secondary);
-    transform: scale(1.05);
+  background: var(--brand-secondary);
+  transform: scale(1.05);
 }
 
 .grading-actions {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
 .cancel-btn {
-    padding: 0.5rem 1rem;
-    background: var(--brand-primary);
-    color: var(--background-dark);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
+  padding: 0.5rem 1rem;
+  background: var(--brand-primary);
+  color: var(--background-dark);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .cancel-btn:hover {
-    background: var(--brand-secondary);
-    transform: scale(1.05);
+  background: var(--brand-secondary);
+  transform: scale(1.05);
 }
 
 /* Controls */
 .grading-controls {
-    margin: 1rem 0 2rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: center;
+  margin: 1rem 0 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
 }
 
 .grading-controls input,
 .grading-controls select {
-    padding: 0.5rem 0.75rem;
-    background: var(--surface-darker);
-    border: 1px solid var(--border-dark);
-    color: var(--text-primary);
-    border-radius: var(--border-radius);
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-darker);
+  border: 1px solid var(--border-dark);
+  color: var(--text-primary);
+  border-radius: var(--border-radius);
 }
 
 /* Layout split */
 .grading-layout {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .collection-section {
-    flex: 1;
-    overflow-y: auto;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .reveal-zone {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Grading reveal area */
 .grading-area {
-    margin: 2rem 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  margin: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .grading-area h3 {
-    margin-bottom: 1rem;
+  margin-bottom: 1rem;
 }
 
 .card-wrapper {
-    transition: transform 0.6s ease;
-    cursor: pointer;
-    width: 300px;
-    height: 450px;
-    position: relative;
-    margin: 0 auto;
+  transition: transform 0.6s ease;
+  cursor: pointer;
+  width: 300px;
+  height: 450px;
+  position: relative;
+  margin: 0 auto;
 }
 
 .face-down .card-inner {
-    transform: rotateY(0deg);
+  transform: rotateY(0deg);
 }
 
 .face-up .card-inner {
-    transform: rotateY(180deg);
+  transform: rotateY(180deg);
 }
 
 .card-content {
-    width: 300px;
-    height: 450px;
-    position: relative;
-    perspective: 1000px;
-    overflow: visible;
+  width: 300px;
+  height: 450px;
+  position: relative;
+  perspective: 1000px;
+  overflow: visible;
 }
 
 .card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transform-style: preserve-3d;
-    transition: transform 0.6s ease;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease;
 }
 
 .card-back,
 .card-front {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    border-radius: var(--border-radius);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: var(--border-radius);
 }
 
 .card-back {
-    transform: rotateY(0deg);
-    z-index: 2;
+  transform: rotateY(0deg);
+  z-index: 2;
 }
 
 .card-back img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: var(--border-radius);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--border-radius);
 }
 
 .card-front {
-    transform: rotateY(180deg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1;
+  transform: rotateY(180deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
 }
 
 .slab-back-overlay {
-    position: absolute;
-    top: -72px;
-    left: -30px;
-    right: -30px;
-    bottom: -24px;
-    border-radius: 10px;
-    --slab-border-color: rgba(255, 255, 255, 0.9);
-    border: 12px solid var(--slab-border-color);
-    background: rgba(255, 255, 255, 0.1);
-    box-shadow:
-        0 4px 8px rgba(0,0,0,0.6),
-        inset 0 0 12px rgba(255,255,255,0.5),
-        inset 0 0 4px rgba(0,0,0,0.6);
-    pointer-events: none;
-    overflow: hidden;
-    z-index: 8;
+  position: absolute;
+  top: -72px;
+  left: -30px;
+  right: -30px;
+  bottom: -24px;
+  border-radius: 10px;
+  --slab-border-color: rgba(255, 255, 255, 0.9);
+  border: 12px solid var(--slab-border-color);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), inset 0 0 12px rgba(255, 255, 255, 0.5), inset 0 0 4px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 8;
 }
 
 .slab-back-overlay::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 56px;
-    background: var(--slab-color, hotpink);
-    border-bottom: 2px solid var(--slab-color, hotpink);
-    border-radius: 6px 6px 0 0;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: var(--slab-color, hotpink);
+  border-bottom: 2px solid var(--slab-color, hotpink);
+  border-radius: 6px 6px 0 0;
 }
 
 .slab-back-overlay::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image:
-        linear-gradient(60deg, rgba(255,255,255,0.4), rgba(255,255,255,0) 60%),
-        linear-gradient(-60deg, rgba(255,255,255,0.3), rgba(255,255,255,0) 60%);
-    background-size: 200% 200%;
-    background-repeat: no-repeat;
-    background-position:
-        var(--cursor-x, 50%) var(--cursor-y, 50%),
-        var(--cursor-x, 50%) var(--cursor-y, 50%);
-    mix-blend-mode: screen;
-    transition: background-position 0.1s ease;
-    z-index: 2;
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(60deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 60%), linear-gradient(-60deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 60%);
+  background-size: 200% 200%;
+  background-repeat: no-repeat;
+  background-position: var(--cursor-x, 50%) var(--cursor-y, 50%), var(--cursor-x, 50%) var(--cursor-y, 50%);
+  mix-blend-mode: screen;
+  transition: background-position 0.1s ease;
+  z-index: 2;
 }
 
 .inprocess-section {
-    margin-bottom: 2rem;
+  margin-bottom: 2rem;
 }
 
-.grading-timeleft-badge {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: rgba(0, 0, 0, 0.541);
-    color: #d4d0c0;
-    border-radius: 6px;
-    padding: 4px 9px;
-    font-size: 1rem;
-    font-weight: bold;
-    z-index: 2;
+.grading-remaining {
+  text-align: center;
 }
+
+/*# sourceMappingURL=CardGradingPage.css.map */

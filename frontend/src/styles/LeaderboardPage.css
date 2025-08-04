@@ -1,0 +1,112 @@
+.champions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.champion-card {
+  background-color: var(--color-surface-soft);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.champion-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: var(--color-text-secondary);
+}
+
+.champion-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.champion-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.champion-pic {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-primary);
+}
+
+.champion-name {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.champion-value {
+  font-size: 1.5rem;
+  color: var(--color-secondary);
+  font-weight: bold;
+}
+
+.leaderboard-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.leaderboard-toggle .secondary-button.active {
+  background-color: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.leaderboard-table th {
+  background-color: var(--color-surface-soft);
+  font-weight: bold;
+}
+
+.leaderboard-table tbody tr:nth-child(odd) {
+  background-color: var(--color-surface);
+}
+
+.leaderboard-table tbody tr:hover {
+  background-color: var(--color-surface-soft);
+}
+
+.leaderboard-table .rank-cell {
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: center;
+  width: 60px;
+}
+
+.leaderboard-table tbody tr:nth-child(1) .rank-cell {
+  color: #FFD700;
+} /* Gold */
+.leaderboard-table tbody tr:nth-child(2) .rank-cell {
+  color: #C0C0C0;
+} /* Silver */
+.leaderboard-table tbody tr:nth-child(3) .rank-cell {
+  color: #CD7F32;
+} /* Bronze */
+
+/*# sourceMappingURL=LeaderboardPage.css.map */

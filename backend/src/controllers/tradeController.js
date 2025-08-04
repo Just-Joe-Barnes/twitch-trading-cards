@@ -9,44 +9,41 @@ const { logAudit } = require('../helpers/auditLogger');
 const tradeService = require('../services/tradeService');
 
 function removeFromFeaturedCards(user, cardId) {
-  if (!user.featuredCards) return;
-  user.featuredCards = user.featuredCards.filter(
-    (c) => c._id.toString() !== cardId.toString()
-  );
+    if (!user.featuredCards) return;
+    user.featuredCards = user.featuredCards.filter(
+        (c) => c._id.toString() !== cardId.toString()
+    );
 }
 
-// Create a new trade
 const createTrade = async (req, res) => {
-  const tradeSchema = Joi.object({
-    recipient: Joi.alternatives().try(Joi.string().required(), Joi.string().hex().length(24).required()),
-    offeredItems: Joi.array().items(Joi.string().hex().length(24)).required(),
-    requestedItems: Joi.array().items(Joi.string().hex().length(24)).required(),
-    offeredPacks: Joi.number().min(0).required(),
-    requestedPacks: Joi.number().min(0).required(),
-    counterOf: Joi.string().hex().length(24).optional()
-  });
+    const tradeSchema = Joi.object({
+        recipient: Joi.alternatives().try(Joi.string().required(), Joi.string().hex().length(24).required()),
+        offeredItems: Joi.array().items(Joi.string().hex().length(24)).required(),
+        requestedItems: Joi.array().items(Joi.string().hex().length(24)).required(),
+        offeredPacks: Joi.number().min(0).required(),
+        requestedPacks: Joi.number().min(0).required(),
+        counterOf: Joi.string().hex().length(24).optional()
+    });
 
-  const { error } = tradeSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ popupMessage: 'Invalid trade data: ' + error.details[0].message });
-  }
+    const { error } = tradeSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ popupMessage: 'Invalid trade data: ' + error.details[0].message });
+    }
 
-  const senderId = req.userId;
-  const { recipient, offeredItems, requestedItems, offeredPacks, requestedPacks, counterOf } = req.body;
+    const senderId = req.userId;
+    const { recipient, offeredItems, requestedItems, offeredPacks, requestedPacks, counterOf } = req.body;
 
-  logAudit('Trade Create Attempt', { senderId, body: req.body });
+    logAudit('Trade Create Attempt', { senderId, body: req.body });
 
-  const result = await tradeService.createTrade(senderId, { recipient, offeredItems, requestedItems, offeredPacks, requestedPacks, counterOf });
+    const result = await tradeService.createTrade(senderId, { recipient, offeredItems, requestedItems, offeredPacks, requestedPacks, counterOf });
 
-  if (!result.success) {
-    return res.status(result.status || 500).json({ popupMessage: result.message });
-  }
+    if (!result.success) {
+        return res.status(result.status || 500).json({ popupMessage: result.message });
+    }
 
-  return res.status(201).json(result.trade);
+    return res.status(201).json(result.trade);
 };
 
-// The rest of the functions remain unchanged for now
-// Update trade status (accept, reject, or cancel)
 const updateTradeStatus = async (req, res) => {
     const { tradeId } = req.params;
     const { status } = req.body;
@@ -56,11 +53,11 @@ const updateTradeStatus = async (req, res) => {
     });
     const { error } = statusSchema.validate(req.body);
     if (error) {
+        console.error("[Trade Status Update] Joi validation error:", error.details[0].message);
         return res.status(400).json({ message: 'Invalid status update: ' + error.details[0].message });
     }
 
-    console.log(`[Trade Status Update] Received request to ${status} trade with ID: ${tradeId}`);
-
+    console.log(`[Trade Status Update] Received request to ${status} trade with ID: ${tradeId} by UserID: ${req.userId}`);
     logAudit('Trade Status Update Attempt', { userId: req.userId, tradeId, newStatus: status });
 
     const session = await mongoose.startSession();
@@ -69,206 +66,231 @@ const updateTradeStatus = async (req, res) => {
     try {
         const trade = await Trade.findById(tradeId).session(session);
         if (!trade) {
-            console.log("[Trade Status Update] Trade not found");
+            console.log(`[Trade Status Update] Trade with ID ${tradeId} not found.`);
             await session.abortTransaction();
             session.endSession();
             return res.status(404).json({ message: "Trade not found" });
         }
+        console.log(`[Trade Status Update] Found trade: ${trade._id}, current status: ${trade.status}`);
+        console.log(`[Trade Status Update] Trade sender: ${trade.sender}, recipient: ${trade.recipient}`);
+        console.log(`[Trade Status Update] Offered Items: ${trade.offeredItems.length}, Requested Items: ${trade.requestedItems.length}`);
+        console.log(`[Trade Status Update] Offered Packs: ${trade.offeredPacks}, Requested Packs: ${trade.requestedPacks}`);
 
-        // Fetch both sender and recipient first
         const sender = await User.findById(trade.sender).session(session);
         const recipient = await User.findById(trade.recipient).session(session);
         if (!sender || !recipient) {
+            console.log("[Trade Status Update] Sender or Recipient user not found.");
             await session.abortTransaction();
             session.endSession();
             return res.status(404).json({ message: "Sender or Recipient not found" });
         }
-
-        // Now call achievements check
-        const { checkAndGrantAchievements } = require('../helpers/achievementHelper');
-        await checkAndGrantAchievements(sender);
-        await checkAndGrantAchievements(recipient);
-
-        if (!sender || !recipient) { // This check is now redundant but kept for safety, can be removed later if desired
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(404).json({ message: "Sender or Recipient not found" });
-        }
+        console.log(`[Trade Status Update] Sender: ${sender.username} (${sender._id}), Recipient: ${recipient.username} (${recipient._id})`);
 
         const isRecipient = trade.recipient.toString() === req.userId;
         const isSender = trade.sender.toString() === req.userId;
+        console.log(`[Trade Status Update] Is recipient making request? ${isRecipient}. Is sender making request? ${isSender}.`);
 
-        // Only the recipient can accept or reject, only the sender can cancel
+        if (trade.status !== 'pending') {
+            console.log(`[Trade Status Update] Trade is not pending (current status: ${trade.status}). Cannot change status to ${status}.`);
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(400).json({ message: `Trade is already ${trade.status}. Cannot update.` });
+        }
+
         if ((['accepted', 'rejected'].includes(status) && !isRecipient) ||
             (status === 'cancelled' && !isSender)) {
-            console.log("[Trade Status Update] Unauthorized action");
+            console.log("[Trade Status Update] Unauthorized action. User is not the correct party to perform this action.");
             await session.abortTransaction();
             session.endSession();
             return res.status(403).json({ message: "Unauthorized action" });
         }
 
-        if (!['accepted', 'rejected', 'cancelled'].includes(status)) {
-            console.log("[Trade Status Update] Invalid status provided");
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(400).json({ message: "Invalid status" });
-        }
+        let senderUpdates = {};
+        let recipientUpdates = {};
+        let senderCardsToUpdate = [];
+        let recipientCardsToUpdate = [];
 
-        // If accepted, perform the card/pack exchange
+
         if (status === 'accepted') {
             console.log("[Trade Status Update] Processing trade acceptance...");
 
             if (sender.packs < trade.offeredPacks) {
+                console.log(`[Trade Status Update] Sender (${sender.username}) does not have enough packs. Has: ${sender.packs}, Needs: ${trade.offeredPacks}`);
                 await session.abortTransaction();
                 session.endSession();
                 return res.status(400).json({ message: "Sender does not have enough packs" });
             }
             if (recipient.packs < trade.requestedPacks) {
+                console.log(`[Trade Status Update] Recipient (${recipient.username}) does not have enough packs. Has: ${recipient.packs}, Needs: ${trade.requestedPacks}`);
                 await session.abortTransaction();
                 session.endSession();
                 return res.status(400).json({ message: "Recipient does not have enough packs" });
             }
-            sender.packs = sender.packs - trade.offeredPacks + trade.requestedPacks;
-            recipient.packs = recipient.packs - trade.requestedPacks + trade.offeredPacks;
+            console.log(`[Trade Status Update] Packs before transaction - Sender: ${sender.packs}, Recipient: ${recipient.packs}`);
 
-            // Move cards to escrow before transfer
-            const offeredCardsDetails = sender.cards.filter(card =>
-                trade.offeredItems.some(itemId => itemId.equals(card._id))
-            );
-            const requestedCardsDetails = recipient.cards.filter(card =>
-                trade.requestedItems.some(itemId => itemId.equals(card._id))
-            );
+            senderUpdates.packs = sender.packs - trade.offeredPacks + trade.requestedPacks;
+            recipientUpdates.packs = recipient.packs - trade.requestedPacks + trade.offeredPacks;
+            console.log(`[Trade Status Update] Packs after calculation - Sender: ${senderUpdates.packs}, Recipient: ${recipientUpdates.packs}`);
 
-            // Mark all involved cards as 'escrow'
-            offeredCardsDetails.forEach(card => {
-                card.status = 'escrow';
-            });
-            requestedCardsDetails.forEach(card => {
-                card.status = 'escrow';
-            });
-
-            await sender.save({ session });
-            await recipient.save({ session });
-
-            // Transfer ownership after escrow
-            offeredCardsDetails.forEach(card => {
-                const index = sender.cards.findIndex(c => c._id.toString() === card._id.toString());
-                if (index !== -1) {
-                    const cardObj = sender.cards.splice(index, 1)[0];
-                    removeFromFeaturedCards(sender, cardObj._id);
-                    cardObj.status = 'available';
-                    cardObj.acquiredAt = new Date();
-                    recipient.cards.push(cardObj);
-                } else {
-                    console.warn(`Offered card with ID ${card._id} not found in sender's collection.`);
+            const offeredCardsDetails = [];
+            for (const offeredItemId of trade.offeredItems) {
+                const card = sender.cards.find(c => c._id.equals(offeredItemId));
+                if (!card) {
+                    console.warn(`[Trade Status Update] Sender (${sender.username}) missing offered card: ${offeredItemId}`);
+                    await session.abortTransaction();
+                    session.endSession();
+                    return res.status(400).json({ message: `Sender is missing an offered card.` });
                 }
-            });
+                offeredCardsDetails.push(card);
+            }
 
-            requestedCardsDetails.forEach(card => {
-                const index = recipient.cards.findIndex(c => c._id.toString() === card._id.toString());
-                if (index !== -1) {
-                    const cardObj = recipient.cards.splice(index, 1)[0];
-                    removeFromFeaturedCards(recipient, cardObj._id);
-                    cardObj.status = 'available';
-                    cardObj.acquiredAt = new Date();
-                    sender.cards.push(cardObj);
-                } else {
-                    console.warn(`Requested card with ID ${card._id} not found in recipient's collection.`);
+            const requestedCardsDetails = [];
+            for (const requestedItemId of trade.requestedItems) {
+                const card = recipient.cards.find(c => c._id.equals(requestedItemId));
+                if (!card) {
+                    console.warn(`[Trade Status Update] Recipient (${recipient.username}) missing requested card: ${requestedItemId}`);
+                    await session.abortTransaction();
+                    session.endSession();
+                    return res.status(400).json({ message: `Recipient is missing a requested card.` });
                 }
-            });
+                requestedCardsDetails.push(card);
+            }
+            console.log(`[Trade Status Update] All offered and requested cards found in respective collections.`);
 
-            await sender.save({ session });
-            await recipient.save({ session });
+            const newSenderCards = sender.cards.filter(card =>
+                !trade.offeredItems.some(itemId => itemId.equals(card._id))
+            ).concat(requestedCardsDetails.map(card => {
+                removeFromFeaturedCards(recipient, card._id);
+                card.status = 'available';
+                card.acquiredAt = new Date();
+                return card;
+            }));
 
-            // Mark cards as available in the sender's collection
-            await User.updateOne(
-                { _id: sender._id, "cards._id": { $in: offeredCardsDetails.map(c => c._id) } },
-                { $set: { "cards.$[element].status": 'available' } },
-                { arrayFilters: [{ "element._id": { $in: offeredCardsDetails.map(c => c._id) } }] }
-            ).session(session);
+            const newRecipientCards = recipient.cards.filter(card =>
+                !trade.requestedItems.some(itemId => itemId.equals(card._id))
+            ).concat(offeredCardsDetails.map(card => {
+                removeFromFeaturedCards(sender, card._id);
+                card.status = 'available';
+                card.acquiredAt = new Date();
+                return card;
+            }));
 
-            // Mark cards as available in the recipient's collection
-            await User.updateOne(
-                { _id: recipient._id, "cards._id": { $in: requestedCardsDetails.map(c => c._id) } },
-                { $set: { "cards.$[element].status": 'available' } },
-                { arrayFilters: [{ "element._id": { $in: requestedCardsDetails.map(c => c._id) } }] }
-            ).session(session);
+            senderUpdates.cards = newSenderCards;
+            recipientUpdates.cards = newRecipientCards;
+            console.log(`[Trade Status Update] New card arrays constructed in memory.`);
 
-            // Cleanup conflicting trades involving traded cards
+            senderUpdates.xp = (sender.xp || 0) + 20;
+            recipientUpdates.xp = (recipient.xp || 0) + 20;
+            senderUpdates.level = Math.floor(senderUpdates.xp / 100) + 1;
+            recipientUpdates.level = Math.floor(recipientUpdates.xp / 100) + 1;
+            senderUpdates.completedTrades = (sender.completedTrades || 0) + 1;
+            recipientUpdates.completedTrades = (recipient.completedTrades || 0) + 1;
+            console.log("[Trade Status Update] XP and completed trades prepared.");
+
             const tradedCardIds = [...trade.offeredItems, ...trade.requestedItems];
+            console.log(`[Trade Status Update] Cleaning up other pending trades/listings involving traded cards: ${tradedCardIds.length} cards.`);
 
-            await Trade.bulkWrite([
-              {
-                updateMany: {
-                  filter: {
-                    _id: { $ne: trade._id },
-                    status: 'pending',
-                    $or: [
-                      { offeredItems: { $in: tradedCardIds } },
-                      { requestedItems: { $in: tradedCardIds } }
-                    ]
-                  },
-                  update: {
-                    $set: { status: 'cancelled', cancellationReason: 'Card traded in another transaction' }
-                  }
-                }
-              }
-            ], { session });
+            const tradeUpdateOperations = [];
+            if (tradedCardIds.length > 0) {
+                tradeUpdateOperations.push({
+                    updateMany: {
+                        filter: {
+                            _id: { $ne: trade._id },
+                            status: 'pending',
+                            $or: [
+                                { offeredItems: { $in: tradedCardIds } },
+                                { requestedItems: { $in: tradedCardIds } }
+                            ]
+                        },
+                        update: {
+                            $set: { status: 'cancelled', cancellationReason: 'Card traded in another transaction' }
+                        }
+                    }
+                });
+            }
 
-            await MarketListing.bulkWrite([
-              {
-                updateMany: {
-                  filter: {
-                    "card._id": { $in: tradedCardIds },
-                    status: 'active'
-                  },
-                  update: {
-                    $set: { status: 'cancelled', cancellationReason: 'Card traded in another transaction' }
-                  }
-                }
-              }
-            ], { session });
+            const marketListingUpdateOperations = [];
+            if (tradedCardIds.length > 0) {
+                marketListingUpdateOperations.push({
+                    updateMany: {
+                        filter: {
+                            "card._id": { $in: tradedCardIds },
+                            status: 'active'
+                        },
+                        update: {
+                            $set: { status: 'cancelled', cancellationReason: 'Card traded in another transaction' }
+                        }
+                    }
+                });
+            }
+
+            if (tradeUpdateOperations.length > 0) {
+                await Trade.bulkWrite(tradeUpdateOperations, { session });
+                console.log("[Trade Status Update] Other conflicting pending trades cancelled.");
+            }
+            if (marketListingUpdateOperations.length > 0) {
+                await MarketListing.bulkWrite(marketListingUpdateOperations, { session });
+                console.log("[Trade Status Update] Conflicting market listings cancelled.");
+            }
+
         } else if (status === 'rejected' || status === 'cancelled') {
+            console.log(`[Trade Status Update] Processing trade ${status}. Marking cards as available.`);
             const offeredCardIds = trade.offeredItems;
             const requestedCardIds = trade.requestedItems;
 
-            // Mark offered cards as available in the sender's collection
-            await User.updateOne(
-                { _id: sender._id, "cards._id": { $in: offeredCardIds } },
-                { $set: { "cards.$[element].status": 'available' } },
-                { arrayFilters: [{ "element._id": { $in: offeredCardIds } }] }
-            ).session(session);
+            senderCardsToUpdate = offeredCardIds;
+            recipientCardsToUpdate = requestedCardIds;
 
-            // Mark requested cards as available in the recipient's collection
-            await User.updateOne(
-                { _id: recipient._id, "cards._id": { $in: requestedCardIds } },
-                { $set: { "cards.$[element].status": 'available' } },
-                { arrayFilters: [{ "element._id": { $in: requestedCardIds } }] }
-            ).session(session);
+            console.log(`[Trade Status Update] Card IDs prepared for status update.`);
         }
 
-        // Update trade status for accepted, rejected, or cancelled
+        if (Object.keys(senderUpdates).length > 0) {
+            Object.assign(sender, senderUpdates);
+            await sender.save({ session });
+            console.log(`[Trade Status Update] Sender document saved with all changes.`);
+        }
+        if (senderCardsToUpdate.length > 0 && !Object.keys(senderUpdates).length) {
+            await User.updateOne(
+                { _id: sender._id, "cards._id": { $in: senderCardsToUpdate } },
+                { $set: { "cards.$[element].status": 'available' } },
+                { arrayFilters: [{ "element._id": { $in: senderCardsToUpdate } }] }
+            ).session(session);
+            console.log(`[Trade Status Update] Sender's relevant cards marked available via updateOne.`);
+        }
+
+
+        if (Object.keys(recipientUpdates).length > 0) {
+            Object.assign(recipient, recipientUpdates);
+            await recipient.save({ session });
+            console.log(`[Trade Status Update] Recipient document saved with all changes.`);
+        }
+        if (recipientCardsToUpdate.length > 0 && !Object.keys(recipientUpdates).length) {
+            await User.updateOne(
+                { _id: recipient._id, "cards._id": { $in: recipientCardsToUpdate } },
+                { $set: { "cards.$[element].status": 'available' } },
+                { arrayFilters: [{ "element._id": { $in: recipientCardsToUpdate } }] }
+            ).session(session);
+            console.log(`[Trade Status Update] Recipient's relevant cards marked available via updateOne.`);
+        }
+
+
         trade.status = status;
         await trade.save({ session });
+        console.log(`[Trade Status Update] Trade status updated to ${status} in database.`);
 
-        // Award XP if trade accepted
         if (status === 'accepted') {
-            sender.xp = (sender.xp || 0) + 20;
-            recipient.xp = (recipient.xp || 0) + 20;
-            sender.level = Math.floor(sender.xp / 100) + 1;
-            recipient.level = Math.floor(recipient.xp / 100) + 1;
-            sender.completedTrades = (sender.completedTrades || 0) + 1;
-            recipient.completedTrades = (recipient.completedTrades || 0) + 1;
-            await sender.save({ session });
-            await recipient.save({ session });
+            const { checkAndGrantAchievements } = require('../helpers/achievementHelper');
+            await checkAndGrantAchievements(sender);
+            await checkAndGrantAchievements(recipient);
+            console.log("[Trade Status Update] Achievements checked/granted.");
         }
+
 
         await session.commitTransaction();
         session.endSession();
 
-        console.log(`[Trade Status Update] Trade ${status} successfully`);
+        console.log(`[Trade Status Update] Trade ${status} successfully. Transaction committed.`);
 
-        // Send notifications based on the status change:
         if (status === 'accepted') {
             await createNotification(sender._id, {
                 type: 'Trade Update',
@@ -331,7 +353,7 @@ const updateTradeStatus = async (req, res) => {
 
         res.status(200).json({ message: `Trade ${status} successfully`, trade });
     } catch (error) {
-        console.error("[Trade Status Update] Error:", error);
+        console.error("[Trade Status Update] Uncaught error during transaction:", error);
         await session.abortTransaction();
         session.endSession();
         res.status(500).json({ message: "Failed to update trade status", error: error.message });
@@ -501,8 +523,8 @@ const getTradesForUser = async (req, res) => {
 };
 
 module.exports = {
-  createTrade,
-  getTradesForUser,
-  getPendingTrades,
-  updateTradeStatus
+    createTrade,
+    getTradesForUser,
+    getPendingTrades,
+    updateTradeStatus
 };

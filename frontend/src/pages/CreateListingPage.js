@@ -1,26 +1,9 @@
-// src/pages/CreateListingPage.js
-import React, { useState, useEffect } from 'react';
-import { fetchUserCollection, fetchUserProfile, API_BASE_URL } from '../utils/api';
+import React, {useState, useEffect, useMemo, useCallback} from 'react';
+import {fetchUserCollection, fetchUserProfile, fetchCards, API_BASE_URL} from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import BaseCard from '../components/BaseCard';
-import { useNavigate } from 'react-router-dom';
-import "../styles/CreateListingPage.css";
-
-/*
-  CreateListingPage:
-  - Fetches the logged-in user's collection.
-  - Provides filtering and sorting options:
-      � Search by card name.
-      � Filter by rarity.
-      � Sort by name, mint number, rarity, or acquisition date.
-  - Displays the collection in a fixed grid:
-      � 4 cards per row.
-      � Fixed container height (showing about 2 rows; vertical scrolling if more).
-  - The collection container appears above a listing preview container.
-  - An instructional paragraph explains the page.
-  - When a card is selected, it is highlighted and a listing preview appears.
-  - The user can then click the "List This Card" button to submit the listing.
-*/
+import {useNavigate} from 'react-router-dom';
+import {rarities} from '../constants/rarities';
 
 const CreateListingPage = () => {
     const [collection, setCollection] = useState([]);
@@ -28,68 +11,91 @@ const CreateListingPage = () => {
     const [selectedCard, setSelectedCard] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [limitedCards, setLimitedCards] = useState([]);
 
-    // Filter/sort states
     const [search, setSearch] = useState('');
-    const [rarityFilter, setRarityFilter] = useState('');
+    const [selectedRarity, setSelectedRarity] = useState('');
     const [sortOption, setSortOption] = useState('acquiredAt');
     const [sortOrder, setSortOrder] = useState('desc');
+    const [showSlabbedOnly, setShowSlabbedOnly] = useState(false);
+    const [showLimitedOnly, setShowLimitedOnly] = useState(false);
+
+    const [rarityCount, setRarityCount] = useState({});
+    const [showFilters, setShowFilters] = useState(false);
 
     const navigate = useNavigate();
 
-    // Fetch user profile and collection on mount
     useEffect(() => {
-        const fetchCollection = async () => {
+        const fetchInitialData = async () => {
             try {
                 const profile = await fetchUserProfile();
-                const data = await fetchUserCollection(profile._id);
-                setCollection(data.cards || []);
-                setFilteredCollection(data.cards || []);
+                const collectionData = await fetchUserCollection(profile._id);
+                setCollection(collectionData.cards || []);
+
+                const catalogueData = await fetchCards({limit: 'all'});
+                setLimitedCards(catalogueData.cards.filter(c => !!c.availableFrom && !!c.availableTo));
             } catch (error) {
-                console.error("Error fetching collection:", error);
+                console.error("Error fetching initial data:", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchCollection();
+        fetchInitialData();
     }, []);
 
-    // Update filtered collection whenever filters or collection change
-    useEffect(() => {
-        let filtered = [...collection];
+    const isCardLimited = useCallback((card) => {
+        return limitedCards.some((lc) => lc.name === card.name);
+    }, [limitedCards]);
 
-        // Search filter by name
+    const preFilteredCollection = useMemo(() => {
+        let currentFiltered = [...collection];
         if (search) {
-            filtered = filtered.filter(card =>
+            currentFiltered = currentFiltered.filter(card =>
                 card.name.toLowerCase().includes(search.toLowerCase())
             );
         }
-
-        // Rarity filter
-        if (rarityFilter) {
-            filtered = filtered.filter(
-                card => card.rarity.toLowerCase() === rarityFilter.toLowerCase()
+        if (selectedRarity) {
+            currentFiltered = currentFiltered.filter(
+                card => (card.rarity && card.rarity.toLowerCase() === selectedRarity.toLowerCase())
             );
         }
+        return currentFiltered;
+    }, [collection, search, selectedRarity]);
 
-        // Sorting logic
-        filtered.sort((a, b) => {
+    const hasSlabbedCards = useMemo(() => preFilteredCollection.some(card => card.slabbed), [preFilteredCollection]);
+    const hasLimitedCardsInCollection = useMemo(() => preFilteredCollection.some(card => isCardLimited(card)), [preFilteredCollection, isCardLimited]);
+
+    useEffect(() => {
+        let currentFiltered = [...preFilteredCollection];
+        let currentRarityCounts = rarities.reduce((acc, r) => ({...acc, [r.name]: 0}), {});
+
+        preFilteredCollection.forEach(card => {
+            const cardRarity = card.rarity;
+            if (cardRarity && currentRarityCounts.hasOwnProperty(cardRarity)) {
+                currentRarityCounts[cardRarity]++;
+            }
+        });
+        setRarityCount(currentRarityCounts);
+
+        if (showSlabbedOnly) {
+            currentFiltered = currentFiltered.filter(card => card.slabbed);
+        }
+
+        if (showLimitedOnly) {
+            currentFiltered = currentFiltered.filter(card => isCardLimited(card));
+        }
+
+        currentFiltered.sort((a, b) => {
             if (sortOption === 'mintNumber') {
-                const aNum = parseInt(a.mintNumber, 10);
-                const bNum = parseInt(b.mintNumber, 10);
-                return sortOrder === 'asc' ? aNum - bNum : bNum - aNum;
+                return sortOrder === 'asc' ? a.mintNumber - b.mintNumber : b.mintNumber - a.mintNumber;
             } else if (sortOption === 'name') {
-                return sortOrder === 'asc'
-                    ? a.name.localeCompare(b.name)
-                    : b.name.localeCompare(a.name);
+                return sortOrder === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
             } else if (sortOption === 'rarity') {
-                // Using a fixed ordering array for rarities
-                const rarityOrder = ['basic', 'common', 'standard', 'uncommon', 'rare', 'epic', 'legendary', 'mythic', 'unique', 'divine'];
-                const aIndex = rarityOrder.indexOf(a.rarity.toLowerCase());
-                const bIndex = rarityOrder.indexOf(b.rarity.toLowerCase());
+                const rarityOrder = rarities.map(r => r.name.toLowerCase());
+                const aIndex = rarityOrder.indexOf(a.rarity?.toLowerCase());
+                const bIndex = rarityOrder.indexOf(b.rarity?.toLowerCase());
                 return sortOrder === 'asc' ? aIndex - bIndex : bIndex - aIndex;
             } else if (sortOption === 'acquiredAt') {
-                // Assuming each card has an acquiredAt property (ISO date string)
                 return sortOrder === 'asc'
                     ? new Date(a.acquiredAt) - new Date(b.acquiredAt)
                     : new Date(b.acquiredAt) - new Date(a.acquiredAt);
@@ -97,45 +103,43 @@ const CreateListingPage = () => {
             return 0;
         });
 
-        setFilteredCollection(filtered);
-    }, [collection, search, rarityFilter, sortOption, sortOrder]);
+        setFilteredCollection(currentFiltered);
+    }, [preFilteredCollection, showSlabbedOnly, showLimitedOnly, sortOption, sortOrder, isCardLimited]);
 
-    // Handle card selection
     const handleCardSelect = (card) => {
-        setSelectedCard(card);
+        setSelectedCard(prev => (prev && prev._id === card._id ? null : card));
     };
 
-    // Submit the selected card as a new listing
+    const toggleSortOrder = () => {
+        setSortOrder(prevOrder => (prevOrder === 'asc' ? 'desc' : 'asc'));
+    };
+
+    const handleRarityChange = (rarityName) => {
+        const normalizedRarityName = rarityName.toLowerCase();
+        setSelectedRarity(prevRarity =>
+            prevRarity === normalizedRarityName ? '' : normalizedRarityName
+        );
+    };
+
     const handleListCard = async () => {
         if (!selectedCard) return;
         setIsSubmitting(true);
         try {
-            const cardToSend = { ...selectedCard };
+            const token = localStorage.getItem('token');
 
-            // Remove forbidden fields to satisfy backend validation
-            delete cardToSend._id;
-            delete cardToSend.status;
-            delete cardToSend.acquiredAt;
-            delete cardToSend.__v;
-            delete cardToSend.owner; // if present
-            delete cardToSend.offers; // if present
-            delete cardToSend.createdAt; // if present
-            delete cardToSend.updatedAt; // if present
-
-            if (cardToSend.imageUrl && cardToSend.imageUrl.startsWith('/')) {
-                const baseUrl = window.location.origin;
-                cardToSend.imageUrl = baseUrl + cardToSend.imageUrl;
-            } else if (cardToSend.imageUrl && cardToSend.imageUrl.startsWith('http')) {
-                // leave as is
-            }
+            const cardToList = { ...selectedCard };
+            delete cardToList._id;
+            delete cardToList.acquiredAt;
+            delete cardToList.status;
+            delete cardToList.__v;
 
             const res = await fetch(`${API_BASE_URL}/api/market/listings`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ card: cardToSend }),
+                body: JSON.stringify({ card: cardToList }),
             });
 
             if (res.ok) {
@@ -153,99 +157,162 @@ const CreateListingPage = () => {
         }
     };
 
-    if (loading) return <LoadingSpinner />;
+    if (loading) return <LoadingSpinner/>;
 
     return (
-        <div className="create-listing-page">
-            <h1 className="page-title">Create a Market Listing</h1>
-            <p className="info-text">
-                Use this page to list a card from your collection on the market. First, use the filters below to search and sort your collection. Then, select a card to preview your listing, and finally click "List This Card" to post your listing.
-            </p>
-
-            {/* Filters & Sorting Controls */}
-            <div className="listing-filters">
-                <input
-                    type="text"
-                    placeholder="Search by card name..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
-                <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
-                    <option value="">All Rarities</option>
-                    <option value="Basic">Basic</option>
-                    <option value="Common">Common</option>
-                    <option value="Standard">Standard</option>
-                    <option value="Uncommon">Uncommon</option>
-                    <option value="Rare">Rare</option>
-                    <option value="Epic">Epic</option>
-                    <option value="Legendary">Legendary</option>
-                    <option value="Mythic">Mythic</option>
-                    <option value="Unique">Unique</option>
-                    <option value="Divine">Divine</option>
-                </select>
-                <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
-                    <option value="name">Name</option>
-                    <option value="mintNumber">Mint Number</option>
-                    <option value="rarity">Rarity</option>
-                    <option value="acquiredAt">Acquisition Date</option>
-                </select>
-                <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
-                    <option value="asc">Ascending</option>
-                    <option value="desc">Descending</option>
-                </select>
+        <div className="page">
+            <h1>Create a Market Listing</h1>
+            <div className="section-card narrow">
+                Use this page to list a card from your collection on the market. First, use the filters below to
+                search
+                and sort your collection. Then, select a card to preview your listing, and finally click "List This
+                Card" to post your listing.
             </div>
 
-            {/* Collection Container */}
-            <div className="collection-container">
-                <h2 className="collection-heading">Your Collection</h2>
-                {filteredCollection.length === 0 ? (
-                    <p className="no-cards-message">No cards available to list.</p>
-                ) : (
-                    <div className="collection-grid">
-                        {filteredCollection.map((card) => (
-                            <div
-                                key={card._id}
-                                className={`card-item ${selectedCard && selectedCard._id === card._id ? 'selected' : ''}`}
-                                onClick={() => handleCardSelect(card)}
-                            >
-                                <BaseCard
-                                    name={card.name}
-                                    image={card.imageUrl}
-                                    description={card.flavorText}
-                                    rarity={card.rarity}
-                                    mintNumber={card.mintNumber}
-                                    modifier={card.modifier}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            {/* Listing Preview */}
-            <div className="listing-preview-container">
-                <h2 className="preview-heading">Listing Preview</h2>
-                {selectedCard ? (
-                    <div className="preview-card">
-                        <BaseCard
-                            name={selectedCard.name}
-                            image={selectedCard.imageUrl}
-                            description={selectedCard.flavorText}
-                            rarity={selectedCard.rarity}
-                            mintNumber={selectedCard.mintNumber}
-                            modifier={selectedCard.modifier}
-                        />
-                        <button
-                            className="list-card-button"
-                            onClick={handleListCard}
-                            disabled={isSubmitting}
-                        >
-                            {isSubmitting ? 'Listing...' : 'List This Card'}
+            <div className="row-container three-one">
+                <div className="column-container">
+                    <h2>Your Collection</h2>
+                    <div className="stats">
+                        <button onClick={() => setShowFilters(!showFilters)} className="stat">
+                            {showFilters ? "Hide Filters" : "Show Filters"}
+                            <i className={`fa-solid ${showFilters ? 'fa-filter' : 'fa-filter'}`}/>
                         </button>
                     </div>
-                ) : (
-                    <p className="no-preview-message">Select a card to preview your listing.</p>
-                )}
+                    <br/>
+                    {collection.length === 0 ? (
+                        <p className="no-cards-message">You have no cards in your collection to list.</p>
+                    ) : (
+                        <>
+                            {showFilters && (
+                                <div className="section-card filters-panel" style={{marginBottom: "2rem"}}>
+                                    <div className="filters">
+                                        <div className="filter-card">
+                                            <input
+                                                type="text"
+                                                placeholder="Search your collection by card name..."
+                                                value={search}
+                                                onChange={(e) => setSearch(e.target.value)}
+                                                className="filter-input"
+                                            />
+                                            <div className="sort-controls">
+                                                <div className="filter-button-group horizontal">
+                                                    <select value={sortOption}
+                                                            onChange={(e) => setSortOption(e.target.value)}
+                                                            className="filter-select">
+                                                        <option value="name">Name</option>
+                                                        <option value="mintNumber">Mint Number</option>
+                                                        <option value="rarity">Rarity</option>
+                                                        <option value="acquiredAt">Acquisition Date</option>
+                                                    </select>
+                                                    <div className="checkbox-group button-row">
+                                                        <div className="sort-order-toggle checkbox-wrapper">
+                                                            <label htmlFor="sortOrderToggle">
+                                                                <i className={`fa-regular ${sortOrder === 'asc' ? 'fa-arrow-down-a-z' : 'fa-arrow-up-a-z'}`}></i>
+                                                            </label>
+                                                            <input type="checkbox" id="sortOrderToggle" checked={sortOrder === 'asc'} onChange={toggleSortOrder}/>
+                                                        </div>
+                                                        <div className={`checkbox-wrapper ${!hasSlabbedCards ? 'disabled' : ''}`}>
+                                                            <label htmlFor="slabbedCheckbox" data-tooltip="Show only Slabbed Cards">
+                                                                <i className={`fa-${showSlabbedOnly ? 'solid' : 'regular'} fa-square`}/>
+                                                            </label>
+                                                            <input type="checkbox" id="slabbedCheckbox" checked={showSlabbedOnly} onChange={(e) => setShowSlabbedOnly(e.target.checked)} disabled={!hasSlabbedCards}/>
+                                                        </div>
+                                                        <div className={`checkbox-wrapper ${!hasLimitedCardsInCollection ? 'disabled' : ''}`}>
+                                                            <label htmlFor="limitedCheckbox" data-tooltip="Show only Limited Cards">
+                                                                <i className={`fa-${showLimitedOnly ? 'solid' : 'regular'} fa-crown`}/>
+                                                            </label>
+                                                            <input type="checkbox" id="limitedCheckbox" checked={showLimitedOnly} onChange={(e) => setShowLimitedOnly(e.target.checked)} disabled={!hasLimitedCardsInCollection}/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="rarity-key">
+                                            {rarities.map((r) => {
+                                                const normalizedRarityName = r.name.toLowerCase();
+                                                return (
+                                                    <button
+                                                        key={normalizedRarityName}
+                                                        type="button"
+                                                        onClick={() => handleRarityChange(r.name)}
+                                                        className={`rarity-item ${normalizedRarityName} ${selectedRarity === normalizedRarityName ? 'active' : ''}`}
+                                                        disabled={rarityCount[r.name] === 0 && selectedRarity !== normalizedRarityName}
+                                                        style={{"--item-color": r.color}}
+                                                    >
+                                                        {r.name}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            {filteredCollection.length > 0 ? (
+                                <div className="card-tile-grid mini height-grid">
+                                    {filteredCollection.map((card) => (
+                                        <div
+                                            key={card._id}
+                                            className={`card-tile ${selectedCard && selectedCard._id === card._id ? 'selected' : ''} ${card.gradingRequestedAt ? 'busy' : ''}`}
+                                        >
+                                            <BaseCard
+                                                name={card.name}
+                                                image={card.imageUrl}
+                                                description={card.flavorText}
+                                                rarity={card.rarity}
+                                                mintNumber={card.mintNumber}
+                                                modifier={card.modifier}
+                                                slabbed={card.slabbed}
+                                                grade={card.grade}
+                                                limited={isCardLimited(card)}
+                                                miniCard={true}
+                                            />
+                                            <div className="actions">
+                                                <button className={`primary-button ${card._id === selectedCard?._id ? 'active' : ''}`} onClick={() => handleCardSelect(card)}
+                                                        disabled={card.gradingRequestedAt}>
+                                                    {card.gradingRequestedAt ? 'Busy' : card._id === selectedCard?._id ? 'Unselect' : 'Select'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="no-cards-message">No cards available to list matching your filters.</p>
+                            )}
+                        </>
+                    )}
+                </div>
+
+                <div className="column-container">
+                    <h2>Listing Preview</h2>
+                    <div className="section-card">
+                        {selectedCard ? (
+                            <div className={`card-tile ${selectedCard.slabbed ? 'slabbed' : ''}`}>
+                                <BaseCard
+                                    name={selectedCard.name}
+                                    image={selectedCard.imageUrl}
+                                    description={selectedCard.flavorText}
+                                    rarity={selectedCard.rarity}
+                                    mintNumber={selectedCard.mintNumber}
+                                    modifier={selectedCard.modifier}
+                                    slabbed={selectedCard.slabbed}
+                                    grade={selectedCard.grade}
+                                    limited={isCardLimited(selectedCard)}
+                                />
+                                <div className="actions">
+                                    <button
+                                        className="primary-button"
+                                        onClick={handleListCard}
+                                        disabled={isSubmitting}
+                                    >
+                                        {isSubmitting ? 'Listing...' : 'List This Card'}
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="no-preview-message">Select a card to preview your listing.</p>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );

@@ -1,282 +1,180 @@
 /* Admin Actions Page */
 .aa-admin-actions-page {
-    padding: 4rem 1.5rem 2rem;
-    max-width: 1800px;
-    margin: 0 auto;
-    background-color: #1a1a1a;
-    color: #f5f5dc;
-    min-height: 100vh;
+  padding: 4rem 1.5rem 2rem;
+  max-width: 1800px;
+  margin: 0 auto;
+  background-color: #1a1a1a;
+  color: #f5f5dc;
+  min-height: 100vh;
+  /* Form styling */
+  /* Status message */
+  /* Search bar */
+  /* User packs info */
+  /* Card details */
+  /* Card Availability Editor */
 }
-
-.page-title {
-    text-align: center;
-    margin-top: 4rem;
-    margin-bottom: 2.5rem;
-    font-size: 2.8rem;
-    font-weight: 700;
-    letter-spacing: 1px;
+.aa-admin-actions-page .page-title {
+  text-align: center;
+  margin-top: 4rem;
+  margin-bottom: 2.5rem;
+  font-size: 2.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
-
-.aa-admin-panels {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 3rem;
-    align-items: start;
-    grid-auto-rows: auto;
+.aa-admin-actions-page .aa-admin-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 3rem;
+  align-items: start;
+  grid-auto-rows: auto;
 }
-
-.aa-panel {
-    flex: 1;
-    min-width: 320px;
-    min-height: 400px;
-    padding: 30px;
-    background: var(--surface-dark);
-    border: 1px solid var(--border-dark);
-    border-radius: 16px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
+.aa-admin-actions-page .aa-panel {
+  flex: 1;
+  min-width: 320px;
+  min-height: 400px;
+  padding: 30px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-dark);
+  border-radius: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
-
-/* Enhanced mobile responsive styles */
-@media (max-width: 768px) {
-    .aa-admin-actions-page {
-        padding: 3rem 1rem 2rem;
-    }
-
-    .page-title {
-        font-size: 2.2rem;
-        margin-top: 3rem;
-        margin-bottom: 2rem;
-    }
-
-    .aa-admin-panels {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-    }
-
-    .aa-panel {
-        min-width: auto;
-        padding: 1.5rem;
-    }
+.aa-admin-actions-page .aa-admin-actions-form,
+.aa-admin-actions-page .aa-admin-packs-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
-
-@media (max-width: 480px) {
-    .aa-admin-actions-page {
-        padding: 2rem 0.75rem 1.5rem;
-    }
-
-    .page-title {
-        font-size: 1.8rem;
-        margin-top: 2.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .aa-panel {
-        padding: 1.25rem;
-        min-height: auto;
-    }
-
-    .aa-form-group input,
-    .aa-form-group textarea,
-    .aa-form-group select {
-        padding: 0.75rem;
-        font-size: 0.9rem;
-    }
-
-    .aa-admin-actions-form button,
-    .aa-admin-packs-form button,
-    .aa-reset-button {
-        padding: 0.8rem 1.5rem;
-        font-size: 1rem;
-    }
+.aa-admin-actions-page .aa-admin-actions-form .aa-form-group,
+.aa-admin-actions-page .aa-admin-packs-form .aa-form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
 }
-
-@media (max-width: 390px) {
-    .aa-admin-actions-page {
-        padding: 2rem 0.5rem 1rem;
-    }
-
-    .page-title {
-        font-size: 1.6rem;
-    }
-
-    .aa-panel {
-        padding: 1rem;
-    }
+.aa-admin-actions-page .aa-admin-actions-form .aa-form-group label,
+.aa-admin-actions-page .aa-admin-packs-form .aa-form-group label {
+  margin-bottom: 0.5rem;
+  font-weight: bold;
 }
-
-/* Form styling */
-.aa-admin-actions-form,
-.aa-admin-packs-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+.aa-admin-actions-page .aa-admin-actions-form .aa-form-group input,
+.aa-admin-actions-page .aa-admin-actions-form .aa-form-group textarea,
+.aa-admin-actions-page .aa-admin-actions-form .aa-form-group select,
+.aa-admin-actions-page .aa-admin-packs-form .aa-form-group input,
+.aa-admin-actions-page .aa-admin-packs-form .aa-form-group textarea,
+.aa-admin-actions-page .aa-admin-packs-form .aa-form-group select {
+  padding: 1rem;
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  background: var(--surface-darker);
+  color: #f5f5dc;
+  font-size: 1rem;
 }
-
-.aa-form-group {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 1rem;
+.aa-admin-actions-page .aa-admin-actions-form .aa-form-group textarea,
+.aa-admin-actions-page .aa-admin-packs-form .aa-form-group textarea {
+  resize: vertical;
+  min-height: 100px;
 }
-
-.aa-form-group label {
-    margin-bottom: 0.5rem;
-    font-weight: bold;
+.aa-admin-actions-page .aa-admin-actions-form button,
+.aa-admin-actions-page .aa-admin-packs-form button {
+  align-self: center;
+  padding: 1rem 2rem;
+  background: var(--brand-primary);
+  color: var(--background-dark);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: bold;
+  transition: background 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
 }
-
-.aa-form-group input,
-.aa-form-group textarea,
-.aa-form-group select {
-    padding: 1rem;
-    border: 1px solid var(--border-dark);
-    border-radius: 8px;
-    background: var(--surface-darker);
-    color: #f5f5dc;
-    font-size: 1rem;
+.aa-admin-actions-page .aa-admin-actions-form button:hover,
+.aa-admin-actions-page .aa-admin-packs-form button:hover {
+  background: var(--brand-secondary);
+  transform: scale(1.05);
 }
-
-.aa-form-group textarea {
-    resize: vertical;
-    min-height: 100px;
+.aa-admin-actions-page .aa-reset-button {
+  align-self: center;
+  padding: 1rem 2rem;
+  background: var(--brand-primary);
+  color: var(--background-dark);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: bold;
+  transition: background 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
 }
-
-/* Button styling */
-.aa-admin-actions-form button,
-.aa-admin-packs-form button,
-.aa-reset-button {
-    align-self: center;
-    padding: 1rem 2rem;
-    background: var(--brand-primary);
-    color: var(--background-dark);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1.1rem;
-    font-weight: bold;
-    transition: background 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+.aa-admin-actions-page .aa-reset-button:hover {
+  background: var(--brand-secondary);
+  transform: scale(1.05);
 }
-
-.aa-admin-actions-form button:hover,
-.aa-admin-packs-form button:hover,
-.aa-reset-button:hover {
-    background: var(--brand-secondary);
-    transform: scale(1.05);
+.aa-admin-actions-page .aa-status-message {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--brand-primary);
 }
-
-/* Status message */
-.aa-status-message {
-    text-align: center;
-    margin-top: 1.5rem;
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: var(--brand-primary);
+.aa-admin-actions-page .search-bar {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border: 1px solid var(--brand-primary);
+  border-radius: 0.5rem;
+  background-color: var(--surface-darker);
+  color: #f5f5dc;
+  width: 250px;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
 }
-
-/* Search bar */
-.search-bar {
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    border: 1px solid var(--brand-primary);
-    border-radius: 0.5rem;
-    background-color: var(--surface-darker);
-    color: #f5f5dc;
-    width: 250px;
-    box-sizing: border-box;
-    transition: all 0.3s ease;
+.aa-admin-actions-page .search-bar:focus {
+  outline: none;
+  border-color: var(--brand-secondary);
 }
-
-.search-bar:focus {
-    outline: none;
-    border-color: var(--brand-secondary);
+.aa-admin-actions-page .user-packs-info {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  color: var(--brand-secondary);
 }
-
-.search-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    max-width: 250px;
-    min-width: 200px;
-    width: auto;
-    max-height: 200px;
-    overflow-y: auto;
-    background-color: var(--surface-dark);
-    border: 1px solid var(--brand-primary);
-    border-radius: 0.5rem;
-    z-index: 9999;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+.aa-admin-actions-page .card-details {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--surface-darker);
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
 }
-
-.search-result-item {
-    padding: 0.75rem;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    color: #f5f5dc;
+.aa-admin-actions-page .card-details h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.4rem;
 }
-
-.search-result-item:hover {
-    background-color: var(--brand-primary);
-    color: #f5f5dc;
+.aa-admin-actions-page .card-details .rarity-info {
+  font-size: 1rem;
+  margin: 0.25rem 0;
+  color: var(--brand-secondary);
 }
-
-/* User packs info */
-.user-packs-info {
-    margin-top: 0.5rem;
-    font-size: 1rem;
-    color: var(--brand-secondary);
+.aa-admin-actions-page .user-profile-info, .aa-admin-actions-page .user-profile-info * {
+  cursor: default !important;
 }
-
-/* Card details */
-.card-details {
-    margin-top: 1rem;
-    padding: 1rem;
-    background: var(--surface-darker);
-    border: 1px solid var(--border-dark);
-    border-radius: 8px;
-}
-
-.card-details h3 {
-    margin: 0 0 0.5rem;
-    font-size: 1.4rem;
-}
-
-.rarity-info {
-    font-size: 1rem;
-    margin: 0.25rem 0;
-    color: var(--brand-secondary);
-}
-
-.user-profile-info,
-.user-profile-info * {
-    cursor: default !important;
-}
-
-/* Card Availability Editor */
-.card-availability-editor {
+.aa-admin-actions-page .card-availability-editor {
   display: flex;
   flex-wrap: wrap;
   gap: 2rem;
   margin-top: 1rem;
 }
-
-.card-availability-editor h3 {
+.aa-admin-actions-page .card-availability-editor h3 {
   margin-bottom: 1rem;
 }
-
-.card-availability-editor label {
+.aa-admin-actions-page .card-availability-editor label {
   display: block;
   margin-top: 1rem;
   margin-bottom: 0.5rem;
   font-weight: bold;
 }
-
-.card-availability-editor input[type="datetime-local"],
-.card-availability-editor input[type="text"] {
+.aa-admin-actions-page .card-availability-editor input[type=datetime-local],
+.aa-admin-actions-page .card-availability-editor input[type=text] {
   width: 100%;
   padding: 0.75rem 1rem;
   border: 1px solid var(--border-dark);
@@ -285,8 +183,7 @@
   color: #f5f5dc;
   font-size: 1rem;
 }
-
-.card-availability-editor button {
+.aa-admin-actions-page .card-availability-editor button {
   margin-top: 1.5rem;
   padding: 0.75rem 1.5rem;
   background: var(--brand-primary);
@@ -298,8 +195,16 @@
   font-weight: bold;
   transition: background 0.3s ease, transform 0.2s ease;
 }
-
-.card-availability-editor button:hover {
+.aa-admin-actions-page .card-availability-editor button:hover {
   background: var(--brand-secondary);
   transform: scale(1.05);
 }
+
+.admin-panel-grid {
+  display: grid;
+  margin-top: 3rem;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 3rem;
+}
+
+/*# sourceMappingURL=AdminActions.css.map */

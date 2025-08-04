@@ -4,6 +4,7 @@ import BaseCard from '../components/BaseCard';
 import {useNavigate} from 'react-router-dom';
 import '../styles/AdminDashboardPage.css';
 import moment from 'moment';
+import {getRarityColor, rarities} from "../constants/rarities";
 
 const AdminDashboardPage = ({user}) => {
     const navigate = useNavigate();
@@ -40,20 +41,6 @@ const AdminDashboardPage = ({user}) => {
     const [selectedPackTypeId, setSelectedPackTypeId] = useState('');
     const [forceModifier, setForceModifier] = useState(false);
 
-    // Rarity color mapping
-    const cardRarities = {
-        Basic: '#8D8D8D',
-        Common: '#64B5F6',
-        Standard: '#66BB6A',
-        Uncommon: '#1976D2',
-        Rare: '#AB47BC',
-        Epic: '#FFA726',
-        Legendary: '#e32232',
-        Mythic: 'hotpink',
-        Unique: 'black',
-        Divine: 'white',
-    };
-    const getRarityColor = (rarity) => cardRarities[rarity] || '#fff';
 
     // Fetch users with packs
     const fetchData = async () => {
@@ -161,10 +148,8 @@ const AdminDashboardPage = ({user}) => {
     // Open a pack for the selected user
     const openPackForUser = async () => {
         if (!selectedUser) return;
-        // Reset reveal index for new pack
         setPackAnimationDone(false);
         setCardsLoaded(false);
-        // Force remount video by updating packCounter
         setPackCounter((prev) => prev + 1);
         setLoading(true);
         setIsOpeningAnimation(true);
@@ -296,7 +281,7 @@ const AdminDashboardPage = ({user}) => {
     };
 
     return (
-        <div className="dashboard-container">
+        <div className="page full">
             {isOpeningAnimation && (
                 <div className="pack-opening-overlay">
                     <video
@@ -311,171 +296,186 @@ const AdminDashboardPage = ({user}) => {
                 </div>
             )}
 
-            <div className="grid-container">
-                {/* Users with Packs */}
-                <div className="users-with-packs">
-                    <h2>Users with Packs</h2>
-                    <div className="users-search">
-                        <input
-                            type="text"
-                            placeholder="Search users..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="users-search-input"
-                        />
-                    </div>
-                    <div className="users-filter">
-                        <button
-                            className={activeFilter === 'all' ? 'active' : ''}
-                            onClick={() => handleFilterChange('all')}
-                        >
-                            All Users
-                        </button>
-                        <button
-                            className={activeFilter === 'active' ? 'active' : ''}
-                            onClick={() => handleFilterChange('active')}
-                        >
-                            Active in Last 30 Minutes
-                        </button>
-                    </div>
-                    <table className="users-table">
-                        <thead>
-                        <tr>
-                            <th onClick={() => handleSort('username')}>Username</th>
-                            <th onClick={() => handleSort('packs')}>Unopened Packs</th>
-                            <th onClick={() => handleSort('preferredPack')}>Preferred Pack</th>
-                            <th onClick={() => handleSort('lastActive')}>Last Active</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {sortedUsers.map((u) => (
-                            <tr
-                                key={u._id}
-                                className={selectedUser?._id === u._id ? 'selected' : ''}
-                                onClick={() => toggleUserSelection(u)}
-                            >
-                                <td>{u.username}</td>
-                                <td>{u.packs}</td>
-                                <td>{u.preferredPack ? (u.preferredPack.name || u.preferredPack.type || 'Unnamed') : '-'}</td>
-                                <td>{u.lastActive ? moment(u.lastActive).fromNow() : 'Never'}</td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                </div>
+            <div className="top-section">
+                <div className="grid-container">
+                    <div className="section-card cam">
 
-                {/* Pack Opening Section */}
-                <div className="selected-user-section">
-                    {selectedUser && (
-                        <>
-                            <h2>Open Pack for {selectedUser.username}</h2>
-                            <select
-                                className="pack-type-select"
-                                value={selectedPackTypeId}
-                                onChange={(e) => setSelectedPackTypeId(e.target.value)}
-                            >
-                                {packTypes.map((p) => (
-                                    <option key={p._id} value={p._id}>
-                                        {p.name || p.type || 'Unnamed'}
-                                    </option>
-                                ))}
-                            </select>
-                            <button
-                                onClick={openPackForUser}
-                                disabled={loading || isOpeningAnimation || selectedUser.packs <= 0}
-                            >
-                                {loading ? 'Opening...' : 'Open Pack'}
-                            </button>
-                            {showDebugControls && (
-                                <div className="section-card">
-                                    <label style={{marginLeft: '1rem'}}>
-                                        <input
-                                            type="checkbox"
-                                            checked={forceModifier}
-                                            onChange={(e) => setForceModifier(e.target.checked)}
-                                        />
-                                        Force Random Modifier
-                                    </label>
+                    </div>
+                    <div className="section-card">
+                        <div className="heading">
+                            <div className="users-filter-container">
+                                <input
+                                    type="text"
+                                    placeholder="Search users..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                                <div className="button-group">
                                     <button
-                                        onClick={openDebugPackForUser}
-                                        disabled={loading || isOpeningAnimation}
-                                        style={{marginLeft: '0.5rem'}}
-                                        className="secondary-button"
+                                        className={`primary-button sm ${activeFilter === 'all' ? 'active' : ''}`}
+                                        onClick={() => handleFilterChange('all')}
                                     >
-                                        {loading && isOpeningAnimation ? 'Opening...' : 'Debug Pack'}
+                                        All Users
+                                    </button>
+                                    <button
+                                        className={`primary-button sm ${activeFilter === 'active' ? 'active' : ''}`}
+                                        onClick={() => handleFilterChange('active')}
+                                    >
+                                        Active in Last 30 Minutes
                                     </button>
                                 </div>
-                            )}
-                        </>
-                    )}
-                </div>
-
-                {/* Card Rarity Key */}
-                <div className="card-rarity-key">
-                    <h2 onClick={() => (setShowDebugControls(!showDebugControls))}>Card Rarity Key</h2>
-                    <div className="rarity-list">
-                        {Object.entries(cardRarities).map(([rarity, color]) => (
-                            <div key={rarity} className="rarity-item">
-                                <span className="color-box" style={{backgroundColor: color}}/>
-                                <span className="rarity-text">{rarity}</span>
                             </div>
-                        ))}
+                        </div>
+                        <div className="table-container">
+                            <table className="users-table">
+                                <thead>
+                                <tr>
+                                    <th onClick={() => handleSort('username')}>Username</th>
+                                    <th onClick={() => handleSort('packs')}>Unopened Packs</th>
+                                    <th onClick={() => handleSort('preferredPack')}>Preferred Pack</th>
+                                    <th onClick={() => handleSort('lastActive')}>Last Active</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {sortedUsers.map((u) => (
+                                    <tr
+                                        key={u._id}
+                                        className={selectedUser?._id === u._id ? 'selected' : ''}
+                                        onClick={() => toggleUserSelection(u)}
+                                    >
+                                        <td>{u.username}</td>
+                                        <td>{u.packs}</td>
+                                        <td>{u.preferredPack ? (u.preferredPack.name || u.preferredPack.type || 'Unnamed') : '-'}</td>
+                                        <td>{u.lastActive ? moment(u.lastActive).fromNow() : 'Never'}</td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div className="section-card" style={{position: 'relative'}}>
+                        {selectedUser && (
+                            <>
+                                <h2>Open Pack for {selectedUser.username}</h2>
+                                <img src={selectedUser.twitchProfilePic} className="userpic" alt="Profile"/>
+                                <select
+                                    className="pack-type-select"
+                                    value={selectedPackTypeId}
+                                    onChange={(e) => setSelectedPackTypeId(e.target.value)}
+                                >
+                                    {packTypes.map((p) => (
+                                        <option key={p._id} value={p._id}>
+                                            {p.name || p.type || 'Unnamed'}
+                                        </option>
+                                    ))}
+                                </select>
+                                <button
+                                    onClick={openPackForUser}
+                                    className="primary-button xl"
+                                    disabled={loading || isOpeningAnimation || selectedUser.packs <= 0}
+                                >
+                                    {loading ? 'Opening...' : (<span>Open Pack <i className="fa-solid fa-cards-blank" /></span>)}
+                                </button>
+                                {showDebugControls && (
+                                    <div className="debug-card">
+                                        <label style={{marginLeft: '1rem'}}>
+                                            <input
+                                                type="checkbox"
+                                                checked={forceModifier}
+                                                onChange={(e) => setForceModifier(e.target.checked)}
+                                            />
+                                            Force Random Modifier
+                                        </label>
+                                        <button
+                                            onClick={openDebugPackForUser}
+                                            disabled={loading || isOpeningAnimation}
+                                            style={{marginLeft: '0.5rem'}}
+                                            className="secondary-button"
+                                        >
+                                            {loading && isOpeningAnimation ? 'Opening...' : 'Debug Pack'}
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
+
+                    <div>
+                        <div className="section-card">
+                            <h2 onClick={() => (setShowDebugControls(!showDebugControls))}>Card Rarity Key</h2>
+                            <div className="rarity-key">
+                                {rarities.map((r) => {
+                                    return (
+                                        <span
+                                            key={r.name}
+                                            className="rarity-item no-hover"
+                                            style={{"--item-color": r.color}}
+                                        >
+                                        {r.name}
+                                    </span>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Opened Cards */}
-                {waitingOnPack && (
-                    <div className="opened-cards">
-                        <div className="cards-container">
-                            {openedCards.length === 0 && (
-                                <>
-                                    Ripping Packs...
-                                    <img src="/animations/loadingspinner.gif" alt="Loading..."
-                                         className="spinner-image"/>
-                                </>
-                            )}
-                            {openedCards.map((card, i) => {
-                                const visibleClass = revealedCards[i] ? 'visible' : '';
-                                const flipClass = faceDownCards[i] ? 'face-down' : 'face-up';
-                                return (
-                                    <div
-                                        key={i}
-                                        className={`card-wrapper ${visibleClass} ${flipClass}`}
-                                        style={{
-                                            '--rarity-color': getRarityColor(card.rarity),
-                                            transitionDelay: `${i * 0.2}s`
-                                        }}
-                                        onClick={() => handleFlipCard(i)}
-                                    >
-                                        <div className="card-content">
-                                            <div className="card-inner">
-                                                <div className="card-back">
-                                                    <img
-                                                        src="/images/card-back-placeholder.png"
-                                                        alt="Card Back"
-                                                    />
-                                                </div>
-                                                <div className="card-front">
-                                                    <BaseCard
-                                                        name={card.name}
-                                                        image={card.imageUrl}
-                                                        description={card.flavorText}
-                                                        rarity={card.rarity}
-                                                        mintNumber={card.mintNumber}
-                                                        modifier={card.modifier}
-                                                    />
-                                                </div>
+            <div>
+            {waitingOnPack && (
+                <div className="opened-cards">
+                    <div className="cards-container">
+                        {openedCards.length === 0 && (
+                            <>
+                                Ripping Packs...
+                                <img src="/animations/loadingspinner.gif" alt="Loading..."
+                                     className="spinner-image"/>
+                            </>
+                        )}
+                        {openedCards.map((card, i) => {
+                            const visibleClass = revealedCards[i] ? 'visible' : '';
+                            const flipClass = faceDownCards[i] ? 'face-down' : 'face-up';
+                            return (
+                                <div
+                                    key={i}
+                                    className={`card-wrapper ${visibleClass} ${flipClass}`}
+                                    style={{
+                                        '--rarity-color': getRarityColor(card.rarity),
+                                        transitionDelay: `${i * 0.2}s`
+                                    }}
+                                    onClick={() => handleFlipCard(i)}
+                                >
+                                    <div className="card-content">
+                                        <div className="card-inner">
+                                            <div className="card-back">
+                                                <img
+                                                    src="/images/card-back-placeholder.png"
+                                                    alt="Card Back"
+                                                />
+                                            </div>
+                                            <div className="card-front">
+                                                <BaseCard
+                                                    name={card.name}
+                                                    image={card.imageUrl}
+                                                    description={card.flavorText}
+                                                    rarity={card.rarity}
+                                                    mintNumber={card.mintNumber}
+                                                    modifier={card.modifier}
+                                                />
                                             </div>
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
+                                </div>
+                            );
+                        })}
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
-    );
+</div>
+)
+    ;
 };
 
 export default AdminDashboardPage;

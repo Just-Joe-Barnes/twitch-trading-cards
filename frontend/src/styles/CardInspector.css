@@ -2,70 +2,79 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
+  bottom: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px) saturate(0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
 }
-
-
-.card-inspector {
-  /* Fit values are set via JS for proper unitless calculations */
+.card-inspector-overlay .close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 100;
+}
+.card-inspector-overlay .card-inspector-feature-btn-container {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: max-content;
+  z-index: 100;
+}
+@media screen and (max-width: 768px) {
+  .card-inspector-overlay .card-inspector-feature-btn-container {
+    top: unset;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.8);
+  }
+  .card-inspector-overlay .card-inspector-feature-btn-container .button-group {
+    flex-direction: row;
+    gap: 1rem;
+  }
+}
+.card-inspector-overlay .card-inspector-feature-btn {
+  width: 100%;
+}
+.card-inspector-overlay .card-inspector-feature-btn.active {
+  color: var(--brand-primary);
+}
+.card-inspector-overlay .card-inspector {
   --fit-height: 1;
   --fit-width: 1;
-  --inspector-scale: min(2, var(--fit-height), var(--fit-width));
-  /* Double the inspected card size but clamp to available space */
+  --inspector-scale: min(1.8, var(--fit-height), var(--fit-width));
   --card-scale: var(--inspector-scale);
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
-/* Feature toggle button inside inspector */
-.card-inspector-card-wrapper {
-  position: relative;
+@media screen and (max-width: 768px) {
+  .card-inspector-overlay .card-inspector {
+    --inspector-scale: 1.1;
+  }
+}
+.card-inspector-overlay .card-inspector .card-inspector-card-wrapper {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
 }
-
-.card-inspector-feature-btn {
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  padding: 1rem 1.5rem;
-  background: var(--surface-dark);
-  color: var(--text-primary);
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 2rem;
-  transition: var(--transition);
-  z-index: 1001;
-}
-
-.card-inspector-feature-btn.active {
-  color: var(--brand-primary);
-}
-
-.card-inspector .card-container {
-  /* Override card scale from BaseCard */
+.card-inspector-overlay .card-inspector .card-container {
   --card-scale: var(--inspector-scale);
   margin: 0;
-  animation: inspector-spin-in 0.5s ease;
+  animation: inspector-spin-in 0.5s ease-in-out;
+  -webkit-backface-visibility: hidden;
   transform-style: preserve-3d;
   transform: scale(var(--card-scale));
 }
-
 @keyframes inspector-spin-in {
   from {
-    transform: scale(var(--card-scale)) perspective(1000px) rotateY(180deg);
+    transform: scale(var(--card-scale)) perspective(1000px) rotateY(-180deg);
     opacity: 0;
   }
   to {
@@ -73,3 +82,48 @@
     opacity: 1;
   }
 }
+.card-inspector-overlay .lorebox {
+  position: absolute;
+  top: 50%;
+  right: 15%;
+  width: 15vw;
+  height: 20vh;
+}
+.card-inspector-overlay .lorebox .username {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.5ch 1ch;
+  text-align: right;
+}
+.card-inspector-overlay .flavourtext {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  width: 50vw;
+  max-width: 500px;
+  pointer-events: none;
+}
+.card-inspector-overlay .flavourtext .mint {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+@media screen and (max-width: 768px) {
+  .card-inspector-overlay .flavourtext {
+    position: absolute;
+    bottom: unset;
+    max-width: unset;
+    top: 0;
+    left: 0;
+    border-radius: 0;
+    right: 1rem;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/*# sourceMappingURL=CardInspector.css.map */

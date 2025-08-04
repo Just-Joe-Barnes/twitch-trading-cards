@@ -1,27 +1,79 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { fetchWithAuth, gradeCard, completeGrading, revealGradedCard, fetchUserProfile } from '../utils/api';
+import React, {useEffect, useState, useMemo} from 'react';
+import {fetchWithAuth, gradeCard, completeGrading, revealGradedCard, fetchUserProfile} from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { rarities } from '../constants/rarities';
-import { getRarityColor } from '../constants/rarityColors';
+import {rarities} from '../constants/rarities';
 import '../styles/CardGradingPage.css';
+import GradingInProgressCard from "../components/GradingInProgressCard";
 
 const CardGradingPage = () => {
-    const navigate = useNavigate();
     const [selectedUser, setSelectedUser] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
     const [cards, setCards] = useState([]);
     const [loading, setLoading] = useState(false);
     const [gradingLoading, setGradingLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [rarityFilter, setRarityFilter] = useState('All');
+    const [rarityFilter, setRarityFilter] = useState('');
     const [sortOption, setSortOption] = useState('acquiredAt');
     const [order, setOrder] = useState('desc');
     const [showSlabbedOnly, setShowSlabbedOnly] = useState(false);
-
     const [selectedCard, setSelectedCard] = useState(null);
     const [revealedCards, setRevealedCards] = useState({});
+    const [showFilters, setShowFilters] = useState(false);
+    const [rarityCount, setRarityCount] = useState({
+        Basic: 0, Common: 0, Standard: 0, Uncommon: 0, Rare: 0,
+        Epic: 0, Legendary: 0, Mythic: 0, Unique: 0, Divine: 0
+    });
+    const [displayRarityCount, setDisplayRarityCount] = useState({
+        Basic: 0, Common: 0, Standard: 0, Uncommon: 0, Rare: 0,
+        Epic: 0, Legendary: 0, Mythic: 0, Unique: 0, Divine: 0
+    });
+
+    const inProcessCards = useMemo(() => cards.filter(c => c.gradingRequestedAt), [cards]);
+    const collectionCards = useMemo(() => cards.filter(c => !c.gradingRequestedAt), [cards]);
+
+    const handleRarityChange = (rarityName) => {
+        const normalizedRarityName = rarityName.toLowerCase();
+        setRarityFilter(prevRarity =>
+            prevRarity === normalizedRarityName ? '' : normalizedRarityName
+        );
+    };
+
+    const toggleSortOrder = () => {
+        setOrder(prevOrder => prevOrder === 'asc' ? 'desc' : 'asc');
+    };
+
+    const toggleShowSlabbedOnly = (e) => {
+        setShowSlabbedOnly(e.target.checked);
+    };
+
+    const rarityRank = useMemo(() => rarities.reduce((acc, r, idx) => {
+        acc[r.name] = idx;
+        return acc;
+    }, {}), []);
+
+    const cardsForDisplayCount = useMemo(() => collectionCards
+        .filter(card => card.name.toLowerCase().includes(searchQuery.toLowerCase()))
+        .filter(card => (showSlabbedOnly ? card.slabbed : !card.slabbed)), [collectionCards, searchQuery, showSlabbedOnly]);
+
+    const filteredCards = useMemo(() => cardsForDisplayCount
+        .filter(card => rarityFilter === '' || card.rarity.toLowerCase() === rarityFilter.toLowerCase()), [cardsForDisplayCount, rarityFilter]);
+
+    const sortedCards = useMemo(() => [...filteredCards].sort((a, b) => {
+        let result = 0;
+        if (sortOption === 'mintNumber') {
+            result = a.mintNumber - b.mintNumber;
+        } else if (sortOption === 'rarity') {
+            result = rarityRank[a.rarity] - rarityRank[b.rarity];
+        } else if (sortOption === 'acquiredAt') {
+            result = new Date(a.acquiredAt) - new Date(b.acquiredAt);
+        } else {
+            result = a.name.localeCompare(b.name);
+        }
+        return order === 'asc' ? result : -result;
+    }), [filteredCards, sortOption, order, rarityRank]);
+
+    const hasSlabbedReady = useMemo(() => inProcessCards.some(card => card.slabbed), [cards])
 
     useEffect(() => {
         const init = async () => {
@@ -32,7 +84,6 @@ const CardGradingPage = () => {
                 setSelectedUser(profile._id);
                 const userData = await fetchWithAuth(`/api/users/${profile._id}/collection`);
                 setCards(userData.cards || []);
-
             } catch (err) {
                 console.error('Error initializing grading page', err);
             } finally {
@@ -40,8 +91,46 @@ const CardGradingPage = () => {
             }
         };
         init();
-    }, [navigate]);
+    }, []);
 
+    useEffect(() => {
+        const newRarityCounts = {
+            Basic: 0, Common: 0, Standard: 0, Uncommon: 0, Rare: 0,
+            Epic: 0, Legendary: 0, Mythic: 0, Unique: 0, Divine: 0
+        };
+        for (const card of sortedCards) {
+            const rarity = card.rarity;
+            if (newRarityCounts.hasOwnProperty(rarity)) {
+                newRarityCounts[rarity] += 1;
+            }
+        }
+        setRarityCount(newRarityCounts);
+    }, [sortedCards]);
+
+    useEffect(() => {
+        const newDisplayCounts = {
+            Basic: 0, Common: 0, Standard: 0, Uncommon: 0, Rare: 0,
+            Epic: 0, Legendary: 0, Mythic: 0, Unique: 0, Divine: 0
+        };
+        for (const card of cardsForDisplayCount) {
+            const rarity = card.rarity;
+            if (newDisplayCounts.hasOwnProperty(rarity)) {
+                newDisplayCounts[rarity] += 1;
+            }
+        }
+        setDisplayRarityCount(newDisplayCounts);
+    }, [cardsForDisplayCount]);
+
+    useEffect(() => {
+        if (rarityFilter !== '') {
+            if (!loading && sortedCards.length === 0) {
+                const currentRarityName = rarityFilter.charAt(0).toUpperCase() + rarityFilter.slice(1);
+                if (rarityCount[currentRarityName] === 0) {
+                    setRarityFilter('');
+                }
+            }
+        }
+    }, [rarityFilter, sortedCards.length, rarityCount, loading]);
 
     const handleSelectCard = (card) => {
         setSelectedCard(card);
@@ -82,7 +171,7 @@ const CardGradingPage = () => {
             const data = await fetchWithAuth(`/api/users/${selectedUser}/collection`);
             setCards(data.cards || []);
             setRevealedCards(prev => {
-                const copy = { ...prev };
+                const copy = {...prev};
                 delete copy[cardId];
                 return copy;
             });
@@ -95,7 +184,6 @@ const CardGradingPage = () => {
 
     const toggleReveal = (cardId) => {
         setRevealedCards((prev) => {
-            // Only allow flipping from face-down to face-up once
             if (prev[cardId]) return prev;
             return {
                 ...prev,
@@ -104,215 +192,195 @@ const CardGradingPage = () => {
         });
     };
 
-    const rarityRank = rarities.reduce((acc, r, idx) => {
-        acc[r.name] = idx;
-        return acc;
-    }, {});
-
-    // Cards with a gradingRequestedAt timestamp stay in the in-process
-    // section even after being slabbed so the grade can be revealed.
-    const inProcessCards = cards.filter(c => c.gradingRequestedAt);
-
-    const collectionCards = cards.filter(c => !c.gradingRequestedAt);
-
-    const filteredCards = collectionCards
-        .filter(card => card.name.toLowerCase().includes(searchQuery.toLowerCase()))
-        .filter(card => rarityFilter === 'All' || card.rarity === rarityFilter)
-        .filter(card => (showSlabbedOnly ? card.slabbed : !card.slabbed));
-
-    const sortedCards = [...filteredCards].sort((a, b) => {
-        let result = 0;
-        if (sortOption === 'mintNumber') {
-            result = a.mintNumber - b.mintNumber;
-        } else if (sortOption === 'rarity') {
-            result = rarityRank[a.rarity] - rarityRank[b.rarity];
-        } else if (sortOption === 'acquiredAt') {
-            result = new Date(a.acquiredAt) - new Date(b.acquiredAt);
-        } else {
-            result = a.name.localeCompare(b.name);
-        }
-        return order === 'asc' ? result : -result;
-    });
-
-    const hasSlabbed = cards.some(card => card.slabbed);
-
     return (
-        <div className="card-grading-page">
-            {gradingLoading && <LoadingSpinner />}
-            <h1>Card Grading</h1>
-            <p className="grading-description">
-                Use the controls below to search a user's collection and select
-                cards for grading. Once a card is graded you can reveal the slab
-                to complete the process.
-            </p>
-
-            {selectedUser && (
-                <div className="grading-controls">
-                    <input
-                        type="text"
-                        placeholder="Search"
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                        data-testid="search-input"
-                    />
-                    <select value={rarityFilter} onChange={e => setRarityFilter(e.target.value)} data-testid="rarity-select">
-                        <option value="All">All Rarities</option>
-                        {rarities.map(r => (
-                            <option key={r.name} value={r.name}>{r.name}</option>
-                        ))}
-                    </select>
-                    <label className="slab-toggle">
-                        <input
-                            type="checkbox"
-                            checked={showSlabbedOnly}
-                            onChange={e => setShowSlabbedOnly(e.target.checked)}
-                            data-testid="slab-toggle"
-                        />
-                        Show Slabbed Only
-                    </label>
-                    <select value={sortOption} onChange={e => setSortOption(e.target.value)} data-testid="sort-select">
-                        <option value="name">Name</option>
-                        <option value="mintNumber">Mint Number</option>
-                        <option value="rarity">Rarity</option>
-                        <option value="acquiredAt">Acquisition Date</option>
-                    </select>
-                    <select value={order} onChange={e => setOrder(e.target.value)} data-testid="order-select">
-                        <option value="asc">Ascending</option>
-                        <option value="desc">Descending</option>
-                    </select>
-                </div>
-            )}
-
-            <div className="grading-layout">
+        <>
+            <div className="page" style={{paddingBottom: 0}}>
+                {gradingLoading && <LoadingSpinner/>}
+                <h1>Card Grading</h1>
                 {!selectedCard && (
                     <>
-                        {inProcessCards.length > 0 && (
-                            <div className="inprocess-section" data-testid="inprocess-list">
-                                <h3>Grading In Progress</h3>
-                                <div className="grading-card-list">
-                                    {inProcessCards.map(card => {
-                                        const end = new Date(card.gradingRequestedAt).getTime() + 24 * 60 * 60 * 1000;
-                                        const diff = end - Date.now();
-                                        const seconds = Math.max(Math.floor(diff / 1000) % 60, 0);
-                                        const minutes = Math.max(Math.floor(diff / (1000 * 60)) % 60, 0);
-                                        const hours = Math.max(Math.floor(diff / (1000 * 60 * 60)) % 24, 0);
-                                        const days = Math.max(Math.floor(diff / (1000 * 60 * 60 * 24)), 0);
-
-                                        if (card.slabbed) {
-                                            const faceUp = revealedCards[card._id];
-                                            return (
-                                                <div key={card._id} className="grading-card-item slabbed">
-                                                    <div
-                                                        className={`card-wrapper ${faceUp ? 'face-up' : 'face-down'}`}
-                                                        onClick={() => toggleReveal(card._id)}
-                                                        style={{ '--rarity-color': getRarityColor(card.rarity) }}
-                                                    >
-                                                        <div className="card-content">
-                                                            <div className="card-inner">
-                                                                <div className="card-back">
-                                                                    <img src="/images/card-back-placeholder.png" alt="Card Back" />
-                                                                    <div className="slab-back-overlay" style={{ '--slab-color': getRarityColor(card.rarity) }} />
-                                                                </div>
-                                                                <div className="card-front">
-                                                                    <BaseCard
-                                                                        name={card.name}
-                                                                        image={card.imageUrl}
-                                                                        description={card.flavorText}
-                                                                        rarity={card.rarity}
-                                                                        mintNumber={card.mintNumber}
-                                                                        modifier={card.modifier}
-                                                                        grade={card.grade}
-                                                                        slabbed={card.slabbed}
-                                                                        interactive={faceUp}
-                                                                        inspectOnClick={faceUp}
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {faceUp && (
-                                                        <button className="done-btn" onClick={() => handleDone(card._id)}>
-                                                            Done
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            );
-                                        }
-
-                                        return (
-                                            <div key={card._id} className="grading-card-item">
-                                                <BaseCard
-                                                    name={card.name}
-                                                    image={card.imageUrl}
-                                                    description={card.flavorText}
-                                                    rarity={card.rarity}
-                                                    mintNumber={card.mintNumber}
-                                                    modifier={card.modifier}
-                                                    slabbed={false}
-                                                />
-                                                <div className="grading-timeleft-badge">
-                                                    {days}d {hours}h {minutes}m {seconds}s
-                                                </div>
-                                                {(isAdmin || diff <= 0) && (
-                                                    <button onClick={() => handleOverride(card._id)}>
-                                                        Finish Grading
-                                                    </button>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
-                        <div className="collection-section" data-testid="collection-list">
-                            {loading && <p>Loading cards...</p>}
-                            <div className={`grading-card-list ${hasSlabbed ? 'slabbed' : ''}`}>
-                                {sortedCards.map(card => (
-                                    <div key={card._id} className={`grading-card-item ${card.slabbed ? 'slabbed' : ''}`}>
-                                        <BaseCard
-                                            name={card.name}
-                                            image={card.imageUrl}
-                                            description={card.flavorText}
-                                            rarity={card.rarity}
-                                            mintNumber={card.mintNumber}
-                                            modifier={card.modifier}
-                                            grade={card.grade}
-                                            slabbed={card.slabbed}
-                                        />
-                                        {!card.slabbed && (
-                                            <button onClick={() => handleSelectCard(card)} data-testid={`select-btn-${card._id}`}>Select</button>
-                                        )}
-                                        {card.slabbed && <span>Grade: {card.grade}</span>}
-                                    </div>
-                                ))}
-                            </div>
+                        <div className="info-section section-card narrow">
+                            Use the controls below to search a user's collection and select
+                            cards for grading. Once a card is graded you can reveal the slab
+                            to complete the process.
+                        </div>
+                        <div className="stats">
+                            <button onClick={() => setShowFilters(!showFilters)} className="stat">
+                                {showFilters ? (
+                                    <>
+                                        <div>Hide Filters</div>
+                                        <i className="fa-solid fa-filter"/>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div>Show Filters</div>
+                                        <i className="fa-regular fa-filter"/>
+                                    </>
+                                )}
+                            </button>
                         </div>
                     </>
                 )}
-                {selectedCard && (
-                    <div className="reveal-zone" data-testid="selected-card-area">
-                        <div className="grading-area">
-                            <BaseCard
-                                name={selectedCard.name}
-                                image={selectedCard.imageUrl}
-                                description={selectedCard.flavorText}
-                                rarity={selectedCard.rarity}
-                                mintNumber={selectedCard.mintNumber}
-                                modifier={selectedCard.modifier}
-                                grade={selectedCard.grade}
-                                slabbed={selectedCard.slabbed}
-                            />
-                            <div className="grading-actions">
-                                {!selectedCard.slabbed && (
-                                    <button className="grade-btn" onClick={handleGrade} data-testid="grade-btn">Grade Card</button>
-                                )}
-                                <button className="cancel-btn" onClick={() => setSelectedCard(null)} data-testid="cancel-btn">Cancel</button>
+                {!selectedCard && showFilters && selectedUser && (
+                    <div className="section-card" style={{marginTop: "2ch"}}>
+                        <div className="filters">
+                            <div className="filter-card">
+                                <input
+                                    type="text"
+                                    placeholder="Search by card name..."
+                                    value={searchQuery}
+                                    onChange={e => setSearchQuery(e.target.value)}
+                                    className="filter-input"
+                                    data-testid="search-input"
+                                />
+                                <div className="sort-controls">
+                                    <select value={sortOption} onChange={e => setSortOption(e.target.value)}
+                                            className="filter-select" data-testid="sort-select">
+                                        <option value="name">Name</option>
+                                        <option value="mintNumber">Mint Number</option>
+                                        <option value="rarity">Rarity</option>
+                                        <option value="acquiredAt">Acquisition Date</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="filter-button-group" style={{marginTop: '1ch'}}>
+                                <div className="checkbox-group button-row">
+                                    <div className="sort-order-toggle checkbox-wrapper">
+                                        <label htmlFor="sortOrderToggle">
+                                            {order === 'asc' ? (
+                                                <i className="fa-regular fa-arrow-down-a-z"></i>
+                                            ) : (
+                                                <i className="fa-regular fa-arrow-up-a-z"></i>
+                                            )}
+                                        </label>
+                                        <input
+                                            type="checkbox"
+                                            id="sortOrderToggle"
+                                            name="sortOrderToggle"
+                                            checked={order === 'asc'}
+                                            onChange={toggleSortOrder}
+                                        />
+                                    </div>
+                                    <div className="checkbox-wrapper">
+                                        <label htmlFor="slabbedCheckbox" data-tooltip="Show only Slabbed Cards">
+                                            <i className={`fa-${showSlabbedOnly ? 'solid' : 'regular'} fa-square`}/>
+                                        </label>
+                                        <input
+                                            type="checkbox"
+                                            id="slabbedCheckbox"
+                                            name="slabbedCheckboxN"
+                                            checked={showSlabbedOnly}
+                                            onChange={toggleShowSlabbedOnly}
+                                            data-testid="slab-toggle"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="rarity-key" style={{marginTop: '1ch'}}>
+                                {rarities.map((r) => {
+                                    const normalizedRarityName = r.name.toLowerCase();
+                                    return (
+                                        <button
+                                            key={normalizedRarityName}
+                                            onClick={() => handleRarityChange(r.name)}
+                                            className={`rarity-item ${normalizedRarityName} ${rarityFilter === normalizedRarityName ? 'active' : ''}`}
+                                            disabled={displayRarityCount[r.name] === 0 && rarityFilter !== normalizedRarityName}
+                                            style={{"--item-color": r.color}}
+                                        >
+                                            {r.name}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
                 )}
             </div>
-        </div>
+            {loading && <div className="page" style={{paddingTop: '1rem'}}>
+                <div className="section-card">Loading cards, please wait...</div>
+            </div>}
+            {!loading && (
+                <div className="page full" style={{paddingTop: '0'}}>
+                    {selectedCard ? (
+                        <div className="reveal-zone" data-testid="selected-card-area">
+                            <div className="card-tile">
+                                <BaseCard
+                                    name={selectedCard.name}
+                                    image={selectedCard.imageUrl}
+                                    description={selectedCard.flavorText}
+                                    rarity={selectedCard.rarity}
+                                    mintNumber={selectedCard.mintNumber}
+                                    modifier={selectedCard.modifier}
+                                    grade={selectedCard.grade}
+                                    slabbed={selectedCard.slabbed}
+                                />
+                                <div className="actions">
+                                    {!selectedCard.slabbed && (
+                                        <button className="primary-button" onClick={handleGrade}
+                                                data-testid="grade-btn">Grade Card</button>
+                                    )}
+                                    <button className="danger-button" onClick={() => setSelectedCard(null)}
+                                            data-testid="cancel-btn">Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            {inProcessCards.length > 0 && (
+                                <div className="inprocess-section" data-testid="inprocess-list">
+                                    <h3>Grading In Progress</h3>
+                                    <div className={`card-tile-grid ${hasSlabbedReady ? 'slabbed' : ''}`}>
+                                        {inProcessCards.map(card => (
+                                            <GradingInProgressCard
+                                                key={card._id}
+                                                card={card}
+                                                isAdmin={isAdmin}
+                                                isRevealed={!!revealedCards[card._id]}
+                                                onFinish={handleOverride}
+                                                onReveal={() => toggleReveal(card._id)}
+                                                onDone={() => handleDone(card._id)}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            <div className="collection-section" data-testid="collection-list">
+                                {sortedCards.length === 0 && !loading && (
+                                    <div className="section-card">
+                                        No cards found in your collection matching the filters.
+                                    </div>
+                                )}
+                                <div className={`card-tile-grid ${showSlabbedOnly ? 'slabbed' : ''}`}>
+                                    {sortedCards.map(card => (
+                                        <div key={card._id} className={`card-tile ${card.slabbed ? 'slabbed' : ''}`}>
+                                            <BaseCard
+                                                name={card.name}
+                                                image={card.imageUrl}
+                                                description={card.flavorText}
+                                                rarity={card.rarity}
+                                                mintNumber={card.mintNumber}
+                                                modifier={card.modifier}
+                                                grade={card.grade}
+                                                slabbed={card.slabbed}
+                                            />
+                                            {!card.slabbed && (
+                                                <div className="actions">
+                                                    <button className="primary-button"
+                                                            onClick={() => handleSelectCard(card)}
+                                                            data-testid={`select-btn-${card._id}`}>Select
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </div>
+            )}
+        </>
     );
 };
 

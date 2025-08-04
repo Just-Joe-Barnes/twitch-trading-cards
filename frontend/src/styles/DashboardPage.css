@@ -1,219 +1,89 @@
-
 body {
-    margin: 0;
-    font-family: var(--font-family);
-    background: var(--background-dark);
-    color: var(--text-primary);
+  margin: 0;
+  font-family: var(--font-family), serif;
+  background: var(--background-dark);
+  color: var(--text-primary);
 }
 
 /* Main Dashboard Container with increased top padding */
 .dashboard {
-    padding: 4rem 1.5rem 2rem;
-    min-height: 100vh;
+  padding: 4rem 1.5rem 2rem;
+  min-height: 100vh;
+  /* Grid Layout for Dashboard Sections */
+  /* Earning Information */
+  /* Twitch Section Styles */
+  /* Loading and Error Messages */
 }
-
-    /* Dashboard Title styled like Collection Page */
-    .dashboard h1 {
-        text-align: center;
-        font-size: 2.25rem;
-        font-weight: 500;
-        color: var(--text-primary);
-        margin: 2rem 0 3rem;
-        position: relative;
-    }
-
-        .dashboard h1::after {
-            content: '';
-            position: absolute;
-            bottom: -1rem;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 120px;
-            height: 2px;
-            background: var(--brand-primary);
-            border-radius: 2px;
-        }
-
-/* Grid Layout for Dashboard Sections */
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
+.dashboard .dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
 }
-
-/* Card-style container for each dashboard section */
-.section-card {
-    background: var(--surface-dark);
-    border: 1px solid var(--border-dark);
-    padding: 2rem;
-    border-radius: 16px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+.dashboard .pack-count {
+  font-size: 1.4rem;
+  text-align: center;
+  margin-bottom: 1rem;
 }
-
-/* Info Section Styles */
-.info-section h2 {
-    color: var(--brand-primary);
+.dashboard .app-info,
+.dashboard .pack-opening-info,
+.dashboard .twitch-details,
+.dashboard .earning-info {
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+@media screen and (max-width: 768px) {
+  .dashboard .app-info,
+  .dashboard .pack-opening-info,
+  .dashboard .twitch-details,
+  .dashboard .earning-info {
+    font-size: 0.9rem;
+  }
+}
+.dashboard .earning-info h3 {
+  font-size: 1.2rem;
+  color: var(--brand-primary);
+  margin-bottom: 1rem;
+}
+.dashboard .earning-info ul li {
+  margin-bottom: 1rem;
+}
+@media screen and (max-width: 768px) {
+  .dashboard {
     text-align: center;
-    margin-bottom: 1rem;
-    font-size: 2rem;
+  }
+  .dashboard ul {
+    padding-left: 0;
+  }
+  .dashboard ul li {
+    padding: 1rem 2rem;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    list-style-type: none;
+  }
+}
+.dashboard .twitch-section iframe {
+  width: 100%;
+  height: 350px;
+  border-radius: 16px;
+  border: 1px solid var(--border-dark);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+.dashboard .twitch-details {
+  text-align: center;
+  font-size: 1rem;
+  color: var(--brand-secondary);
+  margin-top: 1rem;
+}
+.dashboard .loading-message,
+.dashboard .error-message {
+  text-align: center;
+  font-size: 1.5rem;
+  margin-top: 2rem;
 }
 
-.pack-count {
-    font-size: 1.8rem;
-    text-align: center;
-    margin-bottom: 1rem;
-}
-
-.app-info,
-.pack-opening-info,
-.twitch-details,
-.earning-info {
-    color: var(--text-primary);
-    font-size: 1.1rem;
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-}
-
-    /* Earning Information */
-    .earning-info h3 {
-        font-size: 1.2rem;
-        color: var(--brand-primary);
-        margin-bottom: 1rem;
-    }
-
-    .earning-info ul {
-        list-style-type: disc;
-        padding-left: 1.5rem;
-    }
-
-    .earning-info li {
-        margin-bottom: 0.75rem;
-        font-size: 1rem;
-    }
-
-/* Twitch Section Styles */
-.twitch-section h2 {
-    color: var(--brand-primary);
-    text-align: center;
-    margin-bottom: 1rem;
-    font-size: 2rem;
-}
-
-.twitch-section iframe {
-    width: 100%;
-    height: 350px;
-    border-radius: 16px;
-    border: 1px solid var(--border-dark);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
-.twitch-details {
-    text-align: center;
-    font-size: 1rem;
-    color: var(--brand-secondary);
-    margin-top: 1rem;
-}
-
-/* Loading and Error Messages */
-.loading-message,
-.error-message {
-    text-align: center;
-    font-size: 1.5rem;
-    margin-top: 2rem;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .dashboard {
-        padding: 3rem 1rem 2rem;
-    }
-
-    .dashboard h1 {
-        font-size: 2rem;
-        margin: 2rem 0;
-    }
-
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-
-    .section-card {
-        padding: 1.5rem;
-    }
-
-    .info-section h2,
-    .twitch-section h2 {
-        font-size: 1.75rem;
-    }
-
-    .pack-count {
-        font-size: 1.6rem;
-    }
-
-    .app-info,
-    .pack-opening-info,
-    .twitch-details,
-    .earning-info {
-        font-size: 1rem;
-    }
-
-    .twitch-section iframe {
-        height: 300px;
-    }
-}
-
-@media (max-width: 480px) {
-    .dashboard {
-        padding: 2rem 0.75rem 1.5rem;
-    }
-
-    .dashboard h1 {
-        font-size: 1.75rem;
-        margin: 1.5rem 0 2rem;
-    }
-
-    .dashboard h1::after {
-        width: 80px;
-    }
-
-    .section-card {
-        padding: 1.25rem;
-    }
-
-    .info-section h2,
-    .twitch-section h2 {
-        font-size: 1.5rem;
-    }
-
-    .pack-count {
-        font-size: 1.4rem;
-    }
-
-    .app-info,
-    .pack-opening-info,
-    .twitch-details,
-    .earning-info {
-        font-size: 0.9rem;
-    }
-
-    .twitch-section iframe {
-        height: 200px;
-    }
-}
-
-@media (max-width: 390px) {
-    .dashboard {
-        padding: 2rem 0.5rem 1rem;
-    }
-
-    .dashboard h1 {
-        font-size: 1.5rem;
-    }
-
-    .twitch-section iframe {
-        height: 180px;
-    }
-}
+/*# sourceMappingURL=DashboardPage.css.map */

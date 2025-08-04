@@ -1,11 +1,11 @@
 // src/components/NotificationDropdown.js
 import React, { useEffect, useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import {Link} from 'react-router-dom';
 import '../styles/NotificationDropdown.css';
 import { fetchWithAuth, API_BASE_URL } from '../utils/api';
 import io from 'socket.io-client';
 
-const NotificationDropdown = ({ profilePic, userId, username, onLogout }) => {
+const NotificationDropdown = ({ profilePic, userId, username, onLogout, isAdmin }) => {
     const [notifications, setNotifications] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -107,15 +107,22 @@ const NotificationDropdown = ({ profilePic, userId, username, onLogout }) => {
     return (
         <div className="notification-dropdown" ref={dropdownRef}>
             <button className="notification-icon" onClick={toggleDropdown}>
-                <img src={profilePic} alt="Profile" className="notification-profile-pic" />
+                <span className="navbar-username">{username}</span>
+                <img src={profilePic} alt="Profile" className={notifications.filter(n => !n.isRead).length > 0 ? 'notification-profile-pic pulse' : 'notification-profile-pic'} />
                 {notifications.filter(n => !n.isRead).length > 0 && (
-                    <span className="notification-indicator"></span>
+                    <span className="notification-indicator pulse"></span>
                 )}
             </button>
             {isOpen && (
                 <div className="notification-menu">
                     <div className="profile-actions">
                         <Link to={`/profile/${username}`} onClick={() => setIsOpen(false)} className="profile-action">My Profile</Link>
+                        {isAdmin && (
+                            <>
+                                <Link to="/admin-dashboard" onClick={() => setIsOpen(false)} className="profile-action admin-action" > Admin Dashboard </Link>
+                                <Link to="/admin/actions" onClick={() => setIsOpen(false)} className="profile-action admin-action" > Admin Actions </Link>
+                            </>
+                        )}
                         <button className="profile-action" onClick={() => { onLogout(); setIsOpen(false); }}>Logout</button>
                     </div>
                     <hr className="profile-divider" />

@@ -1,5 +1,6 @@
 const Card = require('../models/cardModel');
 const Modifier = require("../models/modifierModel");
+const getCardAvailability = require("../controllers/cardController");
 
 // Updated rarity probabilities: Basic is most common, Divine is most rare.
 const rarityProbabilities = [
@@ -89,7 +90,6 @@ const generateCardWithProbability = async () => {
                             { availableTo: null },
                             { availableTo: { $gte: now } }
                         ]
-                        // Optionally add series filter here
                     }
                 },
                 { $sample: { size: 1 } }
@@ -371,31 +371,132 @@ const generatePackPreview = async (packSize = 5) => {
     return pack;
 };
 
-const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifier) => {
+const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifier, live) => {
     try {
         let appliedModifierId = null;
-        const selectedRarity = pickRarity(randomHighRoll);
-        const randomCardId = poolIds[Math.floor(Math.random() * poolIds.length)]
-        const selectedCardArray = await Card.find({
-            _id: randomCardId
-        }).lean();
 
-        const selectedCard = selectedCardArray[0]
+        let availabilityResponse;
+        try {
+            availabilityResponse = await getCardAvailability(poolIds);
+        } catch (apiErr) {
+            console.error('[generateCardPreviewFromPool] Error fetching card availability:', apiErr.message);
+            return null;
+        }
 
-        const rarityObj = selectedCard.rarities.find(r => r.rarity === selectedRarity);
-        if (!rarityObj || !rarityObj.availableMintNumbers.length) {
+        const rarityRemainingData = availabilityResponse.rarityRemaining;
+
+        const cardAvailabilityGroupedMap = new Map();
+        rarityRemainingData.forEach(item => {
+            cardAvailabilityGroupedMap.set(item.cardId.toString(), item);
+        });
+
+        const availablePoolIds = poolIds.filter(cardId => {
+            const cardGroupedAvailability = cardAvailabilityGroupedMap.get(cardId.toString());
+            if (!cardGroupedAvailability) {
+                return false;
+            }
+            return Object.values(cardGroupedAvailability.rarityRemaining).some(availableCount => availableCount > 0);
+        });
+
+        if (availablePoolIds.length === 0) {
+            console.warn(`[generateCardPreviewFromPool] No cards in the pool have any available copies globally.`);
+            return null;
+        }
+
+        const randomCardId = availablePoolIds[Math.floor(Math.random() * availablePoolIds.length)];
+
+        const selectedCard = await Card.findById(randomCardId);
+
+        if (!selectedCard) {
+            console.error(`[generateCardPreviewFromPool] Selected Card (ID: ${randomCardId}) not found after availability check. Data inconsistency?`);
+            return null;
+        }
+
+        const availableRaritiesForCard = selectedCard.rarities.filter(
+            r => {
+                const cardGroupedAvailability = cardAvailabilityGroupedMap.get(selectedCard._id.toString());
+                if (!cardGroupedAvailability) return false;
+
+                const availableCount = cardGroupedAvailability.rarityRemaining[r.rarity.toLowerCase()];
+
+                return typeof availableCount === 'number' && availableCount > 0;
+            }
+        );
+
+        if (availableRaritiesForCard.length === 0) {
+            console.warn(`[generateCardPreviewFromPool] No available rarities (based on global availability) for card ${selectedCard.name} (ID: ${selectedCard._id}).`);
+            return null;
+        }
+
+        const baseProbabilities = randomHighRoll ? highRollRarityProbabilities : rarityProbabilities;
+
+        let filteredAndNormalizedProbabilities = [];
+        let totalAvailableProbability = 0;
+
+        for (const baseRarityProb of baseProbabilities) {
+            const matchingAvailableRarity = availableRaritiesForCard.find(
+                ar => ar.rarity === baseRarityProb.rarity
+            );
+            if (matchingAvailableRarity) {
+                filteredAndNormalizedProbabilities.push(baseRarityProb);
+                totalAvailableProbability += baseRarityProb.probability;
+            }
+        }
+
+        if (totalAvailableProbability === 0) {
+            console.error(`[generateCardPreviewFromPool] Critical: totalAvailableProbability is 0 for card ${selectedCard.name}. This should not happen if availableRaritiesForCard.length > 0.`);
+            return null;
+        }
+
+        filteredAndNormalizedProbabilities = filteredAndNormalizedProbabilities.map(p => ({
+            rarity: p.rarity,
+            probability: p.probability / totalAvailableProbability
+        }));
+
+        const pickRarityFromFiltered = (probabilities) => {
+            const random = Math.random();
+            let cumulativeProbability = 0;
+
+            for (const { rarity, probability } of probabilities) {
+                cumulativeProbability += probability;
+                if (random <= cumulativeProbability) {
+                    return rarity;
+                }
+            }
+            return probabilities[probabilities.length - 1]?.rarity;
+        };
+
+        const selectedRarityName = pickRarityFromFiltered(filteredAndNormalizedProbabilities);
+
+        const finalAvailableCount = cardAvailabilityGroupedMap.get(selectedCard._id.toString())
+            ?.rarityRemaining[selectedRarityName.toLowerCase()];
+
+        if (typeof finalAvailableCount !== 'number' || finalAvailableCount <= 0) {
+            console.error(`[generateCardPreviewFromPool] Logic error: selectedRarityName '${selectedRarityName}' (${selectedCard._id}) somehow ended up with 0 or undefined remaining copies during final check. Available: ${finalAvailableCount}`);
+            return null;
+        }
+
+        const rarityObj = selectedCard.rarities.find(r => r.rarity === selectedRarityName);
+
+        if (!rarityObj || !rarityObj.availableMintNumbers || rarityObj.availableMintNumbers.length === 0) {
+            console.error(`[generateCardPreviewFromPool] Logic error: selectedRarityName '${selectedRarityName}' has no available mint numbers on the card model despite global availability. Data inconsistency?`);
             return null;
         }
 
         const idx = Math.floor(Math.random() * rarityObj.availableMintNumbers.length);
         const mintNumber = rarityObj.availableMintNumbers[idx];
 
+        if (live) {
+            rarityObj.availableMintNumbers.splice(idx, 1);
+            rarityObj.remainingCopies--;
+            await selectedCard.save();
+        }
+
         if (Math.random() < MODIFIER_CHANCE || forceModifier) {
             const modifiers = await Modifier.find().lean();
             const modToApply = modifiers[Math.floor(Math.random() * modifiers.length)];
 
             appliedModifierId = modToApply._id;
-
             selectedCard.modifier = modToApply._id;
             const prefix = modToApply.name === 'Glitch' ? 'Glitched' : modToApply.name;
             selectedCard.name = `${prefix} ${selectedCard.name}`;
@@ -403,23 +504,25 @@ const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifie
 
         return {
             name: selectedCard.name,
-            rarity: selectedRarity,
+            rarity: selectedRarityName,
             mintNumber,
             modifier: appliedModifierId,
             imageUrl: selectedCard.imageUrl,
             flavorText: selectedCard.flavorText || 'No flavor text available',
+            cardId: selectedCard._id.toString()
         };
     } catch (err) {
-        console.error('[generateCardPreviewFromPool] Error:', err.message);
+        console.error('[generateCardPreviewFromPool] Unexpected Error:', err.message, err.stack);
+        return null;
     }
 };
 
-const generatePackPreviewFromPool = async (poolIds, packSize = 5, forceModifier = false) => {
+const generatePackPreviewFromPool = async (poolIds, packSize = 5, forceModifier = false, live = false) => {
     const pack = [];
     const randomHighRoll = Math.floor(Math.random() * packSize)
     for (let x = 0; x < packSize; x) {
         console.log(randomHighRoll, x, x===randomHighRoll);
-        const card = await generateCardPreviewFromPool(poolIds, x === randomHighRoll, forceModifier);
+        const card = await generateCardPreviewFromPool(poolIds, x === randomHighRoll, forceModifier, live);
         x += 1;
         if (card) {
             pack.push(card);

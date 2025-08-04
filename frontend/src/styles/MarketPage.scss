@@ -1,0 +1,137 @@
+.market-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+
+  input[type="text"],
+  select {
+    padding: 0.75rem 1.5rem;
+    border: 1px solid var(--border-dark);
+    border-radius: 8px;
+    background: var(--surface-dark);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 240px;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+  }
+}
+
+.create-listing-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.create-listing-button {
+  padding: 1rem 2rem;
+  background-color: var(--brand-primary);
+  color: var(--background-dark);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 1.25rem;
+
+  &:hover {
+    background-color: var(--brand-secondary);
+  }
+}
+
+.listings-grid {
+  --card-scale: var(--screen-card-scale);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(348px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+  width: calc(100% / var(--card-scale));
+  transform: scale(var(--card-scale));
+  transform-origin: top left;
+}
+
+.listing-card {
+  background: var(--surface-dark);
+  border: 1px solid var(--border-dark);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1 1 348px;
+  width: 100%;
+  max-width: 348px;
+
+  &:hover {
+    border-color: var(--brand-primary);
+    box-shadow: 0 8px 24px rgba(219, 136, 219, 0.2);
+    transform: translateY(-4px) scale(1.02);
+  }
+
+  .listing-card-content {
+    display: flex;
+    justify-content: center; /* Center the BaseCard */
+  }
+
+  .listing-owner {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+  }
+
+  .offers-count {
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+    color: var(--brand-secondary);
+  }
+
+  .view-listing-button {
+    display: block;
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background-color: var(--brand-primary);
+    color: var(--background-dark);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: var(--brand-secondary);
+    }
+  }
+}
+
+/* Pagination buttons */
+.market-pagination {
+  button {
+    padding: 0.5rem 1rem;
+    background-color: var(--brand-primary);
+    color: var(--background-dark);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin: 0 0.25rem;
+    transition: background-color 0.3s ease;
+
+    &:hover:not(:disabled) {
+      background-color: var(--brand-secondary);
+    }
+
+    &:disabled {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.5);
+      cursor: default;
+    }
+  }
+}

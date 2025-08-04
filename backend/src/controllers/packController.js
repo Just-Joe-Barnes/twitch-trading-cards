@@ -7,8 +7,6 @@ const {
     generatePackPreview,
     generatePackPreviewFromPool
 } = require('../helpers/cardHelpers');
-// Percentage chance that a card will receive a modifier when a pack is opened.
-// Default to 5% if the environment variable is not set.
 const MODIFIER_CHANCE = parseFloat(process.env.MODIFIER_CHANCE || '0.05');
 
 // Get all users with packs (Admin-only functionality)
@@ -138,7 +136,7 @@ const openPacksForUser = async (req, res) => {
             const filteredIds = poolCards.map(card => card._id.toString());
 
             // Use generatePackPreviewFromPool which handles rarity and modifiers
-            newCards = await generatePackPreviewFromPool(filteredIds, 5, forceModifier);
+            newCards = await generatePackPreviewFromPool(filteredIds, 5, forceModifier, live=true);
         } else {
             // Use generatePackPreview for default packs
             newCards = await generatePackPreview(5, forceModifier);

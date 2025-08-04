@@ -1,7 +1,7 @@
 // frontend/src/DashboardPage.js
-import React, { useState, useEffect } from 'react';
-import { fetchUserProfile, fetchMyPacks } from '../utils/api';
-import LoadingSpinner from '../components/LoadingSpinner'; // Import your spinner
+import React, {useState, useEffect} from 'react';
+import {fetchUserProfile} from '../utils/api';
+import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/DashboardPage.css';
 
 const CHANNEL_POINTS_COST = parseInt(
@@ -19,10 +19,9 @@ const DashboardPage = () => {
         try {
             setLoading(true);
             const userProfile = await fetchUserProfile();
-            const userPacks = await fetchMyPacks();
 
             setUserData(userProfile);
-            setPackCount(userPacks?.packs || 0);
+            setPackCount(userProfile?.packs || 0);
         } catch (err) {
             console.error('Error fetching user data:', err.message);
             setError(err.message || 'Failed to load dashboard data. Please try again.');
@@ -36,19 +35,17 @@ const DashboardPage = () => {
     }, []);
 
     if (loading) {
-        // Instead of plain text, display the spinner.
-        return <LoadingSpinner />;
+        return <LoadingSpinner/>;
     }
 
     if (error) {
         return <p className="error-message">{error}</p>;
     }
 
-    // Multiple parent parameters for local dev and Netlify
     const twitchIframeSrc =
         'https://player.twitch.tv/?channel=just_joe_' +
-        '&parent=localhost' +               // for local dev
-        '&parent=nedsdecks.netlify.app';     // your live Netlify domain
+        '&parent=localhost' +
+        '&parent=nedsdecks.netlify.app';
 
     return (
         <div className="dashboard">
@@ -56,14 +53,17 @@ const DashboardPage = () => {
             <div className="dashboard-grid">
                 <div className="info-section section-card">
                     <h2>Welcome, {userData?.username || 'User'}!</h2>
-                    <p className="pack-count">Your Packs: {packCount}</p>
+                    <h3>Your Packs: {packCount}</h3>
+
                     <p className="app-info">
                         This app is a trading card experience built for the Just Joe Show community.
-                        Collect cards based on moments and events from the show, trade with others, and showcase your collection!
+                        Collect cards based on moments and events from the show, trade with others, and showcase your
+                        collection!
                     </p>
                     <p className="pack-opening-info">
                         Packs cannot be opened by users themselves. Instead, during live segments on the Just Joe Show,
-                        packs are opened for you in front of a live audience, creating an engaging and thrilling community experience!
+                        packs are opened for you in front of a live audience, creating an engaging and thrilling
+                        community experience!
                     </p>
                     <div className="earning-info">
                         <h3>How to Earn Packs:</h3>
@@ -95,7 +95,8 @@ const DashboardPage = () => {
                         allowFullScreen
                     />
                     <p className="twitch-details">
-                        Check out the Just Joe Show live or watch past streams to see the moments that inspired these collectible cards!
+                        Check out the Just Joe Show live or watch past streams to see the moments that inspired these
+                        collectible cards!
                     </p>
                 </div>
             </div>

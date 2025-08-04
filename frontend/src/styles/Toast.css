@@ -6,25 +6,23 @@
   color: #fff;
   padding: 1rem 1.5rem;
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   font-size: 1rem;
   z-index: 9999;
   opacity: 0.95;
   transition: all 0.3s ease;
 }
-
-.toast-info {
+.toast.toast-info {
   background-color: #333;
 }
-
-.toast-success {
+.toast.toast-success {
   background-color: #4caf50;
 }
-
-.toast-error {
+.toast.toast-error {
   background-color: #f44336;
 }
-
-.toast-warning {
+.toast.toast-warning {
   background-color: #ff9800;
 }
+
+/*# sourceMappingURL=Toast.css.map */

@@ -1,4 +1,3 @@
-// src/pages/LoginPage.js
 import React, { useEffect } from 'react';
 import '../styles/LoginPage.css';
 
@@ -23,11 +22,12 @@ const LoginPage = () => {
         <div className="login-container">
             <div className="login-box">
                 <h1>
-                    Welcome to <span className="pink-text">Ned's Decks</span>
+                    <small>Welcome to</small> <br/>
+                    <img src="/images/logo.png" alt="Ned's Decks" width="40%" />
                 </h1>
                 <p className="intro-text">
                     <span className="pink-text">Ned's Decks</span> is the ultimate trading card experience for fans of the{' '}
-                    <span className="pink-text">Just Joe Show</span>. Collect unique cards inspired by unforgettable moments,
+                    <span className="pink-text">Just Joe Show</span>. Collect unique cards inspired by unforgettable moments,{' '}
                     beloved characters, and epic events from the stream.
                 </p>
                 <p className="intro-text">
@@ -40,6 +40,8 @@ const LoginPage = () => {
                         Login with Twitch to start collecting and building your deck today!
                     </span>
                 </p>
+
+                <br/>
                 <button onClick={handleLogin}>Login with Twitch</button>
             </div>
         </div>

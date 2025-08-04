@@ -1,0 +1,174 @@
+@import 'variables';
+
+/* Overall page container */
+.cata-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 1.5rem 2rem;
+  max-width: 100%;
+  margin: 0 auto;
+  color: var(--text-primary);
+  background: var(--background-dark);
+  min-height: 100vh;
+
+  /* ------------------- New Top Section Styles ------------------- */
+  .cata-top-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    width: 100%;
+    max-width: 1800px;
+    margin-bottom: 2rem;
+  }
+
+  .cata-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .cata-filters-container {
+    background: var(--surface-dark);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+
+    h3 {
+      margin: 0;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+  }
+
+  .cata-preview-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .cata-rarity-box,
+  .cata-modifier-box {
+    background: var(--surface-dark);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+
+    h3 {
+      margin: 0;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+  }
+
+  /* Filters Container */
+  .cata-filters {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: 1.25rem;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 800px;
+
+    input[type="text"],
+    select {
+      background: var(--surface-dark);
+      border: 1px solid var(--border-dark);
+      border-radius: 8px;
+      padding: 0.75rem 1.5rem;
+      color: var(--text-primary);
+      font-family: var(--font-family);
+      width: 240px;
+      transition: var(--transition);
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2388cddb'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1em;
+      cursor: pointer;
+    }
+
+    select {
+      cursor: pointer;
+      padding-right: 2.5rem;
+
+      &::-ms-expand {
+        display: none;
+      }
+
+      option {
+        background: var(--surface-darker);
+        color: var(--text-primary);
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--border-dark);
+      }
+
+      &:focus {
+        outline: 2px solid var(--brand-secondary);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 3px rgba(136, 205, 219, 0.1);
+      }
+    }
+
+    ::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+  }
+
+  /* Rarity selector buttons */
+  .cata-rarity-selector {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 10px;
+  }
+
+  .cata-rarity-button {
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-size: 1rem;
+
+    &:hover {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+
+    &.active {
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+    }
+  }
+
+
+  /* Modifier selector buttons */
+  .cata-modifier-selector {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+
+  .cata-modifier-button {
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-size: 1rem;
+
+    &:hover {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+
+    &.active {
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+    }
+  }
+}

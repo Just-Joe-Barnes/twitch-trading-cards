@@ -1,0 +1,52 @@
+.notice-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  backdrop-filter: blur(5px);
+}
+
+.notice-modal {
+  background: var(--color-surface);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border);
+  max-width: 550px;
+  width: 90%;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+.notice-modal h2 {
+  margin-top: 0;
+  color: var(--color-primary);
+}
+
+.notice-modal p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.notice-signature {
+  font-style: italic;
+  text-align: right;
+  margin-top: 1.5rem;
+  color: var(--color-text-primary);
+}
+
+.notice-modal button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+/*# sourceMappingURL=DevelopmentNotice.css.map */

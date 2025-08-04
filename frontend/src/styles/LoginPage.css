@@ -1,74 +1,62 @@
-
-body {
-    margin: 0;
-    font-family: var(--font-family);
-    background: var(--background-dark);
-    color: var(--text-primary);
-}
-
-/* Center the login box on a dark background */
 .login-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.login-container .login-box {
+  background: var(--surface-dark);
+  border: 1px solid var(--border-dark);
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  max-width: 540px;
+  margin: 2rem;
+  /* Use the same signature colors from Collection Page */
+  /* Button styled to match your theme */
+}
+.login-container .login-box img {
+  margin: 0 auto;
+}
+.login-container .login-box h1 {
+  margin-top: 0;
+}
+.login-container .login-box small {
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-size: 14px;
+}
+.login-container .login-box .intro-text {
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+.login-container .login-box .cta-text {
+  margin-bottom: 16px;
+  font-weight: bold;
+}
+.login-container .login-box .pink-text {
+  color: #e381e0;
+}
+.login-container .login-box .blue-text {
+  color: #81b4c9;
+}
+.login-container .login-box button {
+  background-color: var(--brand-primary);
+  color: var(--text-primary);
+  border: none;
+  font-size: 1.4em;
+  padding: 16px 48px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.3s ease;
+}
+.login-container .login-box button:hover {
+  background-color: #9146ff;
+}
+.login-container .login-box button:active {
+  transform: scale(0.95);
 }
 
-/* Login Box styled like a card from Collection Page */
-.login-box {
-    background: var(--surface-dark);
-    border: 1px solid var(--border-dark);
-    padding: 2rem;
-    border-radius: 16px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-    text-align: center;
-    max-width: 500px;
-    width: 90%;
-}
-
-    .login-box h1 {
-        margin-bottom: 1.5rem;
-        font-size: 2.5rem;
-        color: var(--text-primary);
-    }
-
-.intro-text {
-    margin-bottom: 1rem;
-    font-size: 1rem;
-    line-height: 1.6;
-}
-
-.cta-text {
-    margin-bottom: 2rem;
-    font-size: 1.1rem;
-    font-weight: bold;
-}
-
-/* Use the same signature colors from Collection Page */
-.pink-text {
-    color: #e381e0;
-}
-
-.blue-text {
-    color: #81b4c9;
-}
-
-/* Button styled to match your theme */
-.login-box button {
-    background-color: var(--brand-primary);
-    color: var(--text-primary);
-    border: none;
-    padding: 0.8rem 2rem;
-    border-radius: 8px;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: transform 0.2s ease, background-color 0.3s ease;
-}
-
-    .login-box button:hover {
-        background-color: #9146ff;
-    }
-
-    .login-box button:active {
-        transform: scale(0.95);
-    }
+/*# sourceMappingURL=LoginPage.css.map */

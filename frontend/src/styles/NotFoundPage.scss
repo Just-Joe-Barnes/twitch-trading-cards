@@ -1,0 +1,22 @@
+.notfound-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 1.5rem;
+  min-height: 100vh;
+  background: var(--background-dark);
+  color: var(--text-primary);
+}
+
+.back-link {
+  color: var(--brand-primary);
+  text-decoration: none;
+  font-weight: bold;
+
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

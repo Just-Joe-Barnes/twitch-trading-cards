@@ -1,272 +1,127 @@
-
-.market-page {
-    padding: 2rem 1.5rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    background: var(--surface-darker);
-    color: var(--text-primary);
-    border-radius: 16px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-}
-
-    .market-page h1 {
-        font-size: 2.5rem;
-        margin-bottom: 0.5rem;
-        text-align: center;
-    }
-
-.market-description {
-    font-size: 1.1rem;
-    margin-bottom: 2rem;
-    text-align: center;
-}
-
 .market-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: center;
-    margin-bottom: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
 }
-
-    .market-controls input[type="text"],
-    .market-controls select {
-        padding: 0.75rem 1.5rem;
-        border: 1px solid var(--border-dark);
-        border-radius: 8px;
-        background: var(--surface-dark);
-        color: var(--text-primary);
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        width: 100%;
-        max-width: 240px;
-    }
-
-        .market-controls input[type="text"]::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-        }
+.market-controls input[type=text],
+.market-controls select {
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  background: var(--surface-dark);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 240px;
+}
+.market-controls input[type=text]::placeholder,
+.market-controls select::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
 
 .create-listing-container {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
 }
 
 .create-listing-button {
-    padding: 1rem 2rem;
-    background-color: var(--brand-primary);
-    color: var(--background-dark);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-size: 1.25rem;
+  padding: 1rem 2rem;
+  background-color: var(--brand-primary);
+  color: var(--background-dark);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 1.25rem;
+}
+.create-listing-button:hover {
+  background-color: var(--brand-secondary);
 }
 
-    .create-listing-button:hover {
-        background-color: var(--brand-secondary);
-    }
-
 .listings-grid {
-    --card-scale: var(--screen-card-scale);
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(348px, 1fr));
-    gap: 2rem;
-    margin-bottom: 3rem;
-    width: calc(100% / var(--card-scale));
-    transform: scale(var(--card-scale));
-    transform-origin: top left;
+  --card-scale: var(--screen-card-scale);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(348px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+  width: calc(100% / var(--card-scale));
+  transform: scale(var(--card-scale));
+  transform-origin: top left;
 }
 
 .listing-card {
-    background: var(--surface-dark);
-    border: 1px solid var(--border-dark);
-    border-radius: 16px;
-    padding: 1.5rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    flex: 1 1 348px;
-    width: 100%;
-    max-width: 348px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-dark);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1 1 348px;
+  width: 100%;
+  max-width: 348px;
 }
-
 .listing-card:hover {
-    border-color: var(--brand-primary);
-    box-shadow: 0 8px 24px rgba(219, 136, 219, 0.2);
-    transform: translateY(-4px) scale(1.02);
+  border-color: var(--brand-primary);
+  box-shadow: 0 8px 24px rgba(219, 136, 219, 0.2);
+  transform: translateY(-4px) scale(1.02);
 }
-
-.listing-card-content {
-    display: flex;
-    justify-content: center; /* Center the BaseCard */
+.listing-card .listing-card-content {
+  display: flex;
+  justify-content: center; /* Center the BaseCard */
 }
-
-.listing-owner {
-    margin-top: 0.5rem;
-    font-size: 0.9rem;
-    color: var(--text-primary);
+.listing-card .listing-owner {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-primary);
 }
-
-.offers-count {
-    margin-top: 0.25rem;
-    font-size: 0.85rem;
-    color: var(--brand-secondary);
+.listing-card .offers-count {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--brand-secondary);
 }
-
-.view-listing-button {
-    display: block;
-    width: 100%;
-    margin-top: 1rem;
-    padding: 0.75rem;
-    background-color: var(--brand-primary);
-    color: var(--background-dark);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
+.listing-card .view-listing-button {
+  display: block;
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: var(--brand-primary);
+  color: var(--background-dark);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
 }
-
-    .view-listing-button:hover {
-        background-color: var(--brand-secondary);
-    }
+.listing-card .view-listing-button:hover {
+  background-color: var(--brand-secondary);
+}
 
 /* Pagination buttons */
 .market-pagination button {
-    padding: 0.5rem 1rem;
-    background-color: var(--brand-primary);
-    color: var(--background-dark);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1rem;
-    margin: 0 0.25rem;
-    transition: background-color 0.3s ease;
+  padding: 0.5rem 1rem;
+  background-color: var(--brand-primary);
+  color: var(--background-dark);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin: 0 0.25rem;
+  transition: background-color 0.3s ease;
 }
-
 .market-pagination button:hover:not(:disabled) {
-    background-color: var(--brand-secondary);
+  background-color: var(--brand-secondary);
 }
-
 .market-pagination button:disabled {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.5);
-    cursor: default;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: default;
 }
 
-/* Enhanced mobile responsive styles */
-@media (max-width: 768px) {
-    .market-page {
-        padding: 3rem 1rem 2rem;
-    }
-
-    .market-page h1 {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-    }
-
-    .market-description {
-        font-size: 1rem;
-        margin-bottom: 1.5rem;
-        padding: 0 1rem;
-    }
-
-    .market-controls {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.75rem;
-        margin: 0 1rem 1.5rem;
-    }
-
-    .market-controls input[type="text"],
-    .market-controls select {
-        max-width: 100%;
-        font-size: 16px;
-    }
-
-    .create-listing-container {
-        margin: 0 1rem 1.5rem;
-    }
-
-    .create-listing-button {
-        font-size: 1.1rem;
-        padding: 0.8rem 1.5rem;
-    }
-
-    .listings-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-        padding: 0 1rem;
-    }
-
-    .listing-card {
-        max-width: 100%;
-        padding: 1.25rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .market-page {
-        padding: 2rem 0.75rem 1.5rem;
-    }
-
-    .market-page h1 {
-        font-size: 1.75rem;
-    }
-
-    .market-description {
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
-    }
-
-    .market-controls {
-        gap: 0.5rem;
-        margin: 0 0.5rem 1rem;
-    }
-
-    .market-controls input[type="text"],
-    .market-controls select {
-        padding: 0.75rem;
-        font-size: 16px;
-    }
-
-    .create-listing-container {
-        margin: 0 0.5rem 1rem;
-    }
-
-    .create-listing-button {
-        font-size: 1rem;
-        padding: 0.75rem 1.5rem;
-    }
-
-    .listings-grid {
-        gap: 1rem;
-        padding: 0 0.5rem;
-    }
-
-    .listing-card {
-        padding: 1rem;
-    }
-
-    .view-listing-button {
-        padding: 0.6rem;
-        font-size: 0.9rem;
-    }
-}
-
-@media (max-width: 390px) {
-    .market-page {
-        padding: 2rem 0.5rem 1rem;
-    }
-
-    .market-page h1 {
-        font-size: 1.5rem;
-    }
-
-    .listings-grid {
-        gap: 0.75rem;
-    }
-}
+/*# sourceMappingURL=MarketPage.css.map */

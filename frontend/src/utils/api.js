@@ -1,5 +1,5 @@
 // src/utils/api.js
-export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://192.168.0.136:5000' ;
 
 export const fetchWithAuth = async (endpoint, options = {}) => {
     try {
@@ -247,30 +247,13 @@ export const fetchAllPacks = async () => {
 
 // Create a new trade
 export const createTrade = async (tradeData) => {
+    // This function was not using fetchWithAuth, so I'm updating it to do so.
     try {
-        const response = await fetch(`${API_BASE_URL}/api/trades`, {
+        const response = await fetchWithAuth('/api/trades', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
             body: JSON.stringify(tradeData),
         });
-
-        if (!response.ok) {
-            let errorMessage = `HTTP error! Status: ${response.status}`;
-            try {
-                const errorData = await response.json();
-                if (errorData.popupMessage) {
-                    errorMessage = errorData.popupMessage;
-                }
-            } catch (parseError) {
-                console.error('Error parsing JSON error response:', parseError);
-            }
-            throw new Error(errorMessage);
-        }
-
-        return await response.json();
+        return response;
     } catch (error) {
         console.error('Error creating trade:', error);
         throw error;
@@ -468,3 +451,32 @@ export const revealGradedCard = async (userId, cardId) => {
         throw error;
     }
 };
+
+export const fetchAdminCardAudit = async () => {
+    // Uses fetchWithAuth for consistency
+    return fetchWithAuth('/api/admin/audit-cards', { method: 'GET' });
+};
+
+export const fixCardDefinitionInconsistencies = async (dryRun = true) => { // Default to dryRun
+    // Uses fetchWithAuth for consistency
+    const url = `/api/admin/fix-card-definition-inconsistencies?dryRun=${dryRun}`;
+    return fetchWithAuth(url, {
+        method: 'POST',
+        // fetchWithAuth automatically handles Content-Type and Authorization for JSON body
+    });
+};
+
+
+export const fixDuplicateAndMintZeroCards = async (dryRun) => {
+    const url = `/api/admin/fix-duplicate-mint-numbers?dryRun=${dryRun}`;
+    try {
+        const response = await fetchWithAuth(url, {
+            method: 'POST',
+        });
+        return response;
+    } catch (error) {
+        console.error('Error in fixDuplicateAndMintZeroCards:', error.message);
+        throw error;
+    }
+};
+// --- END NEW API FUNCTION ---
