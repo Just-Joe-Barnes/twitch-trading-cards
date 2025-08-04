@@ -41,9 +41,7 @@ const CollectionPage = ({
     const [loading, setLoading] = useState(true);
     const [totalPacks, setTotalPacks] = useState(0);
     const rangeInputRef = useRef(null);
-    const [catalogueCards, setCatalogueCards] = useState([]);
     const [limitedCards, setLimitedCards] = useState([]);
-    const [error, setError] = useState('');
 
     const [rarityCount, setRarityCount] = useState({
         Basic: 0, Common: 0, Standard: 0, Uncommon: 0, Rare: 0,
@@ -77,15 +75,12 @@ const CollectionPage = ({
         try {
             const response = await fetchCards({limit: 'all'});
             const fetchedCards = response.cards;
-            setCatalogueCards(fetchedCards);
-
             setLimitedCards(fetchedCards.filter((c) =>
                 !!c.availableFrom && !!c.availableTo
             ));
 
         } catch (err) {
             console.error('Error fetching cards:', err.message);
-            setError('Failed to load cards.');
         } finally {
             setLoading(false);
         }
