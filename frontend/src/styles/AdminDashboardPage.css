@@ -3,7 +3,6 @@
   /* Selected User -> Open Pack Section */
   /* Opened Cards Section */
   /* Pack-opening overlay */
-  /* Admin Packs Page Enhancements (General section styles) */
 }
 .page .grid-container {
   display: grid;
@@ -242,71 +241,6 @@
   100% {
     opacity: 1;
   }
-}
-.page .section {
-  background: var(--surface-dark);
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  border-radius: var(--border-radius);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-}
-.page .section h2,
-.page .section h3 {
-  margin-bottom: 1rem;
-  border-bottom: 2px solid var(--brand-primary);
-  padding-bottom: 0.5rem;
-}
-.page .section input[type=text],
-.page .section input[type=password],
-.page .section input[type=email],
-.page .section input[type=number],
-.page .section input[name=packId],
-.page .section input[name=name] {
-  width: 100%;
-  padding: 0.5rem 1rem;
-  margin-bottom: 1rem;
-  background: var(--surface-darker);
-  border: 1px solid var(--border-dark);
-  border-radius: var(--border-radius);
-  color: var(--text-primary);
-  transition: var(--transition);
-}
-.page .section input[type=text]:focus,
-.page .section input[type=password]:focus,
-.page .section input[type=email]:focus,
-.page .section input[type=number]:focus,
-.page .section input[name=packId]:focus,
-.page .section input[name=name]:focus {
-  outline: none;
-  border-color: var(--brand-primary);
-}
-.page .section button {
-  padding: 0.75rem 1.5rem;
-  background: var(--brand-primary);
-  color: var(--text-primary);
-  border: none;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  transition: var(--transition);
-  font-size: 1rem;
-  margin-top: 0.5rem;
-}
-.page .section button:hover {
-  background: var(--brand-secondary);
-}
-.page .section ul {
-  list-style: none;
-  padding: 0;
-}
-.page .section ul li {
-  padding: 0.75rem 1rem;
-  background: var(--surface-darker);
-  border-radius: var(--border-radius);
-  margin-bottom: 0.5rem;
-  transition: var(--transition);
-}
-.page .section ul li:hover {
-  background: var(--surface-dark);
 }
 .page .suggestions-list {
   background: var(--surface-dark);

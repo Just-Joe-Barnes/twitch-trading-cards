@@ -11,13 +11,13 @@ const Navbar = ({isAdmin}) => {
     const location = useLocation();
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
     const [loggedInUser, setLoggedInUser] = useState({});
-    const [menuOpen, setMenuOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
     const navbarRef = useRef(null);
     const desktopDropdownRef = useRef(null);
     const mobileDropdownRef = useRef(null);
 
     const [activeIndex, setActiveIndex] = useState(-1);
+    const [activeDropdown, setActiveDropdown] = useState(null);
 
     useEffect(() => {
         const fetchUsername = async () => {
@@ -33,7 +33,7 @@ const Navbar = ({isAdmin}) => {
 
     useEffect(() => {
         handleClearSearch();
-        setMenuOpen(false);
+        setActiveDropdown(null);
     }, [location.pathname]);
 
     useEffect(() => {
@@ -46,18 +46,18 @@ const Navbar = ({isAdmin}) => {
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (menuOpen && navbarRef.current && !navbarRef.current.contains(event.target)) {
-                setMenuOpen(false);
+            if (navbarRef.current && !navbarRef.current.contains(event.target)) {
+                setActiveDropdown(null);
                 handleClearSearch();
             }
         };
-        if (menuOpen) {
+        if (activeDropdown) {
             document.addEventListener('mousedown', handleClickOutside);
         }
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [menuOpen]);
+    }, [activeDropdown]);
 
     useEffect(() => {
         const dropdownRef = isMobile ? mobileDropdownRef : desktopDropdownRef;
@@ -76,7 +76,11 @@ const Navbar = ({isAdmin}) => {
     };
 
     const toggleMenu = () => {
-        setMenuOpen(prev => !prev);
+        setActiveDropdown(prev => (prev === 'main' ? null : 'main'));
+    };
+
+    const toggleUserDropdown = () => {
+        setActiveDropdown(prev => (prev === 'user' ? null : 'user'));
     };
 
     const handleSearchChange = async (e) => {
@@ -135,7 +139,7 @@ const Navbar = ({isAdmin}) => {
         <nav className="navbar" ref={navbarRef}>
             <button
                 className="burger-button"
-                aria-expanded={menuOpen}
+                aria-expanded={activeDropdown === 'main'}
                 aria-controls="primary-navigation"
                 onClick={toggleMenu}
             >
@@ -182,13 +186,17 @@ const Navbar = ({isAdmin}) => {
                 </div>
             )}
 
-            <ul id="primary-navigation" className={`navbar-links ${menuOpen ? 'open' : ''}`}>
-                <li><NavLink to={`/collection/${loggedInUser.username}`} className="nav-link" onClick={() => { setMenuOpen(false); handleClearSearch(); }}>My Collection</NavLink></li>
-                <li><NavLink to="/trading" className="nav-link" onClick={() => { setMenuOpen(false); handleClearSearch(); }}>Trading</NavLink></li>
-                <li><NavLink to="/achievements" className="nav-link" style={{position: "relative"}} onClick={() => { setMenuOpen(false); handleClearSearch(); }}>Achievements</NavLink></li>
-                <li><NavLink to="/grading" className="nav-link" onClick={() => { setMenuOpen(false); handleClearSearch(); }}>Card Grading</NavLink></li>
-                <li><NavLink to="/market" className="nav-link" onClick={() => { setMenuOpen(false); handleClearSearch(); }}>Market</NavLink></li>
-                <li><NavLink to="/catalogue" className="nav-link" onClick={() => { setMenuOpen(false); handleClearSearch(); }}>Catalogue</NavLink></li>
+            <ul id="primary-navigation" className={`navbar-links ${activeDropdown === 'main' ? 'open' : ''}`}>
+                <li><NavLink to={`/collection/${loggedInUser.username}`} className="nav-link" onClick={() => { setActiveDropdown(null); handleClearSearch(); }}>My Collection</NavLink></li>
+                <li><NavLink to="/trading" className={({ isActive }) =>
+                    isActive || location.pathname.startsWith('/trades')
+                        ? "nav-link active"
+                        : "nav-link"
+                } onClick={() => { setActiveDropdown(null); handleClearSearch(); }}>Trading</NavLink></li>
+                <li><NavLink to="/achievements" className="nav-link" style={{position: "relative"}} onClick={() => { setActiveDropdown(null); handleClearSearch(); }}>Achievements</NavLink></li>
+                <li><NavLink to="/grading" className="nav-link" onClick={() => { setActiveDropdown(null); handleClearSearch(); }}>Card Grading</NavLink></li>
+                <li><NavLink to="/market" className="nav-link" onClick={() => { setActiveDropdown(null); handleClearSearch(); }}>Market</NavLink></li>
+                <li><NavLink to="/catalogue" className="nav-link" onClick={() => { setActiveDropdown(null); handleClearSearch(); }}>Catalogue</NavLink></li>
 
                 {isMobile && (
                     <li className="mobile-search-item">
@@ -210,7 +218,7 @@ const Navbar = ({isAdmin}) => {
                                                 key={user._id}
                                                 onClick={() => {
                                                     handleSearchSelect(user.username);
-                                                    setMenuOpen(false);
+                                                    setActiveDropdown(null);
                                                 }}
                                                 className={`search-result-item ${index === activeIndex ? 'active' : ''}`}
                                             >
@@ -234,6 +242,8 @@ const Navbar = ({isAdmin}) => {
                     username={loggedInUser.username}
                     onLogout={handleLogout}
                     isAdmin={isAdmin}
+                    isOpen={activeDropdown === 'user'}
+                    onToggle={toggleUserDropdown}
                 />
             )}
         </nav>

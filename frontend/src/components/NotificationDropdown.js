@@ -1,33 +1,26 @@
-// src/components/NotificationDropdown.js
 import React, { useEffect, useState, useRef } from 'react';
 import {Link} from 'react-router-dom';
 import '../styles/NotificationDropdown.css';
 import { fetchWithAuth, API_BASE_URL } from '../utils/api';
 import io from 'socket.io-client';
 
-const NotificationDropdown = ({ profilePic, userId, username, onLogout, isAdmin }) => {
+const NotificationDropdown = ({ profilePic, userId, username, onLogout, isAdmin, isOpen, onToggle }) => {
     const [notifications, setNotifications] = useState([]);
-    const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
     const socketRef = useRef(null);
-    const [keyCounter, setKeyCounter] = useState(0); // Add a key counter
+    const [keyCounter, setKeyCounter] = useState(0);
 
-    // Establish socket connection on mount when userId is available
     useEffect(() => {
         if (!userId) {
-            console.log("NotificationDropdown: userId is not available yet.");
             return;
         }
-        console.log("NotificationDropdown: Establishing socket connection for user:", userId);
         socketRef.current = io(API_BASE_URL, {
             transports: ['websocket'],
         });
 
         socketRef.current.emit('join', userId);
-        console.log("NotificationDropdown: Emitted join event for user:", userId);
 
         socketRef.current.on('notification', (newNotification) => {
-            console.log("Received new notification via socket:", newNotification);
             setNotifications(prev => [newNotification, ...prev]);
         });
 
@@ -38,7 +31,6 @@ const NotificationDropdown = ({ profilePic, userId, username, onLogout, isAdmin 
         };
     }, [userId]);
 
-    // Fetch notifications on mount
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
@@ -51,7 +43,6 @@ const NotificationDropdown = ({ profilePic, userId, username, onLogout, isAdmin 
         fetchNotifications();
     }, []);
 
-    // Mark notifications as read when dropdown opens
     const markNotificationsAsRead = async () => {
         try {
             await fetchWithAuth('/api/notifications/read', { method: 'PUT' });
@@ -64,19 +55,17 @@ const NotificationDropdown = ({ profilePic, userId, username, onLogout, isAdmin 
     };
 
     const toggleDropdown = () => {
-        setIsOpen(prev => {
-            if (!prev) {
-                markNotificationsAsRead();
-            }
-            return !prev;
-        });
+        if (!isOpen) {
+            markNotificationsAsRead();
+        }
+        onToggle();
     };
 
     const handleDelete = async (notificationId) => {
         try {
             await fetchWithAuth(`/api/notifications/${notificationId}`, { method: 'DELETE' });
             setNotifications(prev => prev.filter(n => n._id !== notificationId));
-            setKeyCounter(prev => prev + 1); // Increment the key counter
+            setKeyCounter(prev => prev + 1);
         } catch (error) {
             console.error('Error deleting notification:', error.message);
         }
@@ -91,19 +80,6 @@ const NotificationDropdown = ({ profilePic, userId, username, onLogout, isAdmin 
         }
     };
 
-    // Close dropdown if clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
-
     return (
         <div className="notification-dropdown" ref={dropdownRef}>
             <button className="notification-icon" onClick={toggleDropdown}>
@@ -116,41 +92,35 @@ const NotificationDropdown = ({ profilePic, userId, username, onLogout, isAdmin 
             {isOpen && (
                 <div className="notification-menu">
                     <div className="profile-actions">
-                        <Link to={`/profile/${username}`} onClick={() => setIsOpen(false)} className="profile-action">My Profile</Link>
+                        <Link to={`/profile/${username}`} onClick={onToggle} className="profile-action">My Profile</Link>
                         {isAdmin && (
                             <>
-                                <Link to="/admin-dashboard" onClick={() => setIsOpen(false)} className="profile-action admin-action" > Admin Dashboard </Link>
-                                <Link to="/admin/actions" onClick={() => setIsOpen(false)} className="profile-action admin-action" > Admin Actions </Link>
+                                <Link to="/admin-dashboard" onClick={onToggle} className="profile-action admin-action" > Admin Dashboard </Link>
+                                <Link to="/admin/actions" onClick={onToggle} className="profile-action admin-action" > Admin Actions </Link>
                             </>
                         )}
-                        <button className="profile-action" onClick={() => { onLogout(); setIsOpen(false); }}>Logout</button>
+                        <button className="profile-action" onClick={() => { onLogout(); onToggle(); }}>Logout</button>
                     </div>
                     <hr className="profile-divider" />
                     {notifications.length > 0 ? (
                         <>
                             <ul>
-                                {notifications.map((n) => {
-                                    console.log("Notification link:", n.link);
-                                    return (
-                                        <li
-                                            key={`${n._id}-${keyCounter}`}
-                                            className={`notification-item ${n.isRead ? 'read' : 'unread'}`}
+                                {notifications.map((n) => (
+                                    <li
+                                        key={`${n._id}-${keyCounter}`}
+                                        className={`notification-item ${n.isRead ? 'read' : 'unread'}`}
+                                    >
+                                        <Link to={n.link || '#'} onClick={onToggle}>
+                                            <span>{n.message}</span>
+                                        </Link>
+                                        <button
+                                            className="delete-notification"
+                                            onClick={() => handleDelete(n._id)}
                                         >
-                                            <Link to={n.link || '#'}>
-                                                <span>{n.message}</span>
-                                            </Link>
-                                            <button
-                                                className="delete-notification"
-                                                onClick={() => {
-                                                    console.log("Deleting notification with ID:", n._id);
-                                                    handleDelete(n._id);
-                                                }}
-                                            >
-                                                ×
-                                            </button>
-                                        </li>
-                                    );
-                                })}
+                                            ×
+                                        </button>
+                                    </li>
+                                ))}
                             </ul>
                             <button className="clear-all-btn" onClick={handleClearAll}>
                                 Clear All

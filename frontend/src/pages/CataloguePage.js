@@ -58,6 +58,7 @@ const CataloguePage = () => {
     // 2. Use the hook and determine the max scale.
     const isMobile = useIsMobile();
     const maxCardScale = isMobile ? 1.3 : 2;
+    const minCardScale = isMobile ? 0.35 : 0.1;
 
     useEffect(() => {
         localStorage.setItem("cardScale", cardScale);
@@ -82,11 +83,14 @@ const CataloguePage = () => {
         }
     }, [cardScale, showFilters]);
 
-    // --- NEW ---
-    // 3. Add an effect to clamp the scale if the window is resized.
     useEffect(() => {
-        if (isMobile && cardScale > 1.3) {
-            setCardScale(1.3);
+        if (isMobile) {
+            if (cardScale > 1.3) {
+                setCardScale(1.3);
+            }
+            if (cardScale < 0.35) {
+                setCardScale(0.35);
+            }
         }
     }, [isMobile, cardScale]);
 
@@ -306,7 +310,7 @@ const CataloguePage = () => {
                                 <label>Card Scale: </label>
                                 <input
                                     type="range"
-                                    min="0.1"
+                                    min={minCardScale}
                                     max={maxCardScale}
                                     step="0.05"
                                     value={cardScale}

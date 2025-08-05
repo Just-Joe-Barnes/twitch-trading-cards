@@ -4,6 +4,7 @@ import {useNavigate} from 'react-router-dom';
 import {fetchUserProfile, fetchWithAuth, searchCardsByName} from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import '../styles/AdminActions.css';
+import NavAdmin from "../components/NavAdmin";
 
 const AdminActions = () => {
     const [newNote, setNewNote] = useState('');
@@ -310,6 +311,9 @@ const AdminActions = () => {
     return (
         <div className="page">
             <h1>Admin Actions</h1>
+
+            <NavAdmin />
+
             <section className="section-card" style={{gridColumn: '1 / -1'}}>
                 <h2>Create New Card</h2>
                 <div className="aa-admin-actions-form"

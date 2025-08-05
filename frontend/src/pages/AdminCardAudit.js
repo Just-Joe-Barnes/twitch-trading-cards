@@ -6,6 +6,7 @@ import {
     fixCardDefinitionInconsistencies,
     fixDuplicateAndMintZeroCards
 } from '../utils/api';
+import NavAdmin from "../components/NavAdmin";
 
 const AdminCardAudit = () => {
     const [isAdmin, setIsAdmin] = useState(false);
@@ -161,6 +162,9 @@ const AdminCardAudit = () => {
     return (
         <div className="page">
             <h1>Admin Card Audit</h1>
+
+            <NavAdmin />
+
             <div className="section-card">
                 <h2>Audit Summary</h2>
                 <p>Status: <span style={{ color: auditData.status === 'success' ? '#4CAF50' : '#f44336' }}>{auditData.status}</span></p>

@@ -1,0 +1,20 @@
+.nav-admin {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+.nav-admin a {
+  display: block;
+  padding: 1rem 2rem;
+  color: #fff;
+}
+.nav-admin a:hover, .nav-admin a.active {
+  color: #e680a7;
+  background: rgba(126, 181, 188, 0.1);
+  text-decoration: none;
+}
+
+/*# sourceMappingURL=NavAdmin.css.map */

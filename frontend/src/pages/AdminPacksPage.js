@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { fetchWithAuth } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import '../styles/AdminDashboardPage.css';
+import NavAdmin from "../components/NavAdmin";
 
 const AdminPacksPage = () => {
   const [packs, setPacks] = useState([]);
@@ -96,10 +97,12 @@ const AdminPacksPage = () => {
   };
 
   return (
-    <div className="dashboard-container">
+    <div className="page">
       <h1>Admin Pack Management</h1>
 
-      <div className="section">
+        <NavAdmin />
+
+      <div className="section-card">
         <h2>Create / Update Pack</h2>
         <input name="packId" placeholder="Leave blank to create a new pack" value={form.packId} onChange={handleChange} />
         <input name="name" placeholder="Pack Name" value={form.name} onChange={handleChange} />
@@ -151,19 +154,19 @@ const AdminPacksPage = () => {
         <button onClick={handleSave}>Save / Create Pack</button>
       </div>
 
-      <div className="section">
+      <div className="section-card">
         <h2>Existing Packs (Click to Edit)</h2>
         <ul>
 {packs.map((pack) => (
             <li
               key={pack._id}
-              style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center', 
-                background: 'var(--surface-dark)', 
-                padding: '0.75rem 1rem', 
-                borderRadius: '8px', 
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                background: 'var(--surface-dark)',
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
                 marginBottom: '8px',
                 cursor: 'pointer'
               }}

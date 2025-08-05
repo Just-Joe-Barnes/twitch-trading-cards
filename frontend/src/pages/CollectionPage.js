@@ -64,10 +64,16 @@ const CollectionPage = ({
 
     const isMobile = useIsMobile();
     const maxCardScale = isMobile ? 1.3 : 2;
+    const minCardScale = isMobile ? 0.35 : 0.1;
 
     useEffect(() => {
-        if (isMobile && cardScale > 1.3) {
-            setCardScale(1.3);
+        if (isMobile) {
+            if (cardScale > 1.3) {
+                setCardScale(1.3);
+            }
+            if (cardScale < 0.35) {
+                setCardScale(0.35);
+            }
         }
     }, [isMobile, cardScale]);
 
@@ -527,7 +533,7 @@ const CollectionPage = ({
                                 <label>Card Scale: </label>
                                 <input
                                     type="range"
-                                    min="0.1"
+                                    min={minCardScale}
                                     max={maxCardScale}
                                     step="0.05"
                                     value={cardScale}
