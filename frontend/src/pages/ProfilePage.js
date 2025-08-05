@@ -277,85 +277,83 @@ const ProfilePage = () => {
                     )}
                 </div>
                 <div className="column-container">
-                    {favoriteCard && (
-                        <div className="card-tile" style={{marginTop: '1rem'}}>
-                            <h2>Favorite Card Wanted</h2>
+                    <div className="card-tile" style={{marginTop: '1rem'}}>
+                        <h2>Favorite Card Wanted</h2>
 
-                            {favoriteCard && favoriteCard.name ? (
-                                <BaseCard
-                                    name={favoriteCard.name}
-                                    image={favoriteCard.imageUrl}
-                                    rarity={favoriteCard.rarity}
-                                    description={favoriteCard.flavorText}
-                                />
-                            ) : (
-                                <p>No favorite card selected.</p>
-                            )}
-                            {isOwnProfile && (
-                                <div className="actions">
-                                    {!editingFavorite && (
-                                        <button
-                                            className="primary-button"
-                                            onClick={() => {
-                                                setEditingFavorite(true);
+                        {favoriteCard && favoriteCard.name ? (
+                            <BaseCard
+                                name={favoriteCard.name}
+                                image={favoriteCard.imageUrl}
+                                rarity={favoriteCard.rarity}
+                                description={favoriteCard.flavorText}
+                            />
+                        ) : (
+                            <p>No favorite card selected.</p>
+                        )}
+                        {isOwnProfile && (
+                            <div className="actions">
+                                {!editingFavorite && (
+                                    <button
+                                        className="primary-button"
+                                        onClick={() => {
+                                            setEditingFavorite(true);
+                                            setCardQuery(favoriteCard?.name || '');
+                                            setSelectedRarity(favoriteCard?.rarity || '');
+                                        }}
+                                    >
+                                        Change Favourite Card
+                                    </button>
+                                )}
+
+                                {editingFavorite && (
+                                    <div className="favorite-card-form">
+                                        <div className="favorite-input">
+                                            <input
+                                                type="search"
+                                                className="search-bar"
+                                                placeholder="Search card..."
+                                                value={cardQuery}
+                                                onChange={(e) => setCardQuery(e.target.value)}
+                                            />
+                                            {cardResults.length > 0 && (
+                                                <ul className="search-dropdown">
+                                                    {cardResults.map((c) => (
+                                                        <li
+                                                            key={c._id}
+                                                            className="search-result-item"
+                                                            onMouseDown={() => handleSelectCard(c)}
+                                                        >
+                                                            {c.name}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
+                                            <select
+                                                value={selectedRarity}
+                                                onChange={(e) => setSelectedRarity(e.target.value)}
+                                            >
+                                                <option value="">Select rarity</option>
+                                                {rarities.map((r) => (
+                                                    <option key={r.name} value={r.name}>
+                                                        {r.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="button-group">
+                                            <button className="success-button" onClick={saveFavorite}>Save</button>
+                                            <button className="danger-button" onClick={() => {
+                                                setEditingFavorite(false);
                                                 setCardQuery(favoriteCard?.name || '');
                                                 setSelectedRarity(favoriteCard?.rarity || '');
-                                            }}
-                                        >
-                                            Change Favourite Card
-                                        </button>
-                                    )}
-
-                                    {editingFavorite && (
-                                        <div className="favorite-card-form">
-                                            <div className="favorite-input">
-                                                <input
-                                                    type="search"
-                                                    className="search-bar"
-                                                    placeholder="Search card..."
-                                                    value={cardQuery}
-                                                    onChange={(e) => setCardQuery(e.target.value)}
-                                                />
-                                                {cardResults.length > 0 && (
-                                                    <ul className="search-dropdown">
-                                                        {cardResults.map((c) => (
-                                                            <li
-                                                                key={c._id}
-                                                                className="search-result-item"
-                                                                onMouseDown={() => handleSelectCard(c)}
-                                                            >
-                                                                {c.name}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                )}
-                                                <select
-                                                    value={selectedRarity}
-                                                    onChange={(e) => setSelectedRarity(e.target.value)}
-                                                >
-                                                    <option value="">Select rarity</option>
-                                                    {rarities.map((r) => (
-                                                        <option key={r.name} value={r.name}>
-                                                            {r.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <div className="button-group">
-                                                <button className="success-button" onClick={saveFavorite}>Save</button>
-                                                <button className="danger-button" onClick={() => {
-                                                    setEditingFavorite(false);
-                                                    setCardQuery(favoriteCard?.name || '');
-                                                    setSelectedRarity(favoriteCard?.rarity || '');
-                                                }}>Cancel
-                                                </button>
-                                            </div>
+                                            }}>Cancel
+                                            </button>
                                         </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
                     {isOwnProfile && (
                         <div className="preferred-pack-container">
