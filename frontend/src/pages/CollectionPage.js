@@ -584,7 +584,7 @@ const CollectionPage = ({
             </div>
 
             {filteredCards.length > 0 && (
-                <div className="cards-grid" style={{"--user-card-scale": cardScale}}>
+                <div className={`cards-grid ${filteredCards.some((card => card.slabbed)) ? 'slabbed' : ''}`} style={{"--user-card-scale": cardScale}}>
                     {filteredCards.map((card) => {
                         const isFeatured = featuredCards.some((fc) => fc._id === card._id);
                         const isSelected = selectedItems.some((item) => item.itemId === card._id);

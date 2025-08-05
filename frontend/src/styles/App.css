@@ -872,6 +872,7 @@ input[type=range]:disabled::-moz-range-progress, input[type=range]:disabled::-ms
 }
 .cards-grid.slabbed {
   overflow: visible;
+  gap: 5rem 4rem;
 }
 
 .stats {

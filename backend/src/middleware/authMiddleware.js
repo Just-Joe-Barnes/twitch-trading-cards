@@ -37,13 +37,27 @@ const protect = async (req, res, next) => {
             req.isAdmin = req.user.isAdmin; // Attach admin status
             console.log('[AUTH VALIDATE] User validated:', req.user.username);
 
-            // Update lastActive timestamp asynchronously without saving full document
-            User.updateOne(
-                { _id: req.user._id },
-                { $set: { lastActive: new Date() } }
-            ).catch((err) =>
-                console.error('[lastActive update failed]', err)
-            );
+
+            /* Exclude certain routes from pinging user activity so it doesn't fail certain actions */
+            const excludedRoutes = [
+                '/api/trades/:id/status',
+            ];
+
+            const isExcluded = excludedRoutes.some(route => {
+                const regex = new RegExp(`^${route.replace(/:\w+/g, '[^/]+')}$`);
+                return regex.test(req.originalUrl);
+            });
+
+            if (!isExcluded && req.user) {
+                // Update lastActive timestamp asynchronously without saving full document
+                User.updateOne(
+                    {_id: req.user._id},
+                    {$set: {lastActive: new Date()}}
+                ).catch((err) =>
+                    console.error('[lastActive update failed]', err)
+                );
+            }
+            /* End Route Exclusions */
 
             next(); // Proceed to the next middleware or route
         } catch (error) {

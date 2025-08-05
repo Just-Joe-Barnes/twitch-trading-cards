@@ -350,7 +350,7 @@ const TradingPage = ({userId}) => {
                             </>
                         )}
                     </button>
-                    <Link to="/trades/pending" className="button secondary-button" style={{margin: '0'}}>
+                    <Link to="/trades/pending" className="button secondary-button">
                         <i className="fa-solid fa-list"/> View Trades
                     </Link>
                 </div>
