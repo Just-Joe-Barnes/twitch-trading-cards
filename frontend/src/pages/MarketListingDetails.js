@@ -261,7 +261,7 @@ const MarketListingDetails = () => {
                     to={`/profile/${listing.owner.username}`}>{listing.owner.username}</Link></small>
             </h1>
 
-            <div className="card-tile">
+            <div className={`card-tile ${listing.card.slabbed ? 'slabbed' : ''}`}>
                 <BaseCard
                     name={listing.card.name}
                     image={listing.card.imageUrl}
@@ -269,6 +269,8 @@ const MarketListingDetails = () => {
                     description={listing.card.flavorText}
                     mintNumber={listing.card.mintNumber}
                     modifier={listing.card.modifier}
+                    grade={listing.card.grade}
+                    slabbed={listing.card.slabbed}
                 />
             </div>
 
@@ -315,7 +317,7 @@ const MarketListingDetails = () => {
                                             <strong>Offered Cards:</strong>
                                             <div className={`card-tile-grid ${offer.offeredCards.some(card => card.slabbed) ? 'slabbed' : ''}`}>
                                                 {offer.offeredCards.map(card => (
-                                                    <div className="card-tile" key={card._id}>
+                                                    <div className={`card-tile ${card.slabbed ? 'slabbed' : ''}`} key={card._id}>
                                                         <BaseCard
                                                             name={card.name}
                                                             image={card.imageUrl}

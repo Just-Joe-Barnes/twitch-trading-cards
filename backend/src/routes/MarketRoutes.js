@@ -20,8 +20,8 @@ router.post('/listings', protect, sensitiveLimiter, async (req, res) => {
             mintNumber: Joi.number().integer().min(0).required(),
             grade: Joi.number().integer().min(1).max(10).optional(),
             slabbed: Joi.boolean().optional(),
+            gradedAt: Joi.string().optional(),
             flavorText: Joi.string().allow('', null),
-            // Modifier may be an ObjectId or populated object; allow any value
             modifier: Joi.any().optional()
         });
 

@@ -244,10 +244,10 @@ const MarketPage = () => {
             </div>
 
             <div className="page full" style={{paddingTop: '0'}}>
-                <div className="card-tile-grid mini" style={{marginTop: '0'}}>
+                <div className={`card-tile-grid mini`} style={{marginTop: '0'}}>
                     {sortedListings.length > 0 ? (
                         sortedListings.map((listing) => (
-                            <div key={listing._id} className="card-tile">
+                            <div key={listing._id} className={`card-tile ${listing.card.slabbed ? 'slabbed':''}`}>
                                 <BaseCard
                                     name={listing.card.name}
                                     image={listing.card.imageUrl}
@@ -256,6 +256,7 @@ const MarketPage = () => {
                                     mintNumber={listing.card.mintNumber}
                                     modifier={listing.card.modifier}
                                     slabbed={listing.card.slabbed}
+                                    grade={listing.card.grade}
                                     limited={!!listing.card.availableFrom && !!listing.card.availableTo}
                                 />
                                 <div className="actions">

@@ -26,7 +26,6 @@ const AdminActions = () => {
     // Notification panel state
     const [notificationType, setNotificationType] = useState('');
     const [message, setMessage] = useState('');
-    const [status, setStatus] = useState('');
     // Packs management state
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState('');
@@ -111,11 +110,11 @@ const AdminActions = () => {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({type: notificationType, message}),
             });
-            setStatus('Notification sent successfully.');
+            window.showToast('Notification sent successfully.', 'success');
             setNotificationType('');
             setMessage('');
         } catch {
-            setStatus('Error sending notification.');
+            window.showToast('Error sending notification.', 'error');
         }
     };
 
@@ -123,7 +122,7 @@ const AdminActions = () => {
         e.preventDefault();
         const userObj = users.find(u => u.username === selectedUser);
         if (!userObj) {
-            setStatus('User not found, please select a valid user.');
+            window.showToast('User not found, please select a valid user.', 'error');
             return;
         }
         try {
@@ -132,11 +131,11 @@ const AdminActions = () => {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({userId: userObj._id, amount: Number(packAmount)}),
             });
-            setStatus(`Gave ${packAmount} packs to ${selectedUser}.`);
+            window.showToast(`Gave ${packAmount} packs to ${selectedUser}.`, 'success');
             setSelectedUser('');
             setPackAmount('');
         } catch {
-            setStatus('Error giving packs.');
+            window.showToast('Error giving packs.', 'error');
         }
     };
 
@@ -147,19 +146,19 @@ const AdminActions = () => {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({amount: Number(addAllAmount)}),
             });
-            setStatus(`Added ${addAllAmount} packs to all users.`);
+            window.showToast(`Added ${addAllAmount} packs to all users.`, 'success');
             setAddAllAmount('');
         } catch {
-            setStatus('Error adding packs to all users.');
+            window.showToast('Error adding packs to all users.', 'error');
         }
     };
 
     const handleResetAllPacks = async () => {
         try {
             await fetchWithAuth('/api/admin/set-packs', {method: 'POST'});
-            setStatus("All users' packs reset to 6.");
+            window.showToast("All users' packs reset to 6.", 'success');
         } catch {
-            setStatus('Error resetting packs.');
+            window.showToast('Error resetting packs.', 'error');
         }
     };
 
@@ -401,7 +400,6 @@ const AdminActions = () => {
                             <button
                                 disabled={loading}
                                 onClick={async () => {
-                                    setStatus('');
                                     setLoading(true);
                                     try {
                                         const defaultRarities = [
@@ -1136,18 +1134,6 @@ const AdminActions = () => {
                         </div>
                     )}
                 </section>
-
-                {/* Pack Management Panel */}
-                <section className="section-card">
-                    <h2>Pack Management</h2>
-                    <p>For full pack management with card search and multi-select, please use the dedicated Pack
-                        Management page:</p>
-                    <div className="button-group">
-                        <a href="/admin/packs" className="primary-button sm">Go to Pack Management</a>
-                    </div>
-                </section>
-
-                {status && <p className="aa-status-message">{status}</p>}
             </div>
         </div>
     );
