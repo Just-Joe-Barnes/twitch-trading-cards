@@ -339,7 +339,7 @@ const AdminActions = () => {
                             <label>Upload Image:</label>
                             <input
                                 type="file"
-                                accept="image/*"
+                                accept="image/*,.gif"
                                 onChange={async (e) => {
                                     const file = e.target.files[0];
                                     if (!file) return;
