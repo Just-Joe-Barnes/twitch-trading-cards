@@ -3,6 +3,8 @@
   /* Selected User -> Open Pack Section */
   /* Opened Cards Section */
   /* Pack-opening overlay */
+  /* Remove the border from the very last item */
+  /* A more distinct hover/focus state */
 }
 .page .grid-container {
   display: grid;
@@ -242,21 +244,50 @@
     opacity: 1;
   }
 }
+.page .search-container {
+  position: relative; /* Establishes the positioning context for the list */
+}
 .page .suggestions-list {
-  background: var(--surface-dark);
-  border-radius: var(--border-radius);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  margin-top: 0.5rem;
-  padding: 0.5rem 0;
+  /* --- Core Positioning & Sizing --- */
+  position: absolute; /* Makes the list "float" over content below it */
+  z-index: 1000; /* Ensures it appears on top of other elements */
+  width: 100%; /* Makes the list match the width of the input */
+  margin-top: 0.5rem; /* Space between input and list */
+  /* --- Appearance & Style --- */
+  background: var(--surface-darker, #2a2d31); /* A slightly darker background for contrast */
+  border: 1px solid #444; /* A subtle border */
+  border-radius: var(--border-radius, 8px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); /* A more pronounced shadow for depth */
+  /* --- List Behavior --- */
   list-style: none;
+  padding: 0.5rem 0;
+  /* --- Scrolling for Long Lists --- */
+  max-height: 400px; /* Limit the height to prevent a huge list */
+  overflow-y: auto; /* Add a scrollbar if the content overflows */
 }
 .page .suggestions-list li {
-  padding: 0.5rem 1rem;
+  /* --- Layout & Alignment --- */
+  display: flex; /* Use flexbox for easy alignment */
+  align-items: center; /* Vertically centers the image and text */
+  padding: 0.75rem 1rem;
+  /* --- Interactivity --- */
   cursor: pointer;
-  transition: var(--transition);
+  transition: background-color 0.15s ease-in-out; /* Use a specific transition */
+  border-bottom: 1px solid #3a3d41; /* Separator line for readability */
+}
+.page .suggestions-list li:last-child {
+  border-bottom: none;
 }
 .page .suggestions-list li:hover {
-  background: var(--surface-darker);
+  background: rgba(230, 128, 167, 0.1);
+  color: #fff;
+}
+.page .suggestions-list li img {
+  width: 30px;
+  height: 42px;
+  margin-right: 15px; /* More space between image and text */
+  border-radius: 3px;
+  object-fit: cover;
 }
 
 h1 {
@@ -292,6 +323,138 @@ h1::after {
   border-radius: 8px;
   display: flex;
   flex-direction: column;
+}
+
+.username-toggle {
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.2s ease-in-out;
+}
+
+.username-toggle:hover {
+  color: var(--accent-color);
+}
+
+.sort-controls {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 64px;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(5px);
+  padding: 1rem;
+  margin: 0 -0.5rem 1rem;
+  border: 1px solid #444;
+  border-radius: 8px;
+  /* Make sure it floats above the content below it */
+  z-index: 10;
+}
+
+/* Add to src/styles/AdminDashboardPage.css */
+/* Main layout for the ownership page */
+.ownership-page-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+.ownership-main-content {
+  flex-grow: 1;
+}
+
+/* --- Quick Navigation Sidebar --- */
+.quick-nav-sidebar {
+  position: sticky;
+  top: 100px;
+  width: 200px;
+  flex-shrink: 0;
+}
+.quick-nav-sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.quick-nav-sidebar ul li .nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+  border-left: 4px solid transparent; /* Placeholder for the color stripe */
+  transition: all 0.2s ease-in-out;
+}
+.quick-nav-sidebar ul li .nav-link.unique {
+  color: #fff !important;
+}
+
+.quick-nav-sidebar .nav-link:hover {
+  background-color: var(--surface-darker);
+  transform: translateX(5px);
+}
+
+/* --- Results Area Styling --- */
+.ownership-results-container .rarity-group-item {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.5rem;
+  background: var(--surface-dark);
+  border-radius: var(--border-radius);
+}
+
+.ownership-results-container .rarity-group-item h3 {
+  margin-top: 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #444;
+}
+
+.owner-details {
+  padding: 1rem;
+  margin-top: 1rem;
+  border-radius: var(--border-radius);
+  background-color: var(--surface-darker);
+}
+
+.owner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-link-count {
+  opacity: 0.7;
+  font-size: 0.9em;
+  right: 0;
+}
+
+.rarity-select-nav {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--surface-darker);
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: var(--border-radius);
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+/* --- Media Query for Mobile --- */
+/* On screens 768px or less */
+@media (max-width: 768px) {
+  /* Hide the desktop sidebar */
+  .quick-nav-sidebar {
+    display: none;
+  }
+  /* Make the main layout a single column */
+  .ownership-page-layout {
+    flex-direction: column;
+  }
+  /* Ensure the main content takes up the full width */
+  .ownership-main-content {
+    width: 100%;
+  }
 }
 
 /*# sourceMappingURL=AdminDashboardPage.css.map */

@@ -1609,3 +1609,21 @@ body.no-scroll {
     }
   }
 }
+/* --- Optional: Custom Scrollbar Styling for a Polished Look --- */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface-dark, #1e1e1e);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 4px;
+  border: 2px solid var(--surface-dark, #1e1e1e);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #777;
+}

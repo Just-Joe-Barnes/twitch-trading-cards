@@ -3,6 +3,8 @@ import {rarities} from "../../constants/rarities";
 import BaseCard from "../../components/BaseCard";
 
 const KitchenSink = () => {
+    const [toggleSlabbedPreview, setToggleSlabbedPreview] = React.useState(false);
+
     const handleRangeChange = (e) => {
         const value = e.target.value;
         const max = e.target.max || 100;
@@ -62,7 +64,10 @@ const KitchenSink = () => {
 
                 <hr/>
 
+                <button className="sm" style={{float: 'right'}} onClick={() => setToggleSlabbedPreview(!toggleSlabbedPreview)}>Toggle Slabbed</button>
+                <br/>
                 <h2>Single Card</h2>
+
                 <BaseCard
                     name="The Cursed Bristles"
                     image="/images/cards/thecursedbristles.jpg"
@@ -70,12 +75,15 @@ const KitchenSink = () => {
                     rarity="basic"
                     mintNumber="666"
                     modifier={null}
-                    grade={null}
-                    slabbed={false}
+                    grade={6}
+                    slabbed={toggleSlabbedPreview}
                 />
 
                 <hr/>
 
+
+                <button className="sm" style={{float: 'right'}} onClick={() => setToggleSlabbedPreview(!toggleSlabbedPreview)}>Toggle Slabbed</button>
+                <br/>
                 <h2>Card Tile</h2>
                 <div className="card-tile-grid">
                     <div className="card-tile">
@@ -86,8 +94,8 @@ const KitchenSink = () => {
                             rarity="basic"
                             mintNumber="666"
                             modifier={null}
-                            grade={null}
-                            slabbed={false}
+                            grade={6}
+                            slabbed={toggleSlabbedPreview}
                         />
                         <div className="actions">
                             <button className="success-button">Confirm</button>
@@ -99,11 +107,11 @@ const KitchenSink = () => {
                             name="The Cursed Bristles"
                             image="/images/cards/thecursedbristles.jpg"
                             description="Worn by a long-forgotten pirate lord, this beard carries the whispers of the deep. Each strand is tangled with lost treasure, but those who dare to claim it are doomed to an itch that never fades. -ItchyBeard"
-                            rarity="basic"
+                            rarity="rare"
                             mintNumber="666"
                             modifier={null}
-                            grade={null}
-                            slabbed={false}
+                            grade={6}
+                            slabbed={toggleSlabbedPreview}
                         />
                         <div className="actions">
                             <button className="success-button">Confirm</button>
@@ -115,11 +123,11 @@ const KitchenSink = () => {
                             name="The Cursed Bristles"
                             image="/images/cards/thecursedbristles.jpg"
                             description="Worn by a long-forgotten pirate lord, this beard carries the whispers of the deep. Each strand is tangled with lost treasure, but those who dare to claim it are doomed to an itch that never fades. -ItchyBeard"
-                            rarity="basic"
+                            rarity="legendary"
                             mintNumber="666"
                             modifier={null}
-                            grade={null}
-                            slabbed={false}
+                            grade={6}
+                            slabbed={toggleSlabbedPreview}
                         />
                         <div className="actions">
                             <button className="success-button">Confirm</button>
@@ -130,6 +138,9 @@ const KitchenSink = () => {
                 <hr/>
             </div>
 
+
+            <button className="sm" style={{float: 'right'}} onClick={() => setToggleSlabbedPreview(!toggleSlabbedPreview)}>Toggle Slabbed</button>
+            <br/>
             <h2>Card Rarities (Grid)</h2>
             <div className="cards-grid">
                 {rarities.map((r) => {
@@ -141,13 +152,16 @@ const KitchenSink = () => {
                             rarity={r.name}
                             mintNumber="666"
                             modifier={null}
-                            grade={null}
-                            slabbed={false}
+                            grade={6}
+                            slabbed={toggleSlabbedPreview}
                         />
                     );
                 })}
             </div>
 
+
+            <button className="sm" style={{float: 'right'}} onClick={() => setToggleSlabbedPreview(!toggleSlabbedPreview)}>Toggle Slabbed</button>
+            <br/>
             <h2>Card Modifiers</h2>
             <div className="cards-grid">
                 <BaseCard
@@ -157,8 +171,8 @@ const KitchenSink = () => {
                     rarity="basic"
                     mintNumber="666"
                     modifier="Negative"
-                    grade={null}
-                    slabbed={false}
+                    grade={6}
+                    slabbed={toggleSlabbedPreview}
                 />
                 <BaseCard
                     name="Glitched The Cursed Bristles"
@@ -167,8 +181,8 @@ const KitchenSink = () => {
                     rarity="basic"
                     mintNumber="666"
                     modifier="Glitch"
-                    grade={null}
-                    slabbed={false}
+                    grade={6}
+                    slabbed={toggleSlabbedPreview}
                 />
                 <BaseCard
                     name="The Cursed Bristles"
@@ -177,11 +191,14 @@ const KitchenSink = () => {
                     rarity="basic"
                     mintNumber="666"
                     modifier="Prismatic"
-                    grade={null}
-                    slabbed={false}
+                    grade={6}
+                    slabbed={toggleSlabbedPreview}
                 />
             </div>
 
+
+            <button className="sm" style={{float: 'right'}} onClick={() => setToggleSlabbedPreview(!toggleSlabbedPreview)}>Toggle Slabbed</button>
+            <br/>
             <h2>MiniCards (Grid)</h2>
             <div className="cards-grid mini">
                 {rarities.map((r) => {
@@ -193,8 +210,8 @@ const KitchenSink = () => {
                             rarity={r.name}
                             mintNumber="666"
                             modifier={null}
-                            grade={null}
-                            slabbed={false}
+                            grade={6}
+                            slabbed={toggleSlabbedPreview}
                             miniCard={true}
                         />
                     );
@@ -206,8 +223,8 @@ const KitchenSink = () => {
                     rarity="basic"
                     mintNumber="666"
                     modifier="Negative"
-                    grade={null}
-                    slabbed={false}
+                    grade={6}
+                    slabbed={toggleSlabbedPreview}
                     miniCard={true}
                 />
                 <BaseCard
@@ -217,8 +234,8 @@ const KitchenSink = () => {
                     rarity="basic"
                     mintNumber="666"
                     modifier="Glitch"
-                    grade={null}
-                    slabbed={false}
+                    grade={6}
+                    slabbed={toggleSlabbedPreview}
                     miniCard={true}
                 />
                 <BaseCard
@@ -228,8 +245,8 @@ const KitchenSink = () => {
                     rarity="basic"
                     mintNumber="666"
                     modifier="Prismatic"
-                    grade={null}
-                    slabbed={false}
+                    grade={6}
+                    slabbed={toggleSlabbedPreview}
                     miniCard={true}
                 />
             </div>

@@ -759,10 +759,12 @@
 .card-container.slabbed:not(.divine) {
   background: none;
 }
+.card-container.slabbed:not(.mythic) .card-border {
+  background: var(--card-bg-color);
+}
 .card-container.slabbed .card-border {
   margin: 0;
   height: 100%;
-  background: var(--card-bg-color);
 }
 .card-container.slabbed.divine .card-border {
   background: none;

@@ -16,5 +16,14 @@
   background: rgba(126, 181, 188, 0.1);
   text-decoration: none;
 }
+@media screen and (max-width: 768px) {
+  .nav-admin {
+    flex-direction: column;
+  }
+  .nav-admin a {
+    width: 100%;
+    text-align: center;
+  }
+}
 
 /*# sourceMappingURL=NavAdmin.css.map */

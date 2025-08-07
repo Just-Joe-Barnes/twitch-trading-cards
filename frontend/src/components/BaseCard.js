@@ -342,7 +342,7 @@ const BaseCard = ({
                 modifier,
                 grade,
                 slabbed,
-                limited: !!timestatuscard?.availableFrom || false,
+                limited: limited || !!timestatuscard?.availableFrom || false,
                 featured
             });
         }

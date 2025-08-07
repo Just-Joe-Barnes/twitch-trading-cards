@@ -33,6 +33,7 @@ const tradeRoutes = require('./src/routes/tradeRoutes');
 const marketRoutes = require('./src/routes/MarketRoutes');
 const notificationRoutes = require('./src/routes/notificationRoutes');
 const testNotificationRoutes = require('./src/routes/testNotificationRoutes');
+const uploadRoutes = require('./src/routes/uploadRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
 const achievementRoutes = require('./src/routes/achievementRoutes');
 const gradingRoutes = require('./src/routes/gradingRoutes');
@@ -50,7 +51,6 @@ const rawBodyMiddleware = (req, res, buf, encoding) => {
         req.rawBody = buf.toString(encoding || 'utf-8');
     }
 };
-app.use(express.json({ verify: rawBodyMiddleware }));
 
 // General Middleware
 app.use(session({
@@ -73,6 +73,7 @@ mongoose
         console.error("MongoDB connection error:", err.message);
         process.exit(1);
     });
+
 
 // Root endpoint (useful for Render's health check)
 app.get('/', (req, res) => {
@@ -97,11 +98,14 @@ app.use('/api/trades', tradeRoutes);
 app.use('/api/market', marketRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/test-notification', testNotificationRoutes); // Ensure this is correctly set up
-app.use('/api/admin', adminRoutes);
 app.use('/api/grading', gradingRoutes);
 app.use('/api/modifiers', require('./src/routes/modifierRoutes'));
 app.use('/api/achievements', achievementRoutes);
 
+app.use('/api/admin', uploadRoutes);
+app.use(express.json({ verify: rawBodyMiddleware, limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use('/api/admin', adminRoutes);
 
 // Default 404 handler (for any unmatched routes)
 app.use((req, res) => {

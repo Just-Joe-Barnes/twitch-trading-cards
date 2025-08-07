@@ -873,10 +873,15 @@ $card-artwork-height: 216px;
       background: none;
     }
 
+    &:not(.mythic) {
+      .card-border {
+        background: var(--card-bg-color);
+      }
+    }
+
     .card-border {
       margin: 0;
       height: 100%;
-      background: var(--card-bg-color);
     }
 
     &.divine .card-border {

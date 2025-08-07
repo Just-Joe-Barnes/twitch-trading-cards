@@ -8,6 +8,7 @@ const NavAdmin = () => {
           <NavLink to="/admin/actions">Actions Home</NavLink>
           <NavLink to="/admin/cardaudit">Card Audit</NavLink>
           <NavLink to="/admin/packs">Pack Management</NavLink>
+          <NavLink to="/admin/card-ownership">Card Ownership</NavLink>
       </div>
   );
 };

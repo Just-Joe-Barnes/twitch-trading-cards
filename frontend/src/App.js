@@ -12,6 +12,7 @@ import KitchenSink from "./pages/__tests__/KitchenSink";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import AdminCardAudit from "./pages/AdminCardAudit";
 import LeaderboardPage from "./pages/__tests__/LeaderboardPage";
+import AdminCardOwnershipPage from "./pages/AdminCardOwnershipPage";
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const CollectionPage = lazy(() => import('./pages/CollectionPage'));
@@ -169,6 +170,10 @@ const App = () => {
                         <Route
                             path="/admin/actions"
                             element={user?.isAdmin ? <AdminActions user={user} /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/admin/card-ownership"
+                            element={user?.isAdmin ? <AdminCardOwnershipPage user={user} /> : <Navigate to="/login" />}
                         />
                         <Route
                             path="/grading"

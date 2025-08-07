@@ -1,13 +1,16 @@
 // src/utils/api.js
-export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://192.168.0.136:5000' ;
+export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://192.168.0.136:5000';
 
 export const fetchWithAuth = async (endpoint, options = {}) => {
     try {
         const token = localStorage.getItem("token");
         const headers = {
-            "Content-Type": "application/json",
             ...options.headers,
         };
+
+        if (!(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+        }
 
         if (token) {
             headers.Authorization = `Bearer ${token}`;
@@ -39,25 +42,25 @@ export const fetchWithAuth = async (endpoint, options = {}) => {
 
         return response.json();
     } catch (error) {
-        console.error("[API] Error in fetchWithAuth:", error.message, { endpoint, options });
+        console.error("[API] Error in fetchWithAuth:", error.message, {endpoint, options});
         throw error;
     }
 };
 
 // Fetch user's packs
 export const fetchMyPacks = async () => {
-    return fetchWithAuth("/api/packs/mypacks", { method: "GET" });
+    return fetchWithAuth("/api/packs/mypacks", {method: "GET"});
 };
 
 // Fetch logged-in user's profile
 export const fetchUserProfile = async () => {
-    return fetchWithAuth("/api/users/me", { method: "GET" });
+    return fetchWithAuth("/api/users/me", {method: "GET"});
 };
 
 // Fetch a user profile by username
 export const fetchUserProfileByUsername = async (username) => {
     try {
-        return fetchWithAuth(`/api/users/profile/${username}`, { method: "GET" });
+        return fetchWithAuth(`/api/users/profile/${username}`, {method: "GET"});
     } catch (error) {
         console.error("[API] Error fetching profile by username:", error.message);
         throw error;
@@ -67,7 +70,7 @@ export const fetchUserProfileByUsername = async (username) => {
 // Fetch user collection (cards and packs)
 export const fetchUserCollection = async (userId) => {
     try {
-        const response = await fetchWithAuth(`/api/users/${userId}/collection`, { method: "GET" });
+        const response = await fetchWithAuth(`/api/users/${userId}/collection`, {method: "GET"});
         console.log("[API] Fetched User Collection:", response);
         return response;
     } catch (error) {
@@ -77,12 +80,12 @@ export const fetchUserCollection = async (userId) => {
 };
 
 // Fetch all cards recursively with pagination support
-export const fetchCards = async ({ search = "", rarity = "", sort = "", page = 1, limit = 50 }) => {
-    const queryParams = new URLSearchParams({ search, rarity, sort, page, limit });
+export const fetchCards = async ({search = "", rarity = "", sort = "", page = 1, limit = 50}) => {
+    const queryParams = new URLSearchParams({search, rarity, sort, page, limit});
     try {
-        const response = await fetchWithAuth(`/api/cards?${queryParams.toString()}`, { method: "GET" });
+        const response = await fetchWithAuth(`/api/cards?${queryParams.toString()}`, {method: "GET"});
         if (response.cards?.length === limit) {
-            const nextPageData = await fetchCards({ search, rarity, sort, page: page + 1, limit });
+            const nextPageData = await fetchCards({search, rarity, sort, page: page + 1, limit});
             return {
                 cards: [...response.cards, ...nextPageData.cards],
                 totalCards: nextPageData.totalCards || response.totalCards,
@@ -111,31 +114,31 @@ export const searchCardsByName = async (query) => {
 
 // Award a pack for first login
 export const awardFirstLoginPack = async () => {
-    return fetchWithAuth("/api/packs/firstlogin", { method: "POST" });
+    return fetchWithAuth("/api/packs/firstlogin", {method: "POST"});
 };
 
 // Redeem channel points for a pack
 export const redeemChannelPointsPack = async () => {
-    return fetchWithAuth("/api/packs/redeem", { method: "POST" });
+    return fetchWithAuth("/api/packs/redeem", {method: "POST"});
 };
 
 // Fetch user subscriptions
 export const fetchUserSubscriptions = async () => {
-    return fetchWithAuth("/api/users/subscriptions", { method: "GET" });
+    return fetchWithAuth("/api/users/subscriptions", {method: "GET"});
 };
 
 // Handle gifted subscriptions
 export const handleGiftedSubscription = async (giftCount) => {
     return fetchWithAuth("/api/packs/gift", {
         method: "POST",
-        body: JSON.stringify({ giftCount }),
+        body: JSON.stringify({giftCount}),
     });
 };
 
 // Fetch featured cards for the logged-in user
 export const fetchFeaturedCards = async () => {
     try {
-        const response = await fetchWithAuth("/api/users/featured-cards", { method: "GET" });
+        const response = await fetchWithAuth("/api/users/featured-cards", {method: "GET"});
         console.log("[API] Fetched Featured Cards:", response);
         return response;
     } catch (error) {
@@ -149,7 +152,7 @@ export const updateFeaturedCards = async (featuredCards) => {
     try {
         const response = await fetchWithAuth("/api/users/featured-cards", {
             method: "PUT",
-            body: JSON.stringify({ featuredCards }),
+            body: JSON.stringify({featuredCards}),
         });
         console.log("[API] Updated Featured Cards:", response);
         return response;
@@ -162,7 +165,7 @@ export const updateFeaturedCards = async (featuredCards) => {
 // Fetch featured achievements for the logged-in user
 export const fetchFeaturedAchievements = async () => {
     try {
-        const response = await fetchWithAuth('/api/users/featured-achievements', { method: 'GET' });
+        const response = await fetchWithAuth('/api/users/featured-achievements', {method: 'GET'});
         return response;
     } catch (error) {
         console.error('[API] Error fetching featured achievements:', error.message);
@@ -175,7 +178,7 @@ export const updateFeaturedAchievements = async (achievements) => {
     try {
         const response = await fetchWithAuth('/api/users/featured-achievements', {
             method: 'PUT',
-            body: JSON.stringify({ achievements }),
+            body: JSON.stringify({achievements}),
         });
         return response;
     } catch (error) {
@@ -187,7 +190,7 @@ export const updateFeaturedAchievements = async (achievements) => {
 // Fetch favorite card for the logged-in user
 export const fetchFavoriteCard = async () => {
     try {
-        const response = await fetchWithAuth("/api/users/favorite-card", { method: "GET" });
+        const response = await fetchWithAuth("/api/users/favorite-card", {method: "GET"});
         return response.favoriteCard;
     } catch (error) {
         console.error("[API] Error fetching favorite card:", error.message);
@@ -200,7 +203,7 @@ export const updateFavoriteCard = async (name, rarity) => {
     try {
         const response = await fetchWithAuth("/api/users/favorite-card", {
             method: "PUT",
-            body: JSON.stringify({ name, rarity }),
+            body: JSON.stringify({name, rarity}),
         });
         return response.favoriteCard;
     } catch (error) {
@@ -212,7 +215,7 @@ export const updateFavoriteCard = async (name, rarity) => {
 // Fetch preferred pack for the logged-in user
 export const fetchPreferredPack = async () => {
     try {
-        const response = await fetchWithAuth('/api/users/preferred-pack', { method: 'GET' });
+        const response = await fetchWithAuth('/api/users/preferred-pack', {method: 'GET'});
         return response.preferredPack;
     } catch (error) {
         console.error('[API] Error fetching preferred pack:', error.message);
@@ -225,7 +228,7 @@ export const updatePreferredPack = async (packId) => {
     try {
         const response = await fetchWithAuth('/api/users/preferred-pack', {
             method: 'PUT',
-            body: JSON.stringify({ packId }),
+            body: JSON.stringify({packId}),
         });
         return response.preferredPack;
     } catch (error) {
@@ -237,7 +240,7 @@ export const updatePreferredPack = async (packId) => {
 // Fetch list of all packs (public)
 export const fetchAllPacks = async () => {
     try {
-        const res = await fetchWithAuth('/api/admin/packs', { method: 'GET' });
+        const res = await fetchWithAuth('/api/admin/packs', {method: 'GET'});
         return res.packs || [];
     } catch (err) {
         console.error('[API] Error fetching packs:', err.message);
@@ -290,7 +293,7 @@ export const acceptTrade = async (tradeId) => {
     try {
         const response = await fetchWithAuth(`/api/trades/${tradeId}/status`, {
             method: "PUT",
-            body: JSON.stringify({ status: "accepted" }),
+            body: JSON.stringify({status: "accepted"}),
         });
         console.log("[API] Trade accepted:", response);
         return response;
@@ -305,7 +308,7 @@ export const rejectTrade = async (tradeId) => {
     try {
         const response = await fetchWithAuth(`/api/trades/${tradeId}/status`, {
             method: "PUT",
-            body: JSON.stringify({ status: "rejected" }),
+            body: JSON.stringify({status: "rejected"}),
         });
         console.log("[API] Trade rejected:", response);
         return response;
@@ -320,7 +323,7 @@ export const cancelTrade = async (tradeId) => {
     try {
         const response = await fetchWithAuth(`/api/trades/${tradeId}/status`, {
             method: "PUT",
-            body: JSON.stringify({ status: "cancelled" }),
+            body: JSON.stringify({status: "cancelled"}),
         });
         console.log("[API] Trade cancelled:", response);
         return response;
@@ -335,7 +338,7 @@ export const updateTradeStatus = async (tradeId, status) => {
     try {
         const response = await fetchWithAuth(`/api/trades/${tradeId}`, {
             method: "PUT",
-            body: JSON.stringify({ status }),
+            body: JSON.stringify({status}),
         });
         console.log("[API] Trade status updated:", response);
         return response;
@@ -348,7 +351,7 @@ export const updateTradeStatus = async (tradeId, status) => {
 // Search for users by username
 export const searchUsers = async (query) => {
     try {
-        const response = await fetchWithAuth(`/api/users/search?query=${query}`, { method: "GET" });
+        const response = await fetchWithAuth(`/api/users/search?query=${query}`, {method: "GET"});
         console.log("[API] User search results:", response);
         return response;
     } catch (error) {
@@ -359,22 +362,22 @@ export const searchUsers = async (query) => {
 
 // Fetch all notifications for the logged-in user
 export const fetchNotifications = async () => {
-    return fetchWithAuth('/api/notifications', { method: 'GET' });
+    return fetchWithAuth('/api/notifications', {method: 'GET'});
 };
 
 // Mark all notifications as read (called when the dropdown opens)
 export const markNotificationsAsRead = async () => {
-    return fetchWithAuth('/api/notifications/read', { method: 'PUT' });
+    return fetchWithAuth('/api/notifications/read', {method: 'PUT'});
 };
 
 // Delete a single notification by its ID
 export const deleteNotification = async (notificationId) => {
-    return fetchWithAuth(`/api/notifications/${notificationId}`, { method: 'DELETE' });
+    return fetchWithAuth(`/api/notifications/${notificationId}`, {method: 'DELETE'});
 };
 
 // Optionally, delete all notifications
 export const clearNotifications = async () => {
-    return fetchWithAuth('/api/notifications/clear', { method: 'DELETE' });
+    return fetchWithAuth('/api/notifications/clear', {method: 'DELETE'});
 };
 
 // Fetch active market listings for a specific user
@@ -394,7 +397,7 @@ export const fetchUserMarketListings = async (userId, limit = 3) => {
 // Fetch achievements and progress for the logged in user
 export const fetchAchievements = async () => {
     try {
-        const response = await fetchWithAuth('/api/achievements', { method: 'GET' });
+        const response = await fetchWithAuth('/api/achievements', {method: 'GET'});
         return response;
     } catch (error) {
         console.error('[API] Error fetching achievements:', error.message);
@@ -407,7 +410,7 @@ export const claimAchievement = async (name) => {
     try {
         return await fetchWithAuth('/api/achievements/claim', {
             method: 'POST',
-            body: JSON.stringify({ name }),
+            body: JSON.stringify({name}),
         });
     } catch (error) {
         console.error('[API] Error claiming achievement reward:', error.message);
@@ -420,7 +423,7 @@ export const gradeCard = async (userId, cardId) => {
     try {
         return await fetchWithAuth('/api/grading/grade-card', {
             method: 'POST',
-            body: JSON.stringify({ userId, cardId }),
+            body: JSON.stringify({userId, cardId}),
         });
     } catch (error) {
         console.error('[API] Error starting grading:', error.message);
@@ -432,7 +435,7 @@ export const completeGrading = async (userId, cardId) => {
     try {
         return await fetchWithAuth('/api/grading/grade-card/complete', {
             method: 'POST',
-            body: JSON.stringify({ userId, cardId }),
+            body: JSON.stringify({userId, cardId}),
         });
     } catch (error) {
         console.error('[API] Error completing grading:', error.message);
@@ -444,7 +447,7 @@ export const revealGradedCard = async (userId, cardId) => {
     try {
         return await fetchWithAuth('/api/grading/grade-card/reveal', {
             method: 'POST',
-            body: JSON.stringify({ userId, cardId }),
+            body: JSON.stringify({userId, cardId}),
         });
     } catch (error) {
         console.error('[API] Error revealing grade:', error.message);
@@ -454,7 +457,7 @@ export const revealGradedCard = async (userId, cardId) => {
 
 export const fetchAdminCardAudit = async () => {
     // Uses fetchWithAuth for consistency
-    return fetchWithAuth('/api/admin/audit-cards', { method: 'GET' });
+    return fetchWithAuth('/api/admin/audit-cards', {method: 'GET'});
 };
 
 export const fixCardDefinitionInconsistencies = async (dryRun = true) => { // Default to dryRun
@@ -466,6 +469,12 @@ export const fixCardDefinitionInconsistencies = async (dryRun = true) => { // De
     });
 };
 
+export const fixCardDataMismatches = async (data) => {
+    return await fetchWithAuth('/api/admin/fix-card-data-mismatches', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+};
 
 export const fixDuplicateAndMintZeroCards = async (dryRun) => {
     const url = `/api/admin/fix-duplicate-mint-numbers?dryRun=${dryRun}`;

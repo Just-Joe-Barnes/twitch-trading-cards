@@ -5,6 +5,7 @@ import {fetchUserProfile, fetchWithAuth, searchCardsByName} from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import '../styles/AdminActions.css';
 import NavAdmin from "../components/NavAdmin";
+import {rarities} from "../constants/rarities";
 
 const AdminActions = () => {
     const [newNote, setNewNote] = useState('');
@@ -17,6 +18,7 @@ const AdminActions = () => {
 
     // New Card creation state
     const [newCardTitle, setNewCardTitle] = useState('');
+    const [previewCardRarity, setPreviewCardRarity] = useState('basic')
     const [newCardFlavor, setNewCardFlavor] = useState('');
     const [newCardImage, setNewCardImage] = useState('');
     const [alwaysAvailable, setAlwaysAvailable] = useState(true);
@@ -311,7 +313,7 @@ const AdminActions = () => {
         <div className="page">
             <h1>Admin Actions</h1>
 
-            <NavAdmin />
+            <NavAdmin/>
 
             <section className="section-card" style={{gridColumn: '1 / -1'}}>
                 <h2>Create New Card</h2>
@@ -343,26 +345,36 @@ const AdminActions = () => {
                                 onChange={async (e) => {
                                     const file = e.target.files[0];
                                     if (!file) return;
+                                    if (!newCardTitle) {
+                                        window.showToast('Please enter a card name before uploading an image.', 'error');
+                                        e.target.value = null;
+                                        return;
+                                    }
+
                                     const formData = new FormData();
-                                    formData.append('file', file);
+                                    formData.append('image', file);
+                                    formData.append('cardName', newCardTitle);
+
                                     try {
-                                        formData.append('upload_preset', 'unsigned_preset');
-                                        const res = await fetch('https://api.cloudinary.com/v1_1/dtnrd3xcy/image/upload', {
+                                        const data = await fetchWithAuth('/api/admin/upload-image', {
                                             method: 'POST',
                                             body: formData,
                                         });
-                                        const data = await res.json();
-                                        if (data.secure_url) {
-                                            setNewCardImage(data.secure_url);
-                                            window.showToast('Image uploaded', 'success');
+
+                                        if (data && data.imageUrl) {
+                                            setNewCardImage(data.imageUrl);
+                                            window.showToast('Image uploaded successfully!', 'success');
                                         } else {
-                                            window.showToast('Upload failed', 'error');
+                                            window.showToast('Upload succeeded but no image URL was returned.', 'error');
                                         }
-                                    } catch {
-                                        window.showToast('Upload error', 'error');
+                                    } catch (error) {
+                                        console.error('Upload request failed:', error);
+                                        window.showToast(error.message, 'error');
                                     }
                                 }}
                             />
+                            {newCardImage && <p>New Image URL: <a href={newCardImage} target="_blank"
+                                                                  rel="noopener noreferrer">{newCardImage}</a></p>}
                         </div>
 
                         <div className="aa-form-group">
@@ -494,12 +506,33 @@ const AdminActions = () => {
 
                     <div style={{flex: 1}}>
                         <h3>Live Preview</h3>
-                        <BaseCard
-                            name={newCardTitle}
-                            description={newCardFlavor}
-                            image={newCardImage}
-                            rarity="Common"
-                        />
+                        <div className="card-tile-grid">
+                            <div className="card-tile">
+                                <BaseCard
+                                    name={newCardTitle}
+                                    description={newCardFlavor}
+                                    image={newCardImage}
+                                    rarity={previewCardRarity}
+                                />
+                            </div>
+                            <div className="card-tile">
+                                <div style={{height: '200px'}}>
+                                    <BaseCard
+                                        name={newCardTitle}
+                                        description={newCardFlavor}
+                                        image={newCardImage}
+                                        rarity={previewCardRarity}
+                                        miniCard={true}
+                                    />
+                                </div>
+                                <div className="actions">
+                                    <select onChange={(e) => setPreviewCardRarity(e.target.value)}>
+                                        {rarities.map(rarity => <option key={rarity.name}
+                                                                        value={rarity.name.toLowerCase()}>{rarity.name}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -727,10 +760,11 @@ const AdminActions = () => {
                         </div>
                         <div className="button-group vertical">
                             <button className="primary-button" type="submit" disabled={loading}>
-                                <i className="fa-solid fa-user" /> {loading ? 'Giving...' : 'Give Packs'}
+                                <i className="fa-solid fa-user"/> {loading ? 'Giving...' : 'Give Packs'}
                             </button>
-                            <button className="secondary-button" type="button" disabled={loading} onClick={handleAddPacksAll}>
-                                <i className="fa-solid fa-users" /> {loading ? 'Adding...' : 'Give To All'}
+                            <button className="secondary-button" type="button" disabled={loading}
+                                    onClick={handleAddPacksAll}>
+                                <i className="fa-solid fa-users"/> {loading ? 'Adding...' : 'Give To All'}
                             </button>
                             <button className="reject-button" type="button" disabled={loading} onClick={async () => {
                                 const confirmed = window.confirm('Are you sure you want to reset ALL users\' packs to 6? This cannot be undone.');
@@ -742,7 +776,7 @@ const AdminActions = () => {
                                     setLoading(false);
                                 }
                             }}>
-                                <i className="fa-solid fa-recycle" /> {loading ? 'Resetting...' : 'Reset All Packs to 6'}
+                                <i className="fa-solid fa-recycle"/> {loading ? 'Resetting...' : 'Reset All Packs to 6'}
                             </button>
                         </div>
                     </form>
@@ -970,27 +1004,39 @@ const AdminActions = () => {
                                     <label>Change Image:</label>
                                     <input
                                         type="file"
-                                        accept="image/*"
+                                        accept="image/*,.gif"
                                         onChange={async (e) => {
                                             const file = e.target.files[0];
                                             if (!file) return;
+
+                                            if (!editCard || !editCard.name) {
+                                                window.showToast('Please ensure the card is loaded and has a name before changing the image.', 'error');
+                                                e.target.value = null; // Clear the file input
+                                                return;
+                                            }
+
                                             const formData = new FormData();
-                                            formData.append('file', file);
-                                            formData.append('upload_preset', 'unsigned_preset');
+                                            formData.append('image', file);
+                                            formData.append('cardName', editCard.name);
+
                                             try {
-                                                const res = await fetch('https://api.cloudinary.com/v1_1/dtnrd3xcy/image/upload', {
+                                                const data = await fetchWithAuth('/api/admin/upload-image', {
                                                     method: 'POST',
                                                     body: formData,
                                                 });
-                                                const data = await res.json();
-                                                if (data.secure_url) {
-                                                    setEditCard({...editCard, imageUrl: data.secure_url});
-                                                    window.showToast('Image uploaded', 'success');
+
+                                                if (data && data.imageUrl) {
+                                                    setEditCard(prevEditCard => ({
+                                                        ...prevEditCard,
+                                                        imageUrl: data.imageUrl
+                                                    }));
+                                                    window.showToast('Image updated successfully!', 'success');
                                                 } else {
-                                                    window.showToast('Upload failed', 'error');
+                                                    window.showToast('Upload succeeded but no image URL was returned.', 'error');
                                                 }
-                                            } catch {
-                                                window.showToast('Upload error', 'error');
+                                            } catch (error) {
+                                                console.error('Upload request failed:', error);
+                                                window.showToast(error.message, 'error');
                                             }
                                         }}
                                     />
@@ -1020,14 +1066,25 @@ const AdminActions = () => {
                                         {loading ? 'Saving...' : 'Save Changes'}
                                     </button>
                                 </div>
+
                                 <div style={{marginTop: '1rem'}}>
-                                    <BaseCard
-                                        name={editCard.name}
-                                        description={editCard.flavorText}
-                                        image={editCard.imageUrl}
-                                        rarity={editCard.rarity || (editCard.rarities && editCard.rarities[0]?.rarity)}
-                                        modifier={editCard.modifier}
-                                    />
+                                    <h3>Preview Changes</h3>
+
+                                    <div className="card-tile">
+                                        <BaseCard
+                                            name={editCard.name}
+                                            description={editCard.flavorText}
+                                            image={editCard.imageUrl}
+                                            rarity={previewCardRarity}
+                                            modifier={editCard.modifier}
+                                        />
+                                        <div className="actions">
+                                            <select onChange={(e) => setPreviewCardRarity(e.target.value)}>
+                                                {rarities.map(rarity => <option key={rarity.name}
+                                                                                value={rarity.name.toLowerCase()}>{rarity.name}</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                             </>
                         )}

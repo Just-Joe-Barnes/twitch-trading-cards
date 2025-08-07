@@ -19,4 +19,13 @@
       text-decoration: none;
     }
   }
+
+  @media screen and (max-width: 768px) {
+      flex-direction: column;
+
+    a {
+      width: 100%;
+      text-align: center;
+    }
+  }
 }
