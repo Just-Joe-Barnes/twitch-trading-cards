@@ -75,17 +75,21 @@ mongoose
     });
 
 
-// Root endpoint (useful for Render's health check)
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.get('/', (req, res) => {
     res.status(200).send('OK');
 });
-
-// Health Check endpoint for Render
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
 });
 
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
+app.use('/api/twitch', twitchRoutes);
+app.use('/api/admin', uploadRoutes);
+
+
+app.use(express.json({ verify: rawBodyMiddleware, limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -93,7 +97,6 @@ app.use('/api/packs', packRoutes);
 app.use('/api/users', collectionRoutes);
 app.use('/api/cards', cardRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/twitch', twitchRoutes);
 app.use('/api/trades', tradeRoutes);
 app.use('/api/market', marketRoutes);
 app.use('/api/notifications', notificationRoutes);
@@ -101,10 +104,6 @@ app.use('/api/test-notification', testNotificationRoutes); // Ensure this is cor
 app.use('/api/grading', gradingRoutes);
 app.use('/api/modifiers', require('./src/routes/modifierRoutes'));
 app.use('/api/achievements', achievementRoutes);
-
-app.use('/api/admin', uploadRoutes);
-app.use(express.json({ verify: rawBodyMiddleware, limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use('/api/admin', adminRoutes);
 
 // Default 404 handler (for any unmatched routes)
