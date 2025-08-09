@@ -5,7 +5,7 @@ const cors = require('cors');
 const session = require('express-session');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
-const http = require('http'); // Use http for Socket.io compatibility
+const http = require('http');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -37,6 +37,9 @@ const uploadRoutes = require('./src/routes/uploadRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
 const achievementRoutes = require('./src/routes/achievementRoutes');
 const gradingRoutes = require('./src/routes/gradingRoutes');
+const externalRoutes = require('./src/routes/externalRoutes');
+const { initializeQueueService, markAsReady } = require('./src/services/queueService');
+
 
 const app = express();
 app.set('trust proxy', 1);
@@ -62,17 +65,23 @@ app.use(session({
 // Logging middleware
 app.use(morgan('dev'));
 
-// MongoDB Connection
-mongoose
-    .connect(process.env.MONGO_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    })
-    .then(() => console.log("MongoDB connected successfully"))
-    .catch((err) => {
-        console.error("MongoDB connection error:", err.message);
-        process.exit(1);
+if (require.main === module) {
+    mongoose
+        .connect(process.env.MONGO_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        })
+        .then(() => console.log("MongoDB connected successfully"))
+        .catch((err) => {
+            console.error("MongoDB connection error:", err.message);
+            process.exit(1);
+        });
+
+    const PORT = process.env.PORT || 5000;
+    server.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server running on port ${PORT}`);
     });
+}
 
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
@@ -83,10 +92,8 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
 });
 
-
 app.use('/api/twitch', twitchRoutes);
 app.use('/api/admin', uploadRoutes);
-
 
 app.use(express.json({ verify: rawBodyMiddleware, limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -100,11 +107,12 @@ app.use('/api/users', userRoutes);
 app.use('/api/trades', tradeRoutes);
 app.use('/api/market', marketRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.use('/api/test-notification', testNotificationRoutes); // Ensure this is correctly set up
+app.use('/api/test-notification', testNotificationRoutes);
 app.use('/api/grading', gradingRoutes);
 app.use('/api/modifiers', require('./src/routes/modifierRoutes'));
 app.use('/api/achievements', achievementRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/external', externalRoutes);
 
 // Default 404 handler (for any unmatched routes)
 app.use((req, res) => {
@@ -115,12 +123,6 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: "Internal server error", error: err.message });
-});
-
-// Start server: bind to 0.0.0.0 so external traffic can connect
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
 });
 
 // Optional: Increase timeouts if needed
@@ -146,6 +148,11 @@ io.on('connection', (socket) => {
         console.log(`Socket ${socket.id} joined room: ${userId}`);
     });
 
+    socket.on('animation-complete', () => {
+        console.log(`Socket ${socket.id} signaled animation complete.`);
+        markAsReady(socket.id);
+    });
+
     // Handle disconnect
     socket.on('disconnect', () => {
         console.log('Client disconnected:', socket.id);
@@ -160,6 +167,7 @@ io.on('connection', (socket) => {
 // Initialize the notification service with the io instance
 const { setSocketInstance } = require('./notificationService');
 setSocketInstance(io);
+initializeQueueService(io);
 
-// Note: The sendNotification function is now part of notificationService.js,
-// so we no longer export it from server.js.
+// For unit tests
+module.exports = server;

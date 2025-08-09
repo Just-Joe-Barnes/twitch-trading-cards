@@ -28,8 +28,24 @@ function sendNotificationToUser(userId, notification) {
     console.log(`[notificationService] Sent notification to user ${userId}:`, notification);
 }
 
+/**
+ * Broadcasts a custom event with any data to a specific user's room.
+ * @param {string} userId - The user's database ID.
+ * @param {string} eventName - The name of the event to emit (e.g., 'new-pack-opening').
+ * @param {object} data - The payload/data to send with the event.
+ */
+const broadcastToUser = (userId, eventName, data) => {
+    if (ioInstance) {
+        ioInstance.to(userId.toString()).emit(eventName, data);
+    } else {
+        console.warn(`[notificationService] No Socket.io instance available. Event "${eventName}" not sent.`);
+    }
+};
+
 module.exports = {
     setSocketInstance,
     broadcastNotification,
-    sendNotificationToUser, // Export the new function
+    sendNotificationToUser,
+    broadcastToUser,
+    get io() { return ioInstance; }
 };

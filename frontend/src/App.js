@@ -1,7 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
-import Navbar from './components/Navbar';
 import LoadingSpinner from './components/LoadingSpinner';
 import Toast from './components/Toast';
 import CardInspector from './components/CardInspector';
@@ -13,6 +12,8 @@ import ScrollToTopButton from "./components/ScrollToTopButton";
 import AdminCardAudit from "./pages/AdminCardAudit";
 import LeaderboardPage from "./pages/__tests__/LeaderboardPage";
 import AdminCardOwnershipPage from "./pages/AdminCardOwnershipPage";
+import StreamOverlayPage from "./pages/StreamOverlayPage";
+import ConditionalNavbar from "./components/ConditionalNavbar";
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const CollectionPage = lazy(() => import('./pages/CollectionPage'));
@@ -133,7 +134,7 @@ const App = () => {
             )}
             <Router>
                 <Suspense fallback={<LoadingSpinner />}>
-                    {user && <Navbar isAdmin={user?.isAdmin} />}
+                    {user && <ConditionalNavbar user={user} />}
                     <Routes>
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/kitchensink" element={<KitchenSink />} />
@@ -186,6 +187,7 @@ const App = () => {
                         <Route path="/admin/cards/:id" element={<CardEditor />} />
                         <Route path="/admin/cardaudit" element={<AdminCardAudit />} />
                         <Route path="/leaderboard" element={<LeaderboardPage />} />
+                        <Route path="/stream-overlay/:userId" element={<StreamOverlayPage />} />
                         <Route path="/" element={<Navigate to="/dashboard" />} />
                         <Route path="*" element={<NotFoundPage />} />
                     </Routes>
