@@ -15,10 +15,10 @@ const validateApiKey = (req, res, next) => {
     }
 };
 
-router.post('/redeem-pack', validateApiKey, async (req, res) => {
+router.get('/redeem-pack', validateApiKey, async (req, res) => {
     try {
-        // We now expect the streamer's DB User ID and the redeemer's Twitch ID
-        const { streamerId, twitchUserId } = req.body;
+        const streamerId= req.headers['streamerid'];
+        const twitchUserId = req.headers['userid'];
         if (!streamerId || !twitchUserId) {
             return res.status(400).json({ message: 'streamerId and twitchUserId are required.' });
         }
