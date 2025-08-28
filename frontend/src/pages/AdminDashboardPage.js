@@ -41,6 +41,7 @@ const AdminDashboardPage = ({user}) => {
     const [selectedPackTypeId, setSelectedPackTypeId] = useState('');
     const [forceModifier, setForceModifier] = useState(false);
 
+    const [queueStatus, setQueueStatus] = useState({ isBusy: false, isPaused: true, queue: [] });
 
     // Fetch users with packs
     const fetchData = async () => {
@@ -58,6 +59,45 @@ const AdminDashboardPage = ({user}) => {
             console.error('Error fetching users with activity:', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const fetchQueueStatus = async () => {
+            if (user?.isAdmin) {
+                try {
+                    const data = await fetchWithAuth('/api/admin/queues/status');
+                    setQueueStatus(data);
+                } catch (err) {
+                    console.error('Failed to fetch queue status:', err);
+                }
+            }
+        };
+
+        fetchQueueStatus();
+        const intervalId = setInterval(fetchQueueStatus, 5000);
+
+        return () => clearInterval(intervalId);
+    }, [user]);
+
+    const handlePauseQueue = async () => {
+        try {
+            await fetchWithAuth('/api/admin/queues/pause', { method: 'POST' });
+            window.showToast('Queue has been paused.', 'info');
+            // Manually update status for immediate UI feedback
+            setQueueStatus(prev => ({ ...prev, isPaused: true }));
+        } catch (err) {
+            window.showToast('Failed to pause queue.', 'error');
+        }
+    };
+
+    const handleResumeQueue = async () => {
+        try {
+            await fetchWithAuth('/api/admin/queues/resume', { method: 'POST' });
+            window.showToast('Queue has been resumed!', 'success');
+            setQueueStatus(prev => ({ ...prev, isPaused: false }));
+        } catch (err) {
+            window.showToast('Failed to resume queue.', 'error');
         }
     };
 
@@ -298,6 +338,39 @@ const AdminDashboardPage = ({user}) => {
 
             <div className="top-section">
                 <div className="grid-container">
+                    {/*<div className="section-card">*/}
+                    {/*    <h2>Stream Overlay Queue</h2>*/}
+                    {/*    <div>*/}
+                    {/*        Status: <strong style={{ color: queueStatus.isPaused ? '#ffb74d' : (queueStatus.isBusy ? '#FFA726' : '#66BB6A') }}>*/}
+                    {/*        {queueStatus.isPaused ? 'Paused' : (queueStatus.isBusy ? 'Busy Animating' : 'Running')}*/}
+                    {/*    </strong>*/}
+                    {/*    </div>*/}
+                    {/*    <p><strong>Items in Queue: {queueStatus.queue.length}</strong></p>*/}
+                    {/*    {queueStatus.queue.length > 0 && (*/}
+                    {/*        <ol style={{ paddingLeft: '1.5rem', maxHeight: '150px', overflowY: 'auto' }}>*/}
+                    {/*            {queueStatus.queue.map((name, index) => <li key={index}>{name}</li>)}*/}
+                    {/*        </ol>*/}
+                    {/*    )}*/}
+
+                    {/*    /!* The new smart toggle button *!/*/}
+                    {/*    {queueStatus.isPaused ? (*/}
+                    {/*        <button*/}
+                    {/*            className="primary-button"*/}
+                    {/*            onClick={handleResumeQueue}*/}
+                    {/*            style={{ marginTop: '1rem', width: '100%' }}*/}
+                    {/*        >*/}
+                    {/*            ▶ Resume Queue*/}
+                    {/*        </button>*/}
+                    {/*    ) : (*/}
+                    {/*        <button*/}
+                    {/*            className="secondary-button"*/}
+                    {/*            onClick={handlePauseQueue}*/}
+                    {/*            style={{ marginTop: '1rem', width: '100%' }}*/}
+                    {/*        >*/}
+                    {/*            ❚❚ Pause Queue*/}
+                    {/*        </button>*/}
+                    {/*    )}*/}
+                    {/*</div>*/}
                     <div className="section-card cam">
 
                     </div>

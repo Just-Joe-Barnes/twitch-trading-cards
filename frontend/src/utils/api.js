@@ -488,4 +488,41 @@ export const fixDuplicateAndMintZeroCards = async (dryRun) => {
         throw error;
     }
 };
-// --- END NEW API FUNCTION ---
+
+export const fixLegacyGlitchNames = async (options = { dryRun: true }) => {
+    const token = localStorage.getItem('token');
+    const res = await fetch('/api/admin/fix-legacy-glitch-names', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ dryRun: options.dryRun })
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to fix legacy glitch names');
+    }
+
+    return res.json();
+};
+
+export const fixMissingModifierPrefixes = async (options = { dryRun: true }) => {
+    const token = localStorage.getItem('token');
+    const res = await fetch('/api/admin/fix-missing-modifier-prefixes', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ dryRun: options.dryRun })
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to fix missing modifier prefixes');
+    }
+
+    return res.json();
+};

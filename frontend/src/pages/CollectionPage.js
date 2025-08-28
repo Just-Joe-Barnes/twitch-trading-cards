@@ -64,7 +64,7 @@ const CollectionPage = ({
 
     const isMobile = useIsMobile();
     const maxCardScale = isMobile ? 1.3 : 2;
-    const minCardScale = isMobile ? 0.35 : 0.1;
+    const minCardScale = isMobile ? 0.35 : 0.35;
 
     useEffect(() => {
         if (isMobile) {
@@ -584,7 +584,8 @@ const CollectionPage = ({
             </div>
 
             {filteredCards.length > 0 && (
-                <div className={`cards-grid ${filteredCards.some((card => card.slabbed)) ? 'slabbed' : ''}`} style={{"--user-card-scale": cardScale}}>
+                <div className={`cards-grid ${cardScale === .35 ? 'mini' :''} ${filteredCards.some((card => card.slabbed)) ? 'slabbed' : ''}`}
+                     style={{"--user-card-scale": (cardScale === .35 ? 1 : cardScale)}}>
                     {filteredCards.map((card) => {
                         const isFeatured = featuredCards.some((fc) => fc._id === card._id);
                         const isSelected = selectedItems.some((item) => item.itemId === card._id);
@@ -612,6 +613,7 @@ const CollectionPage = ({
                                             (r) => r.name.toLowerCase() === card.rarity.toLowerCase()
                                         )?.totalCopies || '???'
                                     }
+                                    miniCard={cardScale === .35}
                                     inspectOnClick={false}
                                 />
                             </div>

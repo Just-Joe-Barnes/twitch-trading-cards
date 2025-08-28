@@ -24,6 +24,7 @@ input, button, textarea, select {
 
 body {
   line-height: 1.5;
+  overflow-x: hidden;
 }
 
 /* End CSS RESET */
@@ -957,19 +958,23 @@ input[type="range"] {
     border: none;
   }
 
+  &.slabbed {
+    overflow: visible;
+    gap: 5rem 4rem;
+  }
+
   &.mini {
     --user-card-scale: 1;
     --card-scale: var(--user-card-scale);
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    grid-auto-rows: minmax(180px, 1fr);
     gap: 1rem;
-    padding: 1rem;
-  }
+    padding: 3rem;
 
-  &.slabbed {
-    overflow: visible;
-    gap: 5rem 4rem;
+    &.slabbed {
+      overflow: visible;
+      gap: 3rem 2rem;
+    }
   }
 }
 
@@ -1556,10 +1561,10 @@ body.no-scroll {
 
 
     &.mini {
-      padding: 1rem;
+      padding: .4rem;
       display: grid;
-      gap: 1.4rem;
-      grid-template-columns: repeat(auto-fit, 150px);
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, 140px);
     }
   }
 

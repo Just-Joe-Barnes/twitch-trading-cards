@@ -979,13 +979,12 @@ $card-artwork-height: 216px;
   }
 }
 
-
 .mini-card-container {
   position: relative;
   display: flex;
   height: 100%;
   width: 100%;
-  aspect-ratio: .7 / 1;
+  aspect-ratio: .65 / 1;
   border-radius: 6px;
   transform-style: preserve-3d;
   transition: transform 1s ease-out;
@@ -999,6 +998,7 @@ $card-artwork-height: 216px;
 
   &.slabbed {
     overflow: unset;
+
     .slab-overlay {
       top: -37px;
       left: -10px;
@@ -1792,5 +1792,3 @@ $card-artwork-height: 216px;
     color: white;
   }
 }
-
-

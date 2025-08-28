@@ -13,10 +13,12 @@ const Card = require('../models/cardModel');
 const Pack = require('../models/packModel');
 const Notification = require('../models/notificationModel');
 const Achievement = require('../models/achievementModel');
+const Modifier = require('../models/modifierModel');
 
 // Middleware & Services
 const { protect } = require('../middleware/authMiddleware');
 const { broadcastNotification } = require('../../notificationService');
+const {getStatus, forceResume, resumeQueue, pauseQueue} = require("../services/queueService");
 
 
 // --- Middleware & Helper Functions ---
@@ -29,10 +31,17 @@ const adminOnly = (req, res, next) => {
     next();
 };
 
-const MODIFIER_PREFIXES = ["Glitched ", "Negative ", "Prismatic "];
+const MODIFIER_NAME_TO_PREFIX_MAP = {
+    "Glitch": "Glitched ",
+    "Negative": "Negative ",
+    "Prismatic": "Prismatic "
+};
+
 const stripCardNameModifiers = (cardName) => {
-    if (typeof cardName !== 'string') return cardName; // Ensure it's a string
-    for (const modifier of MODIFIER_PREFIXES) {
+    if (typeof cardName !== 'string') return cardName;
+    // We can derive the prefixes from our map now
+    const PREFIXES_TO_STRIP = Object.values(MODIFIER_NAME_TO_PREFIX_MAP);
+    for (const modifier of PREFIXES_TO_STRIP) {
         if (cardName.startsWith(modifier)) {
             return cardName.substring(modifier.length);
         }
@@ -51,8 +60,7 @@ const slugify = (text) => {
 };
 
 // --- User & Pack Management Routes ---
-
-// API to clear all cards for a specific user
+// ... (No changes in this section, from /clear-cards down to /users-activity)
 router.post('/clear-cards', protect, adminOnly, async (req, res) => {
     const { userId } = req.body;
     if (!userId) {
@@ -73,7 +81,6 @@ router.post('/clear-cards', protect, adminOnly, async (req, res) => {
     }
 });
 
-// API to set all users' pack count to 6
 router.post('/set-packs', protect, adminOnly, async (req, res) => {
     try {
         const result = await User.updateMany({}, { packs: 6 });
@@ -84,7 +91,6 @@ router.post('/set-packs', protect, adminOnly, async (req, res) => {
     }
 });
 
-// API to add a specific number of packs to all users
 router.post('/add-packs', protect, adminOnly, async (req, res) => {
     const { amount } = req.body;
     const num = Number(amount);
@@ -100,7 +106,6 @@ router.post('/add-packs', protect, adminOnly, async (req, res) => {
     }
 });
 
-// POST give X packs to a single user
 router.post('/give-packs', protect, adminOnly, async (req, res) => {
     const { userId, amount } = req.body;
     if (!userId || typeof amount !== 'number') {
@@ -117,7 +122,6 @@ router.post('/give-packs', protect, adminOnly, async (req, res) => {
     }
 });
 
-// GET list of users (id + username + packs)
 router.get('/users', protect, adminOnly, async (req, res) => {
     const start = process.hrtime();
     try {
@@ -137,21 +141,74 @@ router.get('/users', protect, adminOnly, async (req, res) => {
     }
 });
 
-// GET list of users with activity status
 router.get('/users-activity', protect, adminOnly, async (req, res) => {
     try {
         const { activeMinutes } = req.query;
-        const activeMinutesNum = parseInt(activeMinutes) || 15; // Default to 15 minutes
+        const activeMinutesNum = parseInt(activeMinutes) || 15;
 
-        let query = {};
+        // Start building the aggregation pipeline
+        const pipeline = [
+            // Stage 1: Join with the useractivities collection
+            {
+                $lookup: {
+                    from: 'useractivities', // The actual collection name in MongoDB (usually plural and lowercase)
+                    localField: '_id',
+                    foreignField: 'userId',
+                    as: 'activityInfo' // Name for the new field with the joined data
+                }
+            },
+            // Stage 2: Deconstruct the activityInfo array.
+            // A user will only have one activity doc, so this turns the array [ { ... } ] into an object { ... }
+            // preserveNullAndEmptyArrays ensures we still include users who may not have an activity record yet.
+            {
+                $unwind: {
+                    path: '$activityInfo',
+                    preserveNullAndEmptyArrays: true
+                }
+            }
+        ];
+
+        // Stage 3 (Conditional): Add the filter if activeMinutes is provided
         if (activeMinutes) {
             const cutoff = new Date(Date.now() - activeMinutesNum * 60 * 1000);
-            query = { lastActive: { $gte: cutoff } };
+            pipeline.push({
+                $match: {
+                    // We filter on the field from the joined collection
+                    'activityInfo.lastActive': { $gte: cutoff }
+                }
+            });
         }
 
-        const users = await User.find(query, 'username packs lastActive preferredPack twitchProfilePic')
-            .populate('preferredPack', 'name')
-            .sort({ lastActive: -1 });
+        // Stage 4: Add the sorting stage
+        pipeline.push({
+            $sort: {
+                // We sort on the field from the joined collection
+                'activityInfo.lastActive': -1
+            }
+        });
+
+        // Stage 5: Select the fields you want to return (improves performance)
+        pipeline.push({
+            $project: {
+                _id: 1, // Explicitly include the _id
+                username: 1,
+                packs: 1,
+                preferredPack: 1,
+                twitchProfilePic: 1,
+                // Assign the nested lastActive field to a top-level field
+                lastActive: '$activityInfo.lastActive'
+            }
+        });
+
+        // Execute the aggregation
+        const users = await User.aggregate(pipeline);
+
+        // Aggregation returns plain objects, so we populate them separately.
+        // Mongoose is smart enough to handle this.
+        await User.populate(users, {
+            path: 'preferredPack',
+            select: 'name'
+        });
 
         res.json(users);
     } catch (err) {
@@ -162,8 +219,7 @@ router.get('/users-activity', protect, adminOnly, async (req, res) => {
 
 
 // --- Notification Routes ---
-
-// New endpoint: Broadcast custom notification to all users
+// ... (No changes in this section)
 router.post('/notifications', protect, adminOnly, async (req, res) => {
     const { type, message, link = "" } = req.body; // Allow optional link
     if (!type || !message) {
@@ -196,9 +252,8 @@ router.post('/notifications', protect, adminOnly, async (req, res) => {
     }
 });
 
-
 // --- Card & Pack CRUD Routes ---
-
+// ... (No changes in this section, from the multer storage down to /grant-pack)
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
         cb(null, path.join(__dirname, '../../public/uploads/cards'));
@@ -453,6 +508,7 @@ router.post('/grant-pack', protect, adminOnly, async (req, res) => {
 
 
 // --- Achievement Management Endpoints ---
+// ... (No changes in this section)
 router.get('/achievements', protect, adminOnly, async (req, res) => {
     try {
         const achievements = await Achievement.find();
@@ -513,8 +569,6 @@ router.delete('/achievements/:id', protect, adminOnly, async (req, res) => {
 });
 
 
-// --- Card Data Integrity & Auditing Routes ---
-
 router.get('/audit-cards', protect, adminOnly, async (req, res) => {
     const auditResults = {
         status: "success",
@@ -529,8 +583,10 @@ router.get('/audit-cards', protect, adminOnly, async (req, res) => {
             userCardsToReroll: [],
             noMintNumbersLeftForReroll: [],
             trueDuplicateCardInstancesAcrossUsers: [],
-            cardDataMismatches: [], // New
-            mint0Cards: [], // New
+            cardDataMismatches: [],
+            mint0Cards: [],
+            missingModifierPrefixIssues: [],
+            legacyGlitchNameIssues: [],
         }
     };
 
@@ -541,6 +597,12 @@ router.get('/audit-cards', protect, adminOnly, async (req, res) => {
     }
 
     try {
+        const allModifiers = await Modifier.find({}).lean();
+        const modifierIdToNameMap = new Map();
+        allModifiers.forEach(mod => {
+            modifierIdToNameMap.set(mod._id.toString(), mod.name);
+        });
+
         const allCards = await Card.find({}).lean();
         const cardDefinitionMap = new Map();
         const cardIdByNameRarityMap = new Map();
@@ -552,7 +614,6 @@ router.get('/audit-cards', protect, adminOnly, async (req, res) => {
                 const key = `${card.name}|${r.rarity.toLowerCase()}`;
                 cardIdByNameRarityMap.set(key, card._id.toString());
             });
-            // Updated map to store the full card for data comparison
             cardDefinitionMap.set(card._id.toString(), { baseCard: card, raritiesMap });
         });
 
@@ -574,13 +635,44 @@ router.get('/audit-cards', protect, adminOnly, async (req, res) => {
                     continue;
                 }
 
-                // New check for Mint #0 cards
                 if (userCard.mintNumber === 0) {
                     auditResults.details.mint0Cards.push({ userId: user._id, username: user.username, userCard });
                 }
 
                 const userCardName = String(userCard.name);
-                const cleanedUserCardName = stripCardNameModifiers(userCardName);
+
+                // --- FIX: Renamed variable for consistency. This was the cause of the bug. ---
+                const cleanedCardName = stripCardNameModifiers(userCardName);
+
+                if (userCardName.startsWith("Glitch ")) {
+                    auditResults.details.legacyGlitchNameIssues.push({
+                        userId: user._id,
+                        username: user.username,
+                        userCard,
+                        originalName: userCardName,
+                        suggestedName: "Glitched " + userCardName.substring("Glitch ".length)
+                    });
+                }
+
+                if (userCard.modifier) {
+                    const modifierId = userCard.modifier.toString();
+                    const modifierName = modifierIdToNameMap.get(modifierId);
+
+                    if (modifierName) {
+                        const expectedPrefix = MODIFIER_NAME_TO_PREFIX_MAP[modifierName];
+                        if (expectedPrefix && !userCardName.startsWith(expectedPrefix)) {
+                            auditResults.details.missingModifierPrefixIssues.push({
+                                userId: user._id,
+                                username: user.username,
+                                userCard,
+                                originalName: userCardName,
+                                suggestedName: expectedPrefix + userCardName,
+                                missingPrefix: expectedPrefix.trim()
+                            });
+                        }
+                    }
+                }
+
                 const userCardRarityLower = String(userCard.rarity).toLowerCase();
                 const userCardMintNumber = userCard.mintNumber;
                 const acquiredAt = userCard.acquiredAt;
@@ -591,17 +683,16 @@ router.get('/audit-cards', protect, adminOnly, async (req, res) => {
                 }
                 globalAssignedMintsTracker.get(uniqueCardInstanceKey).push({ userId: user._id, username: user.username, cardIndex, userCardData: userCard, acquiredAt });
 
-                const parentCardId = cardIdByNameRarityMap.get(`${cleanedUserCardName}|${userCardRarityLower}`);
+                const parentCardId = cardIdByNameRarityMap.get(`${cleanedCardName}|${userCardRarityLower}`);
 
                 if (!parentCardId) {
-                    auditResults.details.missingParentCardDefinitions.push({ userId: user._id, username: user.username, cardIndex, userCardData: userCard, cleanedCardName: cleanedUserCardName, issue: "No matching parent card definition found" });
+                    auditResults.details.missingParentCardDefinitions.push({ userId: user._id, username: user.username, cardIndex, userCardData: userCard, cleanedCardName: cleanedCardName, issue: "No matching parent card definition found" });
                     continue;
                 }
 
                 const parentDef = cardDefinitionMap.get(parentCardId);
                 const rarityDefinition = parentDef?.raritiesMap.get(userCardRarityLower);
 
-                // New check for data mismatches (image, flavor text)
                 if (parentDef) {
                     const mismatches = [];
                     if (userCard.imageUrl !== parentDef.baseCard.imageUrl) mismatches.push({ field: 'imageUrl', userValue: userCard.imageUrl, baseValue: parentDef.baseCard.imageUrl });
@@ -612,7 +703,7 @@ router.get('/audit-cards', protect, adminOnly, async (req, res) => {
                 }
 
                 if (!rarityDefinition) {
-                    auditResults.details.missingRarityDefinitions.push({ userId: user._id, username: user.username, cardIndex, userCardData: userCard, cleanedCardName: cleanedUserCardName, parentCardId, issue: "No matching rarity definition found in parent" });
+                    auditResults.details.missingRarityDefinitions.push({ userId: user._id, username: user.username, cardIndex, userCardData: userCard, cleanedCardName: cleanedCardName, parentCardId, issue: "No matching rarity definition found in parent" });
                     continue;
                 }
 
@@ -649,8 +740,10 @@ router.get('/audit-cards', protect, adminOnly, async (req, res) => {
             suggestedRerollsCount: auditResults.details.userCardsToReroll.length,
             noRerollPossibleCount: auditResults.details.noMintNumbersLeftForReroll.length,
             trueDuplicateCardInstancesAcrossUsersCount: auditResults.details.trueDuplicateCardInstancesAcrossUsers.length,
-            cardDataMismatchesCount: auditResults.details.cardDataMismatches.length, // New
-            mint0CardsCount: auditResults.details.mint0Cards.length, // New
+            cardDataMismatchesCount: auditResults.details.cardDataMismatches.length,
+            mint0CardsCount: auditResults.details.mint0Cards.length,
+            missingModifierPrefixIssuesCount: auditResults.details.missingModifierPrefixIssues.length,
+            legacyGlitchNameIssuesCount: auditResults.details.legacyGlitchNameIssues.length,
         };
 
         return res.status(200).json(auditResults);
@@ -658,11 +751,135 @@ router.get('/audit-cards', protect, adminOnly, async (req, res) => {
     } catch (error) {
         auditResults.status = "error";
         auditResults.message = "An unhandled error occurred during the card audit: " + error.message;
+        console.error("Error in /audit-cards:", error);
         return res.status(500).json(auditResults);
     }
 });
 
-// NEW route to fix data mismatches
+router.post('/fix-legacy-glitch-names', protect, adminOnly, async (req, res) => {
+    const { dryRun } = req.body;
+    const fixReport = {
+        status: 'success',
+        message: dryRun ? 'Dry run completed.' : 'Fix completed.',
+        isDryRun: dryRun,
+        details: {
+            updatedUsers: 0,
+            updatedCards: 0,
+            failedUpdates: []
+        }
+    };
+
+    try {
+        // We find users who might have cards with the old name format.
+        // Using a regex is efficient for this.
+        const usersToUpdate = await User.find({ 'cards.name': /^Glitch / }).select('_id username cards');
+
+        for (const user of usersToUpdate) {
+            let userModified = false;
+            for (const userCard of user.cards) {
+                if (userCard.name && userCard.name.startsWith("Glitch ")) {
+                    // Replace "Glitch " with "Glitched "
+                    userCard.name = "Glitched " + userCard.name.substring("Glitch ".length);
+                    fixReport.details.updatedCards++;
+                    userModified = true;
+                }
+            }
+
+            if (userModified) {
+                fixReport.details.updatedUsers++;
+                if (!dryRun) {
+                    try {
+                        await user.save();
+                    } catch (saveError) {
+                        fixReport.details.updatedUsers--;
+                        fixReport.details.failedUpdates.push({ userId: user._id, username: user.username, error: saveError.message });
+                    }
+                }
+            }
+        }
+
+        res.status(200).json(fixReport);
+
+    } catch (error) {
+        res.status(500).json({
+            status: 'error',
+            message: 'An error occurred while fixing legacy glitch names: ' + error.message,
+            isDryRun: dryRun
+        });
+    }
+});
+
+// --- THIS ROUTE HAS BEEN REPLACED and RENAMED ---
+// It now correctly ADDS prefixes based on the modifier field
+router.post('/fix-missing-modifier-prefixes', protect, adminOnly, async (req, res) => {
+    const { dryRun } = req.body;
+    const fixReport = {
+        status: 'success',
+        message: dryRun ? 'Dry run completed.' : 'Fix completed.',
+        isDryRun: dryRun,
+        details: {
+            updatedUsers: 0,
+            updatedCards: 0,
+            failedUpdates: []
+        }
+    };
+
+    try {
+        // Fetch all modifiers to create a lookup map from ID to Name
+        const allModifiers = await Modifier.find({}).lean();
+        const modifierIdToNameMap = new Map();
+        allModifiers.forEach(mod => {
+            modifierIdToNameMap.set(mod._id.toString(), mod.name);
+        });
+
+        const usersToUpdate = await User.find({ 'cards.0': { '$exists': true } }).select('_id username cards');
+
+        for (const user of usersToUpdate) {
+            let userModified = false;
+            for (const userCard of user.cards) {
+                if (!userCard.name) continue;
+
+                if (userCard.modifier) {
+                    const modifierId = userCard.modifier.toString();
+                    const modifierName = modifierIdToNameMap.get(modifierId);
+
+                    if (modifierName) {
+                        const expectedPrefix = MODIFIER_NAME_TO_PREFIX_MAP[modifierName];
+
+                        if (expectedPrefix && !userCard.name.startsWith(expectedPrefix)) {
+                            userCard.name = expectedPrefix + userCard.name;
+                            fixReport.details.updatedCards++;
+                            userModified = true;
+                        }
+                    }
+                }
+            }
+
+            if (userModified) {
+                fixReport.details.updatedUsers++;
+                if (!dryRun) {
+                    try {
+                        await user.save();
+                    } catch (saveError) {
+                        fixReport.details.updatedUsers--;
+                        fixReport.details.failedUpdates.push({ userId: user._id, username: user.username, error: saveError.message });
+                    }
+                }
+            }
+        }
+
+        res.status(200).json(fixReport);
+
+    } catch (error) {
+        res.status(500).json({
+            status: 'error',
+            message: 'An error occurred while fixing missing modifier prefixes: ' + error.message,
+            isDryRun: dryRun
+        });
+    }
+});
+
+
 router.post('/fix-card-data-mismatches', protect, adminOnly, async (req, res) => {
     const { dryRun } = req.body;
     const fixReport = {
@@ -1151,6 +1368,21 @@ router.get('/card-ownership/:cardId', protect, adminOnly, async (req, res) => {
         console.error('Error fetching card ownership:', error);
         res.status(500).json({ message: 'Failed to fetch card ownership data.' });
     }
+});
+
+router.get('/queues/status', protect, adminOnly, (req, res) => {
+    const status = getStatus();
+    res.json(status);
+});
+
+router.post('/queues/pause', protect, adminOnly, (req, res) => {
+    pauseQueue();
+    res.json({ success: true, message: 'Queue paused.' });
+});
+
+router.post('/queues/resume', protect, adminOnly, (req, res) => {
+    resumeQueue();
+    res.json({ success: true, message: 'Queue resumed.' });
 });
 
 module.exports = router;

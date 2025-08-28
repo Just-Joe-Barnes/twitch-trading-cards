@@ -5,7 +5,8 @@ import {
     fetchAdminCardAudit,
     fixCardDefinitionInconsistencies,
     fixDuplicateAndMintZeroCards,
-    fixCardDataMismatches // Added new import
+    fixCardDataMismatches,
+    fixMissingModifierPrefixes, fixLegacyGlitchNames
 } from '../utils/api';
 import NavAdmin from "../components/NavAdmin";
 
@@ -15,6 +16,8 @@ const AdminCardAudit = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [fixStatus, setFixStatus] = useState(null);
+    const [prefixFixStatus, setPrefixFixStatus] = useState(null);
+    const [legacyGlitchFixStatus, setLegacyGlitchFixStatus] = useState(null);
     const [duplicateFixStatus, setDuplicateFixStatus] = useState(null);
     const [mismatchFixStatus, setMismatchFixStatus] = useState(null); // Added state for new fix
     const [showDetails, setShowDetails] = useState({
@@ -26,7 +29,9 @@ const AdminCardAudit = () => {
         noMintNumbersLeftForReroll: false,
         trueDuplicateCardInstancesAcrossUsers: false,
         mint0Cards: false,
-        cardDataMismatches: false, // Added state for new details section
+        cardDataMismatches: false,
+        missingModifierPrefixIssues: false,
+        legacyGlitchNameIssues: false,
     });
 
     const navigate = useNavigate();
@@ -34,10 +39,11 @@ const AdminCardAudit = () => {
     const loadAuditData = async () => {
         setLoading(true);
         setError(null);
-        // Reset statuses on reload to avoid showing old results
         setFixStatus(null);
         setDuplicateFixStatus(null);
         setMismatchFixStatus(null);
+        setPrefixFixStatus(null);
+        setLegacyGlitchFixStatus(null);
         try {
             const data = await fetchAdminCardAudit();
             setAuditData(data);
@@ -70,6 +76,33 @@ const AdminCardAudit = () => {
         setShowDetails(prev => ({ ...prev, [section]: !prev[section] }));
     };
 
+    const handleFixLegacyGlitchNames = async (performActualFix = false) => {
+        const confirmationMessage = performActualFix
+            ? "Are you absolutely sure you want to PERMANENTLY fix all legacy 'Glitch ' names to 'Glitched '?\n\n" +
+            "This action will update all card names starting with the old prefix. This cannot be undone."
+            : "Initiating a DRY RUN to fix legacy 'Glitch ' names.\n\n" +
+            "This will show you what *would* be fixed without making any changes to the database. Proceed?";
+
+        if (!window.confirm(confirmationMessage)) {
+            setLegacyGlitchFixStatus({ status: 'info', message: 'Operation cancelled by user.' });
+            return;
+        }
+
+        setLegacyGlitchFixStatus({ status: 'pending', message: `Performing ${performActualFix ? 'actual fix' : 'dry run'}... Please wait...` });
+
+        try {
+            const result = await fixLegacyGlitchNames({ dryRun: !performActualFix });
+            setLegacyGlitchFixStatus({ ...result, status: 'success' });
+
+            if (!result.isDryRun) {
+                await loadAuditData();
+            }
+        } catch (err) {
+            setLegacyGlitchFixStatus({ status: 'error', message: `Operation failed: ${err.message || 'Unknown error.'}` });
+        }
+    };
+
+
     // --- Handler for the NEW "Card Data Mismatches" Fix ---
     const handleFixMismatches = async (performActualFix = false) => {
         const confirmationMessage = performActualFix
@@ -94,6 +127,33 @@ const AdminCardAudit = () => {
             }
         } catch (err) {
             setMismatchFixStatus({ status: 'error', message: `Operation failed: ${err.message || 'Unknown error.'}` });
+        }
+    };
+
+    const handleFixMissingPrefixes = async (performActualFix = false) => {
+        const confirmationMessage = performActualFix
+            ? "Are you absolutely sure you want to PERMANENTLY fix ALL 'Missing Modifier Prefix Issues'?\n\n" +
+            "This action will ADD prefixes (e.g., 'Glitched ') to card names based on their assigned modifier. This action cannot be undone."
+            : "Initiating a DRY RUN for 'Missing Modifier Prefix Issues'.\n\n" +
+            "This will show you what *would* be fixed without making any changes to the database. Proceed?";
+
+        if (!window.confirm(confirmationMessage)) {
+            setPrefixFixStatus({ status: 'info', message: 'Operation cancelled by user.' });
+            return;
+        }
+
+        setPrefixFixStatus({ status: 'pending', message: `Performing ${performActualFix ? 'actual fix' : 'dry run'}... Please wait...` });
+
+        try {
+            // Call the new API function
+            const result = await fixMissingModifierPrefixes({ dryRun: !performActualFix });
+            setPrefixFixStatus({ ...result, status: 'success' });
+
+            if (!result.isDryRun) {
+                await loadAuditData();
+            }
+        } catch (err) {
+            setPrefixFixStatus({ status: 'error', message: `Operation failed: ${err.message || 'Unknown error.'}` });
         }
     };
 
@@ -186,6 +246,8 @@ const AdminCardAudit = () => {
         return <div className="page" style={{ padding: '2rem', color: '#fff' }}>No audit data available.</div>;
     }
 
+    const legacyGlitchCount = auditData.summary.legacyGlitchNameIssuesCount || 0;
+    const prefixIssueCount = auditData.summary.missingModifierPrefixIssuesCount || 0;
     const mismatchCount = auditData.summary.cardDataMismatchesCount || 0;
     const inconsistenciesCount = auditData.summary.inconsistenciesWithCardDefCount || 0;
     const combinedDuplicateMint0Count = (auditData.summary.trueDuplicateCardInstancesAcrossUsersCount || 0) + (auditData.summary.mint0CardsCount || 0);
@@ -211,6 +273,48 @@ const AdminCardAudit = () => {
                 <hr style={{ borderColor: '#333', margin: '1.5rem 0' }} />
 
                 <h2>Fixable Issues</h2>
+
+                <div className="fix-section">
+                    <h4>Legacy "Glitch " Name Issues: <strong>{legacyGlitchCount}</strong></h4>
+                    <p className="fix-description">A card's name has the outdated "Glitch " prefix and should be updated to "Glitched ".</p>
+                    {legacyGlitchCount > 0 && (
+                        <div>
+                            <button onClick={() => handleFixLegacyGlitchNames(false)} className="action-button" style={{ backgroundColor: '#6c757d' }} disabled={legacyGlitchFixStatus?.status === 'pending'}>Dry Run Fix</button>
+                            {legacyGlitchFixStatus && legacyGlitchFixStatus.isDryRun && legacyGlitchFixStatus.details.updatedCards > 0 && (
+                                <button onClick={() => handleFixLegacyGlitchNames(true)} className="action-button" style={{ backgroundColor: '#dc3545' }} disabled={legacyGlitchFixStatus?.status === 'pending'}>Confirm Fix</button>
+                            )}
+                        </div>
+                    )}
+                    {legacyGlitchFixStatus && (
+                        <div className={`status-box ${legacyGlitchFixStatus.status}`}>
+                            <strong>Legacy Fix Status:</strong> {legacyGlitchFixStatus.message}
+                            {legacyGlitchFixStatus.details && (
+                                <p>Report: {legacyGlitchFixStatus.details.updatedCards} cards would be updated across {legacyGlitchFixStatus.details.updatedUsers} users. Failed updates: {legacyGlitchFixStatus.details.failedUpdates.length}.</p>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                <div className="fix-section">
+                    <h4>Missing Modifier Prefix Issues: <strong>{prefixIssueCount}</strong></h4>
+                    <p className="fix-description">A card's name is missing a prefix (e.g., "Glitched ") that is required by its assigned <strong>modifier</strong>.</p>
+                    {prefixIssueCount > 0 && (
+                        <div>
+                            <button onClick={() => handleFixMissingPrefixes(false)} className="action-button" style={{ backgroundColor: '#6c757d' }} disabled={prefixFixStatus?.status === 'pending'}>Dry Run Fix</button>
+                            {prefixFixStatus && prefixFixStatus.isDryRun && prefixFixStatus.details.updatedCards > 0 && (
+                                <button onClick={() => handleFixMissingPrefixes(true)} className="action-button" style={{ backgroundColor: '#dc3545' }} disabled={prefixFixStatus?.status === 'pending'}>Confirm Fix</button>
+                            )}
+                        </div>
+                    )}
+                    {prefixFixStatus && (
+                        <div className={`status-box ${prefixFixStatus.status}`}>
+                            <strong>Prefix Fix Status:</strong> {prefixFixStatus.message}
+                            {prefixFixStatus.details && (
+                                <p>Report: {prefixFixStatus.details.updatedCards} cards would be updated across {prefixFixStatus.details.updatedUsers} users. Failed updates: {prefixFixStatus.details.failedUpdates.length}.</p>
+                            )}
+                        </div>
+                    )}
+                </div>
 
                 <div className="fix-section">
                     <h4>Card Data Mismatches: <strong>{mismatchCount}</strong></h4>
@@ -281,6 +385,49 @@ const AdminCardAudit = () => {
 
             <div className="section-card">
                 <h2>Audit Details</h2>
+
+                <div className="detail-section">
+                    <h3>Legacy "Glitch " Name Issues ({legacyGlitchCount})
+                        {auditData.details.legacyGlitchNameIssues?.length > 0 && (
+                            <button onClick={() => toggleDetails('legacyGlitchNameIssues')} className="toggle-button">
+                                {showDetails.legacyGlitchNameIssues ? 'Hide' : 'Show'}
+                            </button>
+                        )}
+                    </h3>
+                    {showDetails.legacyGlitchNameIssues && auditData.details.legacyGlitchNameIssues?.length > 0 && (
+                        <div>{auditData.details.legacyGlitchNameIssues.map((item, index) => (
+                            <div key={index} className="section-card detail-item">
+                                <p><strong>User:</strong> {item.username} (ID: {item.userId})</p>
+                                <div className="mismatch-diff">
+                                    <p className="diff-old"><span>Original Name:</span> {item.originalName}</p>
+                                    <p className="diff-new"><span>Suggested Name:</span> {item.suggestedName}</p>
+                                </div>
+                            </div>
+                        ))}</div>
+                    )}
+                </div>
+
+                <div className="detail-section">
+                    <h3>Missing Modifier Prefix Issues ({prefixIssueCount})
+                        {auditData.details.missingModifierPrefixIssues?.length > 0 && (
+                            <button onClick={() => toggleDetails('missingModifierPrefixIssues')} className="toggle-button">
+                                {showDetails.missingModifierPrefixIssues ? 'Hide' : 'Show'}
+                            </button>
+                        )}
+                    </h3>
+                    {showDetails.missingModifierPrefixIssues && auditData.details.missingModifierPrefixIssues?.length > 0 && (
+                        <div>{auditData.details.missingModifierPrefixIssues.map((item, index) => (
+                            <div key={index} className="section-card detail-item">
+                                <p><strong>User:</strong> {item.username} (ID: {item.userId})</p>
+                                <p><strong>Issue:</strong> Name is missing prefix for its assigned modifier.</p>
+                                <div className="mismatch-diff">
+                                    <p className="diff-old"><span>Original Name:</span> {item.originalName}</p>
+                                    <p className="diff-new"><span>Suggested Name:</span> {item.suggestedName}</p>
+                                </div>
+                            </div>
+                        ))}</div>
+                    )}
+                </div>
 
                 <div className="detail-section">
                     <h3>Card Data Mismatches ({mismatchCount})

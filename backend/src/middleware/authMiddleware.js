@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
+const UserActivity = require('../models/UserActivity');
 
 const protect = async (req, res, next) => {
     let token;
@@ -49,17 +50,16 @@ const protect = async (req, res, next) => {
             });
 
             if (!isExcluded && req.user) {
-                // Update lastActive timestamp asynchronously without saving full document
-                User.updateOne(
-                    {_id: req.user._id},
-                    {$set: {lastActive: new Date()}}
+                UserActivity.updateOne(
+                    { userId: req.user._id },
+                    { $set: { lastActive: new Date() } },
+                    { upsert: true }
                 ).catch((err) =>
                     console.error('[lastActive update failed]', err)
                 );
             }
-            /* End Route Exclusions */
 
-            next(); // Proceed to the next middleware or route
+            next();
         } catch (error) {
             console.error('[AUTH VALIDATE] Token error:', error.message);
             return res.status(401).json({ message: 'Not authorized, token failed' });

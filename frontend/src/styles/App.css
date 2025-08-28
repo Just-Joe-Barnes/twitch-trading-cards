@@ -24,6 +24,7 @@ input, button, textarea, select {
 
 body {
   line-height: 1.5;
+  overflow-x: hidden;
 }
 
 /* End CSS RESET */
@@ -861,18 +862,21 @@ input[type=range]:disabled::-moz-range-progress, input[type=range]:disabled::-ms
     border: none;
   }
 }
+.cards-grid.slabbed {
+  overflow: visible;
+  gap: 5rem 4rem;
+}
 .cards-grid.mini {
   --user-card-scale: 1;
   --card-scale: var(--user-card-scale);
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  grid-auto-rows: minmax(180px, 1fr);
   gap: 1rem;
-  padding: 1rem;
+  padding: 3rem;
 }
-.cards-grid.slabbed {
+.cards-grid.mini.slabbed {
   overflow: visible;
-  gap: 5rem 4rem;
+  gap: 3rem 2rem;
 }
 
 .stats {
@@ -1383,10 +1387,10 @@ body.no-scroll {
   box-shadow: inset 0 -30px 30px rgba(0, 0, 0, 0.2);
 }
 .card-tile-grid.height-grid.mini {
-  padding: 1rem;
+  padding: 0.4rem;
   display: grid;
-  gap: 1.4rem;
-  grid-template-columns: repeat(auto-fit, 150px);
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, 140px);
 }
 @media screen and (max-width: 768px) {
   .card-tile-grid {

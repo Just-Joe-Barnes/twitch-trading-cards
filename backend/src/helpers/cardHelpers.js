@@ -58,17 +58,34 @@ const generateCardWithProbability = async (highRoll = false) => {
                 cardAvailabilityGroupedMap.set(item.cardId.toString(), item);
             });
 
-            const availablePoolIds = poolIds.filter(cardId => {
+            const mintAvailablePoolIds = poolIds.filter(cardId => {
                 const cardGroupedAvailability = cardAvailabilityGroupedMap.get(cardId.toString());
                 return cardGroupedAvailability && Object.values(cardGroupedAvailability.rarityRemaining).some(count => count > 0);
             });
 
-            if (availablePoolIds.length === 0) {
+            if (mintAvailablePoolIds.length === 0) {
                 console.warn(`[generateCardWithProbability] No cards in the default pool have any available copies.`);
                 return null;
             }
 
-            const randomCardId = availablePoolIds[Math.floor(Math.random() * availablePoolIds.length)];
+            const now = new Date();
+
+            const timeAvailableCards = await Card.find({
+                _id: { $in: mintAvailablePoolIds },
+                $and: [
+                    { $or: [{ availableFrom: null }, { availableFrom: { $lte: now } }] },
+                    { $or: [{ availableTo: null }, { availableTo: { $gte: now } }] }
+                ]
+            }).select('_id').lean();
+
+            const finalAvailablePoolIds = timeAvailableCards.map(c => c._id);
+
+            if (finalAvailablePoolIds.length === 0) {
+                console.warn(`[generateCardWithProbability] No cards in the pool are currently available by date.`);
+                return null;
+            }
+
+            const randomCardId = finalAvailablePoolIds[Math.floor(Math.random() * finalAvailablePoolIds.length)];
             const selectedCard = await Card.findById(randomCardId);
 
             if (!selectedCard) {
@@ -501,6 +518,14 @@ const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifie
             if (modifiers.length > 0) {
                 const modToApply = modifiers[Math.floor(Math.random() * modifiers.length)];
                 appliedModifierId = modToApply._id;
+
+                let cardPrefix = modToApply.name;
+
+                if (cardPrefix === "Glitch") {
+                    cardPrefix = "Glitched";
+                }
+
+                selectedCard.name = cardPrefix + " " + selectedCard.name;
             }
         }
 

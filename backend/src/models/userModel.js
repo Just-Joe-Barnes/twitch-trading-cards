@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema({
         name: String,
         rarity: String,
     },
-    // User's preferred pack template for admin openings
+
     preferredPack: { type: mongoose.Schema.Types.ObjectId, ref: 'Pack', default: null },
     firstLogin: { type: Boolean, default: false },
     isAdmin: { type: Boolean, default: false },
@@ -95,6 +95,15 @@ userSchema.index({ 'cards.name': 1, 'cards.rarity': 1 });
 // New indexes to accelerate mint number lookups for duplicate checks
 userSchema.index({ 'cards.name': 1, 'cards.rarity': 1, 'cards.mintNumber': 1 });
 userSchema.index({ 'openedCards.name': 1, 'openedCards.rarity': 1, 'openedCards.mintNumber': 1 });
+
+userSchema.virtual('activity', {
+    ref: 'UserActivity',
+    localField: '_id',
+    foreignField: 'userId',
+    justOne: true
+});
+userSchema.set('toObject', { virtuals: true });
+userSchema.set('toJSON', { virtuals: true });
 
 const User = mongoose.model('User', userSchema);
 

@@ -136,6 +136,7 @@ const io = socketIo(server, {
 });
 
 const connectedUsers = {}; // Track connected users
+const { processQueue } = require('./src/services/queueService');
 
 // When a client connects, store their socket using their user ID
 io.on('connection', (socket) => {
