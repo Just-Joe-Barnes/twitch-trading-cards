@@ -541,6 +541,8 @@ const AdminDashboardPage = ({user}) => {
                                                     rarity={card.rarity}
                                                     mintNumber={card.mintNumber}
                                                     modifier={card.modifier}
+                                                    lore={card.lore}
+                                                    loreAuthor={card.loreAuthor}
                                                 />
                                             </div>
                                         </div>

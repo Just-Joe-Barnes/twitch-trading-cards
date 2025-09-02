@@ -162,6 +162,8 @@ const generateCardWithProbability = async (highRoll = false) => {
                 mintNumber,
                 imageUrl: selectedCard.imageUrl,
                 flavorText: selectedCard.flavorText || 'No flavor text available',
+                lore: selectedCard.lore,
+                loreAuthor: selectedCard.loreAuthor
             };
 
         } catch (err) {
@@ -276,6 +278,8 @@ const generateCardFromPool = async (poolIds) => {
                 mintNumber,
                 imageUrl: selectedCard.imageUrl,
                 flavorText: selectedCard.flavorText || 'No flavor text available',
+                lore: selectedCard.lore,
+                loreAuthor: selectedCard.loreAuthor
             };
         } catch (error) {
             console.error('[generateCardFromPool] Error:', error.message);
@@ -353,6 +357,8 @@ const generateCardPreview = async () => {
                 mintNumber,
                 imageUrl: selectedCard.imageUrl,
                 flavorText: selectedCard.flavorText || 'No flavor text available',
+                lore: selectedCard.lore,
+                loreAuthor: selectedCard.loreAuthor
             };
         } catch (err) {
             console.error('[generateCardPreview] Error:', err.message);
@@ -536,7 +542,10 @@ const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifie
             modifier: appliedModifierId,
             imageUrl: selectedCard.imageUrl,
             flavorText: selectedCard.flavorText || 'No flavor text available',
-            cardId: selectedCard._id.toString()
+            cardId: selectedCard._id.toString(),
+            lore: selectedCard.lore,
+            loreAuthor: selectedCard.loreAuthor
+
         };
     } catch (err) {
         console.error('[generateCardPreviewFromPool] Unexpected Error:', err.message, err.stack);
