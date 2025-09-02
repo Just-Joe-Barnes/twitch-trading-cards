@@ -4,6 +4,8 @@ import Pagination from '../components/Pagination';
 import '../styles/AdminTradesPage.css';
 import {getRarityColor} from "../constants/rarities";
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+
 const AdminTrades = () => {
     const [trades, setTrades] = useState([]);
     const [error, setError] = useState(null);
@@ -19,7 +21,7 @@ const AdminTrades = () => {
     const fetchTrades = useCallback(async () => {
         setError(null);
         try {
-            const response = await fetch('/api/admin/trades', {
+            const response = await fetch(`${API_BASE_URL}/api/admin/trades`, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
             if (!response.ok) {
@@ -45,7 +47,7 @@ const AdminTrades = () => {
 
         setUpdatingTradeId(tradeId);
         try {
-            const response = await fetch(`/api/admin/trades/${tradeId}/${action}`, {
+            const response = await fetch(`${API_BASE_URL}/api/admin/trades/${tradeId}/${action}`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
