@@ -11,6 +11,8 @@ const cardSchema = new mongoose.Schema({
     name: { type: String, required: true },
     imageUrl: { type: String, required: true },
     flavorText: { type: String },
+    lore: { type: String }, // Optional lore field
+    loreAuthor: { type: String }, // Optional lore author field
     modifier: { type: mongoose.Schema.Types.ObjectId, ref: 'Modifier' },
     rarities: [raritySchema], // Nest rarities as an array of objects
     availableFrom: { type: Date, default: null },

@@ -590,5 +590,7 @@ module.exports = {
     generateCardPreview,
     generatePackPreview,
     generateCardPreviewFromPool,
-    generatePackPreviewFromPool
+    generatePackPreviewFromPool,
+    rarityProbabilities,
+    MODIFIER_CHANCE
 };

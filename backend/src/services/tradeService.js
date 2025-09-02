@@ -26,6 +26,34 @@ async function createTrade(senderId, { recipient, offeredItems, requestedItems, 
             return { success: false, status: 400, message: 'You cannot create a trade with yourself.' };
         }
 
+        const offeredItemsSnapshot = [];
+        for (const cardId of offeredItems) {
+            const card = sender.cards.find(c => c._id.equals(cardId));
+            if (card) {
+                offeredItemsSnapshot.push({
+                    originalId: card._id,
+                    name: card.name,
+                    rarity: card.rarity,
+                    mintNumber: card.mintNumber,
+                    imageUrl: card.imageUrl
+                });
+            }
+        }
+
+        const requestedItemsSnapshot = [];
+        for (const cardId of requestedItems) {
+            const card = recipientUser.cards.find(c => c._id.equals(cardId));
+            if (card) {
+                requestedItemsSnapshot.push({
+                    originalId: card._id,
+                    name: card.name,
+                    rarity: card.rarity,
+                    mintNumber: card.mintNumber,
+                    imageUrl: card.imageUrl
+                });
+            }
+        }
+
         if (offeredPacks > sender.packs) {
             return { success: false, status: 400, message: `You only have ${sender.packs} pack(s), but tried to offer ${offeredPacks}.` };
         }
@@ -102,6 +130,8 @@ async function createTrade(senderId, { recipient, offeredItems, requestedItems, 
             recipient: recipientUser._id,
             offeredItems: offeredCardsDetails.map(c => c._id),
             requestedItems: requestedCardsDetails.map(c => c._id),
+            offeredItemsSnapshot,
+            requestedItemsSnapshot,
             offeredPacks,
             requestedPacks,
             status: 'pending'

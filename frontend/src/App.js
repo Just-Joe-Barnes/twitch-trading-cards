@@ -1,5 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import LoginPage from './pages/LoginPage';
 import LoadingSpinner from './components/LoadingSpinner';
 import Toast from './components/Toast';
@@ -14,6 +15,10 @@ import LeaderboardPage from "./pages/__tests__/LeaderboardPage";
 import AdminCardOwnershipPage from "./pages/AdminCardOwnershipPage";
 import StreamOverlayPage from "./pages/StreamOverlayPage";
 import ConditionalNavbar from "./components/ConditionalNavbar";
+import AdminEventsPage from "./pages/AdminEvents";
+import EventRewardModal from "./components/EventRewardModal";
+import CardManagement from "./pages/AdminCardManagement";
+import AdminTrades from "./pages/AdminTrades";
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const CollectionPage = lazy(() => import('./pages/CollectionPage'));
@@ -40,6 +45,8 @@ const App = () => {
     const [toasts, setToasts] = useState([]);
     const [inspectedCard, setInspectedCard] = useState(null);
     const [showNotice, setShowNotice] = useState(false);
+    const [currentReward, setCurrentReward] = useState(null);
+    const [rewardQueue, setRewardQueue] = useState([]);
 
     const handleAcceptNotice = () => {
         localStorage.setItem('developmentNoticeAccepted', 'true');
@@ -66,6 +73,32 @@ const App = () => {
             if (!noticeAccepted) {
                 setShowNotice(true);
             }
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (!currentReward && rewardQueue.length > 0) {
+            const nextReward = rewardQueue[0];
+            const remainingRewards = rewardQueue.slice(1);
+
+            setCurrentReward(nextReward);
+            setRewardQueue(remainingRewards);
+        }
+    }, [currentReward, rewardQueue]);
+
+    useEffect(() => {
+        if (user?._id) {
+            const socket = io(API_BASE_URL, {
+                transports: ['websocket'],
+            });
+
+            socket.emit('join', user._id);
+            console.log(`[Socket] Joining room for user ${user._id}`);
+
+            return () => {
+                console.log('[Socket] Disconnecting...');
+                socket.disconnect();
+            };
         }
     }, [user]);
 
@@ -101,6 +134,12 @@ const App = () => {
                     throw new Error(`Profile fetch failed with status ${profileResponse.status}`);
                 }
                 const profileData = await profileResponse.json();
+
+                if (profileData.pendingEventReward && profileData.pendingEventReward.length > 0) {
+                    console.log('[App.js] Received pending event rewards queue:', profileData.pendingEventReward);
+                    setRewardQueue(profileData.pendingEventReward);
+                }
+
                 setUser(profileData);
             } catch (error) {
                 console.error('[App.js] Error fetching user data:', error.message);
@@ -177,6 +216,14 @@ const App = () => {
                             element={user?.isAdmin ? <AdminCardOwnershipPage user={user} /> : <Navigate to="/login" />}
                         />
                         <Route
+                            path="/admin/events"
+                            element={user?.isAdmin ? <AdminEventsPage user={user} /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/admin/cardmanagement"
+                            element={user?.isAdmin ? <CardManagement user={user} /> : <Navigate to="/login" />}
+                        />
+                        <Route
                             path="/grading"
                             element={user ? <CardGradingPage /> : <Navigate to="/login" />}
                         />
@@ -186,6 +233,7 @@ const App = () => {
                         <Route path="/market/listing/:id" element={<MarketListingDetails />} />
                         <Route path="/admin/cards/:id" element={<CardEditor />} />
                         <Route path="/admin/cardaudit" element={<AdminCardAudit />} />
+                        <Route path="/admin/trades" element={<AdminTrades />} />
                         <Route path="/leaderboard" element={<LeaderboardPage />} />
                         <Route path="/stream-overlay/:userId" element={<StreamOverlayPage />} />
                         <Route path="/" element={<Navigate to="/dashboard" />} />
@@ -202,6 +250,14 @@ const App = () => {
                 />
             ))}
             <CardInspector card={inspectedCard} onClose={() => setInspectedCard(null)} />
+
+            {currentReward && (
+                <EventRewardModal
+                    reward={currentReward}
+                    onClose={() => setCurrentReward(null)}
+                />
+            )}
+
             <ScrollToTopButton />
         </>
     );

@@ -6,23 +6,38 @@ const Card = require('../models/cardModel');
 const getUserProfile = async (req, res) => {
     const start = process.hrtime();
     try {
-        const user = { ...req.user };
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const userProfile = user.toObject();
+
+        if (user.pendingEventReward && user.pendingEventReward.length > 0) {
+            userProfile.pendingEventReward = user.pendingEventReward;
+            await User.updateOne({ _id: user._id }, { $set: { pendingEventReward: [] } });
+        }
+
         let dbStart = process.hrtime();
-        if (user.favoriteCard && user.favoriteCard.name) {
-            const cardDoc = await Card.findOne({ name: user.favoriteCard.name })
+        if (userProfile.favoriteCard && userProfile.favoriteCard.name) {
+            const cardDoc = await Card.findOne({ name: userProfile.favoriteCard.name })
                 .select('flavorText imageUrl')
                 .lean();
-            user.favoriteCard = {
-                ...user.favoriteCard,
+
+            userProfile.favoriteCard = {
+                ...userProfile.favoriteCard,
                 flavorText: cardDoc?.flavorText,
                 imageUrl: cardDoc?.imageUrl,
             };
         }
         const dbEnd = process.hrtime(dbStart);
         console.log(`[PERF] [getUserProfile] DB query took ${dbEnd[0] * 1000 + dbEnd[1] / 1e6} ms`);
+
         const total = process.hrtime(start);
         console.log(`[PERF] [getUserProfile] TOTAL: ${total[0] * 1000 + total[1] / 1e6} ms`);
-        res.status(200).json(user);
+        res.status(200).json(userProfile);
+
     } catch (error) {
         const total = process.hrtime(start);
         console.error(`[PERF] [getUserProfile] ERROR after ${total[0] * 1000 + total[1] / 1e6} ms:`, error.message);

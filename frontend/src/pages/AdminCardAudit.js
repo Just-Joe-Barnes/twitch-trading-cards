@@ -6,7 +6,8 @@ import {
     fixCardDefinitionInconsistencies,
     fixDuplicateAndMintZeroCards,
     fixCardDataMismatches,
-    fixMissingModifierPrefixes, fixLegacyGlitchNames
+    fixMissingModifierPrefixes, fixLegacyGlitchNames,
+    backfillTradeSnapshots
 } from '../utils/api';
 import NavAdmin from "../components/NavAdmin";
 
@@ -19,7 +20,8 @@ const AdminCardAudit = () => {
     const [prefixFixStatus, setPrefixFixStatus] = useState(null);
     const [legacyGlitchFixStatus, setLegacyGlitchFixStatus] = useState(null);
     const [duplicateFixStatus, setDuplicateFixStatus] = useState(null);
-    const [mismatchFixStatus, setMismatchFixStatus] = useState(null); // Added state for new fix
+    const [mismatchFixStatus, setMismatchFixStatus] = useState(null);
+    const [tradeFixStatus, setTradeFixStatus] = useState(null);
     const [showDetails, setShowDetails] = useState({
         malformedUserCards: false,
         missingParentCardDefinitions: false,
@@ -44,6 +46,7 @@ const AdminCardAudit = () => {
         setMismatchFixStatus(null);
         setPrefixFixStatus(null);
         setLegacyGlitchFixStatus(null);
+        setTradeFixStatus(null);
         try {
             const data = await fetchAdminCardAudit();
             setAuditData(data);
@@ -58,8 +61,7 @@ const AdminCardAudit = () => {
         const checkAdminAndFetch = async () => {
             try {
                 const profile = await fetchUserProfile();
-                // Updated admin check to match backend
-                if (!profile.isAdmin && profile.username !== 'ItchyBeard') {
+                if (!profile.isAdmin) {
                     navigate('/');
                 } else {
                     setIsAdmin(true);
@@ -99,6 +101,28 @@ const AdminCardAudit = () => {
             }
         } catch (err) {
             setLegacyGlitchFixStatus({ status: 'error', message: `Operation failed: ${err.message || 'Unknown error.'}` });
+        }
+    };
+
+    const handleBackfillTradeSnapshots = async (performActualFix = false) => {
+        const confirmationMessage = performActualFix
+            ? "Are you absolutely sure you want to PERMANENTLY backfill snapshot data for all legacy trades?\n\n" +
+            "This action will update old trade records. This cannot be undone."
+            : "Initiating a DRY RUN to find legacy trades.\n\n" +
+            "This will show you how many trades would be fixed without changing the database. Proceed?";
+
+        if (!window.confirm(confirmationMessage)) {
+            setTradeFixStatus({ status: 'info', message: 'Operation cancelled by user.' });
+            return;
+        }
+
+        setTradeFixStatus({ status: 'pending', message: `Performing ${performActualFix ? 'actual fix' : 'dry run'}... This may take a moment...` });
+
+        try {
+            const result = await backfillTradeSnapshots({ dryRun: !performActualFix });
+            setTradeFixStatus({ ...result, status: 'success' });
+        } catch (err) {
+            setTradeFixStatus({ status: 'error', message: `Operation failed: ${err.message || 'Unknown error.'}` });
         }
     };
 
@@ -378,6 +402,23 @@ const AdminCardAudit = () => {
                             {duplicateFixStatus.failed && (duplicateFixStatus.failed.removeMint0.length > 0 || duplicateFixStatus.failed.rerollDuplicates.length > 0) &&
                                 <div className="failed-fixes"><strong>Failed Fixes:</strong><ul>{duplicateFixStatus.failed.removeMint0.map((f, i) => <li key={i}>Failed to remove mint 0 for {f.card.username}: {f.reason}</li>)}{duplicateFixStatus.failed.rerollDuplicates.map((f, i) => <li key={i}>Failed to reroll for {f.owner.username}: {f.reason}</li>)}</ul></div>
                             }
+                        </div>
+                    )}
+                </div>
+
+                <div className="fix-section">
+                    <h4>Legacy Trade Snapshot Backfill</h4>
+                    <p className="fix-description">Finds old trades that are missing historical card data (snapshots) and adds it, ensuring trade history is permanently preserved.</p>
+                    <div>
+                        <button onClick={() => handleBackfillTradeSnapshots(false)} className="action-button" style={{ backgroundColor: '#6c757d' }} disabled={tradeFixStatus?.status === 'pending'}>Dry Run Scan</button>
+                        {tradeFixStatus && tradeFixStatus.isDryRun && tradeFixStatus.tradesToUpdate > 0 && (
+                            <button onClick={() => handleBackfillTradeSnapshots(true)} className="action-button" style={{ backgroundColor: '#dc3545' }} disabled={tradeFixStatus?.status === 'pending'}>Confirm Fix</button>
+                        )}
+                    </div>
+                    {tradeFixStatus && (
+                        <div className={`status-box ${tradeFixStatus.status}`}>
+                            <strong>Trade Fix Status:</strong> {tradeFixStatus.message}
+                            {typeof tradeFixStatus.updatedCount !== 'undefined' && <p>Trades to process: {tradeFixStatus.tradesToUpdate}, Successfully updated: {tradeFixStatus.updatedCount}</p>}
                         </div>
                     )}
                 </div>

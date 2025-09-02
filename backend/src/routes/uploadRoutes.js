@@ -8,7 +8,7 @@ const { protect } = require('../middleware/authMiddleware');
 
 // Middleware to check admin privileges
 const adminOnly = (req, res, next) => {
-    if (!req.user || (!req.user.isAdmin && req.user.username !== 'ItchyBeard')) {
+    if (!req.user || !req.user.isAdmin) {
         return res.status(403).json({ message: 'Admin access required.' });
     }
     next();

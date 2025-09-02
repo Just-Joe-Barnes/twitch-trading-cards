@@ -59,17 +59,39 @@
   }
 
   .preview {
-    font-size: 0.95em;
-    margin-bottom: 15px;
-    flex-grow: 1;
-    color: #e0e0e0;
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 8px;
-    flex-wrap: wrap;
 
-    span {
-      white-space: nowrap;
+    .box {
+      width: 100%;
+      background: rgba(0,0,0,0.1);
+      padding: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: $border-radius;
+      font-size: 0.95em;
+      flex-grow: 1;
+      color: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+
+      .sender {
+        font-weight: bold;
+        color: $brand-primary;
+      }
+
+      .recipient {
+        font-weight: bold;
+        color: $brand-secondary;
+      }
+
+      span {
+        white-space: nowrap;
+      }
     }
   }
 

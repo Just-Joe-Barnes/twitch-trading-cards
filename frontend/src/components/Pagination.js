@@ -1,25 +1,42 @@
-import React from "react";
-import "../styles/CardStyles.css";
+// src/components/Pagination.js
 
-const TradingCard = ({ card }) => {
-    const rarityClass = `card-rarity-${card.rarity.toLowerCase()}`;
+import React from 'react';
+import '../styles/Pagination.css';
+
+const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+    if (totalPages <= 1) {
+        return null;
+    }
+
+    const handlePrevious = () => {
+        onPageChange(currentPage - 1);
+    };
+
+    const handleNext = () => {
+        onPageChange(currentPage + 1);
+    };
 
     return (
-        <div className={`card ${rarityClass}`}>
-            <div className="card-header">{card.name}</div>
-            <div
-                className="card-image"
-                style={{ backgroundImage: `url(${card.imageUrl})` }}
-            ></div>
-            <div className="card-content">
-                <div className="flavor-text">{card.flavorText}</div>
-                <div>
-                    Mint: {card.mintNumber} / {card.totalCopies}
-                </div>
-            </div>
-            <div className="card-footer">Rarity: {card.rarity}</div>
+        <div className="pagination-container">
+            <button
+                onClick={handlePrevious}
+                disabled={currentPage === 1}
+                className="pagination-button"
+            >
+                &laquo; Previous
+            </button>
+            <span className="pagination-info">
+                Page {currentPage} of {totalPages}
+            </span>
+            <button
+                onClick={handleNext}
+                disabled={currentPage === totalPages}
+                className="pagination-button"
+            >
+                Next &raquo;
+            </button>
         </div>
     );
 };
 
-export default TradingCard;
+export default Pagination;

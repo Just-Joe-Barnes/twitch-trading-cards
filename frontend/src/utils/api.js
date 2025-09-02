@@ -489,6 +489,23 @@ export const fixDuplicateAndMintZeroCards = async (dryRun) => {
     }
 };
 
+export const backfillTradeSnapshots = async (payload) => {
+    const token = localStorage.getItem('token');
+    const response = await fetch('/api/admin/trades/backfill-snapshots', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to backfill trade snapshots');
+    }
+    return response.json();
+};
+
 export const fixLegacyGlitchNames = async (options = { dryRun: true }) => {
     const token = localStorage.getItem('token');
     const res = await fetch('/api/admin/fix-legacy-glitch-names', {

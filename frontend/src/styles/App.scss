@@ -465,7 +465,7 @@ h2::after {
   button, input, a.button {
     flex: 1 auto;
     width: 100%;
-    margin: 1ch 0;
+    //margin: 1ch 0;
   }
 
   &.vertical {
@@ -611,7 +611,6 @@ pre {
 input, textarea, select {
   max-width: 100%;
   width: 100%;
-  margin: 0.5ch 0;
 
   &:focus-visible {
     border-color: $brand-primary;

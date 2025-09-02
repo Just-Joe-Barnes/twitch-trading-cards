@@ -70,8 +70,7 @@ const PendingTrades = () => {
                 const all = await fetchTrades(profile._id);
                 setCompletedTrades(all.filter(t => t.status !== 'pending'));
 
-            } catch (err)
-            {
+            } catch (err) {
                 console.error('Failed to load trades:', err);
                 setError('Failed to load trades');
             }
@@ -195,19 +194,36 @@ const PendingTrades = () => {
     }, []);
 
     const offerSummary = useCallback((items, packs) => {
+        // These initial checks are still perfect
         if (items.length === 0 && packs === 0) return 'Nothing';
         if (items.length === 0) return `${packs} packs`;
-        const first = items[0];
-        const extras = items.length - 1;
-        const rarityColor = rarities.find(r => r.name.toLowerCase() === first.rarity.toLowerCase())?.color ?? 'inherit';
+
         return (
-            <span>
-                {first.name} <span style={{color: rarityColor}}>{first.rarity}</span>
-                {extras > 0 && ` +${extras} more`}
-                {packs > 0 && ` + ${packs} packs`}
-            </span>
+            // Use a React Fragment (<>) to group the list of items and packs
+            <>
+                {/* We'll map over the entire items array instead of just taking the first one */}
+                {items.map(item => {
+                    // Find the rarity color for each item
+                    const rarityColor = rarities.find(r => r.name.toLowerCase() === item.rarity.toLowerCase())?.color ?? 'inherit';
+
+                    // Return a div for each card to place it on a new line
+                    // Use a resilient key that works for both snapshot and live data
+                    return (
+                        <div key={item.originalId || item._id} className="summary-item">
+                            {item.name} #{item.mintNumber} <span style={{color: rarityColor}}>{item.rarity}</span>
+                        </div>
+                    );
+                })}
+
+                {/* If there are packs, add them on a new line at the end */}
+                {packs > 0 && (
+                    <div className="summary-packs">
+                        + {packs} packs
+                    </div>
+                )}
+            </>
         );
-    }, []);
+    }, [rarities]); // Added rarities to the dependency array as it's used inside
 
     if (error) return <div className="error-message">{error}</div>;
     if (!user) return <LoadingSpinner/>;
@@ -217,19 +233,19 @@ const PendingTrades = () => {
             {!isOutgoing ? (
                 <div className={`button-group ${hideLabels ? 'icons' : ''}`}>
                     <button className="primary-button" onClick={() => handleAction(trade._id, 'accept')}
-                            {...(hideLabels ? { 'data-tooltip': 'Accept trade' } : {})}
+                            {...(hideLabels ? {'data-tooltip': 'Accept trade'} : {})}
                             aria-label={`Accept trade with ${senderName(trade)}`}>
-                        <i className="fa-regular fa-thumbs-up fa-fw" /> {!hideLabels && 'Accept trade'}
+                        <i className="fa-regular fa-thumbs-up fa-fw"/> {!hideLabels && 'Accept trade'}
                     </button>
                     <button className="secondary-button" onClick={() => handleCounter(trade)}
-                            {...(hideLabels ? { 'data-tooltip': 'Counter offer' } : {})}
+                            {...(hideLabels ? {'data-tooltip': 'Counter offer'} : {})}
                             aria-label={`Counter trade with ${senderName(trade)}`}>
-                        <i className="fa-regular fa-recycle fa-fw" /> {!hideLabels && 'Counter offer'}
+                        <i className="fa-regular fa-recycle fa-fw"/> {!hideLabels && 'Counter offer'}
                     </button>
                     <button className="reject-button" onClick={() => handleAction(trade._id, 'reject')}
-                            {...(hideLabels ? { 'data-tooltip': 'Reject trade' } : {})}
+                            {...(hideLabels ? {'data-tooltip': 'Reject trade'} : {})}
                             aria-label={`Reject trade with ${senderName(trade)}`}>
-                        <i className="fa-regular fa-thumbs-down fa-fw" /> {!hideLabels && 'Reject trade'}
+                        <i className="fa-regular fa-thumbs-down fa-fw"/> {!hideLabels && 'Reject trade'}
                     </button>
                 </div>
             ) : (
@@ -246,17 +262,29 @@ const PendingTrades = () => {
             onClick={() => handleRowClick(trade)}
         >
             <div className="users">
-                <div className="sender">
-                    {trade.sender?.username === user.username ? 'You' : trade.sender?.username}
-                </div>
-                <div>→</div>
-                <div className="recipient">{trade.recipient?.username === user.username ? 'You' : trade.recipient?.username}</div>
                 <span className="age">{timeAgo(trade.createdAt)}</span>
             </div>
             <div className="preview">
-                {offerSummary(trade.offeredItems, trade.offeredPacks)}
-                <span className="arrow">→</span>
-                {offerSummary(trade.requestedItems, trade.requestedPacks)}
+                <div className="box">
+                    <div className="sender">
+                        {trade.sender?.username === user.username ? 'You' : trade.sender?.username}
+                    </div>
+                    {trade.offeredItemsSnapshot?.length > 0 ? (
+                        offerSummary(trade.offeredItemsSnapshot, trade.offeredPacks)
+                    ) : (
+                        offerSummary(trade.offeredItems, trade.offeredPacks)
+                    )}
+                </div>
+                <span className="arrow">↓</span>
+                <div className="box">
+                    <div
+                        className="recipient">{trade.recipient?.username === user.username ? 'You' : trade.recipient?.username}</div>
+                    {trade.requestedItemsSnapshot ? (
+                        offerSummary(trade.requestedItemsSnapshot, trade.requestedPacks)
+                    ) : (
+                        offerSummary(trade.requestedItems, trade.requestedPacks)
+                    )}
+                </div>
             </div>
             <div className="actions">
                 {isHistory ? (
@@ -268,76 +296,90 @@ const PendingTrades = () => {
         </div>
     );
 
-    const DetailPanel = ({trade, isOutgoing, open, showActions = true}) => (
-        <aside
-            className={`detail-panel ${open ? 'open' : ''}`}
-            role="dialog"
-            aria-modal="true"
-            ref={detailPanelRef}
-        >
-            <h1>Trade Details</h1>
-            <button className="close-button" onClick={() => setPanelOpen(false)} aria-label="Close panel">✕</button>
-            <div className="detail-body">
-                <section>
-                    <h3>Offered by {isOutgoing ? 'you' : senderName(trade)}</h3>
-                    {trade.offeredPacks > 0 && (
-                        <p className="pack-count">{trade.offeredPacks} packs offered</p>
-                    )}
-                    <div className="cards-grid mini">
-                        {trade.offeredItems.length > 0 ? (
-                            trade.offeredItems.map((item) => (
-                                <BaseCard
-                                    key={item._id}
-                                    name={item.name}
-                                    image={item.imageUrl}
-                                    rarity={item.rarity}
-                                    description={item.flavorText}
-                                    mintNumber={item.mintNumber}
-                                    modifier={item.modifier}
-                                    miniCard={true}
-                                />
-                            ))
-                        ) : (
-                            <p>No cards offered.</p>
+// In PendingTrades.js
+
+    const DetailPanel = ({trade, isOutgoing, open, showActions = true}) => {
+        // --- NEW LOGIC ---
+        // Use the snapshot if it exists, otherwise fall back to the live items.
+        // This makes the component work for both completed and pending trades.
+        const offeredItemsToDisplay = trade.offeredItemsSnapshot?.length > 0 ? trade.offeredItemsSnapshot : trade.offeredItems;
+        const requestedItemsToDisplay = trade.requestedItemsSnapshot?.length > 0 ? trade.requestedItemsSnapshot : trade.requestedItems;
+
+        return (
+            <aside
+                className={`detail-panel ${open ? 'open' : ''}`}
+                role="dialog"
+                aria-modal="true"
+                ref={detailPanelRef}
+            >
+                <h1>Trade Details</h1>
+                <button className="close-button" onClick={() => setPanelOpen(false)} aria-label="Close panel">✕</button>
+                <div className="detail-body">
+                    <section>
+                        <h3>Offered by {isOutgoing ? 'you' : senderName(trade)}</h3>
+                        {trade.offeredPacks > 0 && (
+                            <p className="pack-count">{trade.offeredPacks} packs offered</p>
                         )}
-                    </div>
-                </section>
-                <hr />
-                <section>
-                    <h3>Requested from {isOutgoing ? recipientName(trade) : 'you'}</h3>
-                    {trade.requestedPacks > 0 && (
-                        <p className="pack-count">{trade.requestedPacks} packs requested</p>
-                    )}
-                    <div className="cards-grid mini">
-                        {trade.requestedItems.length > 0 ? (
-                            trade.requestedItems.map((item) => (
-                                <BaseCard
-                                    key={item._id}
-                                    name={item.name}
-                                    image={item.imageUrl}
-                                    rarity={item.rarity}
-                                    description={item.flavorText}
-                                    mintNumber={item.mintNumber}
-                                    modifier={item.modifier}
-                                    miniCard={true}
-                                />
-                            ))
-                        ) : (
-                            <p>No cards requested.</p>
+                        <div className="cards-grid mini">
+                            {/* --- Use the new display variable --- */}
+                            {offeredItemsToDisplay.length > 0 ? (
+                                offeredItemsToDisplay.map((item) => (
+                                    <BaseCard
+                                        // Use originalId from snapshot, or _id from live data
+                                        key={item.originalId || item._id}
+                                        name={item.name}
+                                        image={item.imageUrl}
+                                        rarity={item.rarity}
+                                        description={item.flavorText}
+                                        mintNumber={item.mintNumber}
+                                        modifier={item.modifier}
+                                        miniCard={true}
+                                    />
+                                ))
+                            ) : (
+                                <p>No cards offered.</p>
+                            )}
+                        </div>
+                    </section>
+                    <hr/>
+                    <section>
+                        <h3>Requested from {isOutgoing ? recipientName(trade) : 'you'}</h3>
+                        {trade.requestedPacks > 0 && (
+                            <p className="pack-count">{trade.requestedPacks} packs requested</p>
                         )}
-                    </div>
-                </section>
-            </div>
-            <footer>
-                {trade.status !== 'pending' && (
-                    <h2>Status: {trade.status}</h2>
-                )}
-                {showActions && (
-                    <RowActions trade={trade} isOutgoing={isOutgoing}/>
-                )}
-            </footer>
-        </aside>
-    );
+                        <div className="cards-grid mini">
+                            {/* --- Use the new display variable --- */}
+                            {requestedItemsToDisplay.length > 0 ? (
+                                requestedItemsToDisplay.map((item) => (
+                                    <BaseCard
+                                        // Use originalId from snapshot, or _id from live data
+                                        key={item.originalId || item._id}
+                                        name={item.name}
+                                        image={item.imageUrl}
+                                        rarity={item.rarity}
+                                        description={item.flavorText}
+                                        mintNumber={item.mintNumber}
+                                        modifier={item.modifier}
+                                        miniCard={true}
+                                    />
+                                ))
+                            ) : (
+                                <p>No cards requested.</p>
+                            )}
+                        </div>
+                    </section>
+                </div>
+                <footer>
+                    {trade.status !== 'pending' && (
+                        <h2>Status: {trade.status}</h2>
+                    )}
+                    {showActions && (
+                        <RowActions trade={trade} isOutgoing={isOutgoing}/>
+                    )}
+                </footer>
+            </aside>
+        );
+    };
 
     return (
         <div className="page">
@@ -345,15 +387,22 @@ const PendingTrades = () => {
             <div className="section-card">
                 <div className="header-controls">
                     <div className="button-group" role="tablist">
-                        <input type="search" placeholder="Search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}/>
-                        <button role="tab" aria-selected={activeTab === 'incoming'} className={activeTab === 'incoming' ? 'active' : ''} onClick={() => setActiveTab('incoming')}>
-                            <i className="fa-regular fa-arrow-down" /> Incoming
+                        <input type="search" placeholder="Search" value={searchQuery}
+                               onChange={(e) => setSearchQuery(e.target.value)}/>
+                        <button role="tab" aria-selected={activeTab === 'incoming'}
+                                className={activeTab === 'incoming' ? 'active' : ''}
+                                onClick={() => setActiveTab('incoming')}>
+                            <i className="fa-regular fa-arrow-down"/> Incoming
                         </button>
-                        <button role="tab" aria-selected={activeTab === 'outgoing'} className={activeTab === 'outgoing' ? 'active' : ''} onClick={() => setActiveTab('outgoing')}>
-                            <i className="fa-regular fa-arrow-up" /> Outgoing
+                        <button role="tab" aria-selected={activeTab === 'outgoing'}
+                                className={activeTab === 'outgoing' ? 'active' : ''}
+                                onClick={() => setActiveTab('outgoing')}>
+                            <i className="fa-regular fa-arrow-up"/> Outgoing
                         </button>
-                        <button role="tab" aria-selected={activeTab === 'completed'} className={activeTab === 'completed' ? 'active' : ''} onClick={() => setActiveTab('completed')}>
-                            <i className="fa-regular fa-check" /> Completed
+                        <button role="tab" aria-selected={activeTab === 'completed'}
+                                className={activeTab === 'completed' ? 'active' : ''}
+                                onClick={() => setActiveTab('completed')}>
+                            <i className="fa-regular fa-check"/> Completed
                         </button>
                     </div>
                 </div>
@@ -374,7 +423,8 @@ const PendingTrades = () => {
             </div>
             {openTrade && (
                 <>
-                    <div className={`detail-panel-overlay ${panelOpen ? 'open' : ''}`} onClick={() => setPanelOpen(false)}></div>
+                    <div className={`detail-panel-overlay ${panelOpen ? 'open' : ''}`}
+                         onClick={() => setPanelOpen(false)}></div>
                     <DetailPanel
                         trade={openTrade}
                         isOutgoing={openTrade.sender?.username === user.username}

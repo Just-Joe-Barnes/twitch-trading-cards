@@ -23,46 +23,57 @@ if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-const authRoutes = require('./src/routes/authRoutes');
-const packRoutes = require('./src/routes/packRoutes');
-const collectionRoutes = require('./src/routes/collectionRoutes');
-const userRoutes = require('./src/routes/userRoutes');
-const twitchRoutes = require('./src/routes/twitchRoutes');
-const cardRoutes = require('./src/routes/cardRoutes');
-const tradeRoutes = require('./src/routes/tradeRoutes');
-const marketRoutes = require('./src/routes/MarketRoutes');
-const notificationRoutes = require('./src/routes/notificationRoutes');
-const testNotificationRoutes = require('./src/routes/testNotificationRoutes');
-const uploadRoutes = require('./src/routes/uploadRoutes');
-const adminRoutes = require('./src/routes/adminRoutes');
-const achievementRoutes = require('./src/routes/achievementRoutes');
-const gradingRoutes = require('./src/routes/gradingRoutes');
-const externalRoutes = require('./src/routes/externalRoutes');
-const { initializeQueueService, markAsReady } = require('./src/services/queueService');
-
-
 const app = express();
-app.set('trust proxy', 1);
-const server = http.createServer(app); // Create HTTP server for Socket.io
+const server = http.createServer(app);
 
-// Use an environment variable (e.g., CLIENT_URL) with a fallback to localhost
+// --- SOCKET.IO INITIALIZATION ---
+const socketIo = require('socket.io');
+const io = socketIo(server, {
+    cors: { origin: process.env.CLIENT_URL || "http://localhost:3000" },
+});
+
+const { initializeQueueService, markAsReady } = require('./src/services/queueService');
+initializeQueueService(io);
+
+const connectedUsers = {};
+
+io.on('connection', (socket) => {
+    console.log('A client connected:', socket.id);
+    socket.on('join', (userId) => {
+        socket.join(userId);
+        connectedUsers[userId] = socket.id;
+        console.log(`Socket ${socket.id} joined room for user ID: ${userId}`);
+    });
+    socket.on('animation-complete', () => {
+        console.log(`Socket ${socket.id} signaled animation complete.`);
+        markAsReady(socket.id);
+    });
+    socket.on('disconnect', () => {
+        console.log('Client disconnected:', socket.id);
+        Object.keys(connectedUsers).forEach((userId) => {
+            if (connectedUsers[userId] === socket.id) {
+                delete connectedUsers[userId];
+            }
+        });
+    });
+});
+// --- END OF SOCKET.IO INITIALIZATION ---
+
+app.set('trust proxy', 1);
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:3000", credentials: true }));
 
-// Middleware to handle raw body only for Twitch webhook
 const rawBodyMiddleware = (req, res, buf, encoding) => {
     if (req.originalUrl === '/api/twitch/webhook') {
         req.rawBody = buf.toString(encoding || 'utf-8');
     }
 };
 
-// General Middleware
 app.use(session({
     secret: process.env.SESSION_SECRET || "your-session-secret",
     resave: false,
     saveUninitialized: false,
 }));
 
-// Logging middleware
 app.use(morgan('dev'));
 
 if (require.main === module) {
@@ -83,92 +94,42 @@ if (require.main === module) {
     });
 }
 
-
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-app.get('/', (req, res) => {
-    res.status(200).send('OK');
-});
-app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok' });
-});
-
-app.use('/api/twitch', twitchRoutes);
-app.use('/api/admin', uploadRoutes);
+app.get('/', (req, res) => { res.status(200).send('OK'); });
+app.get('/health', (req, res) => { res.status(200).json({ status: 'ok' }); });
 
 app.use(express.json({ verify: rawBodyMiddleware, limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/packs', packRoutes);
-app.use('/api/users', collectionRoutes);
-app.use('/api/cards', cardRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/trades', tradeRoutes);
-app.use('/api/market', marketRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/test-notification', testNotificationRoutes);
-app.use('/api/grading', gradingRoutes);
+// --- UPDATED ROUTE USAGE ---
+// Using inline require statements prevents module initialization order issues.
+app.use('/api/auth', require('./src/routes/authRoutes')(io));
+app.use('/api/twitch', require('./src/routes/twitchRoutes'));
+app.use('/api/admin', require('./src/routes/uploadRoutes'));
+app.use('/api/packs', require('./src/routes/packRoutes'));
+app.use('/api/users', require('./src/routes/collectionRoutes'));
+app.use('/api/cards', require('./src/routes/cardRoutes'));
+app.use('/api/users', require('./src/routes/userRoutes'));
+app.use('/api/trades', require('./src/routes/tradeRoutes'));
+app.use('/api/market', require('./src/routes/MarketRoutes'));
+app.use('/api/notifications', require('./src/routes/notificationRoutes'));
+app.use('/api/test-notification', require('./src/routes/testNotificationRoutes'));
+app.use('/api/grading', require('./src/routes/gradingRoutes'));
 app.use('/api/modifiers', require('./src/routes/modifierRoutes'));
-app.use('/api/achievements', achievementRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/external', externalRoutes);
+app.use('/api/achievements', require('./src/routes/achievementRoutes'));
+app.use('/api/admin', require('./src/routes/adminRoutes'));
+app.use('/api/events', require('./src/routes/eventRoutes'));
+app.use('/api/external', require('./src/routes/externalRoutes'));
 
-// Default 404 handler (for any unmatched routes)
-app.use((req, res) => {
-    res.status(404).json({ message: "Route not found" });
-});
 
-// Error handling middleware
+app.use((req, res) => { res.status(404).json({ message: "Route not found" }); });
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: "Internal server error", error: err.message });
 });
 
-// Optional: Increase timeouts if needed
-server.headersTimeout = 120000; // 120 seconds
+server.headersTimeout = 120000;
 server.keepAliveTimeout = 120000;
 
-// Socket.io integration
-const socketIo = require('socket.io');
-const io = socketIo(server, {
-    cors: { origin: process.env.CLIENT_URL || "http://localhost:3000" },
-});
-
-const connectedUsers = {}; // Track connected users
-const { processQueue } = require('./src/services/queueService');
-
-// When a client connects, store their socket using their user ID
-io.on('connection', (socket) => {
-    console.log('A client connected:', socket.id);
-
-    // Expect the client to send their user ID
-    socket.on('join', (userId) => {
-        socket.join(userId);
-        connectedUsers[userId] = socket.id;
-        console.log(`Socket ${socket.id} joined room: ${userId}`);
-    });
-
-    socket.on('animation-complete', () => {
-        console.log(`Socket ${socket.id} signaled animation complete.`);
-        markAsReady(socket.id);
-    });
-
-    // Handle disconnect
-    socket.on('disconnect', () => {
-        console.log('Client disconnected:', socket.id);
-        Object.keys(connectedUsers).forEach((userId) => {
-            if (connectedUsers[userId] === socket.id) {
-                delete connectedUsers[userId];
-            }
-        });
-    });
-});
-
-// Initialize the notification service with the io instance
-const { setSocketInstance } = require('./notificationService');
-setSocketInstance(io);
-initializeQueueService(io);
-
-// For unit tests
 module.exports = server;
+

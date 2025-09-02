@@ -17,6 +17,8 @@ const cardSchema = new mongoose.Schema({
     slabbed: { type: Boolean, default: false },
     gradedAt: Date,
     gradingRequestedAt: Date,
+    lore: { type: String },
+    loreAuthor: { type: String },
 });
 
 // Index nested card id for faster $elemMatch queries
@@ -85,7 +87,11 @@ const userSchema = new mongoose.Schema({
             claimed: { type: Boolean, default: false },
             dateEarned: { type: Date, default: Date.now }
         }
-    ]
+    ],
+    pendingEventReward: {
+        type: Array,
+        default: []
+    }
 });
 
 // Helpful indexes for frequent queries

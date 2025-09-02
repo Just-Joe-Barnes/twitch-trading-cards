@@ -382,6 +382,8 @@ const CataloguePage = () => {
                                         remaining={remaining}
                                         limited={true}
                                         timestatuscard={card}
+                                        lore={card.lore}
+                                        loreAuthor={card.loreAuthor}
                                         modifier={selectedModifier === 'None' ? null : selectedModifier}
                                         cardScale={cardScale}
                                     />
@@ -412,6 +414,8 @@ const CataloguePage = () => {
                                         mintNumber={card.mintNumber}
                                         limited={!!card.availableFrom}
                                         modifier={selectedModifier === 'None' ? null : selectedModifier}
+                                        lore={card.lore}
+                                        loreAuthor={card.loreAuthor}
                                         remaining={remaining}
                                         timestatuscard={card}
                                     />

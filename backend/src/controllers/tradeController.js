@@ -97,12 +97,14 @@ const updateTradeStatus = async (req, res) => {
             return res.status(400).json({ message: `Trade is already ${trade.status}. Cannot update.` });
         }
 
-        if ((['accepted', 'rejected'].includes(status) && !isRecipient) ||
-            (status === 'cancelled' && !isSender)) {
-            console.log("[Trade Status Update] Unauthorized action. User is not the correct party to perform this action.");
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(403).json({ message: "Unauthorized action" });
+        if (!req.user.isAdmin) {
+            if ((['accepted', 'rejected'].includes(status) && !isRecipient) ||
+                (status === 'cancelled' && !isSender)) {
+                console.log("[Trade Status Update] Unauthorized action. User is not the correct party to perform this action.");
+                await session.abortTransaction();
+                session.endSession();
+                return res.status(403).json({ message: "Unauthorized action" });
+            }
         }
 
         let senderUpdates = {};
@@ -429,7 +431,9 @@ const getPendingTrades = async (req, res) => {
                     cancellationReason: 1,
                     expiresAt: 1,
                     createdAt: 1,
-                    updatedAt: 1
+                    updatedAt: 1,
+                    offeredItemsSnapshot: 1,
+                    requestedItemsSnapshot: 1
                 }
             }
         ];
@@ -509,7 +513,9 @@ const getTradesForUser = async (req, res) => {
                     cancellationReason: 1,
                     expiresAt: 1,
                     createdAt: 1,
-                    updatedAt: 1
+                    updatedAt: 1,
+                    offeredItemsSnapshot: 1,
+                    requestedItemsSnapshot: 1
                 }
             }
         ];

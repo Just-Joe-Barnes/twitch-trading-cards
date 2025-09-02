@@ -14,12 +14,15 @@ const Pack = require('../models/packModel');
 const Notification = require('../models/notificationModel');
 const Achievement = require('../models/achievementModel');
 const Modifier = require('../models/modifierModel');
+const Trade = require('../models/tradeModel');
 
 // Middleware & Services
 const { protect } = require('../middleware/authMiddleware');
 const { broadcastNotification } = require('../../notificationService');
 const {getStatus, forceResume, resumeQueue, pauseQueue} = require("../services/queueService");
+const {updateCard} = require("../controllers/adminController");
 
+const tradeController = require('../controllers/tradeController');
 
 // --- Middleware & Helper Functions ---
 
@@ -217,6 +220,51 @@ router.get('/users-activity', protect, adminOnly, async (req, res) => {
     }
 });
 
+// --- Trade Management ---
+
+/**
+ * @route   GET /api/admin/trades
+ * @desc    Get all trades for the admin panel using snapshot data
+ * @access  Private (Admin only)
+ */
+router.get('/trades', protect, adminOnly, async (req, res) => {
+    try {
+        const trades = await Trade.find({})
+            .sort({ createdAt: -1 })
+            .populate('sender', 'username')
+            .populate('recipient', 'username')
+            .lean();
+
+        // The snapshot data is already in the trade document, no complex lookups needed!
+        res.json(trades);
+
+    } catch (err) {
+        console.error('Error fetching trades for admin panel:', err);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+/**
+ * @desc    Admin action routes that leverage the main tradeController
+ * @access  Private (Admin only)
+ */
+const handleAdminTradeAction = (action) => {
+    return (req, res, next) => {
+        // We set the status and a flag indicating this is an admin action.
+        req.body.status = action;
+
+        // The tradeController's auth check is bypassed because req.user.isAdmin is true.
+        // We also need to add req.userId so the controller knows who initiated, even if it's not checked for auth.
+        req.userId = req.user._id;
+
+        // Pass the modified request to the existing, powerful controller function.
+        tradeController.updateTradeStatus(req, res, next);
+    };
+};
+
+router.post('/trades/:tradeId/accept', protect, adminOnly, handleAdminTradeAction('accepted'));
+router.post('/trades/:tradeId/cancel', protect, adminOnly, handleAdminTradeAction('cancelled'));
+router.post('/trades/:tradeId/reject', protect, adminOnly, handleAdminTradeAction('rejected'));
 
 // --- Notification Routes ---
 // ... (No changes in this section)
@@ -307,51 +355,7 @@ router.get('/cards', async (req, res) => {
     }
 });
 
-router.put('/cards/:cardId', protect, adminOnly, async (req, res) => {
-    try {
-        const { name, flavorText, imageUrl } = req.body;
-        const card = await Card.findById(req.params.cardId);
-        if (!card) {
-            return res.status(404).json({ message: 'Card not found' });
-        }
-
-        const oldName = card.name;
-
-        card.name = name || card.name;
-        card.flavorText = flavorText || card.flavorText;
-        card.imageUrl = imageUrl || card.imageUrl;
-
-        await card.save();
-
-        const updateData = {
-            'cards.$[elem].name': card.name,
-            'cards.$[elem].imageUrl': card.imageUrl,
-            'cards.$[elem].flavorText': card.flavorText,
-        };
-        const arrayFilters = [{ 'elem.name': oldName }];
-
-        await User.updateMany({ 'cards.name': oldName }, { $set: updateData }, { arrayFilters });
-        await User.updateMany({ 'openedCards.name': oldName }, {
-            $set: {
-                'openedCards.$[elem].name': card.name,
-                'openedCards.$[elem].imageUrl': card.imageUrl,
-                'openedCards.$[elem].flavorText': card.flavorText,
-            },
-        }, { arrayFilters });
-        await User.updateMany({ 'featuredCards.name': oldName }, {
-            $set: {
-                'featuredCards.$[elem].name': card.name,
-                'featuredCards.$[elem].imageUrl': card.imageUrl,
-                'featuredCards.$[elem].flavorText': card.flavorText,
-            },
-        }, { arrayFilters });
-
-        res.json({ message: 'Card updated successfully', card });
-    } catch (error) {
-        console.error('Error updating card:', error);
-        res.status(500).json({ message: 'Failed to update card' });
-    }
-});
+router.put('/cards/:cardId', protect, adminOnly, updateCard);
 
 router.delete('/cards/:cardId', protect, adminOnly, async (req, res) => {
     try {
@@ -753,6 +757,101 @@ router.get('/audit-cards', protect, adminOnly, async (req, res) => {
         auditResults.message = "An unhandled error occurred during the card audit: " + error.message;
         console.error("Error in /audit-cards:", error);
         return res.status(500).json(auditResults);
+    }
+});
+
+/**
+ * @route   POST /api/admin/trades/backfill-snapshots
+ * @desc    Finds legacy trades missing snapshot data and populates it.
+ * @access  Private (Admin only)
+ */
+router.post('/trades/backfill-snapshots', protect, adminOnly, async (req, res) => {
+    const { dryRun } = req.body;
+
+    try {
+        // Find trades where the snapshot field doesn't exist or is empty
+        const legacyTrades = await Trade.find({
+            $or: [
+                { 'offeredItemsSnapshot': { $exists: false } },
+                { 'offeredItemsSnapshot': { $size: 0 } }
+            ]
+        }).lean();
+
+        if (legacyTrades.length === 0) {
+            return res.json({
+                isDryRun: dryRun,
+                message: 'No legacy trades found that require snapshot backfill.',
+                tradesToUpdate: 0,
+                updatedCount: 0
+            });
+        }
+
+        // --- Optimization: Build a map of all card instances for quick lookup ---
+        console.log('Building card map...');
+        const cardMap = new Map();
+        const usersWithCards = await User.find({ 'cards.0': { $exists: true } }).select('cards').lean();
+        for (const user of usersWithCards) {
+            for (const card of user.cards) {
+                cardMap.set(card._id.toString(), card);
+            }
+        }
+        console.log(`Card map built with ${cardMap.size} unique cards.`);
+
+        const bulkOps = [];
+        let tradesFound = 0;
+
+        for (const trade of legacyTrades) {
+            const offeredItemsSnapshot = trade.offeredItems.map(id => cardMap.get(id.toString())).filter(Boolean);
+            const requestedItemsSnapshot = trade.requestedItems.map(id => cardMap.get(id.toString())).filter(Boolean);
+
+            // Check if we found all the necessary card details
+            if (offeredItemsSnapshot.length === trade.offeredItems.length && requestedItemsSnapshot.length === trade.requestedItems.length) {
+                tradesFound++;
+                bulkOps.push({
+                    updateOne: {
+                        filter: { _id: trade._id },
+                        update: {
+                            $set: {
+                                offeredItemsSnapshot: offeredItemsSnapshot.map(c => ({ originalId: c._id, name: c.name, rarity: c.rarity, mintNumber: c.mintNumber, imageUrl: c.imageUrl })),
+                                requestedItemsSnapshot: requestedItemsSnapshot.map(c => ({ originalId: c._id, name: c.name, rarity: c.rarity, mintNumber: c.mintNumber, imageUrl: c.imageUrl }))
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        if (dryRun) {
+            return res.json({
+                isDryRun: true,
+                message: `Dry Run: Found ${tradesFound} legacy trades that can be updated with snapshot data.`,
+                tradesToUpdate: tradesFound,
+                updatedCount: 0
+            });
+        }
+
+        // --- Execute the actual fix ---
+        if (bulkOps.length === 0) {
+            return res.json({
+                isDryRun: false,
+                message: 'No trades were updated.',
+                tradesToUpdate: tradesFound,
+                updatedCount: 0
+            });
+        }
+
+        const result = await Trade.bulkWrite(bulkOps);
+
+        res.json({
+            isDryRun: false,
+            message: `Successfully updated ${result.modifiedCount} legacy trades with snapshot data.`,
+            tradesToUpdate: tradesFound,
+            updatedCount: result.modifiedCount
+        });
+
+    } catch (error) {
+        console.error('Error backfilling trade snapshots:', error);
+        res.status(500).json({ message: 'Server error during snapshot backfill.' });
     }
 });
 

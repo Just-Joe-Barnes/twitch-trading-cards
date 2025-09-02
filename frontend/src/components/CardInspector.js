@@ -72,6 +72,8 @@ const CardInspector = ({card, onClose}) => {
         slabbed,
         isOwner = false,
         onToggleFeatured,
+        lore,
+        loreAuthor,
         limited
     } = card;
 
@@ -85,43 +87,45 @@ const CardInspector = ({card, onClose}) => {
     return (
         <div className="card-inspector-overlay" onClick={onClose}>
             <div className="close-btn"><i className="fa-solid fa-close" /></div>
-            <div className="card-inspector-feature-btn-container">
-                <div className="button-group horizontal">
-                    {isOwner && (
-                        <button
-                            className={`card-inspector-feature-btn ${localFeatured ? 'active' : ''}`}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                const newState = !localFeatured;
-                                setLocalFeatured(newState);
-                                onToggleFeatured?.(card);
-                            }}
-                            title={localFeatured ? 'Remove from featured' : 'Add to featured'}
-                        >
-                            {localFeatured ? (
-                                <>
-                                    <i className="fa-solid fa-star"/> Unfeature
-                                </>
-                            ) : (
-                                <>
-                                    <i className="fa-regular fa-star"/> Feature
-                                </>
-                            )}
-                        </button>
-                    )}
-                    {slabbed && (
-                        <button
-                            className={`primary-button ${slabVisibility ? 'active' : ''}`}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                toggleSlabVisibility();
-                            }}
-                        >
-                            Toggle Slab
-                        </button>
-                    )}
+            {(isOwner || slabbed) && (
+                <div className="card-inspector-feature-btn-container">
+                    <div className="button-group horizontal">
+                        {isOwner && (
+                            <button
+                                className={`card-inspector-feature-btn ${localFeatured ? 'active' : ''}`}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    const newState = !localFeatured;
+                                    setLocalFeatured(newState);
+                                    onToggleFeatured?.(card);
+                                }}
+                                title={localFeatured ? 'Remove from featured' : 'Add to featured'}
+                            >
+                                {localFeatured ? (
+                                    <>
+                                        <i className="fa-solid fa-star"/> Unfeature
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="fa-regular fa-star"/> Feature
+                                    </>
+                                )}
+                            </button>
+                        )}
+                        {slabbed && (
+                            <button
+                                className={`primary-button ${slabVisibility ? 'active' : ''}`}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleSlabVisibility();
+                                }}
+                            >
+                                Toggle Slab
+                            </button>
+                        )}
+                    </div>
                 </div>
-            </div>
+            )}
             <div
                 className="card-inspector"
                 ref={inspectorRef}
@@ -140,21 +144,34 @@ const CardInspector = ({card, onClose}) => {
                         inspectOnClick={false}
                         interactive={true}
                         limited={limited}
+                        lore={lore}
+                        loreAuthor={loreAuthor}
                     />
                 </div>
             </div>
 
-            {rarity.toLowerCase() === 'divine' && (
-                <div className="flavourtext">
-                    {mintNumber && (
-                        <div className="mint">
-                            {mintNumber && (`${mintNumber} / ${rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.totalCopies ?? '???'}`)}
-                        </div>
-                    )}
-                    <h3>{name}</h3>
-                    {description}
-                </div>
-            )}
+
+            <div className="infoboxes">
+                {rarity.toLowerCase() === 'divine' && (
+                    <div className="flavourtext">
+                        {mintNumber && (
+                            <div className="mint">
+                                {mintNumber && (`${mintNumber} / ${rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.totalCopies ?? '???'}`)}
+                            </div>
+                        )}
+                        <h3>{name}</h3>
+                        {description}
+                    </div>
+                )}
+
+                {lore && (
+                    <div className="lorebox">
+                        <h3>Lore</h3>
+                        <p>{lore}</p>
+                        {loreAuthor ? loreAuthor : ''}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

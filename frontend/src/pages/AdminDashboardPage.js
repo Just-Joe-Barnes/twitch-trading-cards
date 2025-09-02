@@ -41,6 +41,8 @@ const AdminDashboardPage = ({user}) => {
     const [selectedPackTypeId, setSelectedPackTypeId] = useState('');
     const [forceModifier, setForceModifier] = useState(false);
 
+    const [sessionCounts, setSessionCounts] = useState({});
+
     // Fetch users with packs
     const fetchData = async () => {
         if (!user?.isAdmin) {
@@ -60,11 +62,22 @@ const AdminDashboardPage = ({user}) => {
         }
     };
 
-
     // On mount fetch packs and when filter changes, fetch users once
     useEffect(() => {
         fetchData();
     }, [user, navigate, activeFilter]);
+
+    useEffect(() => {
+        try {
+            const storedSession = localStorage.getItem('packOpeningSession');
+            if (storedSession) {
+                setSessionCounts(JSON.parse(storedSession));
+            }
+        } catch (error) {
+            console.error('Failed to parse session data from localStorage', error);
+            localStorage.removeItem('packOpeningSession'); // Clear corrupted data
+        }
+    }, []); // Empty dependency array means this runs only once on mount
 
     useEffect(() => {
         const fetchPacks = async () => {
@@ -89,6 +102,29 @@ const AdminDashboardPage = ({user}) => {
 
         return () => clearInterval(intervalId);
     }, [user, navigate, activeFilter]);
+
+    const updateSessionCount = (userId) => {
+        // Create a new object from the current state to avoid direct mutation
+        const newCounts = { ...sessionCounts };
+        // Increment the count for the given user, initializing to 1 if it's their first pack this session
+        newCounts[userId] = (newCounts[userId] || 0) + 1;
+
+        // Update the state to re-render the UI
+        setSessionCounts(newCounts);
+        // Persist the new counts to localStorage
+        localStorage.setItem('packOpeningSession', JSON.stringify(newCounts));
+    };
+
+    const handleResetSession = () => {
+        // Clear the data from localStorage
+        localStorage.removeItem('packOpeningSession');
+        // Reset the component's state
+        setSessionCounts({});
+        // Optional: show a confirmation message
+        if (window.showToast) {
+            window.showToast('Session counter has been reset.', 'info');
+        }
+    };
 
     // Filter users by search query
     const filteredUsers = users.filter((u) =>
@@ -173,6 +209,8 @@ const AdminDashboardPage = ({user}) => {
             setFaceDownCards(Array(newCards.length).fill(true));
             setCardsLoaded(true);
 
+            updateSessionCount(selectedUser._id);
+
             // Decrement the user's pack count
             setUsers((prev) =>
                 prev.map((u) =>
@@ -219,6 +257,8 @@ const AdminDashboardPage = ({user}) => {
             setRevealedCards(Array(newCards.length).fill(false));
             setFaceDownCards(Array(newCards.length).fill(true));
             setCardsLoaded(true);
+
+            updateSessionCount(selectedUser._id);
 
             if (packAnimationDone) {
                 revealAllCards(newCards.length);
@@ -298,8 +338,44 @@ const AdminDashboardPage = ({user}) => {
 
             <div className="top-section">
                 <div className="grid-container">
-                    <div className="section-card cam">
+                    {/*<div className="section-card">*/}
+                    {/*    <h2>Stream Overlay Queue</h2>*/}
+                    {/*    <div>*/}
+                    {/*        Status: <strong style={{ color: queueStatus.isPaused ? '#ffb74d' : (queueStatus.isBusy ? '#FFA726' : '#66BB6A') }}>*/}
+                    {/*        {queueStatus.isPaused ? 'Paused' : (queueStatus.isBusy ? 'Busy Animating' : 'Running')}*/}
+                    {/*    </strong>*/}
+                    {/*    </div>*/}
+                    {/*    <p><strong>Items in Queue: {queueStatus.queue.length}</strong></p>*/}
+                    {/*    {queueStatus.queue.length > 0 && (*/}
+                    {/*        <ol style={{ paddingLeft: '1.5rem', maxHeight: '150px', overflowY: 'auto' }}>*/}
+                    {/*            {queueStatus.queue.map((name, index) => <li key={index}>{name}</li>)}*/}
+                    {/*        </ol>*/}
+                    {/*    )}*/}
 
+                    {/*    /!* The new smart toggle button *!/*/}
+                    {/*    {queueStatus.isPaused ? (*/}
+                    {/*        <button*/}
+                    {/*            className="primary-button"*/}
+                    {/*            onClick={handleResumeQueue}*/}
+                    {/*            style={{ marginTop: '1rem', width: '100%' }}*/}
+                    {/*        >*/}
+                    {/*            ▶ Resume Queue*/}
+                    {/*        </button>*/}
+                    {/*    ) : (*/}
+                    {/*        <button*/}
+                    {/*            className="secondary-button"*/}
+                    {/*            onClick={handlePauseQueue}*/}
+                    {/*            style={{ marginTop: '1rem', width: '100%' }}*/}
+                    {/*        >*/}
+                    {/*            ❚❚ Pause Queue*/}
+                    {/*        </button>*/}
+                    {/*    )}*/}
+                    {/*</div>*/}
+                    <div className="section-card cam">
+                        <button onClick={handleResetSession} className="secondary-button sm">
+                            <i className="fa-solid fa-arrows-rotate" style={{ marginRight: '8px' }}></i>
+                            Reset Session
+                        </button>
                     </div>
                     <div className="section-card">
                         <div className="heading">
@@ -359,6 +435,9 @@ const AdminDashboardPage = ({user}) => {
                             <>
                                 <h2>Open Pack for {selectedUser.username}</h2>
                                 <img src={selectedUser.twitchProfilePic} className="userpic" alt="Profile"/>
+                                <div className="session-counter" style={{marginBottom: '.4rem', textTransform: 'uppercase', opacity: '0.4', letterSpacing: '2px', fontSize: '.7rem', textAlign: 'center'}}>
+                                    Packs opened this session: <strong>{sessionCounts[selectedUser._id] || 0}</strong>
+                                </div>
                                 <select
                                     className="pack-type-select"
                                     value={selectedPackTypeId}

@@ -10,6 +10,12 @@
     .section-card {
       height: 35vh;
 
+      &.cam {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
       .table-container {
         background: rgba(0, 0, 0, 0.1);
         height: 70%;
@@ -103,6 +109,23 @@
       font-size: 1.5rem;
       color: var(--text-primary);
       margin-bottom: 1rem;
+    }
+
+    /* Style for the session counter text */
+    .session-counter {
+      background-color: rgba(0, 0, 0, 0.2);
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin: -5px 0 15px 0; /* Position it nicely between the title and profile pic */
+      text-align: center;
+      font-size: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .session-counter strong {
+      font-size: 1.2rem;
+      color: #a5d6ff; /* A nice highlight color */
+      margin-left: 8px;
     }
 
     button {
@@ -398,7 +421,7 @@ h1::after {
   backdrop-filter: blur(5px);
 
   padding: 1rem;
-  margin: 0 -.5rem 1rem;
+  //margin: 0 -.5rem 1rem;
   border: 1px solid #444;
   border-radius: $border-radius;
 

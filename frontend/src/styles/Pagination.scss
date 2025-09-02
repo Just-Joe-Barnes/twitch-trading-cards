@@ -1,0 +1,37 @@
+@import 'variables';
+
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 1rem 0;
+  margin-top: 10px;
+  gap: 15px; /* Adds space between the items */
+}
+
+.pagination-button {
+  background-color: rgba(255,255,255,0.1);
+  border: 1px solid $brand-primary;
+  color: #fff;
+  letter-spacing: 1px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background-color: rgba(255,255,255,0.2);
+}
+
+.pagination-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pagination-info {
+  font-size: 14px;
+  color: $brand-secondary;
+}
+

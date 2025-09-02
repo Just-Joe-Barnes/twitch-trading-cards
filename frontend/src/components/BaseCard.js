@@ -23,6 +23,8 @@ const BaseCard = ({
                       timestatuscard,
                       timestatusnow,
                       featured,
+                      lore,
+                      loreAuthor,
                       miniCard = false,
                       cardScale = 1
                   }) => {
@@ -154,9 +156,13 @@ const BaseCard = ({
 
 
     const TimeStatusBadge = ({card, now}) => {
-        if (!card) { return null; }
+        if (!card) {
+            return null;
+        }
         const currentTime = now instanceof Date && !isNaN(now.getTime()) ? now : new Date();
-        if (!card.availableFrom || !card.availableTo) { return null; }
+        if (!card.availableFrom || !card.availableTo) {
+            return null;
+        }
         const from = new Date(card.availableFrom);
         const to = new Date(card.availableTo);
         if (isNaN(from.getTime()) || isNaN(to.getTime())) {
@@ -168,15 +174,15 @@ const BaseCard = ({
         const badgeClass = `overlay-badge timeleft-badge ${miniCard ? 'mini' : ''}`;
 
         if (timeLeft <= 0) {
-            return ( <div className={`${badgeClass} expired pulse`}> Expired </div> );
+            return (<div className={`${badgeClass} expired pulse`}> Expired </div>);
         } else if (timeUntilStarts > 0) {
             const days = Math.floor(timeUntilStarts / (1000 * 60 * 60 * 24));
             const hours = Math.floor((timeUntilStarts % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            return ( <div className={`${badgeClass} upcoming`}> Starts in: {days}d {hours}h </div> );
+            return (<div className={`${badgeClass} upcoming`}> Starts in: {days}d {hours}h </div>);
         } else if (timeLeft > 0) {
             const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
             const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            return ( <div className={`${badgeClass} pulse`}> Ends in: {days}d {hours}h </div> );
+            return (<div className={`${badgeClass} pulse`}> Ends in: {days}d {hours}h </div>);
         }
         return null;
     };
@@ -297,27 +303,12 @@ const BaseCard = ({
         if (onClick) onClick(e);
         if (inspectOnClick && window.inspectCard) {
             window.inspectCard({
-                name, image, description, rarity, mintNumber, modifier, grade, slabbed,
+                name, image, description, rarity, mintNumber, modifier, grade, slabbed, lore, loreAuthor,
                 limited: limited || !!timestatuscard?.availableFrom || false,
                 featured
             });
         }
     };
-
-    if (!isIntersecting) {
-        let placeholderStyle = {
-            width: `300px`,
-            height: `450px`
-        };
-
-        if (cardScale === .35) {
-            placeholderStyle = {
-                width: `120px`,
-                height: `180px`
-            };
-        }
-        return <div ref={cardRef} className="card-placeholder" style={placeholderStyle} />;
-    }
 
     return (
         <>
@@ -344,65 +335,110 @@ const BaseCard = ({
                     '--hyp': `${Math.hypot(cursorPosition.x, cursorPosition.y)}px`,
                 }}
             >
-                <div className={`${miniCard ? 'mini-' : ''}card-content-3d-wrapper ${slabbed ? 'slabbed' : ''}`}>
-                    {["basic", "common", "standard", "uncommon"].includes(rarity.toLowerCase()) && (
-                        <div className={cardGlareContainerClass}>
-                            <div ref={glareRef} className={cardGlareClass}/>
-                        </div>
-                    )}
-                    {!miniCard && rarity.toLowerCase() === 'rare' && <div ref={holoRef} className="holographic-overlay"/>}
-                    {rarity.toLowerCase() === 'holo-v' && <div ref={holoVRef} className="holo-v"/>}
-                    {rarity.toLowerCase() === 'mythic' && (
-                        <>
-                            <div className="mythic-particles"/>
-                            <div className="mythic-holographic-overlay"/>
-                            <div className="mythic-tint"/>
-                        </>
-                    )}
-                    {rarity.toLowerCase() === 'epic' && <div className="epic-galaxy-overlay"/>}
-                    <div className={cardBorderClass}>
-                        {rarity.toLowerCase() === 'divine' ? (
-                            <>
-                                <div className={cardHeaderClass}>
-                                    <div className={`${cardNameClass} ${isGlitch ? 'glitch-text' : ''}`} ref={nameRef} data-text={name}>{name}</div>
-                                    <div className={`${cardMintClass} ${isGlitch ? 'glitch-text' : ''}`} data-text={`${mintNumber} / ${rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.totalCopies ?? '???'}`}>
-                                        <span className="mint-number">{mintNumber} / {rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.totalCopies ?? '???'}</span>
-                                    </div>
+                {isIntersecting && (
+                    <>
+                        <div
+                            className={`${miniCard ? 'mini-' : ''}card-content-3d-wrapper ${slabbed ? 'slabbed' : ''} ${!isIntersecting ? 'un-rendered' : ''}`}>
+                            {["basic", "common", "standard", "uncommon"].includes(rarity.toLowerCase()) && (
+                                <div className={cardGlareContainerClass}>
+                                    <div ref={glareRef} className={cardGlareClass}/>
                                 </div>
-                                <RemainingBadge remaining={remaining}/>
-                                <TimeStatusBadge card={timestatuscard} now={timestatusnow}/>
-                            </>
-                        ) : (
-                            <>
-                                <div className={`${cardNameClass} ${isGlitch ? 'glitch-text' : ''}`} ref={nameRef} data-text={name}>{name}</div>
-                                <div className={cardArtworkClass}>
-                                    {rarity.toLowerCase() === 'unique' ? (
-                                        <>
-                                            <img src={image} alt={name} className="grayscale" draggable={false} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}/>
-                                            <img src={image} alt="" className="invertband" ref={invertRef} draggable={false} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}/>
-                                        </>
-                                    ) : (
-                                        <img src={image} alt={name} draggable={false} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}/>
-                                    )}
-                                </div>
-                                {(!miniCard && description) && (
-                                    <div className={`${cardDescriptionClass} ${isGlitch ? 'glitch-text' : ''}`} ref={descriptionRef} data-text={description}>{description}</div>
+                            )}
+                            {!miniCard && rarity.toLowerCase() === 'rare' &&
+                                <div ref={holoRef} className="holographic-overlay"/>}
+                            {rarity.toLowerCase() === 'holo-v' && <div ref={holoVRef} className="holo-v"/>}
+                            {rarity.toLowerCase() === 'mythic' && (
+                                <>
+                                    <div className="mythic-particles"/>
+                                    <div className="mythic-holographic-overlay"/>
+                                    <div className="mythic-tint"/>
+                                </>
+                            )}
+                            {rarity.toLowerCase() === 'epic' && <div className="epic-galaxy-overlay"/>}
+                            <div className={cardBorderClass}>
+                                {rarity.toLowerCase() === 'divine' ? (
+                                    <>
+                                        <div className={cardHeaderClass}>
+                                            <div className={`${cardNameClass} ${isGlitch ? 'glitch-text' : ''}`}
+                                                 ref={nameRef}
+                                                 data-text={name}>{name}</div>
+                                            <div className={`${cardMintClass} ${isGlitch ? 'glitch-text' : ''}`}
+                                                 data-text={`${mintNumber} / ${rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.totalCopies ?? '???'}`}>
+                                        <span
+                                            className="mint-number">{mintNumber} / {rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.totalCopies ?? '???'}</span>
+                                            </div>
+                                        </div>
+                                        <RemainingBadge remaining={remaining}/>
+                                        <TimeStatusBadge card={timestatuscard} now={timestatusnow}/>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className={`${cardNameClass} ${isGlitch ? 'glitch-text' : ''}`}
+                                             ref={nameRef}
+                                             data-text={name}>{name}</div>
+                                        <div className={cardArtworkClass}>
+                                            {rarity.toLowerCase() === 'unique' ? (
+                                                <>
+                                                    <img src={image} alt={name} className="grayscale" draggable={false}
+                                                         loading="lazy" style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        objectFit: 'cover',
+                                                        objectPosition: 'center',
+                                                        display: 'block'
+                                                    }}/>
+                                                    <img src={image} alt="" className="invertband" ref={invertRef}
+                                                         draggable={false} loading="lazy" style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        objectFit: 'cover',
+                                                        objectPosition: 'center',
+                                                        display: 'block'
+                                                    }}/>
+                                                </>
+                                            ) : (
+                                                <img src={image} alt={name} draggable={false} loading="lazy" style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    objectFit: 'cover',
+                                                    objectPosition: 'center',
+                                                    display: 'block'
+                                                }}/>
+                                            )}
+                                        </div>
+                                        {(!miniCard && description) && (
+                                            <div className={`${cardDescriptionClass} ${isGlitch ? 'glitch-text' : ''}`}
+                                                 ref={descriptionRef} data-text={description}>{description}</div>
+                                        )}
+                                        <div className={`${cardMintClass} ${isGlitch ? 'glitch-text' : ''}`}
+                                             data-text={`${mintNumber} / ${rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.totalCopies ?? '???'}`}>
+                                    <span
+                                        className="mint-number">{mintNumber} / {rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.totalCopies ?? '???'}</span>
+                                        </div>
+                                        <RemainingBadge remaining={remaining}/>
+                                        <TimeStatusBadge card={timestatuscard} now={timestatusnow}/>
+                                    </>
                                 )}
-                                <div className={`${cardMintClass} ${isGlitch ? 'glitch-text' : ''}`} data-text={`${mintNumber} / ${rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.totalCopies ?? '???'}`}>
-                                    <span className="mint-number">{mintNumber} / {rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.totalCopies ?? '???'}</span>
-                                </div>
-                                <RemainingBadge remaining={remaining}/>
-                                <TimeStatusBadge card={timestatuscard} now={timestatusnow}/>
-                            </>
-                        )}
-                    </div>
-                </div>
-                {slabbed && ( <div className={`slab-overlay ${rarity.toLowerCase()}`} style={{'--slab-color': rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.color ?? '#fff'}}> <div className="slab-header"> <img src="/images/logo-horizontal.png" alt="logo" className={`slab-logo ${rarity.toLowerCase()}`}/> <div className="slab-name">{name}</div> <div className="slab-grade">{grade}</div> </div> </div> )}
-                {featured && ( <div className={`overlay-badge featured-badge ${miniCard ? 'mini' : ''}`}>Featured</div> )}
-                {modifierData?.name === 'Negative' && ( <div className={`negative-overlay ${miniCard ? 'mini' : ''}`}/> )}
-                {modifierData?.name === 'Glitch' && ( <div className={`glitch-overlay ${miniCard ? 'mini' : ''}`}/> )}
-                {modifierData?.name === 'Prismatic' && ( <div className={`prismatic-overlay ${miniCard ? 'mini' : ''}`}/> )}
-                {limited && ( <div className={`limited-overlay ${miniCard ? 'mini' : ''}`}/> )}
+                            </div>
+                        </div>
+                        {slabbed && (<div className={`slab-overlay ${rarity.toLowerCase()}`}
+                                          style={{'--slab-color': rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.color ?? '#fff'}}>
+                            <div className="slab-header"><img src="/images/logo-horizontal.png" alt="logo"
+                                                              className={`slab-logo ${rarity.toLowerCase()}`}/>
+                                <div className="slab-name">{name}</div>
+                                <div className="slab-grade">{grade}</div>
+                            </div>
+                        </div>)}
+                        {featured && (
+                            <div className={`overlay-badge featured-badge ${miniCard ? 'mini' : ''}`}>Featured</div>)}
+                        {modifierData?.name === 'Negative' && (
+                            <div className={`negative-overlay ${miniCard ? 'mini' : ''}`}/>)}
+                        {modifierData?.name === 'Glitch' && (
+                            <div className={`glitch-overlay ${miniCard ? 'mini' : ''}`}/>)}
+                        {modifierData?.name === 'Prismatic' && (
+                            <div className={`prismatic-overlay ${miniCard ? 'mini' : ''}`}/>)}
+                        {limited && (<div className={`limited-overlay ${miniCard ? 'mini' : ''}`}/>)}
+                    </>)}
             </div>
         </>
     );

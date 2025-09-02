@@ -438,7 +438,6 @@ h2::after {
 .button-group button, .button-group input, .button-group a.button {
   flex: 1 auto;
   width: 100%;
-  margin: 1ch 0;
 }
 .button-group.vertical {
   flex-direction: column;
@@ -563,7 +562,6 @@ pre {
 input, textarea, select {
   max-width: 100%;
   width: 100%;
-  margin: 0.5ch 0;
 }
 input:focus-visible, textarea:focus-visible, select:focus-visible {
   border-color: #e680a7;

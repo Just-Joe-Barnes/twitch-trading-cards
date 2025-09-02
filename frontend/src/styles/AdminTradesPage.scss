@@ -1,0 +1,60 @@
+@import 'variables';
+
+tr {
+  border-left: 2px solid rgba(0,0,0,0);
+
+  &.status-pending {
+    border-color: $brand-primary;
+  }
+
+  &.status-accepted {
+    border-color: green;
+  }
+
+  &.status-cancelled {
+    border-color: orange;
+  }
+
+  &.status-rejected {
+    border-color: red;
+  }
+
+  .status {
+    text-transform: capitalize;
+  }
+
+  &.updating { opacity: 0.5; }
+}
+
+.items-cell {
+  vertical-align: top;
+  font-size: 0.9em;
+}
+
+.item-list {
+  margin-bottom: 8px;
+}
+
+.item-list:last-child {
+  margin-bottom: 0;
+}
+
+.item-list strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.item-detail {
+  padding-left: 10px;
+  opacity: 0.8;
+  font-size: 0.9em;
+}
+
+.item-detail-none {
+  padding-left: 10px;
+  font-style: italic;
+}
+
+.requested-list {
+  margin-top: 4px;
+}
