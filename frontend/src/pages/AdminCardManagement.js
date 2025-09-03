@@ -35,7 +35,13 @@ const AdminCardManagement = () => {
             await fetchWithAuth('/api/admin/cards', {
                 method: 'POST',
                 body: JSON.stringify({
-                    ...cardData,
+                    name: cardData.name,
+                    flavorText: cardData.flavorText,
+                    imageUrl: cardData.imageUrl,
+                    lore: cardData.lore,
+                    loreAuthor: cardData.loreAuthor,
+                    availableFrom: cardData.availableFrom,
+                    availableTo: cardData.availableTo,
                     rarities: defaultRarities,
                 }),
             });
