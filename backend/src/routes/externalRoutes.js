@@ -16,6 +16,13 @@ const validateApiKey = (req, res, next) => {
     }
 };
 
+const subType = {
+    'prime': 1,
+    'tier 1': 1,
+    'tier 2': 3,
+    'tier 3': 5
+}
+
 /**
  * Helper function to find a user and add a specified number of packs.
  * This function will be reused by different endpoints.
@@ -55,14 +62,14 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
         if (!eventtype || !streamerid || !userid) {
             // Find streamer if possible for logging
             if (streamerid) {
-                streamerUser = await User.findOne({ twitchId: streamerid });
+                streamerUser = await User.findOne({ _id: streamerid });
             }
             await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', 'Invalid headers. Missing required fields (eventtype, streamerid, userid).');
             return res.status(400).json({ message: 'Invalid headers. Missing required fields.' });
         }
         // --- End: Updated Validation ---
 
-        streamerUser = await User.findOne({ twitchId: streamerid });
+        streamerUser = await User.findOne({ _id: streamerid });
         // Log headers instead of the full request object which has an empty body
         await createLogEntry(streamerUser, 'TWITCH_ROUTE_LOG', { headers: req.headers });
 
@@ -82,10 +89,7 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
                     return res.status(400).json({ message: 'Invalid payload. Missing subtier header.' });
                 }
 
-                if (tier === '1000') packsToAward = 1;
-                else if (tier === '2000') packsToAward = 3;
-                else if (tier === '3000') packsToAward = 5;
-
+                packsToAward = subType[tier] || 1;
                 packsToAward *= months;
 
                 const subscriber = await addPacksToUser(userid, packsToAward);
