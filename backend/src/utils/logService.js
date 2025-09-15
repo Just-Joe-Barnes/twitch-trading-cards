@@ -12,7 +12,7 @@ const createLogEntry = async (user, event, message = null, data = null) => {
         const newLog = new Log({
             user: user._id,
             event: event,
-            message: message,
+            message: typeof message === 'string' ? message : JSON.stringify(message, null, 2),
             data: data,
         });
         await newLog.save();
