@@ -120,7 +120,11 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
                 }
 
                 const recipientPacks = packsToAward * monthsGifted;
-                await addPacksToUser(recipientid, recipientPacks);
+                const recipient = await addPacksToUser(recipientid, recipientPacks);
+                if (!recipient) {
+                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `Recipient with Twitch ID ${recipientid} not found.`);
+                    return res.status(404).json({ message: `Recipient with Twitch ID ${recipientid} not found.` });
+                }
 
                 message = `${gifter.username} gifted ${giftCount} subscriptions and has been awarded ${gifterPacks} packs! Each of the recipients also received ${recipientPacks} packs.`;
                 await createLogEntry(streamerUser, 'TWITCH_ROUTE_REDEMPTION', message);
