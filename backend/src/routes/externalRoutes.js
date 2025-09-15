@@ -55,14 +55,14 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
         if (!eventtype || !streamerid || !userid) {
             // Find streamer if possible for logging
             if (streamerid) {
-                streamerUser = await User.findOne({ twitchId: streamerid });
+                streamerUser = await User.findOne({ _id: streamerid });
             }
             await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', 'Invalid headers. Missing required fields (eventtype, streamerid, userid).');
             return res.status(400).json({ message: 'Invalid headers. Missing required fields.' });
         }
         // --- End: Updated Validation ---
 
-        streamerUser = await User.findOne({ twitchId: streamerid });
+        streamerUser = await User.findOne({ _id: streamerid });
         // Log headers instead of the full request object which has an empty body
         await createLogEntry(streamerUser, 'TWITCH_ROUTE_LOG', { headers: req.headers });
 
