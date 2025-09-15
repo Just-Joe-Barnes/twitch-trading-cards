@@ -20,7 +20,10 @@ const subType = {
     'prime': 1,
     'tier 1': 1,
     'tier 2': 3,
-    'tier 3': 5
+    'tier 3': 5,
+    '1000': 1,
+    '2000': 3,
+    '3000': 5
 }
 
 /**
@@ -80,7 +83,7 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
 
         switch (eventtype) {
             case 'subscription':
-                const tier = subtier; // e.g., '1000', '2000', '3000'
+                const tier = subtier;
                 // Parse header string to number, default to 1 if not provided
                 const months = parseInt(submonths) || 1;
 
