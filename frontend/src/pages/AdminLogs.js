@@ -3,6 +3,8 @@ import NavAdmin from "../components/NavAdmin";
 import '../styles/AdminEventsPage.css';
 import SearchableSelect from "../components/SearchableSelect";
 
+export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://192.168.0.136:5000';
+
 // A helper function for making authenticated API calls.
 const fetchWithAuth = async (url, options = {}) => {
     const token = localStorage.getItem('token');
@@ -15,7 +17,7 @@ const fetchWithAuth = async (url, options = {}) => {
         headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(url, { ...options, headers });
+    const response = await fetch(API_BASE_URL+url, { ...options, headers });
 
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred' }));

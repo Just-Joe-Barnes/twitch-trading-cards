@@ -37,75 +37,75 @@ const addPacksToUser = async (twitchId, packCount) => {
 };
 
 
-/**
- * POST /api/twitch/earn-pack
- * Handles events that award packs to a user's account. This does not open the pack.
- * Expected JSON Payload from Streamer.bot:
- * {
-     * "eventType": "subscription" | "giftedSub" | "redemption",
-     * "streamerId": "%streamerId%",
-     * "userId": "%userId%",
-     * "eventData": {
-         * // For "subscription":
-         * // "subTier": "%subTier%", // "1000", "2000", or "3000"
-         * // "cumulativeMonths": "%subMonths%",
-         *
-         * // For "giftedSub":
-         * // "giftTier": "%subTier%", // "1000", "2000", or "3000"
-         * // "giftCount": "%giftCount%",
-         * // "monthsGifted": "%monthsGifted%", // The number of prepaid months for each gifted sub
-         * // "recipientIds": ["%recipientId_1%", "%recipientId_2%"],
-         * // "recipientNames": ["%recipientName_1%", "%recipientName_2%"]
-         *
-         * // For "redemption":
-         * // "rewardName": "%rewardName%"
-     * }
- * }
- */
-router.post('/earn-pack', validateApiKey, async (req, res) => {
+router.get('/earn-pack', validateApiKey, async (req, res) => {
     let streamerUser;
     try {
-        const { eventType, streamerId, userId, eventData } = req.body;
+        // Destructure from req.headers (lowercase is convention)
+        const {
+            eventtype,
+            streamerid,
+            userid,
+            subtier,
+            submonths,
+            giftcount,
+            recipientids // Comma-separated string of recipient IDs
+        } = req.headers;
 
-        if (!eventType || !streamerId || !userId || !eventData) {
-            streamerUser = await User.findOne({ twitchId: streamerId });
-            await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', 'Invalid payload. Missing required fields.');
-            return res.status(400).json({ message: 'Invalid payload. Missing required fields.' });
+        // --- Start: Updated Validation ---
+        if (!eventtype || !streamerid || !userid) {
+            // Find streamer if possible for logging
+            if (streamerid) {
+                streamerUser = await User.findOne({ twitchId: streamerid });
+            }
+            await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', 'Invalid headers. Missing required fields (eventtype, streamerid, userid).');
+            return res.status(400).json({ message: 'Invalid headers. Missing required fields.' });
         }
+        // --- End: Updated Validation ---
 
-        streamerUser = await User.findOne({ twitchId: streamerId });
-        await createLogEntry(streamerUser, 'TWITCH_ROUTE_LOG', req);
+        streamerUser = await User.findOne({ twitchId: streamerid });
+        // Log headers instead of the full request object which has an empty body
+        await createLogEntry(streamerUser, 'TWITCH_ROUTE_LOG', { headers: req.headers });
 
-        console.log(`Received ${eventType} event from Streamer.bot for user: ${userId}`);
+        console.log(`Received ${eventtype} event from Streamer.bot for user: ${userid}`);
 
         let packsToAward = 0;
         let message = '';
 
-        switch (eventType) {
+        switch (eventtype) {
             case 'subscription':
-                const tier = eventData.subTier;
-                const months = eventData.cumulativeMonths || 1;
-                // Packs based on tier
+                const tier = subtier; // e.g., '1000', '2000', '3000'
+                // Parse header string to number, default to 1 if not provided
+                const months = parseInt(submonths) || 1;
+
+                if (!tier) {
+                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', 'Invalid subscription payload. Missing subtier header.');
+                    return res.status(400).json({ message: 'Invalid payload. Missing subtier header.' });
+                }
+
                 if (tier === '1000') packsToAward = 1;
                 else if (tier === '2000') packsToAward = 3;
                 else if (tier === '3000') packsToAward = 5;
 
-                // Multiply packs by the number of months subscribed
                 packsToAward *= months;
 
-                const subscriber = await addPacksToUser(userId, packsToAward);
+                const subscriber = await addPacksToUser(userid, packsToAward);
                 if (!subscriber) {
-                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `User with Twitch ID ${userId} not found.`);
-                    return res.status(404).json({ message: `User with Twitch ID ${userId} not found.` });
+                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `User with Twitch ID ${userid} not found.`);
+                    return res.status(404).json({ message: `User with Twitch ID ${userid} not found.` });
                 }
                 message = `${subscriber.username} subscribed for ${months} months! They have been awarded ${packsToAward} packs.`;
                 await createLogEntry(streamerUser, 'TWITCH_ROUTE_REDEMPTION', message);
                 break;
 
             case 'giftedSub':
-                const giftTier = eventData.giftTier;
-                const giftCount = eventData.giftCount || 1;
-                const monthsGifted = eventData.monthsGifted || 1;
+                const giftTier = subtier;
+                const giftCount = parseInt(giftcount) || 1;
+                const monthsGifted = parseInt(submonths) || 1;
+
+                if (!giftTier || !recipientids) {
+                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', 'Invalid giftedSub payload. Missing subtier or recipientids header.');
+                    return res.status(400).json({ message: 'Invalid payload. Missing subtier or recipientids header.' });
+                }
 
                 if (giftTier === '1000') packsToAward = 1;
                 else if (giftTier === '2000') packsToAward = 3;
@@ -113,36 +113,40 @@ router.post('/earn-pack', validateApiKey, async (req, res) => {
 
                 // Award packs to the gifter
                 const gifterPacks = packsToAward * giftCount * monthsGifted;
-                const gifter = await addPacksToUser(userId, gifterPacks);
+                const gifter = await addPacksToUser(userid, gifterPacks);
                 if (!gifter) {
-                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `Gifter with Twitch ID ${userId} not found.`);
-                    return res.status(404).json({ message: `Gifter with Twitch ID ${userId} not found.` });
+                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `Gifter with Twitch ID ${userid} not found.`);
+                    return res.status(404).json({ message: `Gifter with Twitch ID ${userid} not found.` });
                 }
 
                 // Award packs to each recipient
                 const recipientPacks = packsToAward * monthsGifted;
-                for (const recipientId of eventData.recipientIds) {
-                    await addPacksToUser(recipientId, recipientPacks);
+                // Split the comma-separated string into an array of IDs
+                const recipientIdArray = recipientids.split(',');
+                for (const recipientId of recipientIdArray) {
+                    // Ensure we don't process empty strings if the header is malformed
+                    if(recipientId) {
+                        await addPacksToUser(recipientId.trim(), recipientPacks);
+                    }
                 }
 
-                message = `${gifter.username} gifted ${giftCount} subscriptions and has been awarded ${gifterPacks} packs! Each recipient also received ${recipientPacks} packs.`;
+                message = `${gifter.username} gifted ${giftCount} subscriptions and has been awarded ${gifterPacks} packs! Each of the ${recipientIdArray.length} recipients also received ${recipientPacks} packs.`;
                 await createLogEntry(streamerUser, 'TWITCH_ROUTE_REDEMPTION', message);
                 break;
 
             case 'redemption':
-                // Assuming this is the "earn pack" redemption
                 packsToAward = 1;
-                const redeemer = await addPacksToUser(userId, packsToAward);
+                const redeemer = await addPacksToUser(userid, packsToAward);
                 if (!redeemer) {
-                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `User with Twitch ID ${userId} not found.`);
-                    return res.status(404).json({ message: `User with Twitch ID ${userId} not found.` });
+                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `User with Twitch ID ${userid} not found.`);
+                    return res.status(404).json({ message: `User with Twitch ID ${userid} not found.` });
                 }
                 message = `${redeemer.username} redeemed for a new pack! They now have ${redeemer.packs} packs.`;
                 await createLogEntry(streamerUser, 'TWITCH_ROUTE_REDEMPTION', message);
                 break;
 
             default:
-                await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `Unsupported eventType: ${eventType}.`);
+                await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `Unsupported eventtype: ${eventtype}.`);
                 return res.status(400).json({ message: 'Unsupported eventType.' });
         }
 
@@ -150,11 +154,13 @@ router.post('/earn-pack', validateApiKey, async (req, res) => {
 
     } catch (error) {
         console.error('Error in /earn-pack:', error);
-        // Ensure streamerUser is fetched in the catch block if it wasn't successful in the try block
         if (!streamerUser) {
             try {
-                const { streamerId } = req.body;
-                streamerUser = await User.findOne({ twitchId: streamerId });
+                // Get streamerId from headers in the catch block
+                const { streamerid } = req.headers;
+                if (streamerid) {
+                    streamerUser = await User.findOne({ twitchId: streamerid });
+                }
             } catch (e) {
                 console.error('Failed to find streamer in catch block:', e);
             }
