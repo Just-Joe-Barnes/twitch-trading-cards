@@ -55,7 +55,7 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
             subtier,
             submonths,
             giftcount,
-            recipientids // Comma-separated string of recipient IDs
+            recipientid // Comma-separated string of recipient IDs
         } = req.headers;
 
         // --- Start: Updated Validation ---
@@ -106,14 +106,7 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
                 const giftCount = parseInt(giftcount) || 1;
                 const monthsGifted = parseInt(submonths) || 1;
 
-                if (!giftTier || !recipientids) {
-                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', 'Invalid giftedSub payload. Missing subtier or recipientids header.');
-                    return res.status(400).json({ message: 'Invalid payload. Missing subtier or recipientids header.' });
-                }
-
-                if (giftTier === '1000') packsToAward = 1;
-                else if (giftTier === '2000') packsToAward = 3;
-                else if (giftTier === '3000') packsToAward = 5;
+                packsToAward = subType[giftTier] || 1;
 
                 // Award packs to the gifter
                 const gifterPacks = packsToAward * giftCount * monthsGifted;
@@ -123,18 +116,10 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
                     return res.status(404).json({ message: `Gifter with Twitch ID ${userid} not found.` });
                 }
 
-                // Award packs to each recipient
                 const recipientPacks = packsToAward * monthsGifted;
-                // Split the comma-separated string into an array of IDs
-                const recipientIdArray = recipientids.split(',');
-                for (const recipientId of recipientIdArray) {
-                    // Ensure we don't process empty strings if the header is malformed
-                    if(recipientId) {
-                        await addPacksToUser(recipientId.trim(), recipientPacks);
-                    }
-                }
+                await addPacksToUser(recipientid, recipientPacks);
 
-                message = `${gifter.username} gifted ${giftCount} subscriptions and has been awarded ${gifterPacks} packs! Each of the ${recipientIdArray.length} recipients also received ${recipientPacks} packs.`;
+                message = `${gifter.username} gifted ${giftCount} subscriptions and has been awarded ${gifterPacks} packs! Each of the recipients also received ${recipientPacks} packs.`;
                 await createLogEntry(streamerUser, 'TWITCH_ROUTE_REDEMPTION', message);
                 break;
 
