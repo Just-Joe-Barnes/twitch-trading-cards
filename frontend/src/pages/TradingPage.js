@@ -88,6 +88,31 @@ const TradingPage = ({userId}) => {
         }
     }, [selectedUser, loggedInUser]);
 
+    useEffect(() => {
+        const counter = location.state?.counterOffer;
+        const bounty = location.state?.bountyTrade;
+
+        if (counter) {
+            setShowTradeForm(true);
+            setSelectedUser(counter.selectedUser);
+            setTradeOffer(counter.tradeOffer || []);
+            setTradeRequest(counter.tradeRequest || []);
+            setOfferedPacks(counter.offeredPacks || 0);
+            setRequestedPacks(counter.requestedPacks || 0);
+            setCounterTradeId(counter.tradeId || null);
+        } else if (bounty) { // <-- NEW LOGIC HERE
+            setShowTradeForm(true);
+            setSelectedUser(bounty.selectedUser);
+            setTradeOffer(bounty.tradeOffer || []);
+            setTradeRequest(bounty.tradeRequest || []);
+            setOfferedPacks(0);
+            setRequestedPacks(0);
+            setCounterTradeId(null);
+        } else {
+            setCounterTradeId(null);
+        }
+    }, [location.state]);
+
     const applyFiltersAndSort = (collection, search, rarity, sortBy, sortDir, slabbedOnly = false) => {
         let currentFiltered = [...collection];
         let currentRarityCounts = rarities.reduce((acc, r) => {
@@ -352,6 +377,9 @@ const TradingPage = ({userId}) => {
                     </button>
                     <Link to="/trades/pending" className="button secondary-button">
                         <i className="fa-solid fa-list"/> View Trades
+                    </Link>
+                    <Link to="/bounty" className="button danger-button">
+                        <i className="fa-solid fa-list"/> View Bounties
                     </Link>
                 </div>
                 {(showTradeForm && !selectedUser) && (

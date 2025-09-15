@@ -139,6 +139,7 @@ const CreateCardForm = ({ onClose, onSubmit }) => {
                             <div className="actions">
                                 <select value={previewRarity} onChange={(e) => setPreviewRarity(e.target.value)}>
                                     {rarities.map(r => <option key={r.name} value={r.name}>{r.name}</option>)}
+                                    <option key='Event' value='Event'>Event</option>
                                 </select>
                             </div>
                         </div>

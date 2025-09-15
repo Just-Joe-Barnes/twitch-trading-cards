@@ -6,16 +6,11 @@ const User = require('../models/userModel');
 
 const router = express.Router();
 
-// Environment variables
 const TWITCH_SECRET = process.env.TWITCH_SECRET;
 const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET;
 let TWITCH_REFRESH_TOKEN = process.env.TWITCH_REFRESH_TOKEN;
 const CHANNEL_POINTS_COST = parseInt(process.env.CHANNEL_POINTS_COST || '5000', 10);
-// Packs awarded for each subscription tier
-// Tier 3 subscriptions were previously awarded 20 packs, which was overly
-// generous. Both regular and gifted tier 3 subs now grant 5 packs.
-// Tier 2 subscriptions grant 3 packs to differentiate them from tier 3.
 const tierPacks = { '1000': 1, '2000': 3, '3000': 5 };
 
 if (!TWITCH_SECRET) {

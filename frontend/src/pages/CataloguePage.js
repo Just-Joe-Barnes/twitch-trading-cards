@@ -377,7 +377,7 @@ const CataloguePage = () => {
                                         name={card.name}
                                         image={card.imageUrl}
                                         description={card.flavorText}
-                                        rarity={displayRarity}
+                                        rarity={card.rarity === 'Event' ? 'Event' : displayRarity}
                                         mintNumber={card.mintNumber}
                                         remaining={remaining}
                                         limited={true}

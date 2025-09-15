@@ -2,7 +2,7 @@ import React from 'react';
 import BaseCard from './BaseCard';
 import '../styles/EventRewardModal.css';
 
-const EventRewardModal = ({ reward, onClose }) => {
+const EventRewardModal = ({ reward, message, onClose }) => {
     if (!reward) return null;
 
     const renderReward = () => {
@@ -23,6 +23,7 @@ const EventRewardModal = ({ reward, onClose }) => {
                             />
                         </div>
                         <p>This card has been added to your collection.</p>
+                        {message && <p className="reward-message">{message}</p>}
                     </>
                 );
             case 'PACK':
@@ -30,7 +31,8 @@ const EventRewardModal = ({ reward, onClose }) => {
                     <>
                         <h2>You Received {reward.data.amount} Pack{reward.data.amount > 1 && 's'}!</h2>
                         <div className="reward-icon">🎁</div>
-                        <p>{reward.data.amount} pack{reward.data.amount > 1 && 's'} has been added to your account.</p>
+                        <p>{reward.data.amount} pack{reward.data.amount > 1 && 's'} {reward.data.amount > 1 ? 'have' : 'has'} been added to your account.</p>
+                        {message && <p className="reward-message">{message}</p>}
                     </>
                 );
             case 'XP':
@@ -39,6 +41,7 @@ const EventRewardModal = ({ reward, onClose }) => {
                         <h2>You Received XP!</h2>
                         <div className="reward-icon">✨</div>
                         <p>{reward.data.amount} XP has been added to your account.</p>
+                        {message && <p className="reward-message">{message}</p>}
                     </>
                 );
             default:

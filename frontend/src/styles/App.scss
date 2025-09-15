@@ -522,6 +522,7 @@ button, input[type=submit], input[type=reset], a.button {
   &:hover {
     background: $color-surface;
     border-color: $brand-primary;
+    text-decoration: none;
   }
 
   &.active {
@@ -1630,4 +1631,12 @@ body.no-scroll {
 
 ::-webkit-scrollbar-thumb:hover {
   background-color: #777;
+}
+
+pre {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid green;
+  padding: 1rem 2rem;
+  font-size: 0.8rem;
+  border-radius: 4px;
 }

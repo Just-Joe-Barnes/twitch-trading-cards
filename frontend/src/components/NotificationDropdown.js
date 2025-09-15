@@ -96,7 +96,7 @@ const NotificationDropdown = ({ profilePic, userId, username, onLogout, isAdmin,
                         {isAdmin && (
                             <>
                                 <Link to="/admin-dashboard" onClick={onToggle} className="profile-action admin-action" > Admin Dashboard </Link>
-                                <Link to="/admin/actions" onClick={onToggle} className="profile-action admin-action" > Admin Actions </Link>
+                                <Link to="/admin/" onClick={onToggle} className="profile-action admin-action" > Admin Actions </Link>
                             </>
                         )}
                         <button className="profile-action" onClick={() => { onLogout(); onToggle(); }}>Logout</button>

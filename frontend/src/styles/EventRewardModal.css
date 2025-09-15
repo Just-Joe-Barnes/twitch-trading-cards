@@ -35,7 +35,7 @@
 
 .reward-card-container {
   margin: 1rem 0;
-  transform: scale(1.1); /* Make the card slightly larger */
+  transform: scale(1.1);
   display: flex;
   justify-content: center;
 }
@@ -50,6 +50,14 @@
   font-size: 5rem;
   margin: 1rem 0;
   animation: popIn 0.5s ease-out;
+}
+
+.reward-message {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  font-style: italic;
 }
 
 .reward-modal-content .primary-button {

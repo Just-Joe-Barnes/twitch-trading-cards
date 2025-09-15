@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { fetchWithAuth } from '../utils/api';
 import { rarities, getRarityColor } from '../constants/rarities';
 import BaseCard from '../components/BaseCard';
-import NavAdmin from '../components/NavAdmin';
 import RarityQuickNav from '../components/RarityQuickNav';
 import { Link } from 'react-router-dom';
 import useIsMobile from '../hooks/useIsMobile';
@@ -115,9 +114,6 @@ const AdminCardOwnershipPage = () => {
 
     return (
         <div className="page">
-            <h1>Admin Card Ownership</h1>
-            <NavAdmin />
-
             <div className="section-card">
                 <h2>Find Card Owners</h2>
                 <p>Search for a card by name to see a list of all users who own it.</p>

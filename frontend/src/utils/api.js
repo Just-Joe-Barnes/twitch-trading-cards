@@ -543,3 +543,19 @@ export const fixMissingModifierPrefixes = async (options = { dryRun: true }) => 
 
     return res.json();
 };
+
+// Add a log entry to the backend with a timestamp and a user reference
+export const logEvent = async (logMessage) => {
+    try {
+        const response = await fetchWithAuth("/api/log", {
+            method: "POST",
+            body: JSON.stringify({ message: logMessage }),
+        });
+        console.log("[API] Logged event:", logMessage);
+        return response;
+    } catch (error) {
+        console.error("[API] Error logging event:", error.message);
+        // We don't want the app to crash if logging fails, so we'll just log the error.
+        return null;
+    }
+};

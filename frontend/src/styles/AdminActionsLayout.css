@@ -1,0 +1,12 @@
+.admin-dashboard-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-content-area {
+  flex-grow: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/*# sourceMappingURL=AdminActionsLayout.css.map */

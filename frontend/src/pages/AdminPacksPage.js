@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { fetchWithAuth } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import '../styles/AdminDashboardPage.css';
-import NavAdmin from "../components/NavAdmin";
 
 const AdminPacksPage = () => {
   const [packs, setPacks] = useState([]);
@@ -98,9 +97,6 @@ const AdminPacksPage = () => {
 
   return (
     <div className="page">
-      <h1>Admin Pack Management</h1>
-
-        <NavAdmin />
 
       <div className="section-card">
         <h2>Create / Update Pack</h2>

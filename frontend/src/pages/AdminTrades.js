@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import NavAdmin from "../components/NavAdmin";
 import Pagination from '../components/Pagination';
 import '../styles/AdminTradesPage.css';
 import {getRarityColor} from "../constants/rarities";
@@ -168,9 +167,6 @@ const AdminTrades = () => {
     // Main render...
     return (
         <div className="page">
-            <h1>Admin Trades</h1>
-            <NavAdmin />
-
             {error && <div className="error-message section-card">{error}</div>}
 
             <div className="section-card">

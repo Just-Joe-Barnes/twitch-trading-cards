@@ -6,13 +6,11 @@ import CardSearchInput from "../components/CardSearchInput";
 // Added a constant for rarities to be used in the form
 const rarities = [
     'Basic', 'Common', 'Standard', 'Uncommon', 'Rare',
-    'Epic', 'Legendary', 'Mythic', 'Unique', 'Divine'
+    'Epic', 'Legendary', 'Mythic', 'Unique', 'Divine', 'Event'
 ];
 
 // A helper function for making authenticated API calls.
 const fetchWithAuth = async (url, options = {}) => {
-    // This function assumes it's running in an environment where the base URL is handled,
-    // for example by a proxy in package.json or environment configuration.
     const token = localStorage.getItem('token');
     const headers = {
         'Content-Type': 'application/json',
@@ -68,6 +66,7 @@ const EventForm = ({ eventToEdit, onClose, onSubmit }) => {
                 rewardValue: '', // This will hold the cardId for CARD, or amount for others
                 rarity: 'Random',
                 isActive: true,
+                message: '',
             };
         }
 
@@ -85,6 +84,7 @@ const EventForm = ({ eventToEdit, onClose, onSubmit }) => {
             rewardValue: rewardValue,
             rarity: eventToEdit.rewardDetails.rarity || 'Random',
             isActive: eventToEdit.isActive,
+            message: eventToEdit.message || '',
         };
     };
 
@@ -121,6 +121,10 @@ const EventForm = ({ eventToEdit, onClose, onSubmit }) => {
                     <div className="form-group">
                         <label htmlFor="description">Event Description</label>
                         <textarea id="description" name="description" value={formData.description} onChange={handleChange} placeholder="Describe the event for the users." rows="3" required></textarea>
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="message">Message to Recipient (Optional)</label>
+                        <textarea id="message" name="message" value={formData.message} onChange={handleChange} placeholder="Add a personal message to the user." rows="2"></textarea>
                     </div>
                     <div className="form-group">
                         <label htmlFor="startTime">Start Time</label>
@@ -342,6 +346,7 @@ const AdminEvents = () => {
                 triggerType: data.triggerType,
                 rewardType: data.rewardType,
                 isActive: data.isActive,
+                message: data.message,
                 rewardDetails: {},
             };
             if (data.rewardType === 'XP' || data.rewardType === 'PACK') {
@@ -389,9 +394,6 @@ const AdminEvents = () => {
 
     return (
         <div className="page">
-            <h1>Admin Events Management</h1>
-            <NavAdmin />
-
             {isFormVisible ? (
                 <EventForm
                     eventToEdit={eventToEdit}

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchWithAuth } from '../utils/api';
-import NavAdmin from "../components/NavAdmin";
 import CreateCardForm from '../components/CreateCardForm'; // Import new components
 import EditCardForm from '../components/EditCardForm';
 
@@ -103,8 +102,6 @@ const AdminCardManagement = () => {
 
     return (
         <div className="page">
-            <h1>Card Management</h1>
-            <NavAdmin />
             {renderContent()}
         </div>
     );

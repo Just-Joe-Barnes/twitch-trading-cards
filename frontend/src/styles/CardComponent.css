@@ -99,7 +99,7 @@
 .card-container.unique .card-border {
   border-color: black;
 }
-.card-container.divine .card-border {
+.card-container.divine .card-border, .card-container.event .card-border {
   border-color: #ffd700;
 }
 .card-container .card-artwork {
@@ -484,14 +484,14 @@
   mix-blend-mode: screen;
   opacity: 0.4;
 }
-.card-container.divine {
+.card-container.divine, .card-container.event {
   position: relative;
   overflow: hidden;
   animation: divine-glow 3s infinite alternate;
   filter: contrast(1.2) brightness(1.5);
   background: transparent no-repeat center/cover;
 }
-.card-container.divine .card-border {
+.card-container.divine .card-border, .card-container.event .card-border {
   width: 100%;
   border: transparent;
   z-index: 2;
@@ -513,13 +513,13 @@
     box-shadow: 0 0 10px 10px rgba(202, 121, 209, 0.4), 0 0 20px 20px rgba(202, 121, 209, 0.4);
   }
 }
-.card-container.divine:hover {
+.card-container.divine:hover, .card-container.event:hover {
   animation: divine-glow-hover 1.5s infinite alternate;
 }
-.card-container.divine:hover::after {
+.card-container.divine:hover::after, .card-container.event:hover::after {
   opacity: 0.2;
 }
-.card-container.divine::before {
+.card-container.divine::before, .card-container.event::before {
   content: "";
   position: absolute;
   top: 0;
@@ -532,7 +532,7 @@
   pointer-events: none;
   z-index: 0;
 }
-.card-container.divine::after {
+.card-container.divine::after, .card-container.event::after {
   content: "";
   position: absolute;
   top: 0;
@@ -546,10 +546,10 @@
   z-index: 1;
   transition: opacity 0.3s ease;
 }
-.card-container.divine .card-artwork {
+.card-container.divine .card-artwork, .card-container.event .card-artwork {
   display: none;
 }
-.card-container.divine .card-name {
+.card-container.divine .card-name, .card-container.event .card-name {
   color: white;
   display: block;
   z-index: 2;
@@ -561,7 +561,7 @@
   text-shadow: 0 0 5px black;
   overflow: hidden;
 }
-.card-container.divine .card-mint {
+.card-container.divine .card-mint, .card-container.event .card-mint {
   color: white;
   background: none;
   padding: 0;
@@ -572,7 +572,62 @@
   font-size: 1.2rem;
   text-shadow: 0 0 5px black, 0 0 5px black, 0 0 5px black;
 }
-.card-container.divine .card-header {
+.card-container.divine .card-header, .card-container.event .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  z-index: 2;
+  position: relative;
+}
+.card-container.event {
+  position: relative;
+  overflow: hidden;
+  animation: event-glow 3s infinite alternate;
+  filter: contrast(1.2) brightness(1.5);
+  background: transparent no-repeat center/cover;
+}
+.card-container.event .card-border {
+  width: 100%;
+  border: transparent;
+  z-index: 2;
+  position: relative;
+}
+@keyframes event-glow {
+  0% {
+    box-shadow: 0 0 15px 5px rgba(255, 140, 0, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 15px 5px rgba(186, 177, 82, 0.4);
+  }
+}
+.card-container.event .card-artwork {
+  display: none;
+}
+.card-container.event .card-name {
+  color: white;
+  display: block;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+  position: absolute;
+  text-shadow: 0 0 5px black;
+  overflow: hidden;
+}
+.card-container.event .card-mint {
+  color: white;
+  background: none;
+  padding: 0;
+  z-index: 2;
+  position: absolute;
+  top: 0;
+  right: 4px;
+  font-size: 1.2rem;
+  text-shadow: 0 0 5px black, 0 0 5px black, 0 0 5px black;
+}
+.card-container.event .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -629,7 +684,7 @@
   mix-blend-mode: color-dodge;
   opacity: 0.1;
 }
-.card-container.mythic .prismatic-overlay, .card-container.divine .prismatic-overlay {
+.card-container.mythic .prismatic-overlay, .card-container.divine .prismatic-overlay, .card-container.event .prismatic-overlay {
   opacity: 0.3;
 }
 .card-container.unique .prismatic-overlay {
@@ -756,7 +811,7 @@
 .card-container.slabbed .card-name {
   visibility: visible;
 }
-.card-container.slabbed:not(.divine) {
+.card-container.slabbed:not(.divine), .card-container.slabbed:not(.event) {
   background: none;
 }
 .card-container.slabbed:not(.mythic) .card-border {
@@ -766,7 +821,7 @@
   margin: 0;
   height: 100%;
 }
-.card-container.slabbed.divine .card-border {
+.card-container.slabbed.divine .card-border, .card-container.slabbed.event .card-border {
   background: none;
 }
 
@@ -943,7 +998,7 @@
 .mini-card-container.unique .mini-card-border {
   border-color: black;
 }
-.mini-card-container.divine .mini-card-border {
+.mini-card-container.divine .mini-card-border, .mini-card-container.event .mini-card-border {
   border-color: #ffd700;
 }
 .mini-card-container.mythic .mini-card-border {
@@ -1316,14 +1371,14 @@
   mix-blend-mode: screen;
   opacity: 0.4;
 }
-.mini-card-container.divine {
+.mini-card-container.divine, .mini-card-container.event {
   position: relative;
   overflow: hidden;
   animation: divine-glow-mini 3s infinite alternate;
   filter: contrast(1.2) brightness(1.5);
   background: transparent no-repeat center/cover;
 }
-.mini-card-container.divine .mini-card-border {
+.mini-card-container.divine .mini-card-border, .mini-card-container.event .mini-card-border {
   width: 100%;
   border: transparent;
   z-index: 2;
@@ -1345,13 +1400,13 @@
     box-shadow: 0 0 5px 5px rgba(202, 121, 209, 0.4), 0 0 10px 10px rgba(202, 121, 209, 0.4);
   }
 }
-.mini-card-container.divine:hover {
+.mini-card-container.divine:hover, .mini-card-container.event:hover {
   animation: divine-glow-hover-mini 1.5s infinite alternate;
 }
-.mini-card-container.divine:hover::after {
+.mini-card-container.divine:hover::after, .mini-card-container.event:hover::after {
   opacity: 0.2;
 }
-.mini-card-container.divine::before {
+.mini-card-container.divine::before, .mini-card-container.event::before {
   content: "";
   position: absolute;
   top: 0;
@@ -1364,7 +1419,7 @@
   pointer-events: none;
   z-index: 0;
 }
-.mini-card-container.divine::after {
+.mini-card-container.divine::after, .mini-card-container.event::after {
   content: "";
   position: absolute;
   top: 0;
@@ -1378,10 +1433,10 @@
   z-index: 1;
   transition: opacity 0.3s ease;
 }
-.mini-card-container.divine .mini-card-artwork {
+.mini-card-container.divine .mini-card-artwork, .mini-card-container.event .mini-card-artwork {
   display: none;
 }
-.mini-card-container.divine .mini-card-name {
+.mini-card-container.divine .mini-card-name, .mini-card-container.event .mini-card-name {
   color: white;
   display: block;
   z-index: 2;
@@ -1393,7 +1448,7 @@
   text-shadow: 0 0 2px black;
   overflow: hidden;
 }
-.mini-card-container.divine .mini-card-mint {
+.mini-card-container.divine .mini-card-mint, .mini-card-container.event .mini-card-mint {
   color: white;
   background: transparent;
   padding: 0;
@@ -1404,7 +1459,7 @@
   font-size: 0.8rem;
   text-shadow: 0 0 2px black, 0 0 2px black, 0 0 2px black;
 }
-.mini-card-container.divine .mini-card-header {
+.mini-card-container.divine .mini-card-header, .mini-card-container.event .mini-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1461,7 +1516,7 @@
   mix-blend-mode: color-dodge;
   opacity: 0.1;
 }
-.mini-card-container.mythic .prismatic-overlay, .mini-card-container.divine .prismatic-overlay {
+.mini-card-container.mythic .prismatic-overlay, .mini-card-container.divine .prismatic-overlay, .mini-card-container.event .prismatic-overlay {
   opacity: 0.3;
 }
 .mini-card-container.unique .prismatic-overlay {
@@ -1679,6 +1734,104 @@
   left: 5px;
   background: #7eb5bc;
   color: white;
+}
+
+.card-container.event {
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  border: 0 solid;
+}
+@keyframes event-glow-hover {
+  0%, 100% {
+    box-shadow: 0 0 15px 10px rgba(248, 112, 0, 0.2), 0 0 10px 10px rgba(255, 213, 25, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 15px 10px rgba(255, 213, 25, 0.2), 0 0 10px 10px rgba(248, 112, 0, 0.2);
+  }
+}
+.card-container.event:hover {
+  animation: divine-glow-hover 1.5s infinite alternate;
+}
+.card-container.event:hover::after {
+  opacity: 0.2;
+}
+.card-container.event .event-effect-container {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  will-change: opacity, mask-image;
+  z-index: 1;
+}
+.card-container.event .event-artwork-base {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+}
+.card-container.event .event-overlay-group {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  mix-blend-mode: color-dodge;
+}
+.card-container.event .event-overlay-1,
+.card-container.event .event-overlay-2 {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  pointer-events: none;
+}
+.card-container.event .event-overlay-1 {
+  filter: blur(2px) brightness(110%) contrast(200%) saturate(200%) grayscale(100%) url(#posterize);
+  mix-blend-mode: normal;
+}
+.card-container.event .event-overlay-2 {
+  filter: blur(2px) brightness(200%) contrast(200%) saturate(200%) grayscale(100%) invert(100%);
+  mix-blend-mode: screen;
+}
+.card-container.event .card-border {
+  border: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 2;
+}
+.card-container.event .card-border .card-header {
+  text-align: center;
+  height: 100%;
+}
+.card-container.event .card-border .card-header .card-name, .card-container.event .card-border .card-header .card-mint {
+  color: rgb(140, 94, 41);
+  top: unset;
+  text-shadow: 0 -1px 1px rgba(255, 255, 255, 0.5), 0 2px 3px rgba(0, 0, 0, 0.6), 0 0 8px rgb(0, 0, 0);
+  text-transform: uppercase;
+  font-weight: bolder;
+}
+.card-container.event .card-border .card-header .card-name {
+  bottom: 32px;
+  letter-spacing: 2px;
+}
+.card-container.event .card-border .card-header .card-mint {
+  display: none;
+}
+.card-container.event .card-mint {
+  top: unset;
+  text-align: center;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+}
+.card-container.event .card-artwork, .card-container.event .card-description {
+  display: none;
+}
+.card-container.event .overlay-badge {
+  position: relative;
+  align-self: flex-start;
+  margin: 0 10px 10px 10px;
 }
 
 /*# sourceMappingURL=CardComponent.css.map */

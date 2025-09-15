@@ -122,7 +122,7 @@ $card-artwork-height: 216px;
     border-color: black;
   }
 
-  &.divine .card-border {
+  &.divine .card-border, &.event .card-border {
     border-color: #ffd700;
   }
 
@@ -568,7 +568,7 @@ $card-artwork-height: 216px;
     }
   }
 
-  &.divine {
+  &.divine, &.event {
     position: relative;
     overflow: hidden;
     animation: divine-glow 3s infinite alternate;
@@ -676,6 +676,68 @@ $card-artwork-height: 216px;
     }
   }
 
+  &.event {
+    position: relative;
+    overflow: hidden;
+    animation: event-glow 3s infinite alternate;
+    filter: contrast(1.2) brightness(1.5);
+    background: transparent no-repeat center/cover;
+
+    .card-border {
+      width: 100%;
+      border: transparent;
+      z-index: 2;
+      position: relative;
+    }
+
+    @keyframes event-glow {
+      0% {
+        box-shadow: 0 0 15px 5px rgba(255, 140, 0, 0.2);
+      }
+      100% {
+        box-shadow: 0 0 15px 5px rgba(186, 177, 82, .4);
+      }
+    }
+
+    .card-artwork {
+      display: none;
+    }
+
+    .card-name {
+      color: white;
+      display: block;
+      z-index: 2;
+      top: 0;
+      left: 0;
+      right: 0;
+      margin: 0;
+      position: absolute;
+      text-shadow: 0 0 5px black;
+      overflow: hidden;
+    }
+
+    .card-mint {
+      color: white;
+      background: none;
+      padding: 0;
+      z-index: 2;
+      position: absolute;
+      top: 0;
+      right: 4px;
+      font-size: 1.2rem;
+      text-shadow: 0 0 5px black, 0 0 5px black, 0 0 5px black;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      z-index: 2;
+      position: relative;
+    }
+  }
+
   .glitch-overlay,
   .prismatic-overlay,
   .limited-overlay  {
@@ -730,7 +792,7 @@ $card-artwork-height: 216px;
     opacity: 0.1;
   }
 
-  &.mythic, &.divine {
+  &.mythic, &.divine, &.event {
     .prismatic-overlay {
       opacity: 0.3;
     }
@@ -869,7 +931,7 @@ $card-artwork-height: 216px;
 
     overflow: visible;
 
-    &:not(.divine) {
+    &:not(.divine), &:not(.event) {
       background: none;
     }
 
@@ -884,7 +946,7 @@ $card-artwork-height: 216px;
       height: 100%;
     }
 
-    &.divine .card-border {
+    &.divine .card-border, &.event .card-border {
       background: none;
     }
   }
@@ -1062,7 +1124,7 @@ $card-artwork-height: 216px;
   &.epic .mini-card-border { border-color: #FFA726; }
   &.legendary .mini-card-border { border-color: #e32232; }
   &.unique .mini-card-border { border-color: black; }
-  &.divine .mini-card-border { border-color: #ffd700; }
+  &.divine .mini-card-border,  &.event .mini-card-border { border-color: #ffd700; }
 
   &.mythic .mini-card-border {
     border: 1px solid rgba(#ff1493,0.4);
@@ -1459,7 +1521,7 @@ $card-artwork-height: 216px;
     }
   }
 
-  &.divine {
+  &.divine, &.event {
     position: relative;
     overflow: hidden;
     animation: divine-glow-mini 3s infinite alternate;
@@ -1601,7 +1663,7 @@ $card-artwork-height: 216px;
     opacity: 0.1;
   }
 
-  &.mythic, &.divine {
+  &.mythic, &.divine, &.event {
     .prismatic-overlay {
       opacity: 0.3;
     }
@@ -1790,5 +1852,117 @@ $card-artwork-height: 216px;
     left: 5px;
     background: $brand-secondary;
     color: white;
+  }
+}
+
+.card-container.event {
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  border: 0 solid;
+
+  @keyframes event-glow-hover {
+    0%, 100% {
+      box-shadow: 0 0 15px 10px rgba(248, 112, 0, 0.2), 0 0 10px 10px rgba(255,213,25,0.2);
+    }
+    50% {
+      box-shadow: 0 0 15px 10px rgba(255,213,25, 0.2), 0 0 10px 10px rgba(248, 112, 0, 0.2);
+    }
+  }
+
+  &:hover {
+    animation: divine-glow-hover 1.5s infinite alternate;
+
+    &::after {
+      opacity: 0.2;
+    }
+  }
+
+  .event-effect-container {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    will-change: opacity, mask-image;
+    z-index: 1;
+  }
+
+  .event-artwork-base {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .event-overlay-group {
+    position: absolute;
+    inset: 0;
+    isolation: isolate;
+    mix-blend-mode: color-dodge;
+  }
+
+  .event-overlay-1,
+  .event-overlay-2 {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    pointer-events: none;
+  }
+
+  .event-overlay-1 {
+    filter: blur(2px) brightness(110%) contrast(200%) saturate(200%) grayscale(100%) url(#posterize);
+    mix-blend-mode: normal;
+  }
+
+  .event-overlay-2 {
+    filter: blur(2px) brightness(200%) contrast(200%) saturate(200%) grayscale(100%) invert(100%);
+    mix-blend-mode: screen;
+  }
+
+  .card-border {
+    border: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 2;
+
+    .card-header {
+      text-align: center;
+      height: 100%;
+
+      .card-name, .card-mint {
+        color: rgb(140, 94, 41);
+        top: unset;
+        text-shadow: 0 -1px 1px rgba(255, 255, 255, 0.5),  0 2px 3px rgba(0,0,0, 0.6), 0 0 8px rgba(0,0,0,1);
+        text-transform: uppercase;
+        font-weight: bolder;
+      }
+
+      .card-name {
+        bottom: 32px;
+        letter-spacing: 2px;
+      }
+
+      .card-mint {
+        display: none;
+      }
+    }
+  }
+
+  .card-mint {
+    top: unset;
+    text-align: center;
+    left: 0;
+    right: 0;
+    bottom: 12px;
+  }
+
+  .card-artwork, .card-description { display: none; }
+  .overlay-badge {
+    position: relative;
+    align-self: flex-start;
+    margin: 0 10px 10px 10px;
   }
 }

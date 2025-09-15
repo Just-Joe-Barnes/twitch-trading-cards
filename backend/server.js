@@ -119,6 +119,8 @@ app.use('/api/modifiers', require('./src/routes/modifierRoutes'));
 app.use('/api/achievements', require('./src/routes/achievementRoutes'));
 app.use('/api/admin', require('./src/routes/adminRoutes'));
 app.use('/api/events', require('./src/routes/eventRoutes'));
+app.use('/api/log', require('./src/routes/logRoutes'));
+app.use('/api/bounty', require('./src/routes/bountyRoutes'));
 app.use('/api/external', require('./src/routes/externalRoutes'));
 
 

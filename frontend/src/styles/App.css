@@ -488,6 +488,7 @@ button.icon, input[type=submit].icon, input[type=reset].icon, a.button.icon {
 button:hover, input[type=submit]:hover, input[type=reset]:hover, a.button:hover {
   background: #1e1e1e;
   border-color: #e680a7;
+  text-decoration: none;
 }
 button.active, input[type=submit].active, input[type=reset].active, a.button.active {
   background-color: rgba(230, 128, 167, 0.2);
@@ -1450,6 +1451,14 @@ body.no-scroll {
 
 ::-webkit-scrollbar-thumb:hover {
   background-color: #777;
+}
+
+pre {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid green;
+  padding: 1rem 2rem;
+  font-size: 0.8rem;
+  border-radius: 4px;
 }
 
 /*# sourceMappingURL=App.css.map */

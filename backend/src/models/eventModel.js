@@ -38,6 +38,11 @@ const eventSchema = new mongoose.Schema({
         type: Boolean,
         default: true,
     },
+    message: {
+        type: String,
+        required: false,
+        default: null,
+    },
 }, {
     timestamps: true, // Adds createdAt and updatedAt timestamps
 });

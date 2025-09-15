@@ -7,6 +7,8 @@ const {
     generatePackPreview,
     generatePackPreviewFromPool
 } = require('../helpers/cardHelpers');
+const Log = require("../models/logModel");
+const {createLogEntry} = require("../utils/logService");
 const MODIFIER_CHANCE = parseFloat(process.env.MODIFIER_CHANCE || '0.05');
 
 // Get all users with packs (Admin-only functionality)
@@ -143,6 +145,11 @@ const openPacksForUser = async (req, res) => {
         }
 
         if (!newCards || !newCards.length) {
+            await createLogEntry(
+                req.user,
+                '[ERROR] Failed to generate cards for the pack',
+                'Length of newCards is 0 or undefined.'
+            );
             return res.status(500).json({ message: 'Failed to generate cards for the pack' });
         }
 
@@ -171,6 +178,11 @@ const openPacksForUser = async (req, res) => {
 
         res.status(200).json({ message: 'Pack opened successfully', newCards });
     } catch (error) {
+        await createLogEntry(
+            req.user,
+            '[ERROR] Failed to open pack',
+            error.message
+        );
         console.error('[openPacksForUser] Error:', error.message);
         res.status(500).json({ message: 'Failed to open pack' });
     }
@@ -221,6 +233,7 @@ const debugOpenPackForUser = async (req, res) => {
         console.log('[debugOpenPackForUser] generated pack in', duration, 'ms');
         res.status(200).json({ message: 'Debug pack generated', newCards: pack });
     } catch (error) {
+        await createLogEntry(req.user, 'ERROR_PACK_GENERATION', error.message);
         console.error('[debugOpenPackForUser] Error:', error.message);
         res.status(500).json({ message: 'Failed to generate debug pack' });
     }

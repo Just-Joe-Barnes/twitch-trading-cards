@@ -1,28 +1,67 @@
+/* General sidebar styles for desktop */
 .nav-admin {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  width: 250px;
   display: flex;
-  align-items: flex-start;
-  margin-bottom: 1rem;
+  flex-direction: column;
+  background: var(--surface-dark);
+  border-right: 1px solid var(--border-dark);
+  padding: 4rem 0 1rem;
 }
+
 .nav-admin a {
   display: block;
-  padding: 1rem 2rem;
+  padding: 1rem 1.5rem;
   color: #fff;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
-.nav-admin a:hover, .nav-admin a.active {
+
+.nav-admin a:hover,
+.nav-admin a.active {
   color: #e680a7;
   background: rgba(126, 181, 188, 0.1);
-  text-decoration: none;
 }
+
+/* Hide the toggle button on desktop */
+.nav-admin-toggle {
+  display: none;
+}
+
+/* Add mobile-specific styles below */
 @media screen and (max-width: 768px) {
-  .nav-admin {
-    flex-direction: column;
+  /* Make the toggle button visible on mobile */
+  .nav-admin-toggle {
+    display: block;
+    position: fixed;
+    top: 64px;
+    left: 4px;
+    z-index: 1000; /* Ensure it's on top of other content */
+    background: var(--surface-dark);
+    color: #fff;
+    border: 1px solid var(--border-dark);
+    border-radius: 4px;
+    padding: 0.2rem 0.7rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.3s ease-in-out;
   }
-  .nav-admin a {
-    width: 100%;
-    text-align: center;
+  /* Initial state: Hide the menu off-screen */
+  .nav-admin {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%; /* Full height */
+    width: 250px; /* Same width as desktop */
+    z-index: 999;
+    transform: translateX(-100%); /* Slide it left, off-screen */
+    transition: transform 0.3s ease-in-out;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5); /* A subtle shadow for depth */
+    /* The padding is now the top bar to show the menu toggle button */
+    padding-top: 7rem;
+  }
+  /* Final state: Slide the menu into view */
+  .nav-admin.open {
+    transform: translateX(0); /* Slide it back to its original position */
   }
 }
 

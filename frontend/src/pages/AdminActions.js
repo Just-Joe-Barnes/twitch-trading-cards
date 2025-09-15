@@ -2,7 +2,6 @@ import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {fetchUserProfile, fetchWithAuth, searchCardsByName} from '../utils/api';
 import '../styles/AdminActions.css';
-import NavAdmin from "../components/NavAdmin";
 
 const AdminActions = () => {
     const [newNote, setNewNote] = useState('');
@@ -241,10 +240,6 @@ const AdminActions = () => {
 
     return (
         <div className="page">
-            <h1>Admin Actions</h1>
-
-            <NavAdmin/>
-
             <div className="admin-panel-grid">
                 <section className="section-card">
                     <h2>Achievements</h2>

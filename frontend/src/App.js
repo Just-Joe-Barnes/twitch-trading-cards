@@ -1,6 +1,6 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { io } from 'socket.io-client';
+import React, {useState, useEffect, lazy, Suspense} from 'react';
+import {BrowserRouter as Router, Route, Routes, Navigate} from 'react-router-dom';
+import {io} from 'socket.io-client';
 import LoginPage from './pages/LoginPage';
 import LoadingSpinner from './components/LoadingSpinner';
 import Toast from './components/Toast';
@@ -19,6 +19,9 @@ import AdminEventsPage from "./pages/AdminEvents";
 import EventRewardModal from "./components/EventRewardModal";
 import CardManagement from "./pages/AdminCardManagement";
 import AdminTrades from "./pages/AdminTrades";
+import AdminLogs from "./pages/AdminLogs";
+import AdminActionsLayout from "./components/AdminActionsLayout";
+import BountyBoardPage from "./pages/BountyBoardPage";
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const CollectionPage = lazy(() => import('./pages/CollectionPage'));
@@ -55,7 +58,7 @@ const App = () => {
 
     const showToast = (message, type = 'info') => {
         const id = Date.now();
-        setToasts((prev) => [...prev, { id, message, type }]);
+        setToasts((prev) => [...prev, {id, message, type}]);
     };
 
     const removeToast = (id) => {
@@ -121,14 +124,14 @@ const App = () => {
             try {
                 const validateResponse = await fetch(`${API_BASE_URL}/api/auth/validate`, {
                     method: 'POST',
-                    headers: { Authorization: `Bearer ${token}` },
+                    headers: {Authorization: `Bearer ${token}`},
                 });
                 if (!validateResponse.ok) {
                     throw new Error(`Token validation failed with status ${validateResponse.status}`);
                 }
                 const profileResponse = await fetch(`${API_BASE_URL}/api/users/me`, {
                     method: 'GET',
-                    headers: { Authorization: `Bearer ${token}` },
+                    headers: {Authorization: `Bearer ${token}`},
                 });
                 if (!profileResponse.ok) {
                     throw new Error(`Profile fetch failed with status ${profileResponse.status}`);
@@ -155,7 +158,7 @@ const App = () => {
     }, []);
 
     if (loading) {
-        return <LoadingSpinner />;
+        return <LoadingSpinner/>;
     }
 
     return (
@@ -164,80 +167,97 @@ const App = () => {
                 <div className="notice-overlay">
                     <div className="notice-modal">
                         <h2>A Quick Note on Early Access</h2>
-                        <p>Ned's Decks is currently in early access and changing every week! We want to ensure we create a great experience to accompany The Just Joe Show for both desktop and mobile users before we hit the big "go" button.</p>
-                        <p>Upon full release, ALL COLLECTIONS, PACKS, and ACHIEVEMENTS will be totally reset so that all users can start from the same point. Thank you for being a part of early testing for Ned's Decks!</p>
+                        <p>Ned's Decks is currently in early access and changing every week! We want to ensure we create
+                            a great experience to accompany The Just Joe Show for both desktop and mobile users before
+                            we hit the big "go" button.</p>
+                        <p>Upon full release, ALL COLLECTIONS, PACKS, and ACHIEVEMENTS will be totally reset so that all
+                            users can start from the same point. Thank you for being a part of early testing for Ned's
+                            Decks!</p>
                         <p className="notice-signature">Thanks, Joe.</p>
                         <button className="primary-button" onClick={handleAcceptNotice}>Awh ok!</button>
                     </div>
                 </div>
             )}
             <Router>
-                <Suspense fallback={<LoadingSpinner />}>
-                    {user && <ConditionalNavbar user={user} />}
+                <Suspense fallback={<LoadingSpinner/>}>
+                    {user && <ConditionalNavbar user={user}/>}
                     <Routes>
-                        <Route path="/login" element={<LoginPage />} />
-                        <Route path="/kitchensink" element={<KitchenSink />} />
+                        <Route path="/login" element={<LoginPage/>}/>
+                        <Route path="/kitchensink" element={<KitchenSink/>}/>
                         <Route
                             path="/dashboard"
-                            element={user ? <DashboardPage user={user} /> : <Navigate to="/login" />}
+                            element={user ? <DashboardPage user={user}/> : <Navigate to="/login"/>}
                         />
-                        <Route path="/collection/:username" element={<CollectionPage />} />
+                        <Route path="/collection/:username" element={<CollectionPage/>}/>
                         <Route
                             path="/collection"
-                            element={user ? <CollectionPage user={user} /> : <Navigate to="/login" />}
+                            element={user ? <CollectionPage user={user}/> : <Navigate to="/login"/>}
                         />
-                        <Route
-                            path="/admin-dashboard"
-                            element={(user?.isAdmin) ? <AdminDashboardPage user={user} /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/admin/packs"
-                            element={user?.isAdmin ? <AdminPacksPage /> : <Navigate to="/login" />}
-                        />
-                        <Route path="/profile/:username" element={<ProfilePage />} />
+                        <Route path="/profile/:username" element={<ProfilePage/>}/>
                         <Route
                             path="/trading"
-                            element={user ? <TradingPage userId={user._id} /> : <Navigate to="/login" />}
+                            element={user ? <TradingPage userId={user._id}/> : <Navigate to="/login"/>}
                         />
                         <Route
                             path="/trades/pending"
-                            element={user ? <PendingTrades userId={user._id} /> : <Navigate to="/login" />}
+                            element={user ? <PendingTrades userId={user._id}/> : <Navigate to="/login"/>}
+                        />
+                        <Route
+                            path="/bounty"
+                            element={user ? <BountyBoardPage userId={user._id} username={user.username}/> : <Navigate to="/login"/>}
                         />
                         <Route
                             path="/achievements"
-                            element={user ? <AchievementsPage /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/admin/actions"
-                            element={user?.isAdmin ? <AdminActions user={user} /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/admin/card-ownership"
-                            element={user?.isAdmin ? <AdminCardOwnershipPage user={user} /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/admin/events"
-                            element={user?.isAdmin ? <AdminEventsPage user={user} /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/admin/cardmanagement"
-                            element={user?.isAdmin ? <CardManagement user={user} /> : <Navigate to="/login" />}
+                            element={user ? <AchievementsPage/> : <Navigate to="/login"/>}
                         />
                         <Route
                             path="/grading"
-                            element={user ? <CardGradingPage /> : <Navigate to="/login" />}
+                            element={user ? <CardGradingPage/> : <Navigate to="/login"/>}
                         />
-                        <Route path="/catalogue" element={<CataloguePage />} />
-                        <Route path="/market" element={<MarketPage />} />
-                        <Route path="/market/create" element={<CreateListingPage />} />
-                        <Route path="/market/listing/:id" element={<MarketListingDetails />} />
-                        <Route path="/admin/cards/:id" element={<CardEditor />} />
-                        <Route path="/admin/cardaudit" element={<AdminCardAudit />} />
-                        <Route path="/admin/trades" element={<AdminTrades />} />
-                        <Route path="/leaderboard" element={<LeaderboardPage />} />
-                        <Route path="/stream-overlay/:userId" element={<StreamOverlayPage />} />
-                        <Route path="/" element={<Navigate to="/dashboard" />} />
-                        <Route path="*" element={<NotFoundPage />} />
+                        <Route path="/catalogue" element={<CataloguePage/>}/>
+                        <Route path="/market" element={<MarketPage/>}/>
+                        <Route path="/market/create" element={<CreateListingPage/>}/>
+                        <Route path="/market/listing/:id" element={<MarketListingDetails/>}/>
+                        <Route path="/leaderboard" element={<LeaderboardPage/>}/>
+                        <Route
+                            path="/admin-dashboard"
+                            element={(user?.isAdmin) ? <AdminDashboardPage user={user}/> : <Navigate to="/login"/>}
+                        />
+
+                        <Route path="/admin" element={<AdminActionsLayout/>}>
+                            <Route
+                                index
+                                element={user?.isAdmin ? <AdminActions user={user}/> : <Navigate to="/login"/>}
+                            />
+                            <Route
+                                path="packs"
+                                element={user?.isAdmin ? <AdminPacksPage/> : <Navigate to="/login"/>}
+                            />
+                            <Route
+                                path="card-ownership"
+                                element={user?.isAdmin ? <AdminCardOwnershipPage user={user}/> :
+                                    <Navigate to="/login"/>}
+                            />
+                            <Route
+                                path="events"
+                                element={user?.isAdmin ? <AdminEventsPage user={user}/> : <Navigate to="/login"/>}
+                            />
+                            <Route
+                                path="cardmanagement"
+                                element={user?.isAdmin ? <CardManagement user={user}/> : <Navigate to="/login"/>}
+                            />
+                            <Route
+                                path="logs"
+                                element={user?.isAdmin ? <AdminLogs user={user}/> : <Navigate to="/login"/>}
+                            />
+                            <Route path="cards/:id" element={<CardEditor/>}/>
+                            <Route path="cardaudit" element={<AdminCardAudit/>}/>
+                            <Route path="trades" element={<AdminTrades/>}/>
+                        </Route>
+
+                        <Route path="/stream-overlay/:userId" element={<StreamOverlayPage/>}/>
+                        <Route path="/" element={<Navigate to="/dashboard"/>}/>
+                        <Route path="*" element={<NotFoundPage/>}/>
                     </Routes>
                 </Suspense>
             </Router>
@@ -249,16 +269,17 @@ const App = () => {
                     onClose={() => removeToast(toast.id)}
                 />
             ))}
-            <CardInspector card={inspectedCard} onClose={() => setInspectedCard(null)} />
+            <CardInspector card={inspectedCard} onClose={() => setInspectedCard(null)}/>
 
             {currentReward && (
                 <EventRewardModal
                     reward={currentReward}
+                    message={currentReward.message}
                     onClose={() => setCurrentReward(null)}
                 />
             )}
 
-            <ScrollToTopButton />
+            <ScrollToTopButton/>
         </>
     );
 };
