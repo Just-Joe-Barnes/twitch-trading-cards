@@ -19,7 +19,8 @@ const updateCard = async (req, res) => {
             lore,
             loreAuthor,
             availableFrom,
-            availableTo
+            availableTo,
+            isHidden
         } = req.body;
 
         const card = await Card.findById(cardId);
@@ -37,6 +38,7 @@ const updateCard = async (req, res) => {
         card.loreAuthor = loreAuthor;
         card.availableFrom = availableFrom;
         card.availableTo = availableTo;
+        card.isHidden = isHidden;
 
         // IMPORTANT: Check for modifications *before* saving the document.
         // This is when Mongoose knows the document is "dirty".
