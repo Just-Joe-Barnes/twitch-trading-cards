@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchWithAuth } from '../utils/api';
-import CreateCardForm from '../components/CreateCardForm'; // Import new components
+import CreateCardForm from '../components/CreateCardForm';
 import EditCardForm from '../components/EditCardForm';
 
-// This is the main page component
 const AdminCardManagement = () => {
-    const [view, setView] = useState('menu'); // 'menu', 'create', or 'edit'
+    const [view, setView] = useState('menu');
     const navigate = useNavigate();
 
-    // Check for admin status on load
     useState(() => {
         const token = localStorage.getItem('token');
         if (token) {
@@ -22,14 +20,19 @@ const AdminCardManagement = () => {
 
     const handleCreateSubmit = async (cardData) => {
         try {
-            // Default rarities structure for new cards
-            const defaultRarities = [
+            let availabilityRarities = [
                 { rarity: 'Basic', totalCopies: 1000 }, { rarity: 'Common', totalCopies: 800 },
                 { rarity: 'Standard', totalCopies: 600 }, { rarity: 'Uncommon', totalCopies: 400 },
                 { rarity: 'Rare', totalCopies: 300 }, { rarity: 'Epic', totalCopies: 200 },
                 { rarity: 'Legendary', totalCopies: 100 }, { rarity: 'Mythic', totalCopies: 50 },
                 { rarity: 'Unique', totalCopies: 10 }, { rarity: 'Divine', totalCopies: 1 }
             ].map(r => ({ ...r, remainingCopies: r.totalCopies, availableMintNumbers: Array.from({length: r.totalCopies}, (_, i) => i + 1) }));
+
+            if (cardData.eventCard) {
+                availabilityRarities = [
+                    { rarity: 'Event', totalCopies: 1000 }
+                ].map(r => ({ ...r, remainingCopies: r.totalCopies, availableMintNumbers: Array.from({length: r.totalCopies}, (_, i) => i + 1) }));
+            }
 
             await fetchWithAuth('/api/admin/cards', {
                 method: 'POST',
@@ -41,14 +44,14 @@ const AdminCardManagement = () => {
                     loreAuthor: cardData.loreAuthor,
                     availableFrom: cardData.availableFrom,
                     availableTo: cardData.availableTo,
-                    rarities: defaultRarities,
+                    rarities: availabilityRarities,
+                    isHidden: cardData.isHidden, // New field
                 }),
             });
             window.showToast('Card created successfully!', 'success');
-            setView('menu'); // Return to the menu after successful creation
+            setView('menu');
         } catch (error) {
             window.showToast(error.message || 'Error creating card.', 'error');
-            // Re-throw to be caught by the form's .finally()
             throw error;
         }
     };
@@ -65,10 +68,11 @@ const AdminCardManagement = () => {
                     loreAuthor: cardData.loreAuthor,
                     availableFrom: cardData.alwaysAvailable ? null : cardData.availableFrom || null,
                     availableTo: cardData.alwaysAvailable ? null : cardData.availableTo || null,
+                    isHidden: cardData.isHidden, // New field
                 }),
             });
             window.showToast('Card updated successfully!', 'success');
-            setView('menu'); // Return to the menu
+            setView('menu');
         } catch (error) {
             window.showToast(error.message || 'Error updating card.', 'error');
             throw error;
@@ -108,4 +112,3 @@ const AdminCardManagement = () => {
 };
 
 export default AdminCardManagement;
-

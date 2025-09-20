@@ -7,6 +7,7 @@ $card-artwork-height: 216px;
 .card-container {
   --card-scale: 1;
   --card-bg-color: #3a2525;
+  background: var(--card-bg-color);
   width: var(--card-width, #{$card-width});
   height: var(--card-height, #{$card-height});
   aspect-ratio: 2 / 3;
@@ -17,7 +18,6 @@ $card-artwork-height: 216px;
   font-family: var(--font-family), serif;
   margin: 10px;
   position: relative;
-  background: var(--card-bg-color);
   transition: transform 1s ease-out;
   will-change: transform;
   user-select: none;
@@ -38,39 +38,6 @@ $card-artwork-height: 216px;
     flex-direction: column;
   }
 
-  .overlay-badge {
-    position: absolute;
-    background: rgba(0, 0, 0, 0.541);
-    color: #d4d0c0;
-    border-radius: 6px;
-    padding: 4px 9px;
-    font-size: 1rem;
-    font-family: inherit;
-    font-weight: bold;
-    z-index: 999999;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.082);
-    letter-spacing: 0.01em;
-
-    &.remaining-badge, &.featured-badge {
-      bottom: 10px;
-      left: 10px;
-    }
-
-    &.featured-badge {
-      background: $brand-secondary;
-      color: $color-surface;
-    }
-
-    &.timeleft-badge {
-      bottom: 46px;
-      left: 8px;
-
-      &.expired {
-        background: $brand-primary;
-        color: darkslategrey;
-      }
-    }
-  }
 
   .card-border {
     padding: 10px;
@@ -1043,6 +1010,8 @@ $card-artwork-height: 216px;
 
 .mini-card-container {
   position: relative;
+  --card-bg-color: #3a2525;
+  background: var(--card-bg-color);
   display: flex;
   height: 100%;
   width: 100%;
@@ -1160,6 +1129,7 @@ $card-artwork-height: 216px;
     img {
       display: block;
       width: 100%;
+      height: 100%;
       object-fit: cover;
       object-position: center;
       border-radius: 6px;
@@ -1173,11 +1143,11 @@ $card-artwork-height: 216px;
     z-index: 4;
     color: #f5f5dc;
     text-shadow: 1px 1px 2px black;
-    font-size: 0.6rem;
+    font-size: 0.5rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 6px 3px 26px;
+    padding: 6px 3px 16px;
     text-transform: capitalize;
     text-align: center;
     width: 100%;
@@ -1185,11 +1155,11 @@ $card-artwork-height: 216px;
   }
 
   .mini-card-mint {
-    text-align: center;
+    text-align: right;
     font-size: 0.6rem;
     color: #f5f5dc;
     text-shadow: 1px 1px 2px black;
-    padding: 2px 5px;
+    padding: 2px 8px;
     margin-top: auto;
     width: 100%;
     box-sizing: border-box;
@@ -1835,26 +1805,6 @@ $card-artwork-height: 216px;
   }
 }
 
-.overlay-badge {
-  position: absolute;
-  background: rgba(0, 0, 0, 0.541);
-  color: #d4d0c0;
-  border-radius: 3px;
-  padding: 2px 4px;
-  font-size: 0.6rem;
-  font-weight: bold;
-  z-index: 99;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.082);
-  letter-spacing: 0.01em;
-
-  &.limited-badge {
-    bottom: 5px;
-    left: 5px;
-    background: $brand-secondary;
-    color: white;
-  }
-}
-
 .card-container.event {
   background-size: cover;
   background-position: center;
@@ -1960,9 +1910,53 @@ $card-artwork-height: 216px;
   }
 
   .card-artwork, .card-description { display: none; }
-  .overlay-badge {
-    position: relative;
-    align-self: flex-start;
-    margin: 0 10px 10px 10px;
+}
+
+.card-container, .mini-card-container {
+  .overlay-badges {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.8rem;
+    justify-content: flex-end;
+
+    .overlay-badge {
+      width: max-content;
+      background: rgba(0, 0, 0, 0.541);
+      color: #d4d0c0;
+      border-radius: 6px;
+      padding: 4px 9px;
+      font-family: inherit;
+      font-weight: bold;
+      font-size: 0.8rem;
+      z-index: 999999;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.082);
+      letter-spacing: 0.01em;
+
+      &.featured-badge {
+        background: $brand-secondary;
+        color: $color-surface;
+      }
+
+      &.timeleft-badge {
+        &.expired {
+          background: $brand-primary;
+          color: darkslategrey;
+        }
+      }
+    }
+
+    &.mini {
+      align-items: center;
+      padding-bottom: 2rem;
+      .overlay-badge {
+        font-size: 0.6rem;
+      }
+    }
   }
 }

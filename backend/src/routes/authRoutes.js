@@ -3,6 +3,7 @@ const express = require("express");
 const passport = require("../utils/passport");
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
+const Log = require("../models/logModel");
 const { checkAndAwardLoginEvents } = require('../services/eventService');
 
 const router = express.Router();
@@ -36,6 +37,9 @@ module.exports = function(io) {
             } else {
                 dbUser.twitchProfilePic = user.profile_image_url;
                 dbUser.loginCount = (dbUser.loginCount || 0) + 1;
+                if (dbUser.username !== user.display_name) {
+                    dbUser.username = user.display_name;
+                }
                 const now = new Date();
                 if (dbUser.lastLogin && (now - dbUser.lastLogin) <= 24 * 60 * 60 * 1000) {
                     dbUser.loginStreak = (dbUser.loginStreak || 0) + 1;
@@ -44,6 +48,15 @@ module.exports = function(io) {
                 }
                 dbUser.lastLogin = now;
                 await dbUser.save();
+            }
+
+            try {
+                const message = isNewUser
+                    ? `New user created and logged in: ${dbUser.username}`
+                    : `User logged in: ${dbUser.username}`;
+                console.log(`[LOG] ${message}`);
+            } catch (logErr) {
+                console.error("Failed to save login log:", logErr);
             }
 
             const rewardPayloads = await checkAndAwardLoginEvents(dbUser); // It's now an array

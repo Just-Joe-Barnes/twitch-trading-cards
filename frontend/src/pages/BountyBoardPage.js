@@ -131,6 +131,8 @@ const BountyBoardPage = ({ userId, username }) => {
                     image={bounty.wantedCard.imageUrl}
                     rarity={bounty.wantedCard.rarity}
                     description={bounty.wantedCard.flavorText}
+                    lore={bounty.wantedCard.lore}
+                    loreAuthor={bounty.wantedCard.loreAuthor}
                 />
                 <div className="actions">
                     <p className="listing-owner" style={{textAlign: 'center'}}>Wanted by <br /> <Link to={`/profile/${bounty.user.username}`}>{bounty.user.username}</Link></p>

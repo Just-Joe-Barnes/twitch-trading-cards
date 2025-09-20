@@ -252,7 +252,6 @@ const AdminCardAudit = () => {
         }
     };
 
-
     if (!isAdmin) {
         return <div className="page" style={{ padding: '2rem', color: '#fff' }}>Not authorized. Redirecting...</div>;
     }
@@ -291,7 +290,7 @@ const AdminCardAudit = () => {
 
                 <hr style={{ borderColor: '#333', margin: '1.5rem 0' }} />
 
-                <h2>Fixable Issues</h2>
+                <h2>Fixable Issues & Maintenance</h2>
 
                 <div className="fix-section">
                     <h4>Legacy "Glitch " Name Issues: <strong>{legacyGlitchCount}</strong></h4>

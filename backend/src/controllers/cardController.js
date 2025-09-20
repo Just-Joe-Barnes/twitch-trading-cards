@@ -1,6 +1,59 @@
 const Card = require('../models/cardModel');
 const User = require('../models/userModel');
-const mongoose = require('mongoose'); // Make sure mongoose is imported
+const mongoose = require('mongoose');
+
+/**
+ * @desc    Fetch cards for the public catalogue with filtering, sorting, and pagination.
+ * @route   GET /api/cards
+ * @access  Public
+ */
+const getPublicCards = async (req, res) => {
+    try {
+        const { search, rarity, sort, page = 1, limit = 50 } = req.query;
+
+        // --- THIS IS THE CRUCIAL SECURITY FILTER ---
+        // It ensures that cards marked as 'isHidden: true' are NEVER sent.
+        const baseFilter = { isHidden: { $ne: true } };
+
+        // Add search query to the filter if provided
+        if (search) {
+            // Using a case-insensitive regex for searching by name
+            baseFilter.name = { $regex: search, $options: 'i' };
+        }
+
+        // Add rarity filter if provided
+        if (rarity) {
+            // This filters the nested 'rarities' array in the Card document
+            baseFilter['rarities.rarity'] = { $regex: `^${rarity}$`, $options: 'i' };
+        }
+
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        const skip = (pageNum - 1) * limitNum;
+
+        // Fetch the paginated list of cards
+        const cards = await Card.find(baseFilter)
+            .sort({ name: sort === 'desc' ? -1 : 1 }) // Simple sort by name for now
+            .skip(skip)
+            .limit(limitNum)
+            .lean(); // .lean() for better performance
+
+        // Get the total count of documents that match the filter (for pagination)
+        const totalCards = await Card.countDocuments(baseFilter);
+
+        res.json({
+            cards,
+            page: pageNum,
+            pages: Math.ceil(totalCards / limitNum),
+            totalCards,
+        });
+
+    } catch (error) {
+        console.error('Error fetching public cards:', error);
+        res.status(500).json({ message: 'Server error while fetching cards.' });
+    }
+};
+
 
 async function getCardAvailability(cardIds = []) {
     // Standard input validation
@@ -34,6 +87,11 @@ async function getCardAvailability(cardIds = []) {
         // If specific cardIds (parent _id's) are provided, filter by them
         cardAggregateQuery['_id'] = { '$in': cardIds.map(id => new mongoose.Types.ObjectId(id)) };
     }
+
+    // --- ADDED SECURITY FILTER ---
+    // Ensure hidden cards are not included in availability calculations
+    cardAggregateQuery.isHidden = { $ne: true };
+
 
     const cards = await Card.aggregate([
         { '$match': cardAggregateQuery }, // Apply filter if cardIds were provided
@@ -101,4 +159,8 @@ async function getCardAvailability(cardIds = []) {
     };
 }
 
-module.exports = getCardAvailability;
+// Export both functions
+module.exports = {
+    getPublicCards,
+    getCardAvailability
+};

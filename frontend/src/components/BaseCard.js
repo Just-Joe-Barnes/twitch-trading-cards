@@ -148,7 +148,7 @@ const BaseCard = ({
 
     const RemainingBadge = ({remaining}) =>
         remaining !== null && remaining !== undefined ? (
-            <div className={`overlay-badge remaining-badge ${miniCard ? 'mini' : ''}`}>
+            <div className="overlay-badge remaining-badge">
                 {remaining} remaining
             </div>
         ) : null;
@@ -170,7 +170,7 @@ const BaseCard = ({
         }
         const timeLeft = to.getTime() - currentTime.getTime();
         const timeUntilStarts = from.getTime() - currentTime.getTime();
-        const badgeClass = `overlay-badge timeleft-badge ${miniCard ? 'mini' : ''}`;
+        const badgeClass = "overlay-badge timeleft-badge";
 
         if (timeLeft <= 0) {
             return (<div className={`${badgeClass} expired pulse`}> Expired </div>);
@@ -374,7 +374,6 @@ const BaseCard = ({
                                 </div>
                             )}
 
-
                             {["basic", "common", "standard", "uncommon"].includes(rarity.toLowerCase()) && ( <div className={cardGlareContainerClass}><div ref={glareRef} className={cardGlareClass}/></div> )}
                             {!miniCard && rarity.toLowerCase() === 'rare' && <div ref={holoRef} className="holographic-overlay"/>}
                             {rarity.toLowerCase() === 'holo-v' && <div ref={holoVRef} className="holo-v"/>}
@@ -396,8 +395,6 @@ const BaseCard = ({
                                                     </div>
                                                 )}
                                         </div>
-                                        <RemainingBadge remaining={remaining}/>
-                                        <TimeStatusBadge card={timestatuscard} now={timestatusnow}/>
                                     </>
                                 ) : (
                                     <>
@@ -416,18 +413,20 @@ const BaseCard = ({
                                         <div className={`${cardMintClass} ${isGlitch ? 'glitch-text' : ''}`} data-text={`${mintNumber} / ${rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.totalCopies ?? '???'}`}>
                                             <span className="mint-number">{mintNumber} / {rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.totalCopies ?? '???'}</span>
                                         </div>
-                                        <RemainingBadge remaining={remaining}/>
-                                        <TimeStatusBadge card={timestatuscard} now={timestatusnow}/>
                                     </>
                                 )}
                             </div>
                         </div>
                         {slabbed && (<div className={`slab-overlay ${rarity.toLowerCase()}`} style={{'--slab-color': rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.color ?? '#fff'}}> <div className="slab-header"><img src="/images/logo-horizontal.png" alt="logo" className={`slab-logo ${rarity.toLowerCase()}`}/> <div className="slab-name">{name}</div> <div className="slab-grade">{grade}</div> </div> </div>)}
-                        {featured && ( <div className={`overlay-badge featured-badge ${miniCard ? 'mini' : ''}`}>Featured</div> )}
                         {modifierData?.name === 'Negative' && ( <div className={`negative-overlay ${miniCard ? 'mini' : ''}`}/> )}
                         {modifierData?.name === 'Glitch' && ( <div className={`glitch-overlay ${miniCard ? 'mini' : ''}`}/> )}
                         {modifierData?.name === 'Prismatic' && ( <div className={`prismatic-overlay ${miniCard ? 'mini' : ''}`}/> )}
                         {limited && (<div className={`limited-overlay ${miniCard ? 'mini' : ''}`}/>)}
+                        <div className={`overlay-badges ${miniCard ? 'mini' : ''}`}>
+                            {featured && ( <div className="overlay-badge featured-badge">Featured</div> )}
+                            <TimeStatusBadge card={timestatuscard} now={timestatusnow}/>
+                            <RemainingBadge remaining={remaining}/>
+                        </div>
                     </>
                 )}
             </div>

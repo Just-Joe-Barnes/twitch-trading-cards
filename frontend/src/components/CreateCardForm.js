@@ -14,6 +14,8 @@ const CreateCardForm = ({ onClose, onSubmit }) => {
     const [availableTo, setAvailableTo] = useState('');
     const [previewRarity, setPreviewRarity] = useState('Basic');
     const [loading, setLoading] = useState(false);
+    const [eventCard, setEventCard] = useState(false);
+    const [isHidden, setIsHidden] = useState(false);
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
@@ -42,11 +44,19 @@ const CreateCardForm = ({ onClose, onSubmit }) => {
         }
     };
 
+    const handleEventCardChange = (e) => {
+        const isChecked = e.target.checked;
+        setEventCard(isChecked);
+        if (isChecked) {
+            setPreviewRarity('Event');
+        } else {
+            setPreviewRarity('Basic'); // Reset to default when unchecked
+        }
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         setLoading(true);
-        // The onSubmit prop will be a function passed from AdminCardManagement
-        // that handles the actual API call.
         onSubmit({
             name,
             flavorText,
@@ -55,6 +65,8 @@ const CreateCardForm = ({ onClose, onSubmit }) => {
             imageUrl,
             availableFrom: alwaysAvailable ? null : availableFrom || null,
             availableTo: alwaysAvailable ? null : availableTo || null,
+            eventCard,
+            isHidden,
         }).finally(() => setLoading(false));
     };
 
@@ -62,7 +74,6 @@ const CreateCardForm = ({ onClose, onSubmit }) => {
         <div className="section-card">
             <h2>Create New Card</h2>
             <form className="add-event-form" onSubmit={handleSubmit}>
-                {/* Left Column: Form Inputs */}
                 <div className="form-column">
                     <div className="form-group">
                         <label htmlFor="name">Card Name</label>
@@ -97,6 +108,16 @@ const CreateCardForm = ({ onClose, onSubmit }) => {
                                onChange={(e) => setAlwaysAvailable(e.target.checked)}/>
                         <label htmlFor="alwaysAvailable">Always Available in Packs</label>
                     </div>
+                    <div className="form-group checkbox-group">
+                        <input id="eventCard" type="checkbox" checked={eventCard}
+                               onChange={handleEventCardChange}/>
+                        <label htmlFor="eventCard">Event Rarity Card</label>
+                    </div>
+                    <div className="form-group checkbox-group">
+                        <input id="isHidden" type="checkbox" checked={isHidden}
+                               onChange={(e) => setIsHidden(e.target.checked)}/>
+                        <label htmlFor="isHidden">Hide card from front end</label>
+                    </div>
                     {!alwaysAvailable && (
                         <div className="date-range-inputs">
                             <div className="form-group">
@@ -113,7 +134,6 @@ const CreateCardForm = ({ onClose, onSubmit }) => {
                     )}
                 </div>
 
-                {/* Right Column: Live Preview */}
                 <div className="form-column">
                     <h3>Live Preview</h3>
                     <div className="card-preview-container card-tile-grid">
@@ -137,9 +157,8 @@ const CreateCardForm = ({ onClose, onSubmit }) => {
                                 />
                             </div>
                             <div className="actions">
-                                <select value={previewRarity} onChange={(e) => setPreviewRarity(e.target.value)}>
+                                <select value={previewRarity} onChange={(e) => setPreviewRarity(e.target.value)} disabled={eventCard}>
                                     {rarities.map(r => <option key={r.name} value={r.name}>{r.name}</option>)}
-                                    <option key='Event' value='Event'>Event</option>
                                 </select>
                             </div>
                         </div>
@@ -158,4 +177,3 @@ const CreateCardForm = ({ onClose, onSubmit }) => {
 };
 
 export default CreateCardForm;
-

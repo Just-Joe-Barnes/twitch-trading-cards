@@ -6,10 +6,8 @@ import {modifiers} from '../constants/modifiers';
 import '../styles/CataloguePage.css';
 import {rarities} from "../constants/rarities";
 
-const API_AVAILABILITY_URL =
-    process.env.NODE_ENV === 'production'
-        ? 'https://neds-decks.onrender.com/api/cards/availability'
-        : 'http://localhost:5000/api/cards/availability';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const API_AVAILABILITY_URL = API_BASE_URL + "/api/cards/availability";
 
 const useIsMobile = (breakpoint = 768) => {
     const [isMobile, setIsMobile] = useState(window.innerWidth < breakpoint);
@@ -41,10 +39,6 @@ const CataloguePage = () => {
 
     const [randomRaritySeed, setRandomRaritySeed] = useState(0);
 
-    const BASE_CARD_WIDTH = 300;
-    const BASE_CARD_HEIGHT = 450;
-    const CARD_MARGIN = 10;
-
     const defaultCardScale = 1;
     const [cardScale, setCardScale] = useState(() => {
         const storedScale = parseFloat(localStorage.getItem("cardScale"));
@@ -54,11 +48,9 @@ const CataloguePage = () => {
     const rangeInputRef = useRef(null);
     const [showFilters, setShowFilters] = useState(false);
 
-    // --- NEW ---
-    // 2. Use the hook and determine the max scale.
     const isMobile = useIsMobile();
     const maxCardScale = isMobile ? 1.3 : 2;
-    const minCardScale = isMobile ? 0.35 : 0.1;
+    const minCardScale = isMobile ? 0.35 : 0.35;
 
     useEffect(() => {
         localStorage.setItem("cardScale", cardScale);
@@ -350,28 +342,19 @@ const CataloguePage = () => {
             {activeLimitedCards.length > 0 && (
                 <>
                     <h2>Currently Available Limited Cards</h2>
-                    <div className="cards-grid">
+                    <div className={`cards-grid ${cardScale === .35 ? 'mini' : ''}`}
+                         style={{"--user-card-scale": (cardScale === .35 ? 1 : cardScale)}}>
                         {activeLimitedCards.map((card) => {
                             const displayRarity = selectedRarityFilter === 'random'
                                 ? getRandomRarityName()
                                 : selectedRarityFilter;
-
                             const remaining = getRemaining(card.name, displayRarity);
-
-                            const layoutWidth = BASE_CARD_WIDTH * cardScale + (2 * CARD_MARGIN);
-                            const layoutHeight = BASE_CARD_HEIGHT * cardScale + (2 * CARD_MARGIN);
 
                             return (
                                 <div
                                     key={card._id}
                                     id={`card-${card._id}`}
-                                    style={{
-                                        width: `${layoutWidth}px`,
-                                        height: `${layoutHeight}px`,
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                    }}
+                                    className="cata-card"
                                 >
                                     <BaseCard
                                         name={card.name}
@@ -385,7 +368,7 @@ const CataloguePage = () => {
                                         lore={card.lore}
                                         loreAuthor={card.loreAuthor}
                                         modifier={selectedModifier === 'None' ? null : selectedModifier}
-                                        cardScale={cardScale}
+                                        miniCard={cardScale === 0.35}
                                     />
                                 </div>
                             );
@@ -394,7 +377,8 @@ const CataloguePage = () => {
                 </>
             )}
 
-            <div className="cards-grid" style={{"--user-card-scale": cardScale}}>
+            <div className={`cards-grid ${cardScale === .35 ? 'mini' : ''}`}
+                 style={{"--user-card-scale": (cardScale === .35 ? 1 : cardScale)}}>
                 {filteredAndSortedCards.length > 0 ? (
                     filteredAndSortedCards.map((card) => {
                         const displayRarity = selectedRarityFilter === 'random'
@@ -418,6 +402,7 @@ const CataloguePage = () => {
                                         loreAuthor={card.loreAuthor}
                                         remaining={remaining}
                                         timestatuscard={card}
+                                        miniCard={cardScale === 0.35}
                                     />
                                 </div>
                             </div>

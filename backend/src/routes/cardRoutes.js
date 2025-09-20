@@ -4,24 +4,18 @@ const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const Card = require('../models/cardModel');
 const User = require('../models/userModel');
-const getCardAvailability = require("../controllers/cardController");
+const { getPublicCards, getCardAvailability } = require("../controllers/cardController");
 
+
+router.get('/', getPublicCards);
 
 router.get('/availability', async (req, res) => {
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
-    let cardIds = [];
-    if (req.query.cardIds) {
-        cardIds = req.query.cardIds.split(',').map(id => id.trim());
-    }
-
     try {
-        const availabilityData = await getCardAvailability(cardIds);
-        res.json(availabilityData);
+        const data = await getCardAvailability(); // Call the controller function
+        res.json(data);
     } catch (error) {
-        console.error("Error fetching card availability:", error);
-        res.status(500).json({ message: "Error fetching card availability" });
+        console.error('Error fetching card availability:', error);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 

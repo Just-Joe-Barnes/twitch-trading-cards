@@ -11,13 +11,14 @@ const cardSchema = new mongoose.Schema({
     name: { type: String, required: true },
     imageUrl: { type: String, required: true },
     flavorText: { type: String },
-    lore: { type: String }, // Optional lore field
-    loreAuthor: { type: String }, // Optional lore author field
+    lore: { type: String },
+    loreAuthor: { type: String },
     modifier: { type: mongoose.Schema.Types.ObjectId, ref: 'Modifier' },
-    rarities: [raritySchema], // Nest rarities as an array of objects
+    rarities: [raritySchema],
     availableFrom: { type: Date, default: null },
     availableTo: { type: Date, default: null },
     series: { type: String, default: 'Base' },
+    isHidden: { type: Boolean, default: false },
 });
 
 // Helpful indexes for frequent queries

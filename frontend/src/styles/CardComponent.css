@@ -1,6 +1,7 @@
 .card-container {
   --card-scale: 1;
   --card-bg-color: #3a2525;
+  background: var(--card-bg-color);
   width: var(--card-width, 300px);
   height: var(--card-height, 450px);
   aspect-ratio: 2/3;
@@ -11,7 +12,6 @@
   font-family: var(--font-family), serif;
   margin: 10px;
   position: relative;
-  background: var(--card-bg-color);
   transition: transform 1s ease-out;
   will-change: transform;
   user-select: none;
@@ -29,35 +29,6 @@
   transform-style: preserve-3d;
   display: flex;
   flex-direction: column;
-}
-.card-container .overlay-badge {
-  position: absolute;
-  background: rgba(0, 0, 0, 0.541);
-  color: #d4d0c0;
-  border-radius: 6px;
-  padding: 4px 9px;
-  font-size: 1rem;
-  font-family: inherit;
-  font-weight: bold;
-  z-index: 999999;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.082);
-  letter-spacing: 0.01em;
-}
-.card-container .overlay-badge.remaining-badge, .card-container .overlay-badge.featured-badge {
-  bottom: 10px;
-  left: 10px;
-}
-.card-container .overlay-badge.featured-badge {
-  background: #7eb5bc;
-  color: #1e1e1e;
-}
-.card-container .overlay-badge.timeleft-badge {
-  bottom: 46px;
-  left: 8px;
-}
-.card-container .overlay-badge.timeleft-badge.expired {
-  background: #e680a7;
-  color: darkslategrey;
 }
 .card-container .card-border {
   padding: 10px;
@@ -910,6 +881,8 @@
 
 .mini-card-container {
   position: relative;
+  --card-bg-color: #3a2525;
+  background: var(--card-bg-color);
   display: flex;
   height: 100%;
   width: 100%;
@@ -1033,6 +1006,7 @@
 .mini-card-container .mini-card-artwork img {
   display: block;
   width: 100%;
+  height: 100%;
   object-fit: cover;
   object-position: center;
   border-radius: 6px;
@@ -1044,22 +1018,22 @@
   z-index: 4;
   color: #f5f5dc;
   text-shadow: 1px 1px 2px black;
-  font-size: 0.6rem;
+  font-size: 0.5rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 6px 3px 26px;
+  padding: 6px 3px 16px;
   text-transform: capitalize;
   text-align: center;
   width: 100%;
   box-sizing: border-box;
 }
 .mini-card-container .mini-card-mint {
-  text-align: center;
+  text-align: right;
   font-size: 0.6rem;
   color: #f5f5dc;
   text-shadow: 1px 1px 2px black;
-  padding: 2px 5px;
+  padding: 2px 8px;
   margin-top: auto;
   width: 100%;
   box-sizing: border-box;
@@ -1717,25 +1691,6 @@
   background-blend-mode: overlay;
 }
 
-.overlay-badge {
-  position: absolute;
-  background: rgba(0, 0, 0, 0.541);
-  color: #d4d0c0;
-  border-radius: 3px;
-  padding: 2px 4px;
-  font-size: 0.6rem;
-  font-weight: bold;
-  z-index: 99;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.082);
-  letter-spacing: 0.01em;
-}
-.overlay-badge.limited-badge {
-  bottom: 5px;
-  left: 5px;
-  background: #7eb5bc;
-  color: white;
-}
-
 .card-container.event {
   background-size: cover;
   background-position: center;
@@ -1828,10 +1783,46 @@
 .card-container.event .card-artwork, .card-container.event .card-description {
   display: none;
 }
-.card-container.event .overlay-badge {
-  position: relative;
-  align-self: flex-start;
-  margin: 0 10px 10px 10px;
+
+.card-container .overlay-badges, .mini-card-container .overlay-badges {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.8rem;
+  justify-content: flex-end;
+}
+.card-container .overlay-badges .overlay-badge, .mini-card-container .overlay-badges .overlay-badge {
+  width: max-content;
+  background: rgba(0, 0, 0, 0.541);
+  color: #d4d0c0;
+  border-radius: 6px;
+  padding: 4px 9px;
+  font-family: inherit;
+  font-weight: bold;
+  font-size: 0.8rem;
+  z-index: 999999;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.082);
+  letter-spacing: 0.01em;
+}
+.card-container .overlay-badges .overlay-badge.featured-badge, .mini-card-container .overlay-badges .overlay-badge.featured-badge {
+  background: #7eb5bc;
+  color: #1e1e1e;
+}
+.card-container .overlay-badges .overlay-badge.timeleft-badge.expired, .mini-card-container .overlay-badges .overlay-badge.timeleft-badge.expired {
+  background: #e680a7;
+  color: darkslategrey;
+}
+.card-container .overlay-badges.mini, .mini-card-container .overlay-badges.mini {
+  align-items: center;
+  padding-bottom: 2rem;
+}
+.card-container .overlay-badges.mini .overlay-badge, .mini-card-container .overlay-badges.mini .overlay-badge {
+  font-size: 0.6rem;
 }
 
 /*# sourceMappingURL=CardComponent.css.map */

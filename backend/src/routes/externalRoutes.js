@@ -58,7 +58,7 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
             subtier,
             submonths,
             giftcount,
-            recipientid // Comma-separated string of recipient IDs
+            recipientid // Now expecting a comma-separated string for gift bombs
         } = req.headers;
 
         // --- Start: Updated Validation ---
@@ -84,7 +84,6 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
         switch (eventtype) {
             case 'subscription':
                 const tier = subtier;
-                // Parse header string to number, default to 1 if not provided
                 const months = parseInt(submonths) || 1;
 
                 if (!tier) {
@@ -92,43 +91,54 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
                     return res.status(400).json({ message: 'Invalid payload. Missing subtier header.' });
                 }
 
-                packsToAward = subType[tier] || 1;
-                packsToAward *= months;
+                packsToAward = subType[tier.toLowerCase()] || 1;
+                // We're ignoring multi-month for now as requested
+                // packsToAward *= months;
 
                 const subscriber = await addPacksToUser(userid, packsToAward);
                 if (!subscriber) {
                     await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `User with Twitch ID ${userid} not found.`);
                     return res.status(404).json({ message: `User with Twitch ID ${userid} not found.` });
                 }
-                message = `${subscriber.username} subscribed for ${months} months! They have been awarded ${packsToAward} packs.`;
+                message = `${subscriber.username} subscribed! They have been awarded ${packsToAward} packs.`;
                 await createLogEntry(streamerUser, 'TWITCH_ROUTE_REDEMPTION', message);
                 break;
 
+            // --- START: MODIFIED GIFTED SUB LOGIC ---
             case 'giftedSub':
                 const giftTier = subtier;
                 const giftCount = parseInt(giftcount) || 1;
-                const monthsGifted = parseInt(submonths) || 1;
 
-                packsToAward = subType[giftTier] || 1;
+                if (!recipientid) {
+                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `Gifted sub event is missing recipientid header.`);
+                    return res.status(400).json({ message: 'Invalid payload. Missing recipientid header.' });
+                }
 
-                // Award packs to the gifter
-                const gifterPacks = packsToAward * giftCount * monthsGifted;
+                // Base packs for the tier of the gift
+                packsToAward = subType[giftTier.toLowerCase()] || 1;
+
+                // 1. Award packs to the gifter (this logic was already correct)
+                const gifterPacks = packsToAward * giftCount;
                 const gifter = await addPacksToUser(userid, gifterPacks);
                 if (!gifter) {
                     await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `Gifter with Twitch ID ${userid} not found.`);
                     return res.status(404).json({ message: `Gifter with Twitch ID ${userid} not found.` });
                 }
 
-                const recipientPacks = packsToAward * monthsGifted;
-                const recipient = await addPacksToUser(recipientid, recipientPacks);
-                if (!recipient) {
-                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `Recipient with Twitch ID ${recipientid} not found.`);
-                    return res.status(404).json({ message: `Recipient with Twitch ID ${recipientid} not found.` });
-                }
+                // 2. Award packs to ALL recipients
+                const recipientIds = recipientid.split(','); // Split the string into an array of IDs
+                const recipientPacks = packsToAward; // Each recipient gets the base amount
 
-                message = `${gifter.username} gifted ${giftCount} subscriptions and has been awarded ${gifterPacks} packs! Each of the recipients also received ${recipientPacks} packs.`;
+                // Create an array of database update promises
+                const updatePromises = recipientIds.map(id => addPacksToUser(id.trim(), recipientPacks));
+
+                // Execute all promises in parallel for efficiency
+                await Promise.all(updatePromises);
+
+                message = `${gifter.username} gifted ${giftCount} subscriptions and has been awarded ${gifterPacks} packs! Each of the ${recipientIds.length} recipients also received ${recipientPacks} packs.`;
                 await createLogEntry(streamerUser, 'TWITCH_ROUTE_REDEMPTION', message);
                 break;
+            // --- END: MODIFIED GIFTED SUB LOGIC ---
 
             case 'redemption':
                 packsToAward = 1;
@@ -196,19 +206,6 @@ router.post('/redeem-pack', validateApiKey, async (req, res) => {
             await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `User with Twitch ID ${userId} not found.`);
             return res.status(404).json({ message: `User with Twitch ID ${userId} not found.` });
         }
-
-        // For this redemption we are technically adding a pack and ripping it straight away,
-        // but the code below is if we want to subtract a pack from the user
-
-        // Check if the user has a pack to open
-        // if (redeemer.packs < 1) {
-        //     const message = `${redeemer.username} does not have any packs to open.`;
-        //     await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', message);
-        //     return res.status(400).json({ message: message });
-        // }
-        // Decrement the user's pack count
-        // redeemer.packs -= 1;
-        // await redeemer.save();
 
         const newCards = await generatePackPreview(5, false, false);
 

@@ -23,7 +23,7 @@ router.get('/wanted', protect, async (req, res) => {
             const cardDetails = await Card.findOne({
                 name: bounty.favoriteCard.name
             })
-                .select('imageUrl flavorText');
+                .select('imageUrl flavorText lore loreAuthor');
 
             return {
                 user: {
@@ -34,7 +34,9 @@ router.get('/wanted', protect, async (req, res) => {
                     name: bounty.favoriteCard.name,
                     rarity: bounty.favoriteCard.rarity,
                     imageUrl: cardDetails ? cardDetails.imageUrl : null,
-                    flavorText: cardDetails ? cardDetails.flavorText : null
+                    flavorText: cardDetails ? cardDetails.flavorText : null,
+                    lore: cardDetails ? cardDetails.lore : null,
+                    loreAuthor: cardDetails ? cardDetails.loreAuthor : null,
                 }
             };
         }));

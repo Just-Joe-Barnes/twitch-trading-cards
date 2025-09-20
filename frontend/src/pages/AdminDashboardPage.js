@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef, useCallback} from 'react';
 import {fetchWithAuth} from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import {useNavigate} from 'react-router-dom';
@@ -17,6 +17,10 @@ const AdminDashboardPage = ({user}) => {
     const [sortColumn, setSortColumn] = useState(null);
     const [sortDirection, setSortDirection] = useState('asc');
 
+    // --- NEW: State for keyboard navigation ---
+    const [focusedUserIndex, setFocusedUserIndex] = useState(null);
+    const rowRefs = useRef({});
+
     // Loading & animation states
     const [loading, setLoading] = useState(true);
     const [waitingOnPack, setWaitingOnPack] = useState(false);
@@ -28,9 +32,7 @@ const AdminDashboardPage = ({user}) => {
 
     // Cards state
     const [openedCards, setOpenedCards] = useState([]);
-    // revealedCards: an array of booleans; false = not revealed, true = revealed
     const [revealedCards, setRevealedCards] = useState([]);
-    // faceDownCards: true = card is face down; false = flipped up
     const [faceDownCards, setFaceDownCards] = useState([]);
 
     // Pack counter forces remounting of the video element each time
@@ -42,6 +44,50 @@ const AdminDashboardPage = ({user}) => {
     const [forceModifier, setForceModifier] = useState(false);
 
     const [sessionCounts, setSessionCounts] = useState({});
+
+    // --- MODIFIED: Wrapped in useCallback for stable reference ---
+    const openPackForUser = useCallback(async () => {
+        if (!selectedUser) return;
+        setPackAnimationDone(false);
+        setCardsLoaded(false);
+        setPackCounter((prev) => prev + 1);
+        setLoading(true);
+        setIsOpeningAnimation(true);
+        setOpenedCards([]);
+        setRevealedCards([]);
+        setFaceDownCards([]);
+        setWaitingOnPack(true);
+
+        try {
+            const res = await fetchWithAuth(
+                `/api/packs/admin/openPacksForUser/${selectedUser._id}`,
+                {
+                    method: 'POST',
+                    body: JSON.stringify({templateId: selectedPackTypeId, forceModifier})
+                }
+            );
+            const {newCards} = res;
+            setOpenedCards(newCards);
+            setRevealedCards(Array(newCards.length).fill(false));
+            setFaceDownCards(Array(newCards.length).fill(true));
+            setCardsLoaded(true);
+            updateSessionCount(selectedUser._id);
+            setUsers((prev) =>
+                prev.map((u) =>
+                    u._id === selectedUser._id ? {...u, packs: u.packs - 1} : u
+                )
+            );
+            if (packAnimationDone) {
+                revealAllCards(newCards.length);
+            }
+        } catch (err) {
+            console.error('Error opening pack:', err);
+            setIsOpeningAnimation(false);
+        } finally {
+            setLoading(false);
+        }
+    }, [selectedUser, selectedPackTypeId, forceModifier, packAnimationDone]);
+
 
     // Fetch users with packs
     const fetchData = async () => {
@@ -75,9 +121,9 @@ const AdminDashboardPage = ({user}) => {
             }
         } catch (error) {
             console.error('Failed to parse session data from localStorage', error);
-            localStorage.removeItem('packOpeningSession'); // Clear corrupted data
+            localStorage.removeItem('packOpeningSession');
         }
-    }, []); // Empty dependency array means this runs only once on mount
+    }, []);
 
     useEffect(() => {
         const fetchPacks = async () => {
@@ -94,39 +140,47 @@ const AdminDashboardPage = ({user}) => {
         fetchPacks();
     }, []);
 
-    // Poll every 10 seconds for updates
+    // Poll every 30 seconds for updates
     useEffect(() => {
         const intervalId = setInterval(() => {
             fetchData();
-        }, 30000); // 30 seconds
+        }, 30000);
 
         return () => clearInterval(intervalId);
     }, [user, navigate, activeFilter]);
 
-    const updateSessionCount = (userId) => {
-        // Create a new object from the current state to avoid direct mutation
+    // --- MODIFIED: Wrapped in useCallback for stable reference ---
+    const updateSessionCount = useCallback((userId) => {
         const newCounts = { ...sessionCounts };
-        // Increment the count for the given user, initializing to 1 if it's their first pack this session
         newCounts[userId] = (newCounts[userId] || 0) + 1;
-
-        // Update the state to re-render the UI
         setSessionCounts(newCounts);
-        // Persist the new counts to localStorage
         localStorage.setItem('packOpeningSession', JSON.stringify(newCounts));
-    };
+    }, [sessionCounts]);
+
 
     const handleResetSession = () => {
-        // Clear the data from localStorage
         localStorage.removeItem('packOpeningSession');
-        // Reset the component's state
         setSessionCounts({});
-        // Optional: show a confirmation message
         if (window.showToast) {
             window.showToast('Session counter has been reset.', 'info');
         }
     };
 
-    // Filter users by search query
+    const handleAddPacksAllActiveUsers = async () => {
+        try {
+            await fetchWithAuth('/api/admin/add-packs-active', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({amount: Number(2)}),
+            });
+
+            await fetchData();
+            window.showToast(`Added 2 packs to all active users.`, 'success');
+        } catch {
+            window.showToast('Error adding packs to all active users.', 'error');
+        }
+    };
+
     const filteredUsers = users.filter((u) =>
         u.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -142,22 +196,18 @@ const AdminDashboardPage = ({user}) => {
 
     const sortedUsers = [...filteredUsers].sort((a, b) => {
         if (!sortColumn) return 0;
-
         const aValue = a[sortColumn];
         const bValue = b[sortColumn];
-
         if (sortColumn === 'username') {
             return sortDirection === 'asc'
                 ? String(aValue).localeCompare(String(bValue), undefined, {sensitivity: 'base'})
                 : String(bValue).localeCompare(String(aValue), undefined, {sensitivity: 'base'});
         }
-
         if (sortColumn === 'lastActive') {
             const dateA = new Date(aValue);
             const dateB = new Date(bValue);
             return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
         }
-
         if (sortColumn === 'preferredPack') {
             const nameA = aValue?.name || '';
             const nameB = bValue?.name || '';
@@ -165,70 +215,16 @@ const AdminDashboardPage = ({user}) => {
                 ? nameA.localeCompare(nameB)
                 : nameB.localeCompare(nameA);
         }
-
-        if (aValue < bValue) {
-            return sortDirection === 'asc' ? -1 : 1;
-        }
-        if (aValue > bValue) {
-            return sortDirection === 'asc' ? 1 : -1;
-        }
-
+        if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
         return 0;
     });
 
-    const toggleUserSelection = (u) => {
+    // --- MODIFIED: Wrapped in useCallback for stable reference ---
+    const toggleUserSelection = useCallback((u) => {
         setSelectedUser((prev) => (prev?._id === u._id ? null : u));
         setSelectedPackTypeId(u.preferredPack?._id || '67f68591c7560fa1a75f142c')
-    };
-
-    // Open a pack for the selected user
-    const openPackForUser = async () => {
-        if (!selectedUser) return;
-        setPackAnimationDone(false);
-        setCardsLoaded(false);
-        setPackCounter((prev) => prev + 1);
-        setLoading(true);
-        setIsOpeningAnimation(true);
-        setOpenedCards([]);
-        setRevealedCards([]);
-        setFaceDownCards([]);
-        setWaitingOnPack(true);
-
-        try {
-            const res = await fetchWithAuth(
-                `/api/packs/admin/openPacksForUser/${selectedUser._id}`,
-                {
-                    method: 'POST',
-                    body: JSON.stringify({templateId: selectedPackTypeId, forceModifier})
-                }
-            );
-            const {newCards} = res;
-            console.log('New cards:', newCards);
-            setOpenedCards(newCards);
-            setRevealedCards(Array(newCards.length).fill(false));
-            setFaceDownCards(Array(newCards.length).fill(true));
-            setCardsLoaded(true);
-
-            updateSessionCount(selectedUser._id);
-
-            // Decrement the user's pack count
-            setUsers((prev) =>
-                prev.map((u) =>
-                    u._id === selectedUser._id ? {...u, packs: u.packs - 1} : u
-                )
-            );
-
-            // If animation already done, reveal cards now
-            if (packAnimationDone) {
-                revealAllCards(newCards.length);
-            }
-        } catch (err) {
-            console.error('Error opening pack:', err);
-            setIsOpeningAnimation(false);
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, []);
 
     // Debug open pack without affecting inventory
     const openDebugPackForUser = async () => {
@@ -252,14 +248,11 @@ const AdminDashboardPage = ({user}) => {
                 }
             );
             const {newCards} = res;
-            console.log('[Debug] cards:', newCards);
             setOpenedCards(newCards);
             setRevealedCards(Array(newCards.length).fill(false));
             setFaceDownCards(Array(newCards.length).fill(true));
             setCardsLoaded(true);
-
             updateSessionCount(selectedUser._id);
-
             if (packAnimationDone) {
                 revealAllCards(newCards.length);
             }
@@ -273,27 +266,21 @@ const AdminDashboardPage = ({user}) => {
 
     // Helper to reveal cards one by one with delay
     const revealAllCards = async (count) => {
-        console.log('Starting sequential reveal of', count, 'cards');
         for (let i = 0; i < count; i++) {
             setRevealedCards((prev) => {
                 const updated = [...prev];
                 updated[i] = true;
-                console.log('Revealed card index', i);
                 return updated;
             });
             await new Promise((resolve) => setTimeout(resolve, 300));
         }
-        console.log('Finished sequential reveal');
     };
 
-    // When the video ends, reveal all cards if cards are loaded
     const handleVideoEnd = () => {
-        console.log('handleVideoEnd triggered');
         setIsOpeningAnimation(false);
         setPackAnimationDone(true);
     };
 
-    // Flip card on click: if the card is still face down, flip it up
     const handleFlipCard = (i) => {
         if (!faceDownCards[i]) return;
         setFaceDownCards((prev) => {
@@ -303,7 +290,6 @@ const AdminDashboardPage = ({user}) => {
         });
     };
 
-    // When both animation and cards are ready, reveal cards
     useEffect(() => {
         if (packAnimationDone && cardsLoaded && openedCards.length > 0) {
             if (document.readyState === 'complete') {
@@ -319,6 +305,51 @@ const AdminDashboardPage = ({user}) => {
     const handleFilterChange = (filter) => {
         setActiveFilter(filter);
     };
+
+    // --- NEW: Effect to handle keyboard navigation ---
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setFocusedUserIndex(prev => {
+                    const nextIndex = prev === null ? 0 : prev + 1;
+                    return nextIndex >= sortedUsers.length ? sortedUsers.length - 1 : nextIndex;
+                });
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setFocusedUserIndex(prev => (prev === null || prev === 0 ? 0 : prev - 1));
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (focusedUserIndex !== null && sortedUsers[focusedUserIndex]) {
+                    const focusedUser = sortedUsers[focusedUserIndex];
+                    if (selectedUser?._id === focusedUser._id && selectedUser.packs > 0) {
+                        openPackForUser();
+                    } else {
+                        toggleUserSelection(focusedUser);
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [sortedUsers, focusedUserIndex, selectedUser, toggleUserSelection, openPackForUser]);
+
+    // --- NEW: Effect to scroll the focused user into view ---
+    useEffect(() => {
+        if (focusedUserIndex !== null && sortedUsers[focusedUserIndex]) {
+            const userId = sortedUsers[focusedUserIndex]._id;
+            const rowEl = rowRefs.current[userId];
+            if (rowEl) {
+                rowEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+    }, [focusedUserIndex, sortedUsers]);
+
+    // --- NEW: Effect to reset focus when filters change ---
+    useEffect(() => {
+        setFocusedUserIndex(null);
+    }, [searchQuery, activeFilter, sortColumn, sortDirection]);
 
     return (
         <div className="page full">
@@ -338,43 +369,14 @@ const AdminDashboardPage = ({user}) => {
 
             <div className="top-section">
                 <div className="grid-container">
-                    {/*<div className="section-card">*/}
-                    {/*    <h2>Stream Overlay Queue</h2>*/}
-                    {/*    <div>*/}
-                    {/*        Status: <strong style={{ color: queueStatus.isPaused ? '#ffb74d' : (queueStatus.isBusy ? '#FFA726' : '#66BB6A') }}>*/}
-                    {/*        {queueStatus.isPaused ? 'Paused' : (queueStatus.isBusy ? 'Busy Animating' : 'Running')}*/}
-                    {/*    </strong>*/}
-                    {/*    </div>*/}
-                    {/*    <p><strong>Items in Queue: {queueStatus.queue.length}</strong></p>*/}
-                    {/*    {queueStatus.queue.length > 0 && (*/}
-                    {/*        <ol style={{ paddingLeft: '1.5rem', maxHeight: '150px', overflowY: 'auto' }}>*/}
-                    {/*            {queueStatus.queue.map((name, index) => <li key={index}>{name}</li>)}*/}
-                    {/*        </ol>*/}
-                    {/*    )}*/}
-
-                    {/*    /!* The new smart toggle button *!/*/}
-                    {/*    {queueStatus.isPaused ? (*/}
-                    {/*        <button*/}
-                    {/*            className="primary-button"*/}
-                    {/*            onClick={handleResumeQueue}*/}
-                    {/*            style={{ marginTop: '1rem', width: '100%' }}*/}
-                    {/*        >*/}
-                    {/*            ▶ Resume Queue*/}
-                    {/*        </button>*/}
-                    {/*    ) : (*/}
-                    {/*        <button*/}
-                    {/*            className="secondary-button"*/}
-                    {/*            onClick={handlePauseQueue}*/}
-                    {/*            style={{ marginTop: '1rem', width: '100%' }}*/}
-                    {/*        >*/}
-                    {/*            ❚❚ Pause Queue*/}
-                    {/*        </button>*/}
-                    {/*    )}*/}
-                    {/*</div>*/}
                     <div className="section-card cam">
                         <button onClick={handleResetSession} className="secondary-button sm">
                             <i className="fa-solid fa-arrows-rotate" style={{ marginRight: '8px' }}></i>
                             Reset Session
+                        </button>
+                        <button onClick={handleAddPacksAllActiveUsers} className="secondary-button sm">
+                            <i className="fa-solid fa-cards" style={{ marginRight: '8px' }}></i>
+                            Add 2 packs
                         </button>
                     </div>
                     <div className="section-card">
@@ -413,11 +415,16 @@ const AdminDashboardPage = ({user}) => {
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {sortedUsers.map((u) => (
+                                {sortedUsers.map((u, index) => (
                                     <tr
                                         key={u._id}
-                                        className={selectedUser?._id === u._id ? 'selected' : ''}
-                                        onClick={() => toggleUserSelection(u)}
+                                        // --- MODIFIED: Added ref and classes for keyboard nav ---
+                                        ref={el => rowRefs.current[u._id] = el}
+                                        className={`${selectedUser?._id === u._id ? 'selected' : ''} ${focusedUserIndex === index ? 'focused' : ''}`}
+                                        onClick={() => {
+                                            toggleUserSelection(u);
+                                            setFocusedUserIndex(index);
+                                        }}
                                     >
                                         <td>{u.username}</td>
                                         <td>{u.packs}</td>
@@ -502,61 +509,61 @@ const AdminDashboardPage = ({user}) => {
             </div>
 
             <div>
-            {waitingOnPack && (
-                <div className="opened-cards">
-                    <div className="cards-container">
-                        {openedCards.length === 0 && (
-                            <>
-                                Ripping Packs...
-                                <img src="/animations/loadingspinner.gif" alt="Loading..."
-                                     className="spinner-image"/>
-                            </>
-                        )}
-                        {openedCards.map((card, i) => {
-                            const visibleClass = revealedCards[i] ? 'visible' : '';
-                            const flipClass = faceDownCards[i] ? 'face-down' : 'face-up';
-                            return (
-                                <div
-                                    key={i}
-                                    className={`card-wrapper ${visibleClass} ${flipClass}`}
-                                    style={{
-                                        '--rarity-color': getRarityColor(card.rarity),
-                                        transitionDelay: `${i * 0.2}s`
-                                    }}
-                                    onClick={() => handleFlipCard(i)}
-                                >
-                                    <div className="card-content">
-                                        <div className="card-inner">
-                                            <div className="card-back">
-                                                <img
-                                                    src="/images/card-back-placeholder.png"
-                                                    alt="Card Back"
-                                                />
-                                            </div>
-                                            <div className="card-front">
-                                                <BaseCard
-                                                    name={card.name}
-                                                    image={card.imageUrl}
-                                                    description={card.flavorText}
-                                                    rarity={card.rarity}
-                                                    mintNumber={card.mintNumber}
-                                                    modifier={card.modifier}
-                                                    lore={card.lore}
-                                                    loreAuthor={card.loreAuthor}
-                                                />
+                {waitingOnPack && (
+                    <div className="opened-cards">
+                        <div className="cards-container">
+                            {openedCards.length === 0 && (
+                                <>
+                                    Ripping Packs...
+                                    <img src="/animations/loadingspinner.gif" alt="Loading..."
+                                         className="spinner-image"/>
+                                </>
+                            )}
+                            {openedCards.map((card, i) => {
+                                const visibleClass = revealedCards[i] ? 'visible' : '';
+                                const flipClass = faceDownCards[i] ? 'face-down' : 'face-up';
+                                return (
+                                    <div
+                                        key={i}
+                                        className={`card-wrapper ${visibleClass} ${flipClass}`}
+                                        style={{
+                                            '--rarity-color': getRarityColor(card.rarity),
+                                            transitionDelay: `${i * 0.2}s`
+                                        }}
+                                        onClick={() => handleFlipCard(i)}
+                                    >
+                                        <div className="card-content">
+                                            <div className="card-inner">
+                                                <div className="card-back">
+                                                    <img
+                                                        src="/images/card-back-placeholder.png"
+                                                        alt="Card Back"
+                                                    />
+                                                </div>
+                                                <div className="card-front">
+                                                    <BaseCard
+                                                        name={card.name}
+                                                        image={card.imageUrl}
+                                                        description={card.flavorText}
+                                                        rarity={card.rarity}
+                                                        mintNumber={card.mintNumber}
+                                                        modifier={card.modifier}
+                                                        lore={card.lore}
+                                                        loreAuthor={card.loreAuthor}
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
-</div>
-)
-    ;
+    )
+        ;
 };
 
 export default AdminDashboardPage;

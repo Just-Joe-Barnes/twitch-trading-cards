@@ -6,6 +6,7 @@ const multer = require('multer');
 const ftp = require('basic-ftp');
 const path = require('path');
 const { Readable } = require('stream');
+const UserActivity = require('../models/UserActivity');
 
 // Models
 const User = require('../models/userModel');
@@ -106,6 +107,43 @@ router.post('/add-packs', protect, adminOnly, async (req, res) => {
     } catch (error) {
         console.error('Error adding packs to all users:', error);
         res.status(500).json({ error: 'Failed to add packs to all users.' });
+    }
+});
+
+router.post('/add-packs-active', protect, adminOnly, async (req, res) => {
+    const { amount } = req.body;
+    const num = Number(amount);
+
+    if (isNaN(num)) {
+        return res.status(400).json({ error: 'Amount must be a number.' });
+    }
+
+    try {
+        // Step 1: Define what "active" means (e.g., active in the last 30 minutes)
+        const activeMinutes = 30;
+        const cutoffDate = new Date(Date.now() - activeMinutes * 60 * 1000);
+
+        // Step 2: Find the IDs of all users who meet the "active" criteria
+        const activeActivities = await UserActivity.find({
+            lastActive: { $gte: cutoffDate }
+        }).select('userId'); // We only need the userId
+
+        const activeUserIds = activeActivities.map(activity => activity.userId);
+
+        if (activeUserIds.length === 0) {
+            return res.json({ message: 'No active users found to give packs to.', updatedCount: 0 });
+        }
+
+        // Step 3: Update only the users whose IDs are in our active list
+        const result = await User.updateMany(
+            { _id: { $in: activeUserIds } }, // The filter
+            { $inc: { packs: num } }          // The update
+        );
+
+        res.json({ message: `Added ${num} packs to ${result.modifiedCount} active users.`, updatedCount: result.modifiedCount });
+    } catch (error) {
+        console.error('Error adding packs to active users:', error);
+        res.status(500).json({ error: 'Failed to add packs to active users.' });
     }
 });
 
@@ -314,7 +352,7 @@ const storage = multer.diskStorage({
 
 router.post('/cards', protect, adminOnly, async (req, res) => {
     try {
-        const { name, flavorText, imageUrl, availableFrom, availableTo, rarities } = req.body;
+        const { name, flavorText, imageUrl, availableFrom, availableTo, rarities, isHidden } = req.body;
 
         const newCard = new Card({
             name,
@@ -323,6 +361,7 @@ router.post('/cards', protect, adminOnly, async (req, res) => {
             availableFrom: availableFrom ? new Date(availableFrom) : null,
             availableTo: availableTo ? new Date(availableTo) : null,
             rarities: rarities || [],
+            isHidden: isHidden || false,
         });
 
         await newCard.save();
@@ -332,6 +371,47 @@ router.post('/cards', protect, adminOnly, async (req, res) => {
         res.status(500).json({ message: 'Failed to create card' });
     }
 });
+
+// --- NEW ROUTE ---
+/**
+ * @route   POST /api/admin/cards/backfill-hidden-field
+ * @desc    Adds isHidden: false to all card definitions that do not have this field.
+ * @access  Private (Admin only)
+ */
+router.post('/cards/backfill-hidden-field', protect, adminOnly, async (req, res) => {
+    const { dryRun } = req.body;
+
+    try {
+        // The query to find documents where the 'isHidden' field does not exist
+        const query = { isHidden: { $exists: false } };
+
+        if (dryRun) {
+            const count = await Card.countDocuments(query);
+            return res.json({
+                isDryRun: true,
+                message: `Dry Run: Found ${count} card(s) that need the 'isHidden' field added.`,
+                cardsToUpdate: count,
+            });
+        }
+
+        // Perform the actual update
+        const updateResult = await Card.updateMany(
+            query,
+            { $set: { isHidden: false } }
+        );
+
+        res.json({
+            isDryRun: false,
+            message: `Successfully updated ${updateResult.modifiedCount} card(s).`,
+            updatedCount: updateResult.modifiedCount,
+        });
+
+    } catch (error) {
+        console.error('Error backfilling isHidden field:', error);
+        res.status(500).json({ message: 'Server error during backfill process.' });
+    }
+});
+
 
 router.get('/cards', async (req, res) => {
     try {

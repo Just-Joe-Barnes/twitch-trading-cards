@@ -21,7 +21,8 @@ const EditCardForm = ({ onClose, onSubmit }) => {
                 imageUrl: selectedCard.imageUrl || '',
                 alwaysAvailable: selectedCard.availableFrom === null && selectedCard.availableTo === null,
                 availableFrom: selectedCard.availableFrom ? new Date(selectedCard.availableFrom).toISOString().slice(0, 10) : '',
-                availableTo: selectedCard.availableTo ? new Date(selectedCard.availableTo).toISOString().slice(0, 10) : ''
+                availableTo: selectedCard.availableTo ? new Date(selectedCard.availableTo).toISOString().slice(0, 10) : '',
+                isHidden: selectedCard.isHidden || false,
             });
             setPreviewRarity('Basic');
         } else {
@@ -104,6 +105,10 @@ const EditCardForm = ({ onClose, onSubmit }) => {
                             <input id="alwaysAvailable-edit" name="alwaysAvailable" type="checkbox" checked={editData.alwaysAvailable} onChange={handleFieldChange} />
                             <label htmlFor="alwaysAvailable-edit">Always Available in Packs</label>
                         </div>
+                        <div className="form-group checkbox-group">
+                            <input id="isHidden-edit" name="isHidden" type="checkbox" checked={editData.isHidden} onChange={handleFieldChange} />
+                            <label htmlFor="isHidden-edit">Hide card from front end</label>
+                        </div>
                         {!editData.alwaysAvailable && (
                             <div className="date-range-inputs">
                                 <div className="form-group">
@@ -161,4 +166,3 @@ const EditCardForm = ({ onClose, onSubmit }) => {
 };
 
 export default EditCardForm;
-
