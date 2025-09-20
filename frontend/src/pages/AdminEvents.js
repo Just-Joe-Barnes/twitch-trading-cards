@@ -2,33 +2,13 @@ import React, { useState, useEffect } from 'react';
 import NavAdmin from "../components/NavAdmin";
 import '../styles/AdminEventsPage.css';
 import CardSearchInput from "../components/CardSearchInput";
+import {fetchWithAuth} from "../utils/api";
 
 // Added a constant for rarities to be used in the form
 const rarities = [
     'Basic', 'Common', 'Standard', 'Uncommon', 'Rare',
     'Epic', 'Legendary', 'Mythic', 'Unique', 'Divine', 'Event'
 ];
-
-// A helper function for making authenticated API calls.
-const fetchWithAuth = async (url, options = {}) => {
-    const token = localStorage.getItem('token');
-    const headers = {
-        'Content-Type': 'application/json',
-        ...options.headers,
-    };
-
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(url, { ...options, headers });
-
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-};
 
 
 // Helper function to format dates into relative time (e.g., "in 2 days")
