@@ -151,13 +151,20 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
             // --- END: MORE RESILIENT GIFTED SUB LOGIC ---
 
             case 'redemption':
+                // Get the redeemer's name from a header for better logging
+                const redeemerName = req.headers.redeemername || 'An anonymous user';
                 packsToAward = 1;
+
+                // Attempt to add a pack. This will be the user object on success, or null on failure.
                 const redeemer = await addPacksToUser(userid, packsToAward);
-                if (!redeemer) {
-                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `User with Twitch ID ${userid} not found.`);
-                    return res.status(404).json({ message: `User with Twitch ID ${userid} not found.` });
+
+                // Construct the message dynamically based on the outcome
+                if (redeemer) {
+                    message = `${redeemer.username} redeemed for a new pack! They now have ${redeemer.packs} packs.`;
+                } else {
+                    message = `${redeemerName} (who does not have an account) redeemed for a pack but was not awarded one.`;
                 }
-                message = `${redeemer.username} redeemed for a new pack! They now have ${redeemer.packs} packs.`;
+
                 await createLogEntry(streamerUser, 'TWITCH_ROUTE_REDEMPTION', message);
                 break;
 
