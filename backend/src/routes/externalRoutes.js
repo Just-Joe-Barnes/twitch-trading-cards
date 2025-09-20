@@ -105,40 +105,50 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
                 break;
 
             // --- START: MODIFIED GIFTED SUB LOGIC ---
+            // --- START: MORE RESILIENT GIFTED SUB LOGIC ---
             case 'giftedSub':
                 const giftTier = subtier;
                 const giftCount = parseInt(giftcount) || 1;
+                const gifterName = req.headers.giftername || 'An anonymous gifter'; // Get name from headers
 
                 if (!recipientid) {
                     await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `Gifted sub event is missing recipientid header.`);
                     return res.status(400).json({ message: 'Invalid payload. Missing recipientid header.' });
                 }
 
-                // Base packs for the tier of the gift
-                packsToAward = subType[giftTier.toLowerCase()] || 1;
+                const packsPerTier = subType[giftTier.toLowerCase()] || 1;
 
-                // 1. Award packs to the gifter (this logic was already correct)
-                const gifterPacks = packsToAward * giftCount;
+                // --- Gifter Handling ---
+                const gifterPacks = packsPerTier * giftCount;
+                // Try to add packs, but don't stop if the user is not found.
+                // The 'gifter' variable will be the user object on success, or null on failure.
                 const gifter = await addPacksToUser(userid, gifterPacks);
-                if (!gifter) {
-                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `Gifter with Twitch ID ${userid} not found.`);
-                    return res.status(404).json({ message: `Gifter with Twitch ID ${userid} not found.` });
+
+                // --- Recipient Handling ---
+                const recipientIds = recipientid.split(',');
+                const recipientPacks = packsPerTier;
+
+                const updatePromises = recipientIds.map(id => addPacksToUser(id.trim(), recipientPacks));
+                // 'results' will be an array of user objects and nulls.
+                const results = await Promise.all(updatePromises);
+
+                // Count how many recipients were successfully given packs.
+                const successfulRecipients = results.filter(user => user !== null);
+
+                // --- Dynamic Message Construction ---
+                let gifterMessage = '';
+                if (gifter) {
+                    gifterMessage = `${gifter.username} was awarded ${gifterPacks} packs for gifting.`;
+                } else {
+                    gifterMessage = `${gifterName} (who does not have an account) was not awarded packs.`;
                 }
 
-                // 2. Award packs to ALL recipients
-                const recipientIds = recipientid.split(','); // Split the string into an array of IDs
-                const recipientPacks = packsToAward; // Each recipient gets the base amount
+                const recipientMessage = `Of the ${recipientIds.length} recipients, ${successfulRecipients.length} had accounts and received ${recipientPacks} packs each.`;
 
-                // Create an array of database update promises
-                const updatePromises = recipientIds.map(id => addPacksToUser(id.trim(), recipientPacks));
-
-                // Execute all promises in parallel for efficiency
-                await Promise.all(updatePromises);
-
-                message = `${gifter.username} gifted ${giftCount} subscriptions and has been awarded ${gifterPacks} packs! Each of the ${recipientIds.length} recipients also received ${recipientPacks} packs.`;
+                message = `${gifterMessage} ${recipientMessage}`;
                 await createLogEntry(streamerUser, 'TWITCH_ROUTE_REDEMPTION', message);
                 break;
-            // --- END: MODIFIED GIFTED SUB LOGIC ---
+            // --- END: MORE RESILIENT GIFTED SUB LOGIC ---
 
             case 'redemption':
                 packsToAward = 1;
