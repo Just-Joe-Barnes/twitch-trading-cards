@@ -1,7 +1,7 @@
 const Card = require('../models/cardModel');
 const Modifier = require("../models/modifierModel");
 const Pack = require('../models/packModel');
-const getCardAvailability = require("../controllers/cardController");
+const { getCardAvailability } = require("../controllers/cardController");
 
 const rarityProbabilities = [
     { rarity: 'Basic', probability: 0.40 },
@@ -391,11 +391,60 @@ const generatePackPreview = async (packSize = 5) => {
     }
     return pack;
 };
-
 const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifier, live) => {
     try {
-        let appliedModifierId = null;
+        // +++ START OF NEW LOGIC FOR EVENT CARDS +++
+        // This block handles the special case for packs that only contain one "Event" card.
+        if (poolIds.length === 1) {
+            const singleCard = await Card.findById(poolIds[0]);
+            // Check if this single card in the pool is indeed an Event card
+            if (singleCard && singleCard.rarities.length === 1 && singleCard.rarities[0].rarity === 'Event') {
+                console.log('[generateCardPreviewFromPool] Detected Event Card Pack. Bypassing probability logic.');
+                const eventRarityObj = singleCard.rarities[0];
 
+                if (!eventRarityObj.availableMintNumbers || eventRarityObj.availableMintNumbers.length === 0) {
+                    console.error(`[generateCardPreviewFromPool] Event card '${singleCard.name}' has no available mint numbers.`);
+                    return null;
+                }
+
+                // Pick a random mint number from the available list
+                const idx = Math.floor(Math.random() * eventRarityObj.availableMintNumbers.length);
+                const mintNumber = eventRarityObj.availableMintNumbers[idx];
+                let appliedModifierId = null;
+
+                // The debug function doesn't need to update the database, so we skip the `live` check for now.
+                // The `openPacksForUser` function will handle the live update if needed.
+
+                // Handle forced modifiers, just like in the original logic
+                if (Math.random() < MODIFIER_CHANCE || forceModifier) {
+                    const modifiers = await Modifier.find().lean();
+                    if (modifiers.length > 0) {
+                        const modToApply = modifiers[Math.floor(Math.random() * modifiers.length)];
+                        appliedModifierId = modToApply._id;
+                        let cardPrefix = modToApply.name === "Glitch" ? "Glitched" : modToApply.name;
+                        singleCard.name = cardPrefix + " " + singleCard.name;
+                    }
+                }
+
+                // Return the generated event card object, effectively ending the function here.
+                return {
+                    name: singleCard.name,
+                    rarity: 'Event',
+                    mintNumber,
+                    modifier: appliedModifierId,
+                    imageUrl: singleCard.imageUrl,
+                    flavorText: singleCard.flavorText || 'No flavor text available',
+                    cardId: singleCard._id.toString(),
+                    lore: singleCard.lore,
+                    loreAuthor: singleCard.loreAuthor
+                };
+            }
+        }
+        // +++ END OF NEW LOGIC FOR EVENT CARDS +++
+
+
+        // --- Existing logic for all other packs ---
+        let appliedModifierId = null;
         let availabilityResponse;
         try {
             availabilityResponse = await getCardAvailability(poolIds);
@@ -405,7 +454,6 @@ const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifie
         }
 
         const rarityRemainingData = availabilityResponse.rarityRemaining;
-
         const cardAvailabilityGroupedMap = new Map();
         rarityRemainingData.forEach(item => {
             cardAvailabilityGroupedMap.set(item.cardId.toString(), item);
@@ -425,7 +473,6 @@ const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifie
         }
 
         const randomCardId = availablePoolIds[Math.floor(Math.random() * availablePoolIds.length)];
-
         const selectedCard = await Card.findById(randomCardId);
 
         if (!selectedCard) {
@@ -437,9 +484,7 @@ const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifie
             r => {
                 const cardGroupedAvailability = cardAvailabilityGroupedMap.get(selectedCard._id.toString());
                 if (!cardGroupedAvailability) return false;
-
                 const availableCount = cardGroupedAvailability.rarityRemaining[r.rarity.toLowerCase()];
-
                 return typeof availableCount === 'number' && availableCount > 0;
             }
         );
@@ -450,7 +495,6 @@ const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifie
         }
 
         const baseProbabilities = randomHighRoll ? highRollRarityProbabilities : rarityProbabilities;
-
         let filteredAndNormalizedProbabilities = [];
         let totalAvailableProbability = 0;
 
@@ -477,7 +521,6 @@ const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifie
         const pickRarityFromFiltered = (probabilities) => {
             const random = Math.random();
             let cumulativeProbability = 0;
-
             for (const { rarity, probability } of probabilities) {
                 cumulativeProbability += probability;
                 if (random <= cumulativeProbability) {
@@ -488,7 +531,6 @@ const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifie
         };
 
         const selectedRarityName = pickRarityFromFiltered(filteredAndNormalizedProbabilities);
-
         const finalAvailableCount = cardAvailabilityGroupedMap.get(selectedCard._id.toString())
             ?.rarityRemaining[selectedRarityName.toLowerCase()];
 
@@ -498,7 +540,6 @@ const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifie
         }
 
         const rarityObj = selectedCard.rarities.find(r => r.rarity === selectedRarityName);
-
         if (!rarityObj || !rarityObj.availableMintNumbers || rarityObj.availableMintNumbers.length === 0) {
             console.error(`[generateCardPreviewFromPool] Logic error: selectedRarityName '${selectedRarityName}' has no available mint numbers on the card model despite global availability. Data inconsistency?`);
             return null;
@@ -524,13 +565,7 @@ const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifie
             if (modifiers.length > 0) {
                 const modToApply = modifiers[Math.floor(Math.random() * modifiers.length)];
                 appliedModifierId = modToApply._id;
-
-                let cardPrefix = modToApply.name;
-
-                if (cardPrefix === "Glitch") {
-                    cardPrefix = "Glitched";
-                }
-
+                let cardPrefix = modToApply.name === "Glitch" ? "Glitched" : modToApply.name;
                 selectedCard.name = cardPrefix + " " + selectedCard.name;
             }
         }
@@ -545,7 +580,6 @@ const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifie
             cardId: selectedCard._id.toString(),
             lore: selectedCard.lore,
             loreAuthor: selectedCard.loreAuthor
-
         };
     } catch (err) {
         console.error('[generateCardPreviewFromPool] Unexpected Error:', err.message, err.stack);
