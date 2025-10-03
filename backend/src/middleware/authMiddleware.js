@@ -69,6 +69,49 @@ const protect = async (req, res, next) => {
     }
 };
 
+// Optional protection middleware. It authenticates a user if a token is provided,
+// but allows the request to proceed as a "guest" if no token is present or if it's invalid.
+const optionalProtect = async (req, res, next) => {
+    let token;
+
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        try {
+            token = req.headers.authorization.split(' ')[1];
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+            const user = await User.findOne({ twitchId: decoded.id })
+                .select(
+                    'username email isAdmin packs openedPacks loginCount featuredCards favoriteCard preferredPack twitchProfilePic xp level achievements featuredAchievements twitchId'
+                )
+                .populate('preferredPack', 'name')
+                .lean();
+
+            if (user) {
+                req.user = user;
+                req.user.id = req.user._id.toString();
+                req.userId = req.user.id;
+                req.username = req.user.username;
+                req.twitchId = req.user.twitchId;
+                req.isAdmin = req.user.isAdmin;
+                console.log('[AUTH OPTIONAL] User validated:', req.user.username);
+                // We can also update activity here
+                UserActivity.updateOne(
+                    { userId: req.user._id },
+                    { $set: { lastActive: new Date() } },
+                    { upsert: true }
+                ).catch((err) =>
+                    console.error('[lastActive update failed]', err)
+                );
+            }
+        } catch (error) {
+            console.error('[AUTH OPTIONAL] Token present but invalid or user not found. Proceeding as guest.');
+        }
+    }
+
+    next();
+};
+
+
 // Middleware to restrict access to admin-only routes
 const adminOnly = (req, res, next) => {
     if (req.isAdmin) {
@@ -80,4 +123,4 @@ const adminOnly = (req, res, next) => {
     }
 };
 
-module.exports = { protect, adminOnly };
+module.exports = { protect, adminOnly, optionalProtect };

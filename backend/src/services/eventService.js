@@ -2,6 +2,8 @@ const Event = require('../models/eventModel');
 const EventClaim = require('../models/eventClaimModel');
 const { grantCardReward, grantPackReward, grantXpReward } = require('../helpers/eventHelpers');
 const { createLogEntry } = require("../utils/logService");
+const { createNotification } = require('../helpers/notificationHelper');
+const { sendNotificationToUser } = require('../../notificationService');
 
 const checkAndAwardLoginEvents = async (user) => {
     const grantedRewards = [];
@@ -80,6 +82,31 @@ const checkAndAwardLoginEvents = async (user) => {
 
                 if (rewardData) {
                     await EventClaim.create({ userId: user._id, eventId: event._id });
+
+                    let notificationMessage = '';
+                    const link = `/collection/${user.username}`;
+
+                    if (rewardType === 'CARD') {
+                        notificationMessage = `Event Reward: You received the card '${rewardData.name}' (Mint #${rewardData.mintNumber})!`;
+                    } else if (rewardType === 'PACK') {
+                        const plural = rewardData.amount > 1 ? 's' : '';
+                        notificationMessage = `Event Reward: You received ${rewardData.amount} pack${plural}!`;
+                    } else if (rewardType === 'XP') {
+                        notificationMessage = `Event Reward: You received ${rewardData.amount} XP!`;
+                    }
+
+                    const notificationPayload = {
+                        type: 'Event Reward',
+                        message: notificationMessage,
+                        link: link
+                    };
+
+                    // 2. Save the notification to the database
+                    await createNotification(user._id, notificationPayload);
+
+                    // 3. Send the real-time push notification
+                    sendNotificationToUser(user._id, notificationPayload);
+
                     const payload = {
                         type: rewardType,
                         data: rewardData,

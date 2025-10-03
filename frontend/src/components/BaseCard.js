@@ -326,15 +326,6 @@ const BaseCard = ({
 
     return (
         <>
-            <svg style={{ width: 0, height: 0, position: 'absolute', zIndex: -1 }}>
-                <filter id="posterize">
-                    <feComponentTransfer>
-                        <feFuncR type="discrete" tableValues="0 1"/>
-                        <feFuncG type="discrete" tableValues="0 1"/>
-                        <feFuncB type="discrete" tableValues="0 1"/>
-                    </feComponentTransfer>
-                </filter>
-            </svg>
 
             <div
                 ref={cardRef}
@@ -350,7 +341,7 @@ const BaseCard = ({
                 onDoubleClick={onDoubleClick}
                 onClick={handleClick}
                 style={{
-                    ...((rarity.toLowerCase() === 'divine' || rarity.toLowerCase() === 'event') ? {backgroundImage: `url(${image})`} : {}),
+                    ...((rarity.toLowerCase() === 'divine' || rarity.toLowerCase() === 'event') ? {backgroundImage: `url(${image})`, backgroundSize: 'cover', backgroundPosition: 'center'} : {}),
                     ...(modifierData?.css ? JSON.parse(modifierData.css) : {}),
                     '--mx': `${cursorPosition.x}px`,
                     '--my': `${cursorPosition.y}px`,
@@ -359,6 +350,15 @@ const BaseCard = ({
                     '--hyp': `${Math.hypot(cursorPosition.x, cursorPosition.y)}px`,
                 }}
             >
+                <svg style={{ width: 0, height: 0, position: 'absolute', zIndex: -1 }}>
+                    <filter id="posterize">
+                        <feComponentTransfer>
+                            <feFuncR type="discrete" tableValues="0 1"/>
+                            <feFuncG type="discrete" tableValues="0 1"/>
+                            <feFuncB type="discrete" tableValues="0 1"/>
+                        </feComponentTransfer>
+                    </filter>
+                </svg>
                 {isIntersecting && (
                     <>
                         <div
@@ -385,11 +385,7 @@ const BaseCard = ({
                                     <>
                                         <div className={cardHeaderClass}>
                                             <div className={`${cardNameClass} ${isGlitch ? 'glitch-text' : ''}`} ref={nameRef} data-text={name}>{name}</div>
-                                                {rarity.toLowerCase() === 'event' ? (
-                                                    <div className={`${cardMintClass} ${isGlitch ? 'glitch-text' : ''}`} data-text={`EVENT`}>
-                                                        <span className="mint-number">Event</span>
-                                                    </div>
-                                                ) : (
+                                                {rarity.toLowerCase() === 'divine' && (
                                                     <div className={`${cardMintClass} ${isGlitch ? 'glitch-text' : ''}`} data-text={`${mintNumber} / ${rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.totalCopies ?? '???'}`}>
                                                         <span className="mint-number">{mintNumber} / {rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.totalCopies ?? '???'}</span>
                                                     </div>
@@ -417,7 +413,6 @@ const BaseCard = ({
                                 )}
                             </div>
                         </div>
-                        {slabbed && (<div className={`slab-overlay ${rarity.toLowerCase()}`} style={{'--slab-color': rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.color ?? '#fff'}}> <div className="slab-header"><img src="/images/logo-horizontal.png" alt="logo" className={`slab-logo ${rarity.toLowerCase()}`}/> <div className="slab-name">{name}</div> <div className="slab-grade">{grade}</div> </div> </div>)}
                         {modifierData?.name === 'Negative' && ( <div className={`negative-overlay ${miniCard ? 'mini' : ''}`}/> )}
                         {modifierData?.name === 'Glitch' && ( <div className={`glitch-overlay ${miniCard ? 'mini' : ''}`}/> )}
                         {modifierData?.name === 'Prismatic' && ( <div className={`prismatic-overlay ${miniCard ? 'mini' : ''}`}/> )}
@@ -427,6 +422,8 @@ const BaseCard = ({
                             <TimeStatusBadge card={timestatuscard} now={timestatusnow}/>
                             <RemainingBadge remaining={remaining}/>
                         </div>
+                        {slabbed && (<div className={`slab-overlay ${rarity.toLowerCase()}`} style={{'--slab-color': rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.color ?? '#fff'}}> <div className="slab-header"><img src="/images/logo-horizontal.png" alt="logo" className={`slab-logo ${rarity.toLowerCase()}`}/> <div className="slab-name">{name}</div> <div className="slab-grade">{grade}</div> </div> </div>)}
+
                     </>
                 )}
             </div>

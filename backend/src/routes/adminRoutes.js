@@ -7,6 +7,7 @@ const ftp = require('basic-ftp');
 const path = require('path');
 const { Readable } = require('stream');
 const UserActivity = require('../models/UserActivity');
+const { grantCardReward } = require('../helpers/eventHelpers');
 
 // Models
 const User = require('../models/userModel');
@@ -16,6 +17,9 @@ const Notification = require('../models/notificationModel');
 const Achievement = require('../models/achievementModel');
 const Modifier = require('../models/modifierModel');
 const Trade = require('../models/tradeModel');
+const MarketListing = require('../models/MarketListing');
+const EventClaim = require('../models/eventClaimModel');
+const Setting = require('../models/settingsModel');
 
 // Middleware & Services
 const { protect } = require('../middleware/authMiddleware');
@@ -259,7 +263,6 @@ router.get('/users-activity', protect, adminOnly, async (req, res) => {
 });
 
 // --- Trade Management ---
-
 /**
  * @route   GET /api/admin/trades
  * @desc    Get all trades for the admin panel using snapshot data
@@ -307,34 +310,68 @@ router.post('/trades/:tradeId/reject', protect, adminOnly, handleAdminTradeActio
 // --- Notification Routes ---
 // ... (No changes in this section)
 router.post('/notifications', protect, adminOnly, async (req, res) => {
-    const { type, message, link = "" } = req.body; // Allow optional link
+    // 1. Look for an optional userId in the request body
+    const { type, message, link = "", userId } = req.body;
+
     if (!type || !message) {
         return res.status(400).json({ message: 'Type and message are required.' });
     }
+
     try {
-        const notification = {
-            type,
-            message,
-            link: link,
-            extra: {},
-            isRead: false,
-            createdAt: new Date()
-        };
+        // 2. Check if a specific userId was provided
+        if (userId) {
+            // --- Logic for sending to a SINGLE user ---
 
-        console.log("[AdminRoutes] Broadcasting notification:", notification);
+            // Validate the user exists (optional but recommended)
+            const user = await User.findById(userId);
+            if (!user) {
+                return res.status(404).json({ message: 'User not found.' });
+            }
 
-        const users = await User.find({}, '_id').lean();
-        const docs = users.map(u => ({ ...notification, userId: u._id }));
-        if (docs.length > 0) {
-            await Notification.insertMany(docs);
+            const newNotification = await Notification.create({
+                userId,
+                type,
+                message,
+                link,
+                isRead: false,
+                createdAt: new Date(),
+                extra: {}
+            });
+
+            const io = req.io;
+            io.to(userId.toString()).emit('notification', newNotification);
+
+            console.log(`[AdminRoutes] Sent notification to user: ${userId}`);
+            res.status(200).json({ message: `Notification sent to ${user.username} successfully.` });
+
+        } else {
+            // --- Original logic for broadcasting to ALL users ---
+            const notificationPayload = {
+                type,
+                message,
+                link,
+                extra: {},
+                isRead: false,
+                createdAt: new Date()
+            };
+
+            console.log("[AdminRoutes] Broadcasting notification:", notificationPayload);
+
+            const users = await User.find({}, '_id').lean();
+            const docs = users.map(u => ({ ...notificationPayload, userId: u._id }));
+
+            if (docs.length > 0) {
+                await Notification.insertMany(docs);
+            }
+
+            // Your existing broadcast function for real-time updates to everyone
+            broadcastNotification(notificationPayload);
+
+            res.status(200).json({ message: 'Notification broadcast successfully.' });
         }
-
-        broadcastNotification(notification);
-
-        res.status(200).json({ message: 'Notification broadcast successfully.' });
     } catch (error) {
-        console.error('Error broadcasting notification:', error.message);
-        res.status(500).json({ message: 'Error broadcasting notification.' });
+        console.error('Error sending notification:', error.message);
+        res.status(500).json({ message: 'Error sending notification.' });
     }
 });
 
@@ -352,12 +389,14 @@ const storage = multer.diskStorage({
 
 router.post('/cards', protect, adminOnly, async (req, res) => {
     try {
-        const { name, flavorText, imageUrl, availableFrom, availableTo, rarities, isHidden } = req.body;
+        const { name, flavorText, imageUrl, lore, loreAuthor, availableFrom, availableTo, rarities, isHidden } = req.body;
 
         const newCard = new Card({
             name,
             flavorText,
             imageUrl,
+            lore,
+            loreAuthor,
             availableFrom: availableFrom ? new Date(availableFrom) : null,
             availableTo: availableTo ? new Date(availableTo) : null,
             rarities: rarities || [],
@@ -1548,6 +1587,280 @@ router.get('/card-ownership/:cardId', protect, adminOnly, async (req, res) => {
         res.status(500).json({ message: 'Failed to fetch card ownership data.' });
     }
 });
+
+/**
+ * @route   POST /api/admin/wipe-database
+ * @desc    Performs a partial wipe of the database for a new season or reset.
+ * @access  Private (Admin only)
+ */
+router.post('/wipe-database', protect, adminOnly, async (req, res) => {
+    const { confirmation, wipeRewardCardId, wipeRewardRarity, packAssignments } = req.body;
+    if (confirmation !== 'PERMANENTLY WIPE DATA') {
+        return res.status(400).json({
+            message: 'Invalid confirmation phrase. The operation was cancelled.',
+        });
+    }
+
+    console.log(`[DB WIPE] Wipe initiated by admin: ${req.user.username}`);
+
+    try {
+        // --- Step 1: Clear collections ---
+        console.log('[DB WIPE] Clearing collections...');
+        const [tradeDeletion, notificationDeletion, userActivityDeletion, marketListingDeletion, eventClaimDeletion] = await Promise.all([
+            Trade.deleteMany({}),
+            Notification.deleteMany({}),
+            UserActivity.deleteMany({}),
+            MarketListing.deleteMany({}),
+            EventClaim.deleteMany({})
+        ]);
+        console.log('[DB WIPE] Collections cleared.');
+
+        // --- Step 2: Reset users ---
+        console.log('[DB WIPE] Resetting user data...');
+        const userUpdateResult = await User.updateMany({}, {
+            $set: {
+                packs: 1,
+                cards: [],
+                openedPacks: 0,
+                featuredCards: [],
+                favoriteCard: {},
+                preferredPack: null,
+                firstLogin: false,
+                lastActive: null,
+                loginCount: 0,
+                loginStreak: 0,
+                lastLogin: null,
+                completedPurchases: 0,
+                xp: 0,
+                level: 1,
+                completedTrades: 0,
+                createdListings: 0,
+                completedListings: 0,
+                achievements: [],
+                featuredAchievements: [],
+                pendingEventReward: []
+            },
+            $unset: {
+                openedCards: ""
+            }
+        });
+        console.log(`[DB WIPE] User data reset. Modified: ${userUpdateResult.modifiedCount}`);
+
+
+        let packRewardsQueued = 0;
+        let packAssignmentMisses = [];
+
+        if (packAssignments && typeof packAssignments === 'object' && Object.keys(packAssignments).length > 0) {
+            console.log('[DB WIPE] Starting pack reward queuing process...');
+
+            // Logic to find existing users and identify misses remains the same
+            const inputUsernames = Object.keys(packAssignments);
+            const usersFound = await User.find({ username: { $in: inputUsernames } }).select('username').lean();
+            const foundUsernames = new Set(usersFound.map(u => u.username));
+
+            for (const [username, packCount] of Object.entries(packAssignments)) {
+                if (!foundUsernames.has(username)) {
+                    packAssignmentMisses.push({ username: username, packs: packCount });
+                }
+            }
+
+            if (packAssignmentMisses.length > 0) {
+                console.warn('[DB WIPE] The following users were not found and were NOT queued for pack rewards:');
+                packAssignmentMisses.forEach(miss => {
+                    console.warn(`  - User: ${miss.username} (should have received ${miss.packs} packs)`);
+                });
+            }
+
+            const packUpdateOps = [];
+            for (const username of foundUsernames) {
+                const packCount = packAssignments[username];
+                if (typeof packCount === 'number' && packCount > 0) {
+
+                    const packRewardPayload = {
+                        type: 'PACK',
+                        data: { amount: packCount },
+                        message: `Thanks for your participation! Here are the ${packCount} packs you acquired during the beta, thank you for your continued support, Joe.`
+                    };
+
+                    packUpdateOps.push({
+                        updateOne: {
+                            filter: { username: username },
+                            update: {
+                                // Action 1: Push the event for the popup notification
+                                $push: { pendingEventReward: packRewardPayload },
+
+                                // --- MODIFICATION: Add this line to grant the packs immediately ---
+                                $inc: { packs: packCount }
+                            }
+                        }
+                    });
+                }
+            }
+
+            if (packUpdateOps.length > 0) {
+                const bulkResult = await User.bulkWrite(packUpdateOps);
+                packRewardsQueued = bulkResult.modifiedCount;
+                console.log(`[DB WIPE] Pack rewards granted and queued for ${packRewardsQueued} users.`);
+            }
+        }
+
+
+        // --- Step 3: Reset card definitions ---
+        console.log('[DB WIPE] Resetting card definitions (mint numbers)...');
+        const allCards = await Card.find({}).lean();
+        const bulkCardOps = allCards.map(card => {
+            const updatedRarities = card.rarities.map(r => ({ ...r, remainingCopies: r.totalCopies, availableMintNumbers: Array.from({ length: r.totalCopies }, (_, i) => i + 1) }));
+            return { updateOne: { filter: { _id: card._id }, update: { $set: { rarities: updatedRarities } } } };
+        });
+        let cardUpdateResult = { modifiedCount: 0 };
+        if (bulkCardOps.length > 0) {
+            cardUpdateResult = await Card.bulkWrite(bulkCardOps);
+        }
+        console.log(`[DB WIPE] Card definitions reset. Modified: ${cardUpdateResult.modifiedCount}`);
+
+        // --- Step 4: Grant a specific card to all users as a "Wipe Reward" ---
+        let wipeRewardsGranted = 0;
+        if (wipeRewardCardId && wipeRewardRarity) {
+            console.log(`[DB WIPE] Starting wipe reward grant process for Card ID: ${wipeRewardCardId}`);
+            const allUsers = await User.find({});
+
+            for (const user of allUsers) {
+                try {
+                    const grantedCard = await grantCardReward(user, {
+                        cardId: wipeRewardCardId,
+                        rarity: wipeRewardRarity
+                    });
+
+                    if (grantedCard) {
+                        const rewardPayload = {
+                            type: 'CARD',
+                            data: grantedCard,
+                            message: 'Thanks for participating in the Neds Decks Beta, have an exclusive card on us! Cheers, Joe.'
+                        };
+                        if (!user.pendingEventReward) {
+                            user.pendingEventReward = [];
+                        }
+                        user.pendingEventReward.push(rewardPayload);
+                        await user.save();
+                        wipeRewardsGranted++;
+                    }
+                } catch (grantError) {
+                    console.error(`[DB WIPE] Failed to grant wipe reward to ${user.username}: ${grantError.message}`);
+                }
+            }
+            console.log(`[DB WIPE] Finished granting wipe rewards. Granted to ${wipeRewardsGranted} users.`);
+        }
+
+        res.status(200).json({
+            message: 'Database wipe completed successfully!',
+            details: {
+                // (FIXED) All deletion counts and other details are now correctly listed.
+                deletedTrades: tradeDeletion.deletedCount,
+                deletedNotifications: notificationDeletion.deletedCount,
+                deletedUserActivities: userActivityDeletion.deletedCount,
+                deletedMarketListings: marketListingDeletion.deletedCount,
+                deletedEventClaims: eventClaimDeletion.deletedCount,
+                usersReset: userUpdateResult.modifiedCount,
+                cardsReset: cardUpdateResult.modifiedCount,
+                wipeRewardsGranted: wipeRewardsGranted,
+            }
+        });
+
+    } catch (error) {
+        console.error('[DB WIPE] An error occurred during the wipe operation:', error);
+        res.status(500).json({
+            message: 'A critical error occurred. Check server logs.',
+            error: error.message,
+        });
+    }
+});
+
+// POST /api/admin/settings/maintenance
+// Toggles maintenance mode. Requires admin privileges.
+router.post('/settings/maintenance', protect, adminOnly, async (req, res) => {
+    const { mode } = req.body;
+
+    if (typeof mode !== 'boolean') {
+        return res.status(400).json({ message: 'A boolean "mode" value is required.' });
+    }
+
+    try {
+        const updatedSetting = await Setting.findOneAndUpdate(
+            { key: 'maintenanceMode' },
+            { value: mode },
+            { new: true, upsert: true } // Creates the document if it doesn't exist
+        );
+
+        req.io.emit('maintenanceStatusChanged', { maintenanceMode: updatedSetting.value });
+
+        res.json({
+            message: `Maintenance mode is now ${mode ? 'ON' : 'OFF'}.`,
+            maintenanceMode: updatedSetting.value
+        });
+    } catch (error) {
+        console.error('Error toggling maintenance mode:', error);
+        res.status(500).json({ message: 'Server error while updating settings.' });
+    }
+});
+
+/**
+ * @route   GET /api/admin/catalogue
+ * @desc    Fetches all cards for the admin catalogue, with pagination and filtering.
+ * This route bypasses the isHidden flag by default.
+ * @access  Private (Admin only)
+ */
+router.get('/catalogue', protect, adminOnly, async (req, res) => {
+    try {
+        const {
+            search = '',
+            rarity = '',
+            sort = '',
+            page = 1,
+            limit = 50,
+        } = req.query;
+
+        // The query is empty by default, so it will fetch ALL cards, including hidden ones.
+        const query = {};
+
+        if (search) {
+            query.name = { $regex: search, $options: 'i' };
+        }
+
+        if (rarity) {
+            query['rarities.rarity'] = rarity;
+        }
+
+        let sortOption = { name: 1 }; // default sort by name ascending
+        if (sort) {
+            const direction = sort.startsWith('-') ? -1 : 1;
+            const field = sort.replace(/^-/, '');
+            sortOption = { [field]: direction };
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const [cards, totalCards] = await Promise.all([
+            Card.find(query)
+                .sort(sortOption)
+                .skip(skip)
+                .limit(parseInt(limit))
+                .lean(),
+            Card.countDocuments(query),
+        ]);
+
+        res.status(200).json({
+            cards,
+            totalCards,
+            page: parseInt(page),
+            limit: parseInt(limit),
+        });
+    } catch (error) {
+        console.error('Error fetching admin catalogue:', error.message);
+        res.status(500).json({ message: 'Failed to fetch admin catalogue', error: error.message });
+    }
+});
+
+
 
 router.get('/queues/status', protect, adminOnly, (req, res) => {
     const status = getStatus();

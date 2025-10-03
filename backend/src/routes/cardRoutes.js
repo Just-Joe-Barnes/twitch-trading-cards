@@ -1,17 +1,70 @@
 // backend/src/routes/cardRoutes.js
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/authMiddleware');
+const { protect, optionalProtect} = require('../middleware/authMiddleware');
 const Card = require('../models/cardModel');
 const User = require('../models/userModel');
-const { getPublicCards, getCardAvailability } = require("../controllers/cardController");
+const { getCardAvailability } = require("../controllers/cardController");
 
 
-router.get('/', getPublicCards);
+router.get('/', optionalProtect, async (req, res) => {
+    try {
+        const {
+            search = '',
+            rarity = '',
+            sort = '',
+            page = 1,
+            limit = 50,
+            view = 'public',
+        } = req.query;
+
+        const query = { isHidden: { $ne: true } };
+
+        if (view === 'admin' && req.user?.isAdmin) {
+            delete query.isHidden;
+        }
+
+        if (search) {
+            query.name = { $regex: search, $options: 'i' };
+        }
+
+        if (rarity) {
+            query['rarities.rarity'] = rarity;
+        }
+
+        let sortOption = { name: 1 };
+        if (sort) {
+            const direction = sort.startsWith('-') ? -1 : 1;
+            const field = sort.replace(/^-/, '');
+            sortOption = { [field]: direction };
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const [cards, totalCards] = await Promise.all([
+            Card.find(query)
+                .sort(sortOption)
+                .skip(skip)
+                .limit(parseInt(limit))
+                .lean(),
+            Card.countDocuments(query),
+        ]);
+
+        res.status(200).json({
+            cards,
+            totalCards,
+            page: parseInt(page),
+            limit: parseInt(limit),
+        });
+    } catch (error) {
+        console.error('Error fetching cards:', error.message);
+        res.status(500).json({ message: 'Failed to fetch cards', error: error.message });
+    }
+});
 
 router.get('/availability', async (req, res) => {
     try {
-        const data = await getCardAvailability(); // Call the controller function
+        const data = await getCardAvailability();
         res.json(data);
     } catch (error) {
         console.error('Error fetching card availability:', error);

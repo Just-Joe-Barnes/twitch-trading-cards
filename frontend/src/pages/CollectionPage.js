@@ -215,9 +215,14 @@ const CollectionPage = ({
             currentFilteredCards = currentFilteredCards.filter(card => card.slabbed);
         }
 
+        // --- MODIFICATION START ---
+        // Update the filter to include both time-limited and Event rarity cards.
         if (showLimitedOnly) {
-            currentFilteredCards = currentFilteredCards.filter((card) => isCardLimited(card));
+            currentFilteredCards = currentFilteredCards.filter((card) =>
+                isCardLimited(card) || card.rarity === 'Event'
+            );
         }
+        // --- MODIFICATION END ---
 
         const newDisplayRarityCounts = {
             Basic: 0, Common: 0, Standard: 0, Uncommon: 0, Rare: 0,
@@ -518,7 +523,7 @@ const CollectionPage = ({
                                                    onChange={(e) => setShowFeaturedOnly(e.target.checked)}/>
                                         </div>
                                         <div className="checkbox-wrapper">
-                                            <label htmlFor="limitedCheckbox" data-tooltip="Show only Limited Cards">
+                                            <label htmlFor="limitedCheckbox" data-tooltip="Show only Limited and Event Cards">
                                                 <i className={`fa-${showLimitedOnly ? 'solid' : 'regular'} fa-crown`}/>
                                             </label>
                                             <input type="checkbox" id="limitedCheckbox" name="limitedCheckboxN"
@@ -577,7 +582,7 @@ const CollectionPage = ({
                 )}
 
                 {filteredCards.length === 0 && (
-                    <div className="section-card">
+                    <div className="section-card" style={{marginTop: '0.5rem'}}>
                         No cards found.
                     </div>
                 )}

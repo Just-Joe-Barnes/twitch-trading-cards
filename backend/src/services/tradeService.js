@@ -241,11 +241,56 @@ async function updateTradeStatus(tradeId, userId, newStatus, cancellationReason 
 
         if (resultTrade) {
             logAudit(`Trade ${newStatus}`, { tradeId: resultTrade._id, userId });
-            if (newStatus === 'rejected') sendNotificationToUser(resultTrade.sender._id, { type: 'Trade Rejected', message: `Your trade offer to ${resultTrade.recipient.username} was rejected.`, link: `/trades/pending` });
-            else if (newStatus === 'cancelled') sendNotificationToUser(resultTrade.recipient._id, { type: 'Trade Cancelled', message: `A trade offer from ${resultTrade.sender.username} was cancelled.`, link: `/trades/pending` });
+            if (newStatus === 'rejected') {
+                // Save the notification to the database first
+                await createNotification(resultTrade.sender._id, {
+                    type: 'Trade Rejected',
+                    message: `Your trade offer to ${resultTrade.recipient.username} was rejected.`,
+                    link: `/trades/pending`
+                });
+                // Then send the real-time push notification
+                sendNotificationToUser(resultTrade.sender._id, {
+                    type: 'Trade Rejected',
+                    message: `Your trade offer to ${resultTrade.recipient.username} was rejected.`,
+                    link: `/trades/pending`
+                });
+            }
+            else if (newStatus === 'cancelled') {
+                await createNotification(resultTrade.recipient._id, {
+                    type: 'Trade Cancelled',
+                    message: `A trade offer from ${resultTrade.sender.username} was cancelled.`,
+                    link: `/trades/pending`
+                });
+                sendNotificationToUser(resultTrade.recipient._id, {
+                    type: 'Trade Cancelled',
+                    message: `A trade offer from ${resultTrade.sender.username} was cancelled.`,
+                    link: `/trades/pending`
+                });
+            }
             else if (newStatus === 'accepted') {
-                sendNotificationToUser(resultTrade.sender._id, { type: 'Trade Accepted', message: `Your trade with ${resultTrade.recipient.username} was accepted!`, link: `/trades/pending` });
-                sendNotificationToUser(resultTrade.recipient._id, { type: 'Trade Accepted', message: `You accepted the trade with ${resultTrade.sender.username}!`, link: `/trades/pending` });
+                // Notification for the sender
+                await createNotification(resultTrade.sender._id, {
+                    type: 'Trade Accepted',
+                    message: `Your trade with ${resultTrade.recipient.username} was accepted!`,
+                    link: `/trades/pending`
+                });
+                sendNotificationToUser(resultTrade.sender._id, {
+                    type: 'Trade Accepted',
+                    message: `Your trade with ${resultTrade.recipient.username} was accepted!`,
+                    link: `/trades/pending`
+                });
+
+                // Notification for the recipient
+                await createNotification(resultTrade.recipient._id, {
+                    type: 'Trade Accepted',
+                    message: `You accepted the trade with ${resultTrade.sender.username}!`,
+                    link: `/trades/pending`
+                });
+                sendNotificationToUser(resultTrade.recipient._id, {
+                    type: 'Trade Accepted',
+                    message: `You accepted the trade with ${resultTrade.sender.username}!`,
+                    link: `/trades/pending`
+                });
             }
         }
 

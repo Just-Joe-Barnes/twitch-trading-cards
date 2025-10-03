@@ -2,9 +2,11 @@ import React, {useState, useEffect, useRef} from 'react';
 import {NavLink, useNavigate, useLocation} from 'react-router-dom';
 import '../styles/Navbar.css';
 import {searchUsers, fetchUserProfile} from '../utils/api';
-import NotificationDropdown from './NotificationDropdown';
+// Make sure you've created these two new component files
+import UserDropdown from './UserDropdown';
+import NotificationBell from './NotificationBell';
 
-const Navbar = ({isAdmin}) => {
+const Navbar = ({isAdmin, isMaintenanceMode}) => {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
@@ -51,6 +53,7 @@ const Navbar = ({isAdmin}) => {
                 handleClearSearch();
             }
         };
+        // This existing logic will correctly close either dropdown now
         if (activeDropdown) {
             document.addEventListener('mousedown', handleClickOutside);
         }
@@ -83,6 +86,12 @@ const Navbar = ({isAdmin}) => {
         setActiveDropdown(prev => (prev === 'user' ? null : 'user'));
     };
 
+    // ADDED: A toggle function for the notification bell
+    const toggleNotificationDropdown = () => {
+        setActiveDropdown(prev => (prev === 'notifications' ? null : 'notifications'));
+    };
+
+    // ... (search handler functions remain unchanged) ...
     const handleSearchChange = async (e) => {
         const query = e.target.value;
         setSearchQuery(query);
@@ -100,7 +109,6 @@ const Navbar = ({isAdmin}) => {
             setIsDropdownVisible(false);
         }
     };
-
     const handleKeyDown = (e) => {
         if (e.key === 'ArrowDown') {
             e.preventDefault();
@@ -119,7 +127,6 @@ const Navbar = ({isAdmin}) => {
             handleClearSearch();
         }
     };
-
     const handleSearchSelect = (username) => {
         setSearchQuery('');
         setSearchResults([]);
@@ -127,7 +134,6 @@ const Navbar = ({isAdmin}) => {
         setActiveIndex(-1);
         navigate(`/profile/${username}`);
     };
-
     const handleClearSearch = () => {
         setSearchQuery('');
         setSearchResults([]);
@@ -135,8 +141,10 @@ const Navbar = ({isAdmin}) => {
         setActiveIndex(-1);
     };
 
+
     return (
         <nav className="navbar" ref={navbarRef}>
+            {/* ... Burger Button and Logo ... */}
             <button
                 className="burger-button"
                 aria-expanded={activeDropdown === 'main'}
@@ -152,6 +160,8 @@ const Navbar = ({isAdmin}) => {
                 <img src="/images/logo-horizontal.png" alt="Ned's Decks"/>
             </div>
 
+
+            {/* ... Desktop Search Bar ... */}
             {!isMobile && (
                 <div className="navbar-search">
                     <div className="search-wrapper">
@@ -186,7 +196,14 @@ const Navbar = ({isAdmin}) => {
                 </div>
             )}
 
+            {/* ... Maintenance Mode Banner ... */}
+            {isMaintenanceMode && (
+                <strong style={{backgroundColor: 'red', padding: '0.4rem 2rem', position: 'absolute', top: '8px', left: '44%'}}>MAINTENANCE MODE ACTIVE</strong>
+            )}
+
+            {/* ... Primary Navigation Links ... */}
             <ul id="primary-navigation" className={`navbar-links ${activeDropdown === 'main' ? 'open' : ''}`}>
+                {/* ... your NavLink items ... */}
                 <li><NavLink to={`/collection/${loggedInUser.username}`} className="nav-link" onClick={() => { setActiveDropdown(null); handleClearSearch(); }}>My Collection</NavLink></li>
                 <li><NavLink to="/trading" className={({ isActive }) =>
                     isActive || location.pathname.startsWith('/trades')
@@ -235,17 +252,26 @@ const Navbar = ({isAdmin}) => {
                 )}
             </ul>
 
-            {loggedInUser._id && (
-                <NotificationDropdown
-                    profilePic={loggedInUser.twitchProfilePic || '/images/defaultProfile.png'}
-                    userId={loggedInUser._id}
-                    username={loggedInUser.username}
-                    onLogout={handleLogout}
-                    isAdmin={isAdmin}
-                    isOpen={activeDropdown === 'user'}
-                    onToggle={toggleUserDropdown}
-                />
-            )}
+            {/* UPDATED: Container for user actions */}
+            <div className="navbar-user-actions">
+                {loggedInUser._id && (
+                    <>
+                        <NotificationBell
+                            userId={loggedInUser._id}
+                            isOpen={activeDropdown === 'notifications'}
+                            onToggle={toggleNotificationDropdown}
+                        />
+                        <UserDropdown
+                            profilePic={loggedInUser.twitchProfilePic || '/images/defaultProfile.png'}
+                            username={loggedInUser.username}
+                            onLogout={handleLogout}
+                            isAdmin={isAdmin}
+                            isOpen={activeDropdown === 'user'}
+                            onToggle={toggleUserDropdown}
+                        />
+                    </>
+                )}
+            </div>
         </nav>
     );
 };

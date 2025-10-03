@@ -132,7 +132,6 @@ const AdminLogPage = () => {
                             <th>User</th>
                             <th>Event</th>
                             <th>Message</th>
-                            {/*<th width="40%">Data</th> /!* NEW COLUMN *!/*/}
                         </tr>
                         </thead>
                         <tbody>
@@ -143,12 +142,11 @@ const AdminLogPage = () => {
                                     <td>{log.user?.username || 'Unknown User'}</td>
                                     <td>{log.event}</td>
                                     <td>{log.message || '—'}</td>
-                                    {/*<LogDataCell data={log.data} /> /!* NEW COMPONENT *!/*/}
                                 </tr>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="5" className="empty-table-message">No events found with these filters.</td> {/* INCREASED COLSPAN */}
+                                <td colSpan="4" className="empty-table-message">No events found with these filters.</td>
                             </tr>
                         )}
                         </tbody>

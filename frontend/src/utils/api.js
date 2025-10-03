@@ -80,12 +80,18 @@ export const fetchUserCollection = async (userId) => {
 };
 
 // Fetch all cards recursively with pagination support
-export const fetchCards = async ({search = "", rarity = "", sort = "", page = 1, limit = 50}) => {
+export const fetchCards = async ({search = "", rarity = "", sort = "", page = 1, limit = 50, isAdmin = false}) => {
     const queryParams = new URLSearchParams({search, rarity, sort, page, limit});
+
+    if (isAdmin) {
+        queryParams.set('view', 'admin');
+    }
+
     try {
         const response = await fetchWithAuth(`/api/cards?${queryParams.toString()}`, {method: "GET"});
         if (response.cards?.length === limit) {
-            const nextPageData = await fetchCards({search, rarity, sort, page: page + 1, limit});
+            // --- MODIFIED --- Pass isAdmin in the recursive call
+            const nextPageData = await fetchCards({search, rarity, sort, page: page + 1, limit, isAdmin});
             return {
                 cards: [...response.cards, ...nextPageData.cards],
                 totalCards: nextPageData.totalCards || response.totalCards,
@@ -115,24 +121,6 @@ export const searchCardsByName = async (query) => {
 // Award a pack for first login
 export const awardFirstLoginPack = async () => {
     return fetchWithAuth("/api/packs/firstlogin", {method: "POST"});
-};
-
-// Redeem channel points for a pack
-export const redeemChannelPointsPack = async () => {
-    return fetchWithAuth("/api/packs/redeem", {method: "POST"});
-};
-
-// Fetch user subscriptions
-export const fetchUserSubscriptions = async () => {
-    return fetchWithAuth("/api/users/subscriptions", {method: "GET"});
-};
-
-// Handle gifted subscriptions
-export const handleGiftedSubscription = async (giftCount) => {
-    return fetchWithAuth("/api/packs/gift", {
-        method: "POST",
-        body: JSON.stringify({giftCount}),
-    });
 };
 
 // Fetch featured cards for the logged-in user
@@ -544,6 +532,13 @@ export const fixMissingModifierPrefixes = async (options = { dryRun: true }) => 
     return res.json();
 };
 
+export const wipeDatabase = async (payload) => {
+    return await fetchWithAuth('/api/admin/wipe-database', {
+        method: 'POST',
+        body: JSON.stringify(payload), // Send the entire payload object
+    });
+};
+
 // Add a log entry to the backend with a timestamp and a user reference
 export const logEvent = async (logMessage) => {
     try {
@@ -555,7 +550,28 @@ export const logEvent = async (logMessage) => {
         return response;
     } catch (error) {
         console.error("[API] Error logging event:", error.message);
-        // We don't want the app to crash if logging fails, so we'll just log the error.
         return null;
+    }
+};
+
+// Fetch all cards for the admin panel recursively with pagination support
+export const fetchAdminCards = async ({ search = "", rarity = "", sort = "", page = 1, limit = 50 }) => {
+    const queryParams = new URLSearchParams({ search, rarity, sort, page, limit });
+    try {
+        // Note the different URL: /api/admin/catalogue
+        const response = await fetchWithAuth(`/api/admin/catalogue?${queryParams.toString()}`, { method: "GET" });
+
+        if (response.cards?.length === limit) {
+            const nextPageData = await fetchAdminCards({ search, rarity, sort, page: page + 1, limit });
+            return {
+                cards: [...response.cards, ...nextPageData.cards],
+                totalCards: nextPageData.totalCards || response.totalCards,
+            };
+        }
+        console.log(`[API] Fetched Admin Cards from Page ${page}:`, response.cards);
+        return response;
+    } catch (error) {
+        console.error("[API] Error fetching admin cards:", error.message);
+        throw error;
     }
 };

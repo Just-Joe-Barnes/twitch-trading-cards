@@ -7,7 +7,9 @@ import {
     fixDuplicateAndMintZeroCards,
     fixCardDataMismatches,
     fixMissingModifierPrefixes, fixLegacyGlitchNames,
-    backfillTradeSnapshots
+    backfillTradeSnapshots,
+    wipeDatabase,
+    searchCardsByName
 } from '../utils/api';
 
 const AdminCardAudit = () => {
@@ -34,6 +36,37 @@ const AdminCardAudit = () => {
         missingModifierPrefixIssues: false,
         legacyGlitchNameIssues: false,
     });
+    const [isWiping, setIsWiping] = useState(false);
+    const [wipeStatus, setWipeStatus] = useState(null);
+    const [wipeRewardCard, setWipeRewardCard] = useState(null); // Stores the selected card object
+    const [wipeCardQuery, setWipeCardQuery] = useState(''); // Search input text
+    const [wipeCardResults, setWipeCardResults] = useState([]); // Search results dropdown
+    const [wipeRewardRarity, setWipeRewardRarity] = useState('Basic');
+    const [packAssignmentsText, setPackAssignmentsText] = useState('');
+    const [parsedAssignments, setParsedAssignments] = useState({ data: null, error: null });
+
+    const handleWipeCardSearch = async (query) => {
+        setWipeCardQuery(query);
+        setWipeRewardCard(null); // Clear selection if user types again
+        if (query.length > 2) {
+            const results = await searchCardsByName(query);
+            setWipeCardResults(results);
+        } else {
+            setWipeCardResults([]);
+        }
+    };
+
+    const handleSelectWipeCard = (card) => {
+        setWipeRewardCard(card);
+        setWipeCardQuery(card.name);
+        setWipeCardResults([]);
+
+        // (MODIFIED) Reset rarity to the first available option for the selected card
+        if (card.rarities && card.rarities.length > 0) {
+            setWipeRewardRarity(card.rarities[0].rarity);
+        }
+    };
+
 
     const navigate = useNavigate();
 
@@ -55,6 +88,49 @@ const AdminCardAudit = () => {
             setLoading(false);
         }
     };
+    // --- NEW: Smart parser for Pack Assignments ---
+    // This helper function will convert Google Sheets data into JSON.
+    const parseAndConvertPackAssignments = (text) => {
+        const trimmedText = text.trim();
+
+        // If it's empty, return an empty object.
+        if (!trimmedText) {
+            return {};
+        }
+
+        // If it already looks like JSON, parse it directly.
+        if (trimmedText.startsWith('{')) {
+            return JSON.parse(trimmedText);
+        }
+
+        // Otherwise, assume it's Google Sheets data (tab-separated).
+        const assignments = {};
+        const lines = trimmedText.split('\n');
+
+        for (const line of lines) {
+            if (!line.trim()) continue; // Skip empty lines
+
+            const parts = line.split('\t'); // Split by tab character
+            if (parts.length !== 2) {
+                throw new Error(`Invalid line format found: "${line}". Each line must have a username and a number separated by a tab.`);
+            }
+
+            const username = parts[0].trim();
+            const packCount = parseInt(parts[1].trim(), 10);
+
+            if (!username) {
+                throw new Error(`Invalid line format: "${line}". Username cannot be empty.`);
+            }
+
+            if (isNaN(packCount)) {
+                throw new Error(`Invalid number for user "${username}": "${parts[1]}". Pack count must be a valid number.`);
+            }
+
+            assignments[username] = packCount;
+        }
+        return assignments;
+    };
+    // --- END: Smart parser ---
 
     useEffect(() => {
         const checkAdminAndFetch = async () => {
@@ -251,6 +327,76 @@ const AdminCardAudit = () => {
             setDuplicateFixStatus({ status: 'error', message: `Operation failed: ${err.message || 'Unknown error.'}` });
         }
     };
+
+
+    const handleWipeDatabase = async () => {
+        setWipeStatus(null);
+
+        // (NEW) Add a check to ensure a card is selected if the input has text
+        if (wipeCardQuery && !wipeRewardCard) {
+            setWipeStatus({ status: 'info', message: 'Please select a valid reward card from the search results or clear the input.' });
+            return;
+        }
+
+        const confirmation = window.prompt(
+            'This is an irreversible action that will wipe significant parts of the database. \n\nTo proceed, type "PERMANENTLY WIPE DATA" in the box below.'
+        );
+
+        if (confirmation !== 'PERMANENTLY WIPE DATA') {
+            setWipeStatus({ status: 'info', message: 'Wipe cancelled. Confirmation phrase did not match.' });
+            return;
+        }
+
+        setIsWiping(true);
+        setWipeStatus({ status: 'pending', message: 'Wipe in progress...' });
+
+
+        let packAssignments = {};
+        try {
+            // Use our new smart parser instead of just JSON.parse()
+            packAssignments = parseAndConvertPackAssignments(packAssignmentsText);
+        } catch (err) {
+            setWipeStatus({ status: 'error', message: `Pack Assignments Error: ${err.message}` });
+            setIsWiping(false);
+            return;
+        }
+
+        try {
+            // --- MODIFIED: Create a single payload object ---
+            const payload = {
+                confirmation,
+                wipeRewardCardId: wipeRewardCard?._id,
+                wipeRewardRarity,
+                packAssignments, // Include the parsed assignments
+            };
+
+            const result = await wipeDatabase(payload); // Send the payload
+            // --- END: Modification ---
+
+            setWipeStatus({ status: 'success', message: result.message, details: result.details });
+            await loadAuditData();
+        } catch (err) {
+            setWipeStatus({ status: 'error', message: `Wipe failed: ${err.message}` });
+        } finally {
+            setIsWiping(false);
+        }
+    };
+
+
+    useEffect(() => {
+        // This effect runs whenever the text in the textarea changes
+        if (!packAssignmentsText.trim()) {
+            setParsedAssignments({ data: null, error: null });
+            return;
+        }
+
+        try {
+            const result = parseAndConvertPackAssignments(packAssignmentsText);
+            setParsedAssignments({ data: result, error: null });
+        } catch (err) {
+            setParsedAssignments({ data: null, error: err.message });
+        }
+    }, [packAssignmentsText]);
 
     if (!isAdmin) {
         return <div className="page" style={{ padding: '2rem', color: '#fff' }}>Not authorized. Redirecting...</div>;
@@ -572,6 +718,117 @@ const AdminCardAudit = () => {
                         ))}</div>
                     )}
                 </div>
+            </div>
+            <div className="section-card danger-zone">
+                <h2>🚨 Danger Zone 🚨</h2>
+                <p>
+                    This action will perform a partial database wipe. It is designed for starting a new season or resetting player progression.
+                </p>
+                <strong>The following will be DELETED:</strong>
+                <ul>
+                    <li>All Trades</li>
+                    <li>All Notifications</li>
+                    <li>All Market Listings</li>
+                    <li>All User Activity Logs</li>
+                    <li>All Event Claims</li>
+                </ul>
+                <strong>All User profiles will be RESET:</strong>
+                <ul>
+                    <li>Cards, Packs, XP, Level, Achievements, and all progression stats will be reset to default.</li>
+                    <li>Core user info (username, Twitch ID, admin status) will be kept.</li>
+                </ul>
+                <p>
+                    <strong>This action is permanent and cannot be undone.</strong>
+                </p>
+                <div className="wipe-reward-section">
+                    <h4>Optional: Grant a Card to All Users After Wipe</h4>
+                    <p>Search for and select a card below. A 'Basic' rarity version of this card will be granted to every user, appearing as a reward on their next login. Leave blank to grant nothing.</p>
+                    <div style={{ position: 'relative', maxWidth: '400px', margin: '1rem auto' }}>
+                        <input
+                            type="text"
+                            className="search-bar"
+                            placeholder="Search for a reward card..."
+                            value={wipeCardQuery}
+                            onChange={(e) => handleWipeCardSearch(e.target.value)}
+                        />
+                        {wipeCardResults.length > 0 && (
+                            <ul className="search-dropdown">
+                                {wipeCardResults.map(card => (
+                                    <li key={card._id} className="search-result-item" onMouseDown={() => handleSelectWipeCard(card)}>
+                                        {card.name}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+
+                    {wipeRewardCard && (
+                        <div style={{ marginTop: '1rem' }}>
+                            <label htmlFor="rarity-select" style={{ marginRight: '10px' }}>Select Rarity:</label>
+                            <select
+                                id="rarity-select"
+                                value={wipeRewardRarity}
+                                onChange={(e) => setWipeRewardRarity(e.target.value)}
+                                style={{ padding: '8px', borderRadius: '4px', border: '1px solid #555', background: '#333', color: 'white' }}
+                            >
+                                {wipeRewardCard.rarities.map(r => (
+                                    <option key={r.rarity} value={r.rarity}>
+                                        {r.rarity} ({r.totalCopies} copies)
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
+                    <div className="wipe-reward-section" style={{ marginTop: '2rem' }}>
+                        <h4>Optional: Assign Packs to Specific Users</h4>
+                        <p>
+                            Paste a JSON object mapping usernames to the number of packs they should receive after the wipe.
+                        </p>
+                        <textarea
+                            value={packAssignmentsText}
+                            onChange={(e) => setPackAssignmentsText(e.target.value)}
+                            placeholder={`{\n  "ItchyBeard": 22,\n  "Wintertree": 3\n}\n\nOR paste from Google Sheets:\nItchyBeard\t22\nWintertree\t3`}
+                            rows="8"
+                            style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.9em' }}
+                        />
+
+                        {packAssignmentsText.trim() && (
+                            <div className="preview-box">
+                                {parsedAssignments.error && (
+                                    <div className="status-box error">
+                                        <strong>Preview Error:</strong> {parsedAssignments.error}
+                                    </div>
+                                )}
+                                {parsedAssignments.data && (
+                                    <div className="status-box success">
+                                        <strong>Preview:</strong> Found assignments for {Object.keys(parsedAssignments.data).length} users.
+                                        <pre>{JSON.stringify(parsedAssignments.data, null, 2)}</pre>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <button
+                    onClick={handleWipeDatabase}
+                    className="action-button"
+                    style={{ backgroundColor: '#dc3545', color: 'white' }}
+                    disabled={isWiping}
+                >
+                    {isWiping ? 'WIPING...' : 'WIPE DATABASE'}
+                </button>
+                {wipeStatus && (
+                    <div className={`status-box ${wipeStatus.status}`}>
+                        <strong>Wipe Status:</strong> {wipeStatus.message}
+                        {wipeStatus.details && (
+                            <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                                {JSON.stringify(wipeStatus.details, null, 2)}
+                            </pre>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

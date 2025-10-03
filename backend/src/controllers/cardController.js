@@ -11,19 +11,13 @@ const getPublicCards = async (req, res) => {
     try {
         const { search, rarity, sort, page = 1, limit = 50 } = req.query;
 
-        // --- THIS IS THE CRUCIAL SECURITY FILTER ---
-        // It ensures that cards marked as 'isHidden: true' are NEVER sent.
         const baseFilter = { isHidden: { $ne: true } };
 
-        // Add search query to the filter if provided
         if (search) {
-            // Using a case-insensitive regex for searching by name
             baseFilter.name = { $regex: search, $options: 'i' };
         }
 
-        // Add rarity filter if provided
         if (rarity) {
-            // This filters the nested 'rarities' array in the Card document
             baseFilter['rarities.rarity'] = { $regex: `^${rarity}$`, $options: 'i' };
         }
 
@@ -31,14 +25,12 @@ const getPublicCards = async (req, res) => {
         const limitNum = parseInt(limit, 10);
         const skip = (pageNum - 1) * limitNum;
 
-        // Fetch the paginated list of cards
         const cards = await Card.find(baseFilter)
             .sort({ name: sort === 'desc' ? -1 : 1 }) // Simple sort by name for now
             .skip(skip)
             .limit(limitNum)
             .lean(); // .lean() for better performance
 
-        // Get the total count of documents that match the filter (for pagination)
         const totalCards = await Card.countDocuments(baseFilter);
 
         res.json({

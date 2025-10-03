@@ -587,6 +587,7 @@ $card-artwork-height: 216px;
       opacity: 0.2;
       pointer-events: none;
       z-index: 0;
+      border-radius: 16px;
     }
 
     &::after {
@@ -602,6 +603,7 @@ $card-artwork-height: 216px;
       pointer-events: none;
       z-index: 1;
       transition: opacity 0.3s ease;
+      border-radius: 16px;
     }
 
     .card-artwork {
@@ -1013,7 +1015,7 @@ $card-artwork-height: 216px;
   --card-bg-color: #3a2525;
   background: var(--card-bg-color);
   display: flex;
-  height: 100%;
+  margin-top: auto;
   width: 100%;
   aspect-ratio: .65 / 1;
   border-radius: 6px;
@@ -1494,6 +1496,11 @@ $card-artwork-height: 216px;
   &.divine, &.event {
     position: relative;
     overflow: hidden;
+
+    &.slabbed {
+      overflow: visible;
+    }
+
     animation: divine-glow-mini 3s infinite alternate;
     filter: contrast(1.2) brightness(1.5);
     background: transparent no-repeat center/cover;
@@ -1556,8 +1563,6 @@ $card-artwork-height: 216px;
     }
 
     .mini-card-name {
-      color: white;
-      display: block;
       z-index: 2;
       top: 0;
       left: 0;
@@ -1587,6 +1592,30 @@ $card-artwork-height: 216px;
       width: 100%;
       z-index: 2;
       position: relative;
+    }
+  }
+
+  &.event {
+    .mini-card-border .mini-card-header {
+      position: absolute;
+      top: unset;
+      bottom: 0;
+      left: 0;
+      right: 0;
+
+      .mini-card-name {
+        top: unset;
+        bottom: unset;
+        right: unset;
+        left: unset;
+        height: 64px;
+        color: rgb(140, 94, 41);
+        text-shadow: 0 -1px 1px rgba(255, 255, 255, 0.5), 0 2px 3px rgba(0, 0, 0, 0.6), 0 0 8px rgb(0, 0, 0);
+        text-transform: uppercase;
+        font-weight: bolder;
+        letter-spacing: 2px;
+        font-size: 75% !important;
+      }
     }
   }
 

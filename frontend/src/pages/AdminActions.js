@@ -4,6 +4,7 @@ import {fetchUserProfile, fetchWithAuth, searchCardsByName} from '../utils/api';
 import '../styles/AdminActions.css';
 
 const AdminActions = () => {
+    // ... (no changes to other state variables)
     const [newNote, setNewNote] = useState('');
     const [devNotes, setDevNotes] = useState(() => {
         const storedNotes = localStorage.getItem('devNotes');
@@ -11,18 +12,14 @@ const AdminActions = () => {
     });
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(false);
-
-    // Notification panel state
-    const [notificationType, setNotificationType] = useState('');
+    const [maintenanceMode, setMaintenanceMode] = useState(false);
+    const [maintenanceLoading, setMaintenanceLoading] = useState(true);
     const [message, setMessage] = useState('');
-    // Packs management state
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState('');
     const [packAmount, setPackAmount] = useState('');
     const [addAllAmount, setAddAllAmount] = useState('');
     const [isUserDropdownVisible, setUserDropdownVisible] = useState(false);
-
-    // Achievements state
     const [achievements, setAchievements] = useState([]);
     const [newAchievement, setNewAchievement] = useState({
         name: '',
@@ -34,11 +31,15 @@ const AdminActions = () => {
     });
     const [newAchievementResults, setNewAchievementResults] = useState([]);
 
-    // Pack management state
+    // ADDED: State for the notification user search
+    const [notificationType, setNotificationType] = useState('General Announcement');
+    const [notificationUser, setNotificationUser] = useState('');
+    const [isNotificationUserDropdownVisible, setNotificationUserDropdownVisible] = useState(false);
 
 
     const navigate = useNavigate();
 
+    // ... (useEffect remains the same)
     useEffect(() => {
         const checkAdmin = async () => {
             try {
@@ -72,29 +73,40 @@ const AdminActions = () => {
             }
         };
 
+
+        const fetchMaintenanceStatus = async () => {
+            try {
+                const data = await fetchWithAuth('/api/settings/maintenance');
+                setMaintenanceMode(data.maintenanceMode);
+            } catch (err) {
+                console.error('Failed to fetch maintenance status:', err);
+                window.showToast('Could not load maintenance status.', 'error');
+            } finally {
+                setMaintenanceLoading(false);
+            }
+        };
+
         checkAdmin();
         fetchUsers();
         fetchAchievements();
+        fetchMaintenanceStatus();
     }, [navigate]);
 
-    // Filter users for pack management
-    const filteredUsers = selectedUser
-        ? users.filter(u => u.username.toLowerCase().includes(selectedUser.toLowerCase()))
-        : [];
-
-    const handleNotificationSubmit = async (e) => {
-        e.preventDefault();
+    // ... (other handlers remain the same)
+    const handleToggleMaintenanceMode = async () => {
+        const newMode = !maintenanceMode;
+        setMaintenanceLoading(true); // Disable switch during API call
         try {
-            await fetchWithAuth('/api/admin/notifications', {
+            await fetchWithAuth('/api/admin/settings/maintenance', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({type: notificationType, message}),
+                body: JSON.stringify({ mode: newMode }),
             });
-            window.showToast('Notification sent successfully.', 'success');
-            setNotificationType('');
-            setMessage('');
-        } catch {
-            window.showToast('Error sending notification.', 'error');
+            setMaintenanceMode(newMode);
+            window.showToast(`Maintenance mode turned ${newMode ? 'ON' : 'OFF'}.`, 'success');
+        } catch (err) {
+            window.showToast('Failed to update maintenance mode.', 'error');
+        } finally {
+            setMaintenanceLoading(false);
         }
     };
 
@@ -118,7 +130,6 @@ const AdminActions = () => {
             window.showToast('Error giving packs.', 'error');
         }
     };
-
     const handleAddPacksAll = async () => {
         try {
             await fetchWithAuth('/api/admin/add-packs', {
@@ -132,7 +143,6 @@ const AdminActions = () => {
             window.showToast('Error adding packs to all users.', 'error');
         }
     };
-
     const handleResetAllPacks = async () => {
         try {
             await fetchWithAuth('/api/admin/set-packs', {method: 'POST'});
@@ -141,10 +151,6 @@ const AdminActions = () => {
             window.showToast('Error resetting packs.', 'error');
         }
     };
-
-    const selectedUserObj = selectedUser && users.find(u => u.username === selectedUser);
-
-    // Achievement card search helpers
     const handleAchievementCardQueryChange = async (id, value) => {
         setAchievements(prev => prev.map(a => a._id === id ? {...a, cardQuery: value} : a));
         if (value) {
@@ -154,7 +160,6 @@ const AdminActions = () => {
             setAchievements(prev => prev.map(a => a._id === id ? {...a, cardResults: []} : a));
         }
     };
-
     const handleSelectAchievementCard = (id, card) => {
         setAchievements(prev => prev.map(a => a._id === id ? {
             ...a,
@@ -163,7 +168,6 @@ const AdminActions = () => {
             cardResults: []
         } : a));
     };
-
     const handleNewAchievementCardQueryChange = async (value) => {
         setNewAchievement({...newAchievement, cardQuery: value});
         if (value) {
@@ -173,12 +177,10 @@ const AdminActions = () => {
             setNewAchievementResults([]);
         }
     };
-
     const handleSelectNewAchievementCard = (card) => {
         setNewAchievement({...newAchievement, card: card._id, cardQuery: card.name});
         setNewAchievementResults([]);
     };
-
     const handleSaveAchievement = async (ach) => {
         try {
             await fetchWithAuth(`/api/admin/achievements/${ach._id}`, {
@@ -196,7 +198,6 @@ const AdminActions = () => {
             window.showToast('Error saving achievement', 'error');
         }
     };
-
     const handleDeleteAchievement = async (id) => {
         try {
             await fetchWithAuth(`/api/admin/achievements/${id}`, {method: 'DELETE'});
@@ -205,7 +206,6 @@ const AdminActions = () => {
             window.showToast('Error deleting achievement', 'error');
         }
     };
-
     const handleCreateAchievement = async () => {
         try {
             const res = await fetchWithAuth('/api/admin/achievements', {
@@ -230,6 +230,64 @@ const AdminActions = () => {
         }
     };
 
+
+    // MODIFIED: This handler now checks for a selected user.
+    const handleNotificationSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+
+        // Find the user object if a username is selected
+        const userObj = notificationUser ? users.find(u => u.username === notificationUser) : null;
+
+        // If a username is typed but not valid, show an error.
+        if (notificationUser && !userObj) {
+            window.showToast('Invalid user selected. Please choose a user from the list.', 'error');
+            setLoading(false);
+            return;
+        }
+
+        const payload = {
+            type: notificationType,
+            message,
+            ...(userObj && { userId: userObj._id })
+        };
+
+        try {
+            await fetchWithAuth('/api/admin/notifications', {
+                method: 'POST',
+                body: JSON.stringify(payload),
+            });
+
+            const successMessage = userObj
+                ? `Notification sent to ${userObj.username}.`
+                : 'Global notification sent to all users.';
+            window.showToast(successMessage, 'success');
+
+            // Reset form fields
+            setNotificationType('General Announcement');
+            setMessage('');
+            setNotificationUser('');
+
+        } catch (err) {
+            window.showToast('Error sending notification.', 'error');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Filter users for both pack management and notifications
+    const filteredUsers = selectedUser
+        ? users.filter(u => u.username.toLowerCase().includes(selectedUser.toLowerCase()))
+        : [];
+
+    // ADDED: A separate filtered list for the notification user search
+    const notificationFilteredUsers = notificationUser
+        ? users.filter(u => u.username.toLowerCase().includes(notificationUser.toLowerCase()))
+        : [];
+
+    const selectedUserObj = selectedUser && users.find(u => u.username === selectedUser);
+
     if (!isAdmin) {
         return <div style={{padding: '2rem', color: '#fff'}}>Not authorized</div>;
     }
@@ -240,7 +298,9 @@ const AdminActions = () => {
 
     return (
         <div className="page">
+            {maintenanceMode && (<h1>Maintenance mode is ACTIVE</h1>)}
             <div className="admin-panel-grid">
+                {/* --- Achievements Panel (no changes) --- */}
                 <section className="section-card">
                     <h2>Achievements</h2>
                     {achievements.map((ach) => (
@@ -369,22 +429,47 @@ const AdminActions = () => {
                     </div>
                 </section>
 
-
-                {/* Notification Panel */}
+                {/* MODIFIED: Notification Panel */}
                 <section className="section-card">
                     <h2>Send Notification</h2>
                     <form onSubmit={handleNotificationSubmit} className="aa-admin-actions-form">
+
+                        {/* ADDED: User search input for notifications */}
+                        <div className="aa-form-group" style={{ position: 'relative' }}>
+                            <label>User (Optional):</label>
+                            <input
+                                type="text"
+                                className="search-bar"
+                                value={notificationUser}
+                                onChange={e => setNotificationUser(e.target.value)}
+                                placeholder="Search to send to a specific user..."
+                                onFocus={() => setNotificationUserDropdownVisible(true)}
+                                onBlur={() => setTimeout(() => setNotificationUserDropdownVisible(false), 200)}
+                            />
+                            {isNotificationUserDropdownVisible && notificationUser && notificationFilteredUsers.length > 0 && (
+                                <ul className="search-dropdown">
+                                    {notificationFilteredUsers.map(u => (
+                                        <li
+                                            key={u._id}
+                                            className="search-result-item"
+                                            onMouseDown={() => setNotificationUser(u.username)}
+                                        >
+                                            {u.username}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+
                         <div className="aa-form-group">
                             <label>Type:</label>
-                            <select value={notificationType} onChange={e => setNotificationType(e.target.value)}
-                                    required>
-                                <option value="" disabled>Select notification type</option>
+                            <select value={notificationType} onChange={e => setNotificationType(e.target.value)} required>
+                                <option>General Announcement</option>
                                 <option>Trade Offer Received</option>
                                 <option>Trade Update</option>
                                 <option>New Market Offer</option>
                                 <option>Listing Update</option>
                                 <option>Collection Milestone</option>
-                                <option>General Announcement</option>
                             </select>
                         </div>
                         <div className="aa-form-group">
@@ -404,7 +489,7 @@ const AdminActions = () => {
                     </form>
                 </section>
 
-                {/* Packs Management Panel */}
+                {/* --- Packs Management Panel (no changes) --- */}
                 <section className="section-card">
                     <h2>Manage User Packs</h2>
                     <form onSubmit={handleGivePacks} className="aa-admin-packs-form" style={{position: 'relative'}}>
@@ -482,7 +567,7 @@ const AdminActions = () => {
                     </form>
                 </section>
 
-                {/* User Profile Viewer */}
+                {/* --- User Profile Viewer (no changes) --- */}
                 <section className="section-card">
                     <h2>User Profile</h2>
                     <div style={{position: 'relative'}}>
@@ -527,7 +612,7 @@ const AdminActions = () => {
                     )}
                 </section>
 
-                {/* Dev Notes To-Do List */}
+                {/* --- Dev Notes (no changes) --- */}
                 <section className="section-card">
                     <h2>Dev Notes</h2>
                     <div className="aa-admin-actions-form">
@@ -580,6 +665,31 @@ const AdminActions = () => {
                                 </li>
                             ))}
                         </ul>
+                    </div>
+                </section>
+
+                {/* --- App Settings (no changes) --- */}
+                <section className={`section-card ${maintenanceMode && 'maintenance-mode'}`}>
+                    <h2>App Settings</h2>
+                    <div className="setting-row">
+                        <div className="setting-info">
+                            <label htmlFor="maintenance-switch">Maintenance Mode</label>
+                            <p className="description">
+                                When ON, only admins can access the app.
+                            </p>
+                        </div>
+                        <div className="setting-control">
+                            <label className="switch-container">
+                                <input
+                                    type="checkbox"
+                                    id="maintenance-switch"
+                                    checked={maintenanceMode}
+                                    onChange={handleToggleMaintenanceMode}
+                                    disabled={maintenanceLoading}
+                                />
+                                <span className="slider round"></span>
+                            </label>
+                        </div>
                     </div>
                 </section>
             </div>

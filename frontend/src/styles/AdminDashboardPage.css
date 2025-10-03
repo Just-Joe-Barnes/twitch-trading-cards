@@ -337,8 +337,16 @@ h1::after {
   border-radius: 2px;
 }
 
-.rarity-key {
-  grid-template-columns: repeat(4, 1fr);
+.rarity-key.admin {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+.rarity-key.admin .rarity-item {
+  flex: 1 23%;
+  padding: 0.5rem;
+  text-align: center;
 }
 
 .debug-card {

@@ -3,17 +3,14 @@ import {NavLink} from "react-router-dom";
 import '../styles/NavAdmin.css';
 
 const NavAdmin = () => {
-    // State to manage the menu's open/closed state on mobile
     const [isOpen, setIsOpen] = useState(false);
 
-    // Function to close the menu after a link is clicked
     const closeMenu = () => {
         setIsOpen(false);
     };
 
     return (
         <>
-            {/* The hamburger button for mobile */}
             <button
                 className="nav-admin-toggle"
                 onClick={() => setIsOpen(!isOpen)}
@@ -21,7 +18,6 @@ const NavAdmin = () => {
                 ☰
             </button>
 
-            {/* The main navigation menu */}
             <div className={`nav-admin ${isOpen ? 'open' : ''}`}>
                 <NavLink to="/admin/" onClick={closeMenu}>Actions Home</NavLink>
                 <NavLink to="/admin/cardmanagement" onClick={closeMenu}>Card Management</NavLink>

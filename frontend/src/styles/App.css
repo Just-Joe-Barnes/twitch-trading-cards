@@ -359,6 +359,12 @@ p {
 .page.full {
   width: unset;
 }
+.page.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
 
 h1 {
   text-align: center;

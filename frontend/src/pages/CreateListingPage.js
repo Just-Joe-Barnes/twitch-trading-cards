@@ -63,7 +63,15 @@ const CreateListingPage = () => {
     }, [collection, search, selectedRarity]);
 
     const hasSlabbedCards = useMemo(() => preFilteredCollection.some(card => card.slabbed), [preFilteredCollection]);
-    const hasLimitedCardsInCollection = useMemo(() => preFilteredCollection.some(card => isCardLimited(card)), [preFilteredCollection, isCardLimited]);
+
+    // --- MODIFICATION START ---
+    // Update the check to include Event cards to correctly enable/disable the filter button.
+    const hasLimitedOrEventCards = useMemo(() =>
+            preFilteredCollection.some(card => isCardLimited(card) || card.rarity === 'Event'),
+        [preFilteredCollection, isCardLimited]
+    );
+    // --- MODIFICATION END ---
+
 
     useEffect(() => {
         let currentFiltered = [...preFilteredCollection];
@@ -81,9 +89,12 @@ const CreateListingPage = () => {
             currentFiltered = currentFiltered.filter(card => card.slabbed);
         }
 
+        // --- MODIFICATION START ---
+        // Update the filter logic to include cards with the "Event" rarity.
         if (showLimitedOnly) {
-            currentFiltered = currentFiltered.filter(card => isCardLimited(card));
+            currentFiltered = currentFiltered.filter(card => isCardLimited(card) || card.rarity === 'Event');
         }
+        // --- MODIFICATION END ---
 
         currentFiltered.sort((a, b) => {
             if (sortOption === 'mintNumber') {
@@ -217,11 +228,14 @@ const CreateListingPage = () => {
                                                             </label>
                                                             <input type="checkbox" id="slabbedCheckbox" checked={showSlabbedOnly} onChange={(e) => setShowSlabbedOnly(e.target.checked)} disabled={!hasSlabbedCards}/>
                                                         </div>
-                                                        <div className={`checkbox-wrapper ${!hasLimitedCardsInCollection ? 'disabled' : ''}`}>
-                                                            <label htmlFor="limitedCheckbox" data-tooltip="Show only Limited Cards">
+                                                        {/* --- MODIFICATION START --- */}
+                                                        {/* Update the tooltip and the disabled check. */}
+                                                        <div className={`checkbox-wrapper ${!hasLimitedOrEventCards ? 'disabled' : ''}`}>
+                                                            <label htmlFor="limitedCheckbox" data-tooltip="Show only Limited and Event Cards">
+                                                                {/* --- MODIFICATION END --- */}
                                                                 <i className={`fa-${showLimitedOnly ? 'solid' : 'regular'} fa-crown`}/>
                                                             </label>
-                                                            <input type="checkbox" id="limitedCheckbox" checked={showLimitedOnly} onChange={(e) => setShowLimitedOnly(e.target.checked)} disabled={!hasLimitedCardsInCollection}/>
+                                                            <input type="checkbox" id="limitedCheckbox" checked={showLimitedOnly} onChange={(e) => setShowLimitedOnly(e.target.checked)} disabled={!hasLimitedOrEventCards}/>
                                                         </div>
                                                     </div>
                                                 </div>

@@ -1,10 +1,26 @@
-import React, {useEffect, useState, useMemo} from 'react';
+import React, {useEffect, useState, useMemo, useRef} from 'react';
 import {fetchWithAuth, gradeCard, completeGrading, revealGradedCard, fetchUserProfile} from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import {rarities} from '../constants/rarities';
 import '../styles/CardGradingPage.css';
 import GradingInProgressCard from "../components/GradingInProgressCard";
+
+const useIsMobile = (breakpoint = 768) => {
+    const [isMobile, setIsMobile] = useState(window.innerWidth < breakpoint);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < breakpoint);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [breakpoint]);
+
+    return isMobile;
+};
+
 
 const CardGradingPage = () => {
     const [selectedUser, setSelectedUser] = useState('');
@@ -29,8 +45,53 @@ const CardGradingPage = () => {
         Epic: 0, Legendary: 0, Mythic: 0, Unique: 0, Divine: 0
     });
 
-    const inProcessCards = useMemo(() => cards.filter(c => c.gradingRequestedAt), [cards]);
-    const collectionCards = useMemo(() => cards.filter(c => !c.gradingRequestedAt), [cards]);
+    // Card Scaling State and Refs
+    const isMobile = useIsMobile();
+    const defaultCardScale = 1;
+    const [cardScale, setCardScale] = useState(() => {
+        const storedScale = parseFloat(localStorage.getItem("cardScale"));
+        return isNaN(storedScale) ? defaultCardScale : storedScale;
+    });
+    const rangeInputRef = useRef(null);
+    const maxCardScale = isMobile ? 1.3 : 2;
+    const minCardScale = isMobile ? 0.35 : 0.35;
+
+
+    const inProcessCards = useMemo(() => cards.filter(c => c.gradingRequestedAt && c.rarity !== 'Event'), [cards]);
+    const collectionCards = useMemo(() => cards.filter(c => !c.gradingRequestedAt && c.rarity !== 'Event'), [cards]);
+
+    // Card Scaling Effects and Handlers
+    useEffect(() => {
+        localStorage.setItem("cardScale", cardScale);
+    }, [cardScale]);
+
+    const handleRangeChange = (inputElement) => {
+        if (!inputElement) return;
+        const value = parseFloat(inputElement.value);
+        const min = parseFloat(inputElement.min || 0);
+        const max = parseFloat(inputElement.max || 100);
+        const percentage = ((value - min) / (max - min)) * 100;
+        inputElement.style.setProperty('--range-progress', `${percentage}%`);
+    };
+
+    useEffect(() => {
+        localStorage.setItem("cardScale", cardScale.toString());
+        if (rangeInputRef.current) {
+            handleRangeChange(rangeInputRef.current);
+        }
+    }, [cardScale, showFilters]);
+
+    useEffect(() => {
+        if (isMobile) {
+            if (cardScale > 1.3) setCardScale(1.3);
+            if (cardScale < 0.35) setCardScale(0.35);
+        }
+    }, [isMobile, cardScale]);
+
+    const handleCardScaleChange = (e) => {
+        const newScale = parseFloat(e.target.value);
+        setCardScale(newScale);
+    };
 
     const handleRarityChange = (rarityName) => {
         const normalizedRarityName = rarityName.toLowerCase();
@@ -202,7 +263,7 @@ const CardGradingPage = () => {
                         <div className="info-section section-card narrow">
                             Use the controls below to search a user's collection and select
                             cards for grading. Once a card is graded you can reveal the slab
-                            to complete the process.
+                            to complete the process. <strong>Event cards are ineligble for grading.</strong>
                         </div>
                         <div className="stats">
                             <button onClick={() => setShowFilters(!showFilters)} className="stat">
@@ -276,6 +337,19 @@ const CardGradingPage = () => {
                                     </div>
                                 </div>
                             </div>
+                            <div className="slidecontainer" style={{ marginTop: '1ch' }}>
+                                <label>Card Scale: </label>
+                                <input
+                                    type="range"
+                                    min={minCardScale}
+                                    max={maxCardScale}
+                                    step="0.05"
+                                    value={cardScale}
+                                    onChange={handleCardScaleChange}
+                                    ref={rangeInputRef}
+                                />
+                                <p>{Math.round(cardScale * 100)}%</p>
+                            </div>
                             <div className="rarity-key" style={{marginTop: '1ch'}}>
                                 {rarities.map((r) => {
                                     const normalizedRarityName = r.name.toLowerCase();
@@ -330,7 +404,10 @@ const CardGradingPage = () => {
                             {inProcessCards.length > 0 && (
                                 <div className="inprocess-section" data-testid="inprocess-list">
                                     <h3>Grading In Progress</h3>
-                                    <div className={`card-tile-grid ${hasSlabbedReady ? 'slabbed' : ''}`}>
+                                    <div
+                                        className={`cards-grid ${hasSlabbedReady ? 'slabbed' : ''} ${cardScale === 0.35 ? 'mini' : ''}`}
+                                        style={{ "--user-card-scale": (cardScale === 0.35 ? 1 : cardScale) }}
+                                    >
                                         {inProcessCards.map(card => (
                                             <GradingInProgressCard
                                                 key={card._id}
@@ -340,18 +417,22 @@ const CardGradingPage = () => {
                                                 onFinish={handleOverride}
                                                 onReveal={() => toggleReveal(card._id)}
                                                 onDone={() => handleDone(card._id)}
+                                                miniCard={cardScale === 0.35}
                                             />
                                         ))}
                                     </div>
                                 </div>
                             )}
-                            <div className="collection-section" data-testid="collection-list">
+                            <div data-testid="collection-list" style={{marginTop: '0.5rem'}}>
                                 {sortedCards.length === 0 && !loading && (
                                     <div className="section-card">
                                         No cards found in your collection matching the filters.
                                     </div>
                                 )}
-                                <div className={`card-tile-grid ${showSlabbedOnly ? 'slabbed' : ''}`}>
+                                <div
+                                    className={`cards-grid ${showSlabbedOnly ? 'slabbed' : ''} ${cardScale === 0.35 ? 'mini' : ''}`}
+                                    style={{ "--user-card-scale": (cardScale === 0.35 ? 1 : cardScale) }}
+                                >
                                     {sortedCards.map(card => (
                                         <div key={card._id} className={`card-tile ${card.slabbed ? 'slabbed' : ''}`}>
                                             <BaseCard
@@ -363,6 +444,7 @@ const CardGradingPage = () => {
                                                 modifier={card.modifier}
                                                 grade={card.grade}
                                                 slabbed={card.slabbed}
+                                                miniCard={cardScale === 0.35}
                                             />
                                             {!card.slabbed && (
                                                 <div className="actions">

@@ -204,18 +204,19 @@ const PendingTrades = () => {
                 {/* We'll map over the entire items array instead of just taking the first one */}
                 {items.map(item => {
                     // Find the rarity color for each item
-                    const rarityColor = rarities.find(r => r.name.toLowerCase() === item.rarity.toLowerCase())?.color ?? 'inherit';
+                    let rarityColor = rarities.find(r => r.name.toLowerCase() === item.rarity.toLowerCase())?.color ?? 'inherit';
 
-                    // Return a div for each card to place it on a new line
-                    // Use a resilient key that works for both snapshot and live data
+                    if (item.rarity === 'Event') {
+                        rarityColor = '#f1b93f'
+                    }
+
                     return (
                         <div key={item.originalId || item._id} className="summary-item">
-                            {item.name} #{item.mintNumber} <span style={{color: rarityColor}}>{item.rarity}</span>
+                            {item.name} {item.rarity !== 'Event' && (<>#{item.mintNumber}</>)} <span style={{color: rarityColor}}>{item.rarity}</span>
                         </div>
                     );
                 })}
 
-                {/* If there are packs, add them on a new line at the end */}
                 {packs > 0 && (
                     <div className="summary-packs">
                         + {packs} packs
@@ -223,7 +224,7 @@ const PendingTrades = () => {
                 )}
             </>
         );
-    }, [rarities]); // Added rarities to the dependency array as it's used inside
+    }, [rarities]);
 
     if (error) return <div className="error-message">{error}</div>;
     if (!user) return <LoadingSpinner/>;

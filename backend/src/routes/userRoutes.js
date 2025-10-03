@@ -25,23 +25,6 @@ router.get('/me', protect, getUserProfile);
 // NEW: Route to fetch a user's profile by username
 router.get('/profile/:username', protect, getProfileByUsername);
 
-// Route to award a first login pack
-router.post('/packs/firstlogin', protect, async (req, res) => {
-    try {
-        const user = await User.findById(req.user._id);
-        if (user.firstLogin) {
-            return res.status(400).json({ message: 'First login pack already claimed' });
-        }
-        user.firstLogin = true;
-        user.packs += 1;
-        await user.save();
-        return res.json({ message: 'First login pack awarded', packs: user.packs });
-    } catch (err) {
-        console.error('Error awarding first login pack:', err);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
 // Route to fetch user's featured cards
 router.get('/featured-cards', protect, getFeaturedCards);
 

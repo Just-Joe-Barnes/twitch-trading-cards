@@ -75,4 +75,34 @@ router.delete('/:notificationId', protect, async (req, res) => {
     }
 });
 
+// ADD THIS NEW ROUTE
+// @desc    Mark a single notification as read
+// @route   PUT /api/notifications/:id/read
+// @access  Private
+router.put('/:id/read', protect, async (req, res) => {
+    try {
+        const notification = await Notification.findOne({
+            _id: req.params.id,
+            userId: req.user.id // Ensures users can only update their own notifications
+        });
+
+        if (!notification) {
+            return res.status(404).json({ message: 'Notification not found' });
+        }
+
+        if (notification.isRead) {
+            return res.status(200).json({ message: 'Notification was already read.' });
+        }
+
+        notification.isRead = true;
+        await notification.save();
+
+        res.status(200).json(notification);
+
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
 module.exports = router;

@@ -490,7 +490,7 @@ const AdminDashboardPage = ({user}) => {
                     <div>
                         <div className="section-card">
                             <h2 onClick={() => (setShowDebugControls(!showDebugControls))}>Card Rarity Key</h2>
-                            <div className="rarity-key">
+                            <div className="rarity-key admin">
                                 {rarities.map((r) => {
                                     return (
                                         <span

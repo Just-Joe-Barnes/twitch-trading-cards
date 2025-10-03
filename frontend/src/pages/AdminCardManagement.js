@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { fetchWithAuth } from '../utils/api';
 import CreateCardForm from '../components/CreateCardForm';
 import EditCardForm from '../components/EditCardForm';
+import AdminCataloguePage from './AdminCataloguePage';
 
 const AdminCardManagement = () => {
     const [view, setView] = useState('menu');
@@ -80,23 +81,28 @@ const AdminCardManagement = () => {
     };
 
     const renderContent = () => {
-        switch(view) {
+        switch (view) {
             case 'create':
                 return <CreateCardForm onSubmit={handleCreateSubmit} onClose={() => setView('menu')} />;
             case 'edit':
                 return <EditCardForm onSubmit={handleEditSubmit} onClose={() => setView('menu')} />;
+            case 'catalogue':
+                return <AdminCataloguePage onClose={() => setView('menu')} />;
             case 'menu':
             default:
                 return (
                     <div className="section-card">
                         <h2>Card Actions</h2>
                         <p>What would you like to do?</p>
-                        <div className="button-group" style={{ justifyContent: 'center', gap: '1rem' }}>
+                        <div className="button-group" style={{ justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                             <button className="primary-button lg" onClick={() => setView('create')}>
                                 Create New Card
                             </button>
                             <button className="primary-button lg" onClick={() => setView('edit')}>
                                 Edit Existing Card
+                            </button>
+                            <button className="secondary-button lg" onClick={() => setView('catalogue')}>
+                                View Full Catalogue
                             </button>
                         </div>
                     </div>

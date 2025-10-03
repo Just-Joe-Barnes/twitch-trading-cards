@@ -129,19 +129,22 @@ const AdminPacksPage = () => {
           </ul>
         )}
 
-        <div className="selected-cards">
+        <div className="card-tile-grid">
           {selectedCardIds.map(id => {
             const card = allCards.find(c => c._id === id);
             return card ? (
-              <div key={id} style={{ display: 'inline-block', margin: '5px' }}>
+              <div key={id} className="card-tile">
                 <BaseCard
                   name={card.name}
                   image={card.imageUrl}
                   rarity={card.rarities?.[0]?.rarity}
                   description={card.flavorText}
                   modifier={card.modifier}
+                  miniCard={true}
                 />
-                <button onClick={() => handleRemoveCard(id)}>Remove</button>
+                  <div className="actions">
+                    <button onClick={() => handleRemoveCard(id)}>Remove</button>
+                  </div>
               </div>
             ) : null;
           })}

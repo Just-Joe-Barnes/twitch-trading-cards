@@ -8,6 +8,7 @@ const morgan = require('morgan');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const Setting = require('./src/models/settingsModel');
 require('dotenv').config();
 
 
@@ -57,7 +58,11 @@ io.on('connection', (socket) => {
         });
     });
 });
-// --- END OF SOCKET.IO INITIALIZATION ---
+
+app.use((req, res, next) => {
+    req.io = io;
+    next();
+});
 
 app.set('trust proxy', 1);
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:3000", credentials: true }));
@@ -77,12 +82,16 @@ app.use(session({
 app.use(morgan('dev'));
 
 if (require.main === module) {
+    console.log("ATTEMPTING TO CONNECT WITH URI:", process.env.MONGO_URI);
     mongoose
         .connect(process.env.MONGO_URI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         })
-        .then(() => console.log("MongoDB connected successfully"))
+        .then(() => {
+            console.log("MongoDB connected successfully");
+            Setting.initialize();
+        })
         .catch((err) => {
             console.error("MongoDB connection error:", err.message);
             process.exit(1);
@@ -117,6 +126,7 @@ app.use('/api/test-notification', require('./src/routes/testNotificationRoutes')
 app.use('/api/grading', require('./src/routes/gradingRoutes'));
 app.use('/api/modifiers', require('./src/routes/modifierRoutes'));
 app.use('/api/achievements', require('./src/routes/achievementRoutes'));
+app.use('/api/settings', require('./src/routes/settingsRoutes'));
 app.use('/api/admin', require('./src/routes/adminRoutes'));
 app.use('/api/events', require('./src/routes/eventRoutes'));
 app.use('/api/log', require('./src/routes/logRoutes'));

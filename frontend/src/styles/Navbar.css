@@ -160,16 +160,11 @@
   height: 3px;
   background: var(--text-primary);
 }
-.navbar-notifications {
+.navbar .navbar-user-actions {
   padding-left: 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-}
-@media screen and (max-width: 768px) {
-  .navbar-notifications {
-    margin-left: auto;
-  }
 }
 .navbar-username {
   color: var(--text-primary);
@@ -180,7 +175,11 @@
 }
 @media (max-width: 768px) {
   .navbar {
-    padding: 0 0 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    padding: 0 10px;
   }
   .navbar .burger-button {
     display: flex;
@@ -188,7 +187,11 @@
     margin-right: 0.5rem;
   }
   .navbar-logo {
-    flex: 0;
+    position: absolute; /* Pull the logo out of the normal flow */
+    left: 50%; /* Position the left edge of the logo at the center */
+    top: 50%; /* Position the top edge of the logo at the center */
+    transform: translate(-50%, -50%); /* Shift the logo back by half its own width and height */
+    margin: 0; /* Remove any previous margins */
   }
   .navbar-logo h1 {
     font-size: 1.3rem;

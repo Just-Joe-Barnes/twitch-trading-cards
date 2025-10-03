@@ -152,11 +152,6 @@
   flex-direction: column;
 }
 
-.collection-section {
-  flex: 1;
-  overflow-y: auto;
-}
-
 .reveal-zone {
   flex: 1;
   display: flex;

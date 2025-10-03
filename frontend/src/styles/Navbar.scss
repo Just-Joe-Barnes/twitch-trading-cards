@@ -178,15 +178,11 @@
     }
   }
 
-  &-notifications {
+  .navbar-user-actions {
     padding-left: 1rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-
-    @media screen and (max-width: 768px) {
-      margin-left: auto;
-    }
   }
 
   &-username {
@@ -201,6 +197,11 @@
 
   /* Collapse navbar links into burger menu on medium screens */
   @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+
     .burger-button {
       display: flex;
       order: -1;
@@ -208,13 +209,17 @@
     }
 
     &-logo {
-      flex: 0;
+      position: absolute; /* Pull the logo out of the normal flow */
+      left: 50%; /* Position the left edge of the logo at the center */
+      top: 50%; /* Position the top edge of the logo at the center */
+      transform: translate(-50%, -50%); /* Shift the logo back by half its own width and height */
+      margin: 0; /* Remove any previous margins */
       h1 {
         font-size: 1.3rem;
       }
     }
 
-    padding: 0 0 0 10px;
+    padding: 0 10px;
 
     &-search, &-username {
       display: none;

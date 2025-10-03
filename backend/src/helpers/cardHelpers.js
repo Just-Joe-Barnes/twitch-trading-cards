@@ -393,11 +393,8 @@ const generatePackPreview = async (packSize = 5) => {
 };
 const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifier, live) => {
     try {
-        // +++ START OF NEW LOGIC FOR EVENT CARDS +++
-        // This block handles the special case for packs that only contain one "Event" card.
         if (poolIds.length === 1) {
             const singleCard = await Card.findById(poolIds[0]);
-            // Check if this single card in the pool is indeed an Event card
             if (singleCard && singleCard.rarities.length === 1 && singleCard.rarities[0].rarity === 'Event') {
                 console.log('[generateCardPreviewFromPool] Detected Event Card Pack. Bypassing probability logic.');
                 const eventRarityObj = singleCard.rarities[0];
@@ -410,28 +407,13 @@ const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifie
                 // Pick a random mint number from the available list
                 const idx = Math.floor(Math.random() * eventRarityObj.availableMintNumbers.length);
                 const mintNumber = eventRarityObj.availableMintNumbers[idx];
-                let appliedModifierId = null;
-
-                // The debug function doesn't need to update the database, so we skip the `live` check for now.
-                // The `openPacksForUser` function will handle the live update if needed.
-
-                // Handle forced modifiers, just like in the original logic
-                if (Math.random() < MODIFIER_CHANCE || forceModifier) {
-                    const modifiers = await Modifier.find().lean();
-                    if (modifiers.length > 0) {
-                        const modToApply = modifiers[Math.floor(Math.random() * modifiers.length)];
-                        appliedModifierId = modToApply._id;
-                        let cardPrefix = modToApply.name === "Glitch" ? "Glitched" : modToApply.name;
-                        singleCard.name = cardPrefix + " " + singleCard.name;
-                    }
-                }
 
                 // Return the generated event card object, effectively ending the function here.
                 return {
                     name: singleCard.name,
                     rarity: 'Event',
                     mintNumber,
-                    modifier: appliedModifierId,
+                    modifier: null, // do not apply modifier to event card
                     imageUrl: singleCard.imageUrl,
                     flavorText: singleCard.flavorText || 'No flavor text available',
                     cardId: singleCard._id.toString(),
@@ -440,10 +422,7 @@ const generateCardPreviewFromPool = async (poolIds, randomHighRoll, forceModifie
                 };
             }
         }
-        // +++ END OF NEW LOGIC FOR EVENT CARDS +++
 
-
-        // --- Existing logic for all other packs ---
         let appliedModifierId = null;
         let availabilityResponse;
         try {

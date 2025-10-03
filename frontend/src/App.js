@@ -23,6 +23,7 @@ import AdminLogs from "./pages/AdminLogs";
 import AdminActionsLayout from "./components/AdminActionsLayout";
 import BountyBoardPage from "./pages/BountyBoardPage";
 
+const MaintenancePage = lazy(() => import('./pages/MaintenancePage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const CollectionPage = lazy(() => import('./pages/CollectionPage'));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
@@ -43,17 +44,19 @@ const AchievementsPage = lazy(() => import('./pages/AchievementsPage'));
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 const App = () => {
+    const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
+
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [toasts, setToasts] = useState([]);
     const [inspectedCard, setInspectedCard] = useState(null);
-    const [showNotice, setShowNotice] = useState(false);
     const [currentReward, setCurrentReward] = useState(null);
     const [rewardQueue, setRewardQueue] = useState([]);
 
-    const handleAcceptNotice = () => {
-        localStorage.setItem('developmentNoticeAccepted', 'true');
-        setShowNotice(false);
+    // --- NEW --- Logout handler to clear state and local storage
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        setUser(null); // This is the key change to force a re-render
     };
 
     const showToast = (message, type = 'info') => {
@@ -71,32 +74,29 @@ const App = () => {
     }, []);
 
     useEffect(() => {
-        if (user) {
-            const noticeAccepted = localStorage.getItem('developmentNoticeAccepted');
-            if (!noticeAccepted) {
-                setShowNotice(true);
-            }
-        }
-    }, [user]);
+        const canShowReward = !isMaintenanceMode || (user && user.isAdmin);
 
-    useEffect(() => {
-        if (!currentReward && rewardQueue.length > 0) {
+        if (!currentReward && rewardQueue.length > 0 && canShowReward) {
             const nextReward = rewardQueue[0];
             const remainingRewards = rewardQueue.slice(1);
 
             setCurrentReward(nextReward);
             setRewardQueue(remainingRewards);
         }
-    }, [currentReward, rewardQueue]);
+    }, [currentReward, rewardQueue, user, isMaintenanceMode]);
 
     useEffect(() => {
         if (user?._id) {
-            const socket = io(API_BASE_URL, {
-                transports: ['websocket'],
-            });
+            const socket = io(API_BASE_URL, { transports: ['websocket'] });
 
             socket.emit('join', user._id);
             console.log(`[Socket] Joining room for user ${user._id}`);
+
+            // --- NEW: Listen for maintenance mode changes ---
+            socket.on('maintenanceStatusChanged', (data) => {
+                console.log('[Socket] Maintenance status updated:', data.maintenanceMode);
+                setIsMaintenanceMode(data.maintenanceMode);
+            });
 
             return () => {
                 console.log('[Socket] Disconnecting...');
@@ -106,6 +106,49 @@ const App = () => {
     }, [user]);
 
     useEffect(() => {
+        const initializeApp = async () => {
+            try {
+                // 1. Fetch maintenance status first
+                const maintenanceResponse = await fetch(`${API_BASE_URL}/api/settings/maintenance`);
+                if (!maintenanceResponse.ok) {
+                    console.error('Failed to fetch maintenance status.');
+                    // Decide on a fallback, e.g., default to NOT maintenance mode
+                    setIsMaintenanceMode(false);
+                } else {
+                    const data = await maintenanceResponse.json();
+                    setIsMaintenanceMode(data.maintenanceMode);
+                }
+
+                // 2. Then, fetch user data (your existing logic)
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    return; // No user to fetch, we're done
+                }
+                const validateResponse = await fetch(`${API_BASE_URL}/api/auth/validate`, {
+                    method: 'POST',
+                    headers: {Authorization: `Bearer ${token}`},
+                });
+                if (!validateResponse.ok) throw new Error(`Token validation failed`);
+
+                const profileResponse = await fetch(`${API_BASE_URL}/api/users/me`, {
+                    method: 'GET',
+                    headers: {Authorization: `Bearer ${token}`},
+                });
+                if (!profileResponse.ok) throw new Error(`Profile fetch failed`);
+
+                const profileData = await profileResponse.json();
+                if (profileData.pendingEventReward && profileData.pendingEventReward.length > 0) {
+                    setRewardQueue(profileData.pendingEventReward);
+                }
+                setUser(profileData);
+            } catch (error) {
+                console.error('[App.js] Error initializing app:', error.message);
+                handleLogout(); // Clear state on any failure
+            } finally {
+                setLoading(false); // Set loading to false after ALL initial data is fetched
+            }
+        };
+
         const handleTokenFromURL = () => {
             const params = new URLSearchParams(window.location.search);
             const token = params.get('token');
@@ -115,74 +158,38 @@ const App = () => {
             }
         };
 
-        const fetchUserData = async () => {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                setLoading(false);
-                return;
-            }
-            try {
-                const validateResponse = await fetch(`${API_BASE_URL}/api/auth/validate`, {
-                    method: 'POST',
-                    headers: {Authorization: `Bearer ${token}`},
-                });
-                if (!validateResponse.ok) {
-                    throw new Error(`Token validation failed with status ${validateResponse.status}`);
-                }
-                const profileResponse = await fetch(`${API_BASE_URL}/api/users/me`, {
-                    method: 'GET',
-                    headers: {Authorization: `Bearer ${token}`},
-                });
-                if (!profileResponse.ok) {
-                    throw new Error(`Profile fetch failed with status ${profileResponse.status}`);
-                }
-                const profileData = await profileResponse.json();
-
-                if (profileData.pendingEventReward && profileData.pendingEventReward.length > 0) {
-                    console.log('[App.js] Received pending event rewards queue:', profileData.pendingEventReward);
-                    setRewardQueue(profileData.pendingEventReward);
-                }
-
-                setUser(profileData);
-            } catch (error) {
-                console.error('[App.js] Error fetching user data:', error.message);
-                localStorage.removeItem('token');
-                setUser(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         handleTokenFromURL();
-        fetchUserData();
-    }, []);
+        initializeApp();
+    }, []); // Empty dependency array ensures this runs only once on mount
+
 
     if (loading) {
         return <LoadingSpinner/>;
     }
 
+    if (isMaintenanceMode && user && !user.isAdmin) {
+        return (
+            <>
+                <Router>
+                    <Suspense fallback={<LoadingSpinner />}>
+                        <Routes>
+                            <Route path="*" element={<MaintenancePage onLogout={handleLogout} />} />
+                        </Routes>
+                    </Suspense>
+                </Router>
+                <ScrollToTopButton/>
+            </>
+        );
+    }
+
     return (
         <>
-            {showNotice && (
-                <div className="notice-overlay">
-                    <div className="notice-modal">
-                        <h2>A Quick Note on Early Access</h2>
-                        <p>Ned's Decks is currently in early access and changing every week! We want to ensure we create
-                            a great experience to accompany The Just Joe Show for both desktop and mobile users before
-                            we hit the big "go" button.</p>
-                        <p>Upon full release, ALL COLLECTIONS, PACKS, and ACHIEVEMENTS will be totally reset so that all
-                            users can start from the same point. Thank you for being a part of early testing for Ned's
-                            Decks!</p>
-                        <p className="notice-signature">Thanks, Joe.</p>
-                        <button className="primary-button" onClick={handleAcceptNotice}>Awh ok!</button>
-                    </div>
-                </div>
-            )}
             <Router>
                 <Suspense fallback={<LoadingSpinner/>}>
-                    {user && <ConditionalNavbar user={user}/>}
+                    {user && <ConditionalNavbar user={user} isMaintenanceMode={isMaintenanceMode}/>}
                     <Routes>
-                        <Route path="/login" element={<LoginPage/>}/>
+                        {/* --- MODIFICATION --- Pass handleLogout to LoginPage so it can update state */}
+                        <Route path="/login" element={<LoginPage onLoginSuccess={setUser} />} />
                         <Route path="/kitchensink" element={<KitchenSink/>}/>
                         <Route
                             path="/dashboard"
@@ -214,7 +221,7 @@ const App = () => {
                             path="/grading"
                             element={user ? <CardGradingPage/> : <Navigate to="/login"/>}
                         />
-                        <Route path="/catalogue" element={<CataloguePage/>}/>
+                        <Route path="/catalogue" element={<CataloguePage user={user}/>}/>
                         <Route path="/market" element={<MarketPage/>}/>
                         <Route path="/market/create" element={<CreateListingPage/>}/>
                         <Route path="/market/listing/:id" element={<MarketListingDetails/>}/>
@@ -223,38 +230,17 @@ const App = () => {
                             path="/admin-dashboard"
                             element={(user?.isAdmin) ? <AdminDashboardPage user={user}/> : <Navigate to="/login"/>}
                         />
-
                         <Route path="/admin" element={<AdminActionsLayout/>}>
-                            <Route
-                                index
-                                element={user?.isAdmin ? <AdminActions user={user}/> : <Navigate to="/login"/>}
-                            />
-                            <Route
-                                path="packs"
-                                element={user?.isAdmin ? <AdminPacksPage/> : <Navigate to="/login"/>}
-                            />
-                            <Route
-                                path="card-ownership"
-                                element={user?.isAdmin ? <AdminCardOwnershipPage user={user}/> :
-                                    <Navigate to="/login"/>}
-                            />
-                            <Route
-                                path="events"
-                                element={user?.isAdmin ? <AdminEventsPage user={user}/> : <Navigate to="/login"/>}
-                            />
-                            <Route
-                                path="cardmanagement"
-                                element={user?.isAdmin ? <CardManagement user={user}/> : <Navigate to="/login"/>}
-                            />
-                            <Route
-                                path="logs"
-                                element={user?.isAdmin ? <AdminLogs user={user}/> : <Navigate to="/login"/>}
-                            />
+                            <Route index element={user?.isAdmin ? <AdminActions user={user}/> : <Navigate to="/login"/>} />
+                            <Route path="packs" element={user?.isAdmin ? <AdminPacksPage/> : <Navigate to="/login"/>} />
+                            <Route path="card-ownership" element={user?.isAdmin ? <AdminCardOwnershipPage user={user}/> : <Navigate to="/login"/>} />
+                            <Route path="events" element={user?.isAdmin ? <AdminEventsPage user={user}/> : <Navigate to="/login"/>} />
+                            <Route path="cardmanagement" element={user?.isAdmin ? <CardManagement user={user}/> : <Navigate to="/login"/>} />
+                            <Route path="logs" element={user?.isAdmin ? <AdminLogs user={user}/> : <Navigate to="/login"/>} />
                             <Route path="cards/:id" element={<CardEditor/>}/>
                             <Route path="cardaudit" element={<AdminCardAudit/>}/>
                             <Route path="trades" element={<AdminTrades/>}/>
                         </Route>
-
                         <Route path="/stream-overlay/:userId" element={<StreamOverlayPage/>}/>
                         <Route path="/" element={<Navigate to="/dashboard"/>}/>
                         <Route path="*" element={<NotFoundPage/>}/>
@@ -270,7 +256,6 @@ const App = () => {
                 />
             ))}
             <CardInspector card={inspectedCard} onClose={() => setInspectedCard(null)}/>
-
             {currentReward && (
                 <EventRewardModal
                     reward={currentReward}
@@ -278,7 +263,6 @@ const App = () => {
                     onClose={() => setCurrentReward(null)}
                 />
             )}
-
             <ScrollToTopButton/>
         </>
     );

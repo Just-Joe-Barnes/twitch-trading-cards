@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useMemo, useRef, useCallback} from 'react';
-import {fetchCards} from '../utils/api';
+import {fetchCards, fetchAllPacks} from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import {modifiers} from '../constants/modifiers';
@@ -25,20 +25,21 @@ const useIsMobile = (breakpoint = 768) => {
 };
 
 
-const CataloguePage = () => {
+const CataloguePage = ({user}) => {
     const [cards, setCards] = useState([]);
+    const [packs, setPacks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [availability, setAvailability] = useState([]);
+
+    const [activeTab, setActiveTab] = useState('all');
 
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedRarityFilter, setSelectedRarityFilter] = useState('basic');
     const [selectedModifier, setSelectedModifier] = useState('None');
     const [sortOption, setSortOption] = useState('name');
     const [sortOrder, setSortOrder] = useState('asc');
-
-    const [randomRaritySeed, setRandomRaritySeed] = useState(0);
-
+    const [ setRandomRaritySeed] = useState(0);
     const defaultCardScale = 1;
     const [cardScale, setCardScale] = useState(() => {
         const storedScale = parseFloat(localStorage.getItem("cardScale"));
@@ -58,18 +59,15 @@ const CataloguePage = () => {
 
     const handleRangeChange = (inputElement) => {
         if (!inputElement) return;
-
         const value = parseFloat(inputElement.value);
         const min = parseFloat(inputElement.min || 0);
         const max = parseFloat(inputElement.max || 100);
-
         const percentage = ((value - min) / (max - min)) * 100;
         inputElement.style.setProperty('--range-progress', `${percentage}%`);
     };
 
     useEffect(() => {
         localStorage.setItem("cardScale", cardScale.toString());
-
         if (rangeInputRef.current) {
             handleRangeChange(rangeInputRef.current);
         }
@@ -77,12 +75,8 @@ const CataloguePage = () => {
 
     useEffect(() => {
         if (isMobile) {
-            if (cardScale > 1.3) {
-                setCardScale(1.3);
-            }
-            if (cardScale < 0.35) {
-                setCardScale(0.35);
-            }
+            if (cardScale > 1.3) setCardScale(1.3);
+            if (cardScale < 0.35) setCardScale(0.35);
         }
     }, [isMobile, cardScale]);
 
@@ -91,32 +85,36 @@ const CataloguePage = () => {
         setCardScale(newScale);
     };
 
-    const fetchCatalogue = async () => {
-        try {
-            const response = await fetchCards({});
-            setCards(response.cards);
-        } catch (err) {
-            console.error('Error fetching cards:', err.message);
-            setError('Failed to load cards.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchAvailability = async () => {
-        try {
-            const response = await fetch(API_AVAILABILITY_URL);
-            const data = await response.json();
-            setAvailability(data.availability);
-        } catch (err) {
-            console.error('Error fetching card availability:', err);
-        }
-    };
-
     useEffect(() => {
-        fetchCatalogue();
-        fetchAvailability();
-    }, []);
+        const fetchAllData = async () => {
+            try {
+                setLoading(true);
+
+                const cardsPromise = fetchCards({isAdmin: user?.isAdmin});
+                const [cardsResponse, availabilityResponse, packsResponse] = await Promise.all([
+                    cardsPromise,
+                    fetch(API_AVAILABILITY_URL),
+                    fetchAllPacks()
+                ]);
+
+                const availabilityData = await availabilityResponse.json();
+
+                setCards(cardsResponse.cards || []);
+                setAvailability(availabilityData.availability || []);
+                const sortedPacks = (packsResponse || []).sort((a, b) => a.name.localeCompare(b.name));
+                setPacks(sortedPacks);
+
+            } catch (err) {
+                console.error('Error fetching catalogue data:', err.message);
+                setError('Failed to load catalogue data.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAllData();
+        // --- MODIFIED --- Add `user` to the dependency array
+    }, [user]);
 
     const handleSearchChange = (e) => setSearchQuery(e.target.value);
 
@@ -139,59 +137,104 @@ const CataloguePage = () => {
         const found = availability.find(
             (item) => item.name === cardName && item.rarity.toLowerCase() === rarityPreview.toLowerCase()
         );
-
         return found ? found.remaining : null;
     };
 
     const getNameForSort = (name) => {
-        if (name.toLowerCase().startsWith('the ')) {
-            return name.substring(4);
-        }
+        if (name.toLowerCase().startsWith('the ')) return name.substring(4);
         return name;
     };
 
     const getRandomRarityName = useCallback(() => {
         const selectableRarities = rarities.filter(r => r.name.toLowerCase() !== 'all');
-        if (selectableRarities.length === 0) {
-            return 'basic';
-        }
+        if (selectableRarities.length === 0) return 'basic';
         const randomIndex = Math.floor(Math.random() * selectableRarities.length);
         return selectableRarities[randomIndex].name.toLowerCase();
-    }, []);
+    }, [rarities]);
 
     const filteredAndSortedCards = useMemo(() => {
         let currentCards = [...cards];
-
         if (searchQuery) {
             currentCards = currentCards.filter((card) =>
                 card.name.toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
-
         currentCards.sort((a, b) => {
             if (sortOption === 'name') {
-                const nameA = getNameForSort(a.name);
-                const nameB = getNameForSort(b.name);
+                const nameA = getNameForSort(b.name);
+                const nameB = getNameForSort(a.name);
                 return sortOrder === 'asc'
-                    ? nameA.localeCompare(nameB)
-                    : nameB.localeCompare(a.name);
+                    ? nameB.localeCompare(nameA)
+                    : nameA.localeCompare(nameB);
             }
             return 0;
         });
-
         return currentCards;
-    }, [cards, searchQuery, sortOption, sortOrder, randomRaritySeed]);
+    }, [cards, searchQuery, sortOption, sortOrder]);
 
-    const limitedCards = cards.filter(card =>
-        card.availableFrom || card.availableTo
+    const eventAndLimitedCards = useMemo(() => {
+        return cards.filter(card => {
+            const isEvent = card.rarities && card.rarities.some(r => r.rarity === 'Event');
+            const isLimited = !!card.availableFrom && !!card.availableTo;
+            return isEvent || isLimited;
+        }).sort((a, b) => getNameForSort(a.name).localeCompare(getNameForSort(b.name)));
+    }, [cards]);
+
+    const cardsByPack = useMemo(() => {
+        if (!packs.length || !cards.length) return [];
+        return packs.map(pack => {
+            const packId = pack._id?.$oid || pack._id;
+            const cardIdsInPack = new Set(pack.cardPool.map(id => id.$oid || id));
+            const cardsInThisPack = cards.filter(card => cardIdsInPack.has(card._id));
+            return {
+                ...pack,
+                id: packId, // Normalize ID for easier access
+                cards: cardsInThisPack.sort((a, b) => getNameForSort(a.name).localeCompare(getNameForSort(b.name)))
+            };
+        }).filter(pack => pack.cards.length > 0);
+    }, [packs, cards]);
+
+    const CardGrid = ({cardList}) => (
+        <div className={`cards-grid ${cardScale === 0.35 ? 'mini' : ''}`}
+             style={{"--user-card-scale": (cardScale === 0.35 ? 1 : cardScale)}}>
+            {cardList.length > 0 ? (
+                cardList.map((card) => {
+                    const isEventCard = card.rarities && card.rarities.some(r => r.rarity === 'Event');
+                    const displayRarity = isEventCard
+                        ? 'Event'
+                        : selectedRarityFilter === 'random'
+                            ? getRandomRarityName()
+                            : selectedRarityFilter;
+                    const remaining = getRemaining(card.name, displayRarity);
+                    return (
+                        <BaseCard
+                            key={card._id}
+                            name={card.name}
+                            image={card.imageUrl}
+                            description={card.flavorText}
+                            rarity={displayRarity}
+                            mintNumber={card.mintNumber}
+                            limited={!!card.availableFrom}
+                            modifier={selectedModifier === 'None' ? null : selectedModifier}
+                            lore={card.lore}
+                            loreAuthor={card.loreAuthor}
+                            remaining={remaining}
+                            timestatuscard={card}
+                            miniCard={cardScale === 0.35}
+                        />
+                    );
+                })
+            ) : (
+                <div className="section-card">No cards found for this selection.</div>
+            )}
+        </div>
     );
 
-    const activeLimitedCards = limitedCards.filter(card => {
-        const now = new Date();
-        const from = card.availableFrom ? new Date(card.availableFrom) : null;
-        const to = card.availableTo ? new Date(card.availableTo) : null;
-        return (!from || from <= now) && (!to || to >= now);
-    });
+    // --- NEW --- Find the currently active pack based on activeTab state
+    const activePack = useMemo(() => {
+        if (activeTab === 'all' || activeTab === 'event') return null;
+        return cardsByPack.find(p => p.id === activeTab);
+    }, [activeTab, cardsByPack]);
 
     if (loading) return <LoadingSpinner/>;
     if (error) return <div className="cata-page">{error}</div>;
@@ -200,22 +243,45 @@ const CataloguePage = () => {
         <>
             <div className="page">
                 <h1>Card Catalogue</h1>
+
                 <div className="info-section section-card narrow">
-                    Explore our complete collection of trading cards. Use the search box to find cards by name, and use
-                    the rarity or modifier buttons below to preview each card in different styles.
+                    Explore our complete collection of trading cards. Use the tabs to navigate between all cards,
+                    limited
+                    editions, or specific packs.
                 </div>
 
+                <hr className="separator"/>
+
+                <h2>View Packs</h2>
+
                 <div className="stats">
-                    <div className="stat"
-                         data-tooltip={`Total number of cards in Neds Decks`}>
-                        <div>Total Cards</div>
-                        <span>{cards.length}</span>
-                    </div>
-                    <div className="stat"
-                         data-tooltip="Total count of Limited Edition cards">
-                        <div>Limited Cards</div>
-                        <span>{limitedCards.length}</span>
-                    </div>
+                    {activeTab === 'event' ? (
+                        <div className="stat" data-tooltip="Total count of Limited Edition & Event cards">
+                            <div>Limited & Event</div>
+                            <span>{eventAndLimitedCards.length}</span>
+                        </div>
+                    ) : (
+                        activePack ? (
+                            <>
+                                <div className="stat" data-tooltip={`Total cards in the ${activePack.name} pack`}>
+                                    <div>Cards in Pack</div>
+                                    <span>{activePack.cards.length}</span>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="stat" data-tooltip={`Total number of cards in Neds Decks`}>
+                                    <div>Total Cards</div>
+                                    <span>{cards.length}</span>
+                                </div>
+                                <div className="stat" data-tooltip="Total count of Limited Edition & Event cards">
+                                    <div>Limited & Event</div>
+                                    <span>{eventAndLimitedCards.length}</span>
+                                </div>
+                            </>
+                        )
+                    )}
+
                     <button onClick={() => setShowFilters(!showFilters)} className="stat">
                         {showFilters ? (
                             <>
@@ -231,6 +297,30 @@ const CataloguePage = () => {
                     </button>
                 </div>
 
+                <div className="tabs-container">
+                    <button
+                        className={`tab-button ${activeTab === 'all' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('all')}
+                    >
+                        All Cards
+                    </button>
+                    {cardsByPack.map(pack => (
+                        <button
+                            key={pack.id}
+                            className={`tab-button ${activeTab === pack.id ? 'active' : ''}`}
+                            onClick={() => setActiveTab(pack.id)}
+                        >
+                            {pack.name}
+                        </button>
+                    ))}
+                    <button
+                        className={`tab-button ${activeTab === 'event' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('event')}
+                    >
+                        Event & Limited
+                    </button>
+                </div>
+
                 {showFilters && (
                     <div className="section-card" style={{marginTop: "2ch"}}>
                         <div className="filters">
@@ -243,10 +333,9 @@ const CataloguePage = () => {
                                         onChange={handleSearchChange}
                                         className="filter-input"
                                     />
-
                                     <div className="sort-controls">
-                                        <select value={sortOption} onChange={handleSortChange} className="filter-select">
-                                            <option value="">Sort By</option>
+                                        <select value={sortOption} onChange={handleSortChange}
+                                                className="filter-select">
                                             <option value="name">Name</option>
                                         </select>
                                         <div className="sort-order-toggle checkbox-wrapper">
@@ -282,7 +371,6 @@ const CataloguePage = () => {
                                                     Glitch: <i className="fa-solid fa-bolt-lightning"></i>,
                                                     Prismatic: <i className="fa-solid fa-sparkles"></i>,
                                                 }
-
                                                 return (
                                                     <button
                                                         key={m.name}
@@ -311,13 +399,9 @@ const CataloguePage = () => {
                                 />
                                 <p>{Math.round(cardScale * 100)}%</p>
                             </div>
-
                             <div className="rarity-key">
-                                <button
-                                    key="random"
-                                    onClick={() => handleRarityChange("Random")}
-                                    className={`rarity-item random ${selectedRarityFilter === 'random' ? 'active' : ''}`}
-                                >
+                                <button key="random" onClick={() => handleRarityChange("Random")}
+                                        className={`rarity-item random ${selectedRarityFilter === 'random' ? 'active' : ''}`}>
                                     Random
                                 </button>
                                 {rarities.map((r) => {
@@ -339,81 +423,22 @@ const CataloguePage = () => {
                 )}
             </div>
 
-            {activeLimitedCards.length > 0 && (
-                <>
-                    <h2>Currently Available Limited Cards</h2>
-                    <div className={`cards-grid ${cardScale === .35 ? 'mini' : ''}`}
-                         style={{"--user-card-scale": (cardScale === .35 ? 1 : cardScale)}}>
-                        {activeLimitedCards.map((card) => {
-                            const displayRarity = selectedRarityFilter === 'random'
-                                ? getRandomRarityName()
-                                : selectedRarityFilter;
-                            const remaining = getRemaining(card.name, displayRarity);
+            <div className="page full">
+                {activeTab === 'all' && (
+                    <CardGrid cardList={filteredAndSortedCards}/>
+                )}
 
-                            return (
-                                <div
-                                    key={card._id}
-                                    id={`card-${card._id}`}
-                                    className="cata-card"
-                                >
-                                    <BaseCard
-                                        name={card.name}
-                                        image={card.imageUrl}
-                                        description={card.flavorText}
-                                        rarity={card.rarity === 'Event' ? 'Event' : displayRarity}
-                                        mintNumber={card.mintNumber}
-                                        remaining={remaining}
-                                        limited={true}
-                                        timestatuscard={card}
-                                        lore={card.lore}
-                                        loreAuthor={card.loreAuthor}
-                                        modifier={selectedModifier === 'None' ? null : selectedModifier}
-                                        miniCard={cardScale === 0.35}
-                                    />
-                                </div>
-                            );
-                        })}
-                    </div>
-                </>
-            )}
+                {activeTab === 'event' && (
+                    <CardGrid cardList={eventAndLimitedCards}/>
+                )}
 
-            <div className={`cards-grid ${cardScale === .35 ? 'mini' : ''}`}
-                 style={{"--user-card-scale": (cardScale === .35 ? 1 : cardScale)}}>
-                {filteredAndSortedCards.length > 0 ? (
-                    filteredAndSortedCards.map((card) => {
-                        const displayRarity = selectedRarityFilter === 'random'
-                            ? getRandomRarityName()
-                            : selectedRarityFilter;
-
-                        const remaining = getRemaining(card.name, displayRarity);
-
-                        return (
-                            <div key={card._id} className="cata-card">
-                                <div className="cata-card-inner">
-                                    <BaseCard
-                                        name={card.name}
-                                        image={card.imageUrl}
-                                        description={card.flavorText}
-                                        rarity={displayRarity}
-                                        mintNumber={card.mintNumber}
-                                        limited={!!card.availableFrom}
-                                        modifier={selectedModifier === 'None' ? null : selectedModifier}
-                                        lore={card.lore}
-                                        loreAuthor={card.loreAuthor}
-                                        remaining={remaining}
-                                        timestatuscard={card}
-                                        miniCard={cardScale === 0.35}
-                                    />
-                                </div>
-                            </div>
-                        );
-                    })
-                ) : (
-                    <div>No cards found.</div>
+                {activePack && (
+                    <CardGrid cardList={activePack.cards}/>
                 )}
             </div>
         </>
-    );
+    )
+        ;
 };
 
 export default CataloguePage;
