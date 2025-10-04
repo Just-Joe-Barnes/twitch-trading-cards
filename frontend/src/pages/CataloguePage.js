@@ -90,7 +90,7 @@ const CataloguePage = ({user}) => {
             try {
                 setLoading(true);
 
-                const cardsPromise = fetchCards({isAdmin: user?.isAdmin});
+                const cardsPromise = fetchCards({isAdmin: false});
                 const [cardsResponse, availabilityResponse, packsResponse] = await Promise.all([
                     cardsPromise,
                     fetch(API_AVAILABILITY_URL),
@@ -113,7 +113,6 @@ const CataloguePage = ({user}) => {
         };
 
         fetchAllData();
-        // --- MODIFIED --- Add `user` to the dependency array
     }, [user]);
 
     const handleSearchChange = (e) => setSearchQuery(e.target.value);

@@ -149,13 +149,16 @@ const AdminDashboardPage = ({user}) => {
         return () => clearInterval(intervalId);
     }, [user, navigate, activeFilter]);
 
-    // --- MODIFIED: Wrapped in useCallback for stable reference ---
+
     const updateSessionCount = useCallback((userId) => {
-        const newCounts = { ...sessionCounts };
-        newCounts[userId] = (newCounts[userId] || 0) + 1;
-        setSessionCounts(newCounts);
-        localStorage.setItem('packOpeningSession', JSON.stringify(newCounts));
-    }, [sessionCounts]);
+        setSessionCounts(prevCounts => {
+            const newCounts = { ...prevCounts, [userId]: (prevCounts[userId] || 0) + 1 };
+
+            localStorage.setItem('packOpeningSession', JSON.stringify(newCounts));
+
+            return newCounts;
+        });
+    }, []);
 
 
     const handleResetSession = () => {

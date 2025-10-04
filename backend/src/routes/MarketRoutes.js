@@ -10,6 +10,7 @@ const { sensitiveLimiter } = require('../middleware/rateLimiter');
 const { sendNotificationToUser } = require('../../notificationService');
 const marketService = require('../services/marketService');
 const MarketListing = require('../models/MarketListing');
+const {createNotification} = require("../helpers/notificationHelper");
 
 router.post('/listings', protect, sensitiveLimiter, async (req, res) => {
     try {
@@ -22,7 +23,9 @@ router.post('/listings', protect, sensitiveLimiter, async (req, res) => {
             slabbed: Joi.boolean().optional(),
             gradedAt: Joi.string().optional(),
             flavorText: Joi.string().allow('', null),
-            modifier: Joi.any().optional()
+            modifier: Joi.any().optional(),
+            lore: Joi.string().allow('', null),
+            loreAuthor: Joi.string().allow('', null),
         });
 
         const { error } = cardSchema.validate(req.body.card);
@@ -86,10 +89,15 @@ router.post('/listings', protect, sensitiveLimiter, async (req, res) => {
         }
 
         // Optionally notify the owner (self) about listing creation
+        await createNotification(req.user._id, {
+            type: 'Listing Created',
+            message: 'Your card has been listed on the market.',
+            link: `/market/listing/${savedListing._id}`
+        });
         sendNotificationToUser(req.user._id, {
             type: 'Listing Created',
             message: 'Your card has been listed on the market.',
-            link: `/market/listings/${savedListing._id}`
+            link: `/market/listing/${savedListing._id}`
         });
 
         // No XP for just creating a listing
@@ -127,7 +135,6 @@ router.get('/listings', protect, async (req, res) => {
     }
 });
 
-// GET /api/market/user/:userId/listings - Get active listings for a specific user
 router.get('/user/:userId/listings', protect, async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 3;
@@ -179,8 +186,9 @@ router.post('/listings/:id/offers', protect, sensitiveLimiter, async (req, res) 
                     grade: Joi.number().integer().min(1).max(10).optional(),
                     slabbed: Joi.boolean().optional(),
                     flavorText: Joi.string().allow('', null),
-                    // Optional modifier info for each offered card
-                    modifier: Joi.any().optional()
+                    modifier: Joi.any().optional(),
+                    lore: Joi.string().allow('', null),
+                    loreAuthor: Joi.string().allow('', null),
                 })
             ).required(),
             offeredPacks: Joi.number().min(0).required()
@@ -268,10 +276,15 @@ router.post('/listings/:id/offers', protect, sensitiveLimiter, async (req, res) 
         await listing.save();
 
         // Send notification to the listing owner: New Market Offer
-        await sendNotificationToUser(listing.owner, {
+        await createNotification(listing.owner._id, {
             type: 'New Market Offer',
             message: `You have received a new offer on your market listing.`,
-            link: `/market/listings/${listing._id}`
+            link: `/market/listing/${listing._id}`
+        });
+        sendNotificationToUser(listing.owner._id, {
+            type: 'New Market Offer',
+            message: `You have received a new offer on your market listing.`,
+            link: `/market/listing/${listing._id}`
         });
 
         logAudit('Market Offer Created', { listingId: listing._id, offererId: req.user._id });
@@ -349,10 +362,15 @@ router.delete('/listings/:id/offers/self', protect, async (req, res) => {
         await listing.save();
 
         // Notify listing owner that an offer was cancelled.
-        await sendNotificationToUser(listing.owner, {
+        await createNotification(listing.owner._id, {
             type: 'Listing Update',
             message: `An offer on your listing has been cancelled.`,
-            link: `/market/listings/${listing._id}`
+            link: `/market/listing/${listing._id}`
+        });
+        sendNotificationToUser(listing.owner._id, {
+            type: 'Listing Update',
+            message: `An offer on your listing has been cancelled.`,
+            link: `/market/listing/${listing._id}`
         });
 
         res.status(200).json({ message: 'Your offer has been cancelled.' });
@@ -389,10 +407,15 @@ router.delete('/listings/:id/offers/:offerId', protect, async (req, res) => {
         await listing.save();
 
         // Notify the offerer that their offer was rejected.
-        await sendNotificationToUser(offererId, {
+        await createNotification(offererId._id, {
             type: 'Listing Update',
             message: `Your offer on the listing has been rejected.`,
-            link: `/market/listings/${listing._id}`
+            link: `/market/listing/${listing._id}`
+        });
+        sendNotificationToUser(offererId._id, {
+            type: 'Listing Update',
+            message: `Your offer on the listing has been rejected.`,
+            link: `/market/listing/${listing._id}`
         });
 
         res.status(200).json({ message: 'Offer rejected and removed.' });

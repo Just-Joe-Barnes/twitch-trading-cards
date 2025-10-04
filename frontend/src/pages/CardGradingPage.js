@@ -134,8 +134,6 @@ const CardGradingPage = () => {
         return order === 'asc' ? result : -result;
     }), [filteredCards, sortOption, order, rarityRank]);
 
-    const hasSlabbedReady = useMemo(() => inProcessCards.some(card => card.slabbed), [cards])
-
     useEffect(() => {
         const init = async () => {
             try {
@@ -402,11 +400,10 @@ const CardGradingPage = () => {
                     ) : (
                         <>
                             {inProcessCards.length > 0 && (
-                                <div className="inprocess-section" data-testid="inprocess-list">
+                                <div data-testid="inprocess-list">
                                     <h3>Grading In Progress</h3>
                                     <div
-                                        className={`cards-grid ${hasSlabbedReady ? 'slabbed' : ''} ${cardScale === 0.35 ? 'mini' : ''}`}
-                                        style={{ "--user-card-scale": (cardScale === 0.35 ? 1 : cardScale) }}
+                                        className={`cards-grid ${showSlabbedOnly ? 'slabbed' : ''}`}
                                     >
                                         {inProcessCards.map(card => (
                                             <GradingInProgressCard
@@ -417,7 +414,6 @@ const CardGradingPage = () => {
                                                 onFinish={handleOverride}
                                                 onReveal={() => toggleReveal(card._id)}
                                                 onDone={() => handleDone(card._id)}
-                                                miniCard={cardScale === 0.35}
                                             />
                                         ))}
                                     </div>
@@ -431,10 +427,10 @@ const CardGradingPage = () => {
                                 )}
                                 <div
                                     className={`cards-grid ${showSlabbedOnly ? 'slabbed' : ''} ${cardScale === 0.35 ? 'mini' : ''}`}
-                                    style={{ "--user-card-scale": (cardScale === 0.35 ? 1 : cardScale) }}
+                                    style={{ "--user-card-scale": (cardScale === 0.35 ? 'mini' : '') } }
                                 >
                                     {sortedCards.map(card => (
-                                        <div key={card._id} className={`card-tile ${card.slabbed ? 'slabbed' : ''}`}>
+                                        <div key={card._id} className={`card-tile ${card.slabbed ? 'slabbed' : ''}  ${card.status !== 'available' ? 'busy' : ''}`}>
                                             <BaseCard
                                                 name={card.name}
                                                 image={card.imageUrl}
@@ -448,9 +444,8 @@ const CardGradingPage = () => {
                                             />
                                             {!card.slabbed && (
                                                 <div className="actions">
-                                                    <button className="primary-button"
-                                                            onClick={() => handleSelectCard(card)}
-                                                            data-testid={`select-btn-${card._id}`}>Select
+                                                    <button className="primary-button" disabled={card.status !== 'available'} onClick={() => handleSelectCard(card)} data-testid={`select-btn-${card._id}`}>
+                                                        {card.status !== 'available' ? 'Busy' : 'Select'}
                                                     </button>
                                                 </div>
                                             )}

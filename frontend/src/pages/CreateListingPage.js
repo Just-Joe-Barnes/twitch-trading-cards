@@ -262,11 +262,11 @@ const CreateListingPage = () => {
                                 </div>
                             )}
                             {filteredCollection.length > 0 ? (
-                                <div className="card-tile-grid mini height-grid">
+                                <div className="card-tile-grid mini height-grid" style={{padding: '4rem 0'}}>
                                     {filteredCollection.map((card) => (
                                         <div
                                             key={card._id}
-                                            className={`card-tile ${selectedCard && selectedCard._id === card._id ? 'selected' : ''} ${card.gradingRequestedAt ? 'busy' : ''}`}
+                                            className={`card-tile ${selectedCard && selectedCard._id === card._id ? 'selected' : ''} ${card.gradingRequestedAt || card.status !== 'available' ? 'busy' : ''}`}
                                         >
                                             <BaseCard
                                                 name={card.name}
@@ -282,8 +282,8 @@ const CreateListingPage = () => {
                                             />
                                             <div className="actions">
                                                 <button className={`primary-button ${card._id === selectedCard?._id ? 'active' : ''}`} onClick={() => handleCardSelect(card)}
-                                                        disabled={card.gradingRequestedAt}>
-                                                    {card.gradingRequestedAt ? 'Busy' : card._id === selectedCard?._id ? 'Unselect' : 'Select'}
+                                                        disabled={card.gradingRequestedAt || card.status !== 'available'}>
+                                                    {card.gradingRequestedAt || card.status !== 'available' ? 'Busy' : card._id === selectedCard?._id ? 'Unselect' : 'Select'}
                                                 </button>
                                             </div>
                                         </div>

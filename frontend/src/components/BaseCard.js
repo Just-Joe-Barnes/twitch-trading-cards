@@ -25,8 +25,7 @@ const BaseCard = ({
                       featured,
                       lore,
                       loreAuthor,
-                      miniCard = false,
-                      cardScale = 1
+                      miniCard = false
                   }) => {
     const [isIntersecting, setIsIntersecting] = useState(false);
     const cardRef = useRef(null);
