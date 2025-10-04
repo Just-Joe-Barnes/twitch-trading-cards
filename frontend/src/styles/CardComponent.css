@@ -1722,14 +1722,14 @@
 }
 @keyframes event-glow-hover {
   0%, 100% {
-    box-shadow: 0 0 15px 10px rgba(248, 112, 0, 0.2), 0 0 10px 10px rgba(255, 213, 25, 0.2);
+    box-shadow: 0 0 20px 3px rgba(223, 130, 62, 0.2), 0 0 20px 3px rgba(188, 97, 34, 0.3);
   }
   50% {
-    box-shadow: 0 0 15px 10px rgba(255, 213, 25, 0.2), 0 0 10px 10px rgba(248, 112, 0, 0.2);
+    box-shadow: 0 0 20px 10px rgba(236, 144, 77, 0.6), 0 0 20px 10px rgba(228, 135, 70, 0.6);
   }
 }
 .card-container.event:hover {
-  animation: divine-glow-hover 1.5s infinite alternate;
+  animation: event-glow-hover 1.5s infinite alternate;
 }
 .card-container.event:hover::after {
   opacity: 0.2;
