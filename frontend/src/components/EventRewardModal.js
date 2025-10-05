@@ -7,6 +7,7 @@ const EventRewardModal = ({ reward, message, onClose }) => {
 
     const renderReward = () => {
         switch (reward.type) {
+            case 'RANDOM_CARD':
             case 'CARD':
                 return (
                     <>

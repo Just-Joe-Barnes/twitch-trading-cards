@@ -7,6 +7,7 @@ const CardInspector = ({card, onClose}) => {
     const inspectorRef = useRef(null);
     const [localFeatured, setLocalFeatured] = useState(card?.isFeatured ?? false);
     const [slabVisibility, setSlabVisibility] = useState(true);
+    const [isLoreExpanded, setIsLoreExpanded] = useState(true);
 
     useEffect(() => {
         setLocalFeatured(card?.isFeatured ?? false);
@@ -123,6 +124,17 @@ const CardInspector = ({card, onClose}) => {
                                 Toggle Slab
                             </button>
                         )}
+                        {lore && (
+                            <button
+                                className={`primary-button ${isLoreExpanded ? 'active' : ''}`}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsLoreExpanded(prev => !prev);
+                                }}
+                            >
+                                Toggle Lore
+                            </button>
+                        )}
                     </div>
                 </div>
             )}
@@ -164,11 +176,13 @@ const CardInspector = ({card, onClose}) => {
                     </div>
                 )}
 
-                {lore && (
+                {(lore && isLoreExpanded) && (
                     <div className="lorebox">
-                        <h3>Lore</h3>
+                        <h3>
+                            Lore
+                        </h3>
                         <p>{lore}</p>
-                        {loreAuthor ? loreAuthor : ''}
+                        {loreAuthor && <span>- {loreAuthor}</span>}
                     </div>
                 )}
             </div>

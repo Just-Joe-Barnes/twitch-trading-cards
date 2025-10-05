@@ -21,16 +21,15 @@ const eventSchema = new mongoose.Schema({
     triggerType: {
         type: String,
         required: true,
-        enum: ['LOGIN', 'TRADE', 'PACK_OPEN'], // Future-proofed with enums
+        enum: ['LOGIN', 'TRADE', 'PACK_OPEN'],
         default: 'LOGIN',
     },
     rewardType: {
         type: String,
         required: true,
-        enum: ['CARD', 'PACK', 'XP'],
+        enum: ['CARD', 'PACK', 'XP', 'RANDOM_CARD'],
     },
     rewardDetails: {
-        // Using Mixed type for flexibility to store different reward structures
         type: mongoose.Schema.Types.Mixed,
         required: true,
     },
@@ -44,7 +43,7 @@ const eventSchema = new mongoose.Schema({
         default: null,
     },
 }, {
-    timestamps: true, // Adds createdAt and updatedAt timestamps
+    timestamps: true,
 });
 
 // Index to help quickly find active events

@@ -1,6 +1,6 @@
 const Event = require('../models/eventModel');
 const EventClaim = require('../models/eventClaimModel');
-const { grantCardReward, grantPackReward, grantXpReward } = require('../helpers/eventHelpers');
+const { findRandomCardTemplate, grantCardReward, grantPackReward, grantXpReward } = require('../helpers/eventHelpers');
 const { createLogEntry } = require("../utils/logService");
 const { createNotification } = require('../helpers/notificationHelper');
 const { sendNotificationToUser } = require('../../notificationService');
@@ -35,8 +35,32 @@ const checkAndAwardLoginEvents = async (user) => {
             const rewardType = event.rewardType;
 
             try {
-                if (rewardType === 'CARD') {
-                    rewardData = await grantCardReward(user, event.rewardDetails);
+                if (!event.rewardDetails) {
+                    console.warn(`[EventService] Event '${event.name}' is missing rewardDetails. Skipping.`);
+                    continue;
+                }
+
+                if (rewardType === 'CARD' || rewardType === 'RANDOM_CARD') {
+                    let cardTemplate = null;
+                    let selectedRarity = event.rewardDetails.rarity;
+
+                    if (rewardType === 'CARD') {
+                        cardTemplate = await Card.findById(event.rewardDetails.cardId);
+                    } else {
+                        cardTemplate = await findRandomCardTemplate(selectedRarity);
+                    }
+
+                    if (!cardTemplate) {
+                        console.warn(`[EventService] Could not find a suitable card for event '${event.name}'. Skipping reward.`);
+                        continue;
+                    }
+
+                    const rewardDetails = {
+                        cardId: cardTemplate._id,
+                        rarity: selectedRarity
+                    };
+
+                    rewardData = await grantCardReward(user, rewardDetails);
                     if (rewardData) {
                         await createLogEntry(
                             user,

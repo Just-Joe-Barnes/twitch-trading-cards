@@ -25,7 +25,13 @@ router.post('/', protect, adminOnly, async (req, res) => {
         await newEvent.save();
         res.status(201).json(newEvent);
     } catch (error) {
-        res.status(400).json({ message: 'Failed to create event', error: error.message });
+        // --- UPDATE THIS CATCH BLOCK ---
+        console.error('Event Creation Error:', error); // Log the full error on the server
+        res.status(400).json({
+            message: 'Failed to create event',
+            // Mongoose validation errors are in error.errors
+            details: error.errors || error.message
+        });
     }
 });
 
@@ -55,6 +61,18 @@ router.put('/:id/toggle', protect, adminOnly, async (req, res) => {
         res.status(200).json(event);
     } catch (error) {
         res.status(500).json({ message: 'Failed to toggle event status', error: error.message });
+    }
+});
+
+router.delete('/:id', protect, adminOnly, async (req, res) => {
+    try {
+        const deletedEvent = await Event.findByIdAndDelete(req.params.id);
+        if (!deletedEvent) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+        res.status(200).json({ message: 'Event deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to delete event', error: error.message });
     }
 });
 

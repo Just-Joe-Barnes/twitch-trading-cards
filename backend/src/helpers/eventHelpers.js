@@ -34,6 +34,39 @@ const pickRarityFromList = (probabilities) => {
 };
 
 /**
+ * Finds a random card template based on a specified rarity.
+ * @param {string} rarity - The desired rarity (e.g., 'Rare', 'Epic', or 'Random').
+ * @returns {Promise<object|null>} The Mongoose document for the found card template or null.
+ */
+const findRandomCardTemplate = async (rarity) => {
+    try {
+        // Build the query. If rarity is 'Random', the match is empty, finding any card.
+        // We also check that the rarity has mints available to avoid giving an impossible reward.
+        const matchQuery = rarity && rarity.toLowerCase() !== 'random'
+            ? { 'rarities.rarity': rarity, 'rarities.remainingCopies': { $gt: 0 } }
+            : { 'rarities.remainingCopies': { $gt: 0 } }; // For 'Random', find any card with any available rarity
+
+        // Use MongoDB's aggregation pipeline to efficiently get one random document.
+        const randomCards = await Card.aggregate([
+            { $match: matchQuery },
+            { $sample: { size: 1 } }
+        ]);
+
+        if (randomCards.length > 0) {
+            // The result from aggregate is a plain object, so we find the full document.
+            return await Card.findById(randomCards[0]._id);
+        }
+
+        console.warn(`[EventHelper] No card templates found for rarity query:`, matchQuery);
+        return null; // No card found
+    } catch (error) {
+        console.error(`[EventHelper] Error finding random card template:`, error);
+        return null;
+    }
+};
+
+
+/**
  * Grants a specific card to a user.
  * @param {object} user - The Mongoose user document.
  * @param {object} details - The rewardDetails object from the event.
@@ -182,6 +215,7 @@ const grantXpReward = async (user, details) => {
 };
 
 module.exports = {
+    findRandomCardTemplate,
     grantCardReward,
     grantPackReward,
     grantXpReward,

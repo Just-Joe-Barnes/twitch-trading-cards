@@ -43,7 +43,7 @@ const EventForm = ({ eventToEdit, onClose, onSubmit }) => {
                 endTime: '',
                 triggerType: 'LOGIN',
                 rewardType: 'CARD',
-                rewardValue: '', // This will hold the cardId for CARD, or amount for others
+                rewardValue: '',
                 rarity: 'Random',
                 isActive: true,
                 message: '',
@@ -52,7 +52,7 @@ const EventForm = ({ eventToEdit, onClose, onSubmit }) => {
 
         const rewardValue = (eventToEdit.rewardType === 'XP' || eventToEdit.rewardType === 'PACK')
             ? eventToEdit.rewardDetails.amount
-            : eventToEdit.rewardDetails.cardId || ''; // For CARD, it's the cardId
+            : eventToEdit.rewardDetails.cardId || '';
 
         return {
             name: eventToEdit.name,
@@ -75,9 +75,7 @@ const EventForm = ({ eventToEdit, onClose, onSubmit }) => {
         setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     };
 
-    // --- 2. ADD A HANDLER FOR THE CARD SEARCH COMPONENT ---
     const handleCardSelection = (selectedCard) => {
-        // Update the 'rewardValue' field in our form with the selected card's ID
         setFormData(prev => ({
             ...prev,
             rewardValue: selectedCard ? selectedCard._id : ''
@@ -128,13 +126,13 @@ const EventForm = ({ eventToEdit, onClose, onSubmit }) => {
                         <label htmlFor="rewardType">Reward Type</label>
                         <select id="rewardType" name="rewardType" value={formData.rewardType} onChange={handleChange}>
                             <option value="CARD">CARD</option>
+                            <option value="RANDOM_CARD">RANDOM_CARD</option>
                             <option value="PACK">PACK</option>
                             <option value="XP">XP</option>
                         </select>
                     </div>
 
-                    {/* --- 3. REPLACE THE REWARD INPUT WITH DYNAMIC LOGIC --- */}
-                    {formData.rewardType === 'CARD' ? (
+                    {(formData.rewardType === 'CARD') ? (
                         <div className="form-group">
                             <label htmlFor="rewardValue">Reward Card</label>
                             <CardSearchInput
@@ -144,22 +142,24 @@ const EventForm = ({ eventToEdit, onClose, onSubmit }) => {
                             />
                         </div>
                     ) : (
-                        <div className="form-group">
-                            <label htmlFor="rewardValue">Reward Amount</label>
-                            <input
-                                id="rewardValue"
-                                name="rewardValue"
-                                type="number"
-                                value={formData.rewardValue}
-                                onChange={handleChange}
-                                placeholder="Pack amount or XP amount"
-                                required
-                            />
-                        </div>
+                        formData.rewardType !== 'RANDOM_CARD' && (
+                            <div className="form-group">
+                                <label htmlFor="rewardValue">Reward Amount</label>
+                                <input
+                                    id="rewardValue"
+                                    name="rewardValue"
+                                    type="number"
+                                    value={formData.rewardValue}
+                                    onChange={handleChange}
+                                    placeholder="Pack amount or XP amount"
+                                    required
+                                />
+                            </div>
+                        )
                     )}
 
                     {/* Conditional Rarity Dropdown (This logic is still correct) */}
-                    {formData.rewardType === 'CARD' && (
+                    {(formData.rewardType === 'CARD' || formData.rewardType === 'RANDOM_CARD') && (
                         <div className="form-group">
                             <label htmlFor="rarity">Rarity</label>
                             <select id="rarity" name="rarity" value={formData.rarity} onChange={handleChange}>
@@ -207,7 +207,7 @@ const DateTimeDisplay = ({ date }) => {
 };
 
 
-const EventRow = ({ event, onEdit, onToggleActive }) => {
+const EventRow = ({ event, onEdit, onToggleActive, onDelete }) => {
     const now = new Date();
     const startTime = new Date(event.startTime);
     const endTime = new Date(event.endTime);
@@ -223,11 +223,32 @@ const EventRow = ({ event, onEdit, onToggleActive }) => {
         status = 'Active';
     }
 
-    const rewardString = event.rewardType === 'CARD'
-        ? `Card (${(event.rewardDetails.cardId || '').slice(-4)}) - ${event.rewardDetails.rarity}`
-        : event.rewardType === 'PACK'
-            ? `Pack (${(event.rewardDetails.amount || '').toString()})`
-            : `XP (${event.rewardDetails.amount || 0})`;
+    const rewardString = (() => {
+        // Use optional chaining (?.) to prevent crashes
+        const details = event.rewardDetails;
+
+        switch (event.rewardType) {
+            case 'CARD':
+                // It's good practice to add optional chaining here too
+                return `Card (${(details?.cardId || '').slice(-4)}) - ${details?.rarity || 'Random'}`;
+            case 'RANDOM_CARD':
+                return `Random Card (${details?.rarity || 'Random'})`;
+            case 'PACK':
+                // If details or amount is missing, it will show 0
+                return `Pack (${details?.amount || 0})`;
+            case 'XP':
+                // If details or amount is missing, it will show 0
+                return `XP (${details?.amount || 0})`;
+            default:
+                return 'N/A';
+        }
+    })();
+
+    const handleDeleteClick = () => {
+        if (window.confirm(`Are you sure you want to permanently delete the event "${event.name}"?`)) {
+            onDelete(event._id);
+        }
+    };
 
     return (
         <tr>
@@ -249,6 +270,9 @@ const EventRow = ({ event, onEdit, onToggleActive }) => {
                         onClick={() => onToggleActive(event._id)}
                     >
                         {event.isActive ? 'Disable' : 'Enable'}
+                    </button>
+                    <button className="reject-button sm" onClick={handleDeleteClick}>
+                        Delete
                     </button>
                 </div>
             </td>
@@ -333,7 +357,10 @@ const AdminEvents = () => {
                 payload.rewardDetails.amount = parseInt(data.rewardValue, 10) || 0;
             } else if (data.rewardType === 'CARD') {
                 payload.rewardDetails.cardId = data.rewardValue;
-                payload.rewardDetails.rarity = data.rarity; // Add rarity to the payload
+                payload.rewardDetails.rarity = data.rarity;
+            }
+            else if (data.rewardType === 'RANDOM_CARD') {
+                payload.rewardDetails.rarity = data.rarity;
             }
             return payload;
         };
@@ -359,6 +386,17 @@ const AdminEvents = () => {
             handleCloseForm();
         } catch (error) {
             console.error("Failed to save event:", error);
+        }
+    };
+
+    const handleDelete = async (eventId) => {
+        try {
+            await fetchWithAuth(`/api/events/${eventId}`, { method: 'DELETE' });
+            // Remove the event from the state to update the UI
+            setEvents(prevEvents => prevEvents.filter(event => event._id !== eventId));
+        } catch (error) {
+            console.error("Failed to delete event:", error);
+            // Optionally, show an error message to the user
         }
     };
 
@@ -402,7 +440,7 @@ const AdminEvents = () => {
                         </tr>
                         </thead>
                         <tbody>
-                        {currentEvents.map(event => <EventRow key={event._id} event={event} onEdit={handleEdit} onToggleActive={handleToggleActive} />)}
+                        {currentEvents.map(event => <EventRow key={event._id} event={event} onEdit={handleEdit} onToggleActive={handleToggleActive} onDelete={handleDelete} />)}
                         {currentEvents.length === 0 && (
                             <tr>
                                 <td colSpan="7" className="empty-table-message">No active or scheduled events.</td>
@@ -429,7 +467,7 @@ const AdminEvents = () => {
                         </tr>
                         </thead>
                         <tbody>
-                        {pastEvents.map(event => <EventRow key={event._id} event={event} onEdit={handleEdit} onToggleActive={handleToggleActive} />)}
+                        {pastEvents.map(event => <EventRow key={event._id} event={event} onEdit={handleEdit} onToggleActive={handleToggleActive} onDelete={handleDelete} />)}
                         {pastEvents.length === 0 && (
                             <tr>
                                 <td colSpan="7" className="empty-table-message">No past events found.</td>

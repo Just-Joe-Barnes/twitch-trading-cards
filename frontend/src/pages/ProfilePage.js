@@ -16,7 +16,6 @@ import {
 import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/ProfilePage.css';
 import '../styles/MarketPage.css';
-import {rarities} from '../constants/rarities';
 
 const ProfilePage = () => {
     const [featuredCards, setFeaturedCards] = useState([]);
@@ -24,6 +23,7 @@ const ProfilePage = () => {
     const [cardQuery, setCardQuery] = useState('');
     const [cardResults, setCardResults] = useState([]);
     const [selectedRarity, setSelectedRarity] = useState('');
+    const [availableRarities, setAvailableRarities] = useState([]);
     const [preferredPackId, setPreferredPackId] = useState('');
     const [packOptions, setPackOptions] = useState([]);
     const [editingFavorite, setEditingFavorite] = useState(false);
@@ -148,7 +148,26 @@ const ProfilePage = () => {
     const handleSelectCard = (card) => {
         setCardQuery(card.name);
         setCardResults([]);
-        setFavoriteCard({...favoriteCard, name: card.name, imageUrl: card.imageUrl, flavorText: card.flavorText});
+
+        let firstAvailableRarity = ''; // Establish a default
+        const raritiesForCard = card.rarities?.map(r => r.rarity) || [];
+
+        if (raritiesForCard.length > 0) {
+            firstAvailableRarity = raritiesForCard[0]; // Get the first rarity from the list
+        }
+
+        setAvailableRarities(raritiesForCard);
+
+        // Set the selected rarity for the dropdown and the card preview
+        setSelectedRarity(firstAvailableRarity);
+
+        // Update the card preview object
+        setFavoriteCard({
+            name: card.name,
+            imageUrl: card.imageUrl,
+            flavorText: card.flavorText,
+            rarity: firstAvailableRarity
+        });
     };
 
     const saveFavorite = async () => {
@@ -164,6 +183,20 @@ const ProfilePage = () => {
             console.error('Error saving favorite card:', err);
         }
     };
+
+    const clearFavorite = async () => {
+        try {
+            await updateFavoriteCard('', '');
+            setFavoriteCard(null);
+            setEditingFavorite(false);
+            setCardQuery('');
+            setSelectedRarity('');
+            setCardResults([]);
+        } catch (err) {
+            console.error('Error saving favorite card:', err);
+        }
+    };
+
 
 
     if (loading) {
@@ -280,29 +313,32 @@ const ProfilePage = () => {
                     <div className="card-tile" style={{marginTop: '1rem'}}>
                         <h2>Favorite Card Wanted</h2>
 
-                        {favoriteCard && favoriteCard.name ? (
+                        {(favoriteCard && favoriteCard.name) ? (
                             <BaseCard
                                 name={favoriteCard.name}
                                 image={favoriteCard.imageUrl}
-                                rarity={favoriteCard.rarity}
+                                rarity={selectedRarity || favoriteCard.rarity}
                                 description={favoriteCard.flavorText}
                             />
                         ) : (
-                            <p>No favorite card selected.</p>
+                            <>
+                                <button
+                                    className="primary-button"
+                                    onClick={() => {
+                                        setEditingFavorite(true);
+                                        setCardQuery(favoriteCard?.name || '');
+                                        setSelectedRarity(favoriteCard?.rarity || '');
+                                    }}
+                                >
+                                    {favoriteCard && favoriteCard.name ? ('Change favourite card') : ('Select favourite card')}
+                                </button>
+                            </>
                         )}
+
                         {isOwnProfile && (
                             <div className="actions">
-                                {!editingFavorite && (
-                                    <button
-                                        className="primary-button"
-                                        onClick={() => {
-                                            setEditingFavorite(true);
-                                            setCardQuery(favoriteCard?.name || '');
-                                            setSelectedRarity(favoriteCard?.rarity || '');
-                                        }}
-                                    >
-                                        Change Favourite Card
-                                    </button>
+                                {(favoriteCard && !editingFavorite) && (
+                                    (favoriteCard && favoriteCard.name) && (<button className="success-button" onClick={clearFavorite}>Clear</button>)
                                 )}
 
                                 {editingFavorite && (
@@ -314,6 +350,7 @@ const ProfilePage = () => {
                                                 placeholder="Search card..."
                                                 value={cardQuery}
                                                 onChange={(e) => setCardQuery(e.target.value)}
+                                                onBlur={() => setTimeout(() => { setCardResults([]); }, 200)}
                                             />
                                             {cardResults.length > 0 && (
                                                 <ul className="search-dropdown">
@@ -321,7 +358,7 @@ const ProfilePage = () => {
                                                         <li
                                                             key={c._id}
                                                             className="search-result-item"
-                                                            onMouseDown={() => handleSelectCard(c)}
+                                                            onClick={() => handleSelectCard(c)}
                                                         >
                                                             {c.name}
                                                         </li>
@@ -331,11 +368,12 @@ const ProfilePage = () => {
                                             <select
                                                 value={selectedRarity}
                                                 onChange={(e) => setSelectedRarity(e.target.value)}
+                                                disabled={availableRarities.length === 0}
                                             >
                                                 <option value="">Select rarity</option>
-                                                {rarities.map((r) => (
-                                                    <option key={r.name} value={r.name}>
-                                                        {r.name}
+                                                {availableRarities.map((rarityName) => (
+                                                    <option key={rarityName} value={rarityName}>
+                                                        {rarityName}
                                                     </option>
                                                 ))}
                                             </select>
@@ -346,6 +384,7 @@ const ProfilePage = () => {
                                                 setEditingFavorite(false);
                                                 setCardQuery(favoriteCard?.name || '');
                                                 setSelectedRarity(favoriteCard?.rarity || '');
+                                                setAvailableRarities([]);
                                             }}>Cancel
                                             </button>
                                         </div>
