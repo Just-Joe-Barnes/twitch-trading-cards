@@ -419,7 +419,7 @@ const BaseCard = ({
                         <div className={`overlay-badges ${miniCard ? 'mini' : ''}`}>
                             {featured && ( <div className="overlay-badge featured-badge">Featured</div> )}
                             <TimeStatusBadge card={timestatuscard} now={timestatusnow}/>
-                            <RemainingBadge remaining={remaining}/>
+                            {rarity !== 'Event' && (<RemainingBadge remaining={remaining}/>)}
                         </div>
                         {slabbed && (<div className={`slab-overlay ${rarity.toLowerCase()}`} style={{'--slab-color': rarities.find(r => r.name.toLowerCase() === rarity.toLowerCase())?.color ?? '#fff'}}> <div className="slab-header"><img src="/images/logo-horizontal.png" alt="logo" className={`slab-logo ${rarity.toLowerCase()}`}/> <div className="slab-name">{name}</div> <div className="slab-grade">{grade}</div> </div> </div>)}
 

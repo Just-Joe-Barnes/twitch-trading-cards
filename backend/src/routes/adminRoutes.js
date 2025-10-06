@@ -7,7 +7,7 @@ const ftp = require('basic-ftp');
 const path = require('path');
 const { Readable } = require('stream');
 const UserActivity = require('../models/UserActivity');
-const { grantCardReward } = require('../helpers/eventHelpers');
+const { grantCardReward, grantPackReward, grantXpReward} = require('../helpers/eventHelpers');
 
 // Models
 const User = require('../models/userModel');
@@ -23,11 +23,13 @@ const Setting = require('../models/settingsModel');
 
 // Middleware & Services
 const { protect } = require('../middleware/authMiddleware');
-const { broadcastNotification } = require('../../notificationService');
+const { broadcastNotification, sendNotificationToUser} = require('../../notificationService');
 const {getStatus, forceResume, resumeQueue, pauseQueue} = require("../services/queueService");
 const {updateCard} = require("../controllers/adminController");
 
 const tradeController = require('../controllers/tradeController');
+const {createNotification} = require("../helpers/notificationHelper");
+const {createLogEntry} = require("../utils/logService");
 
 // --- Middleware & Helper Functions ---
 
@@ -1588,6 +1590,133 @@ router.get('/card-ownership/:cardId', protect, adminOnly, async (req, res) => {
     }
 });
 
+
+/**
+ * @route   POST /api/admin/cards/return-instance
+ * @desc    Removes a card instance from a user and returns its mint number to the pool,
+ * after cancelling any associated trades, market listings, or market offers.
+ * @access  Private (Admin only)
+ */
+router.post('/cards/return-instance', protect, adminOnly, async (req, res) => {
+    const { userId, userCardId, cardName, rarity, mintNumber } = req.body;
+
+    if (!userId || !userCardId || !cardName || !rarity || !mintNumber) {
+        return res.status(400).json({ message: 'Missing required fields: userId, userCardId, cardName, rarity, mintNumber.' });
+    }
+
+    const userCardObjectId = new mongoose.Types.ObjectId(userCardId);
+    let cleanupMessage = '';
+
+    try {
+        const activeTrade = await Trade.findOne({
+            status: 'pending',
+            offeredItems: userCardObjectId
+        });
+
+        if (activeTrade) {
+            activeTrade.status = 'cancelled';
+            activeTrade.statusReason = 'Cancelled by administrator: An involved card was removed.';
+            await activeTrade.save();
+            cleanupMessage += `Cancelled an active trade (ID: ${activeTrade._id}). `;
+        }
+
+        const cancelledListing = await MarketListing.findOneAndUpdate(
+            {
+                'card.name': cardName,
+                'card.rarity': rarity,
+                'card.mintNumber': mintNumber,
+                owner: userId,
+                status: 'active'
+            },
+            {
+                $set: {
+                    status: 'cancelled',
+                    cancellationReason: 'Cancelled by administrator: Card removed.'
+                }
+            }
+        );
+
+        if (cancelledListing) {
+            cleanupMessage += 'Cancelled an active market listing. ';
+        }
+
+        const offerUpdateResult = await MarketListing.updateMany(
+            {
+                "offers.offeredCards": {
+                    $elemMatch: { name: cardName, rarity: rarity, mintNumber: mintNumber }
+                }
+            },
+            {
+                $pull: {
+                    offers: {
+                        "offeredCards": {
+                            $elemMatch: { name: cardName, rarity: rarity, mintNumber: mintNumber }
+                        }
+                    }
+                }
+            }
+        );
+
+        if (offerUpdateResult.modifiedCount > 0) {
+            cleanupMessage += `Removed ${offerUpdateResult.modifiedCount} market offer(s) containing this card. `;
+        }
+
+        const session = await mongoose.startSession();
+        session.startTransaction();
+
+        try {
+            const userUpdateResult = await User.updateOne(
+                { _id: userId },
+                { $pull: { cards: { _id: userCardObjectId } } },
+                { session }
+            );
+
+            if (userUpdateResult.modifiedCount === 0) {
+                throw new Error(`Card instance ID ${userCardId} not found in user ${userId}'s collection.`);
+            }
+
+            await User.updateOne(
+                {
+                    _id: userId,
+                    'featuredCard.name': cardName,
+                    'featuredCard.rarity': rarity,
+                    'featuredCard.mintNumber': mintNumber
+                },
+                { $unset: { featuredCard: "" } },
+                { session }
+            );
+
+            const baseCardName = stripCardNameModifiers(cardName);
+            const cardUpdateResult = await Card.updateOne(
+                { name: baseCardName, 'rarities.rarity': rarity },
+                {
+                    $addToSet: { 'rarities.$.availableMintNumbers': mintNumber },
+                    $inc: { 'rarities.$.remainingCopies': 1 }
+                },
+                { session }
+            );
+
+            if (cardUpdateResult.modifiedCount === 0) {
+                throw new Error(`Could not find card definition for '${baseCardName}' with rarity '${rarity}' to return mint number.`);
+            }
+
+            await session.commitTransaction();
+            res.json({ message: `Card ${cardName} #${mintNumber} successfully returned. ${cleanupMessage}`.trim() });
+
+        } catch (error) {
+            await session.abortTransaction();
+            throw error;
+        } finally {
+            session.endSession();
+        }
+
+    } catch (error) {
+        console.error('Error during card return process:', error);
+        res.status(500).json({ message: error.message || 'Failed to return card instance.' });
+    }
+});
+
+
 /**
  * @route   POST /api/admin/wipe-database
  * @desc    Performs a partial wipe of the database for a new season or reset.
@@ -1857,6 +1986,95 @@ router.get('/catalogue', protect, adminOnly, async (req, res) => {
     } catch (error) {
         console.error('Error fetching admin catalogue:', error.message);
         res.status(500).json({ message: 'Failed to fetch admin catalogue', error: error.message });
+    }
+});
+
+
+/**
+ * @route   POST /api/admin/grant-gift
+ * @desc    Directly grants a reward (gift) to a specific user.
+ * @access  Private (Admin only)
+ */
+router.post('/grant-gift', protect, adminOnly, async (req, res) => {
+    const { username, rewardType, rewardDetails, message } = req.body;
+    const adminUser = req.user;
+
+    if (!username || !rewardType || !rewardDetails) {
+        return res.status(400).json({ message: 'Username, rewardType, and rewardDetails are required.' });
+    }
+
+    try {
+        const targetUser = await User.findOne({ username: username });
+        if (!targetUser) {
+            return res.status(404).json({ message: `User '${username}' not found.` });
+        }
+
+        let grantedData = null;
+        let notificationMessage = '';
+
+        switch (rewardType.toUpperCase()) {
+            case 'RANDOM_CARD':
+            case 'CARD':
+                grantedData = await grantCardReward(targetUser, rewardDetails);
+                if (grantedData) {
+                    notificationMessage = `You've been gifted the card '${grantedData.name}' (Mint #${grantedData.mintNumber})! (${message})`;
+                }
+                break;
+
+            case 'PACK':
+                grantedData = await grantPackReward(targetUser, rewardDetails);
+                if (grantedData) {
+                    const plural = grantedData.amount > 1 ? 's' : '';
+                    notificationMessage = `You've been gifted ${grantedData.amount} pack${plural}! (${message})`;
+                }
+                break;
+
+            case 'XP':
+                grantedData = await grantXpReward(targetUser, rewardDetails);
+                if (grantedData) {
+                    notificationMessage = `You've been gifted ${grantedData.amount} XP! (${message})`;
+                }
+                break;
+
+            default:
+                return res.status(400).json({ message: `Invalid rewardType: '${rewardType}'.` });
+        }
+
+        if (!grantedData) {
+            return res.status(500).json({ message: `Failed to grant ${rewardType} reward. The card might be out of mints or the details were invalid.` });
+        }
+
+        const rewardPayload = {
+            type: rewardType.toUpperCase(),
+            data: grantedData,
+            message: message || `A gift from Joe!`
+        };
+        targetUser.pendingEventReward.push(rewardPayload);
+        await targetUser.save();
+
+        const notificationPayload = {
+            type: 'Admin Gift',
+            message: notificationMessage,
+            link: `/collection/${targetUser.username}`
+        };
+        await createNotification(targetUser._id, notificationPayload);
+        sendNotificationToUser(targetUser._id, notificationPayload);
+
+        await createLogEntry(
+            adminUser,
+            'ADMIN_GIFT_GRANTED',
+            `Granted ${rewardType} to user '${targetUser.username}'. Details: ${JSON.stringify(grantedData)}`,
+            { targetUserId: targetUser._id, reward: rewardPayload }
+        );
+
+        res.status(200).json({
+            message: `Successfully granted ${rewardType} gift to ${username}.`,
+            grantedData
+        });
+
+    } catch (error) {
+        console.error(`[Admin Gift] Critical error while granting gift:`, error);
+        res.status(500).json({ message: 'Server error during gift grant process.', error: error.message });
     }
 });
 

@@ -422,7 +422,7 @@ const CataloguePage = ({user}) => {
                 )}
             </div>
 
-            <div className="page full">
+            <div className="page full" style={{paddingTop: '0'}}>
                 {activeTab === 'all' && (
                     <CardGrid cardList={filteredAndSortedCards}/>
                 )}

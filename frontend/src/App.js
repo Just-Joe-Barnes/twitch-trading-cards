@@ -22,6 +22,7 @@ import AdminTrades from "./pages/AdminTrades";
 import AdminLogs from "./pages/AdminLogs";
 import AdminActionsLayout from "./components/AdminActionsLayout";
 import BountyBoardPage from "./pages/BountyBoardPage";
+import AdminGiftPage from "./pages/AdminGift";
 
 const MaintenancePage = lazy(() => import('./pages/MaintenancePage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
@@ -235,6 +236,7 @@ const App = () => {
                             <Route path="packs" element={user?.isAdmin ? <AdminPacksPage/> : <Navigate to="/login"/>} />
                             <Route path="card-ownership" element={user?.isAdmin ? <AdminCardOwnershipPage user={user}/> : <Navigate to="/login"/>} />
                             <Route path="events" element={user?.isAdmin ? <AdminEventsPage user={user}/> : <Navigate to="/login"/>} />
+                            <Route path="gift" element={user?.isAdmin ? <AdminGiftPage user={user}/> : <Navigate to="/login"/>} />
                             <Route path="cardmanagement" element={user?.isAdmin ? <CardManagement user={user}/> : <Navigate to="/login"/>} />
                             <Route path="logs" element={user?.isAdmin ? <AdminLogs user={user}/> : <Navigate to="/login"/>} />
                             <Route path="cards/:id" element={<CardEditor/>}/>

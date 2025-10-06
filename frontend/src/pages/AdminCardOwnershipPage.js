@@ -100,6 +100,34 @@ const AdminCardOwnershipPage = () => {
         }
     };
 
+    // --- NEW: Handler for returning a card to the pool ---
+    const handleReturnCard = async (userId, username, cardToReturn) => {
+        if (!window.confirm(`Are you sure you want to return this card (${cardToReturn.name} #${cardToReturn.mintNumber}) from ${username}'s collection? This cannot be undone.`)) {
+            return;
+        }
+        setLoading(true);
+        try {
+            await fetchWithAuth('/api/admin/cards/return-instance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: userId,
+                    userCardId: cardToReturn._id,
+                    cardName: cardToReturn.name,
+                    rarity: cardToReturn.rarity,
+                    mintNumber: cardToReturn.mintNumber,
+                }),
+            });
+            window.showToast('Card returned successfully!', 'success');
+            // Refresh the data to update the view
+            await handleSelectCard(selectedCard);
+        } catch (error) {
+            console.error('Error returning card:', error);
+            window.showToast(error.message || 'Failed to return card.', 'error');
+            setLoading(false);
+        }
+    };
+
     const toggleUserExpansion = (rarity, username) => {
         const key = `${rarity}-${username}`;
         setExpandedDetails(prev => ({ ...prev, [key]: !prev[key] }));
@@ -141,7 +169,6 @@ const AdminCardOwnershipPage = () => {
                         <div className="section-card">
                             <h2>Results for: {selectedCard.name}</h2>
 
-                            {/* --- CONTROLS SECTION --- */}
                             <div className="sort-controls" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                                 <div className="button-group" style={{width: '100%', gap: '1rem'}}>
                                     <button className={`primary-button sm ${sortMode === 'count' ? 'active' : ''}`} onClick={() => setSortMode('count')}>Count</button>
@@ -171,7 +198,6 @@ const AdminCardOwnershipPage = () => {
 
                             <div className="ownership-results-container">
                                 {ownershipData.map(({ rarity, owners }) => {
-                                    // NEW: Apply the username filter before sorting
                                     const filteredOwners = owners.filter(owner =>
                                         owner.username.toLowerCase().includes(userFilter.toLowerCase())
                                     );
@@ -188,7 +214,7 @@ const AdminCardOwnershipPage = () => {
                                         >
                                             <h3 style={{ color: getRarityColor(rarity) }}>{rarity}</h3>
                                             {sortedOwners.length > 0 ? (
-                                                sortedOwners.map(({ username, count, cards }) => {
+                                                sortedOwners.map(({ userId, username, count, cards }) => {
                                                     const expansionKey = `${rarity}-${username}`;
                                                     const isExpanded = expandedDetails[expansionKey];
                                                     return (
@@ -204,19 +230,27 @@ const AdminCardOwnershipPage = () => {
                                                                     {cards.map((card, index) => {
                                                                         const isLimited = isCardLimited(card);
                                                                         return (
-                                                                            <BaseCard
-                                                                                key={`${card._id}-${index}`}
-                                                                                name={card.name}
-                                                                                image={card.imageUrl}
-                                                                                rarity={card.rarity}
-                                                                                slabbed={card.slabbed}
-                                                                                grade={card.grade}
-                                                                                description={card.flavorText}
-                                                                                mintNumber={card.mintNumber}
-                                                                                modifier={card.modifier}
-                                                                                miniCard={true}
-                                                                                limited={isLimited}
-                                                                            />
+                                                                            <div key={`${card._id}-${index}`} style={{ textAlign: 'center' }}>
+                                                                                <BaseCard
+                                                                                    name={card.name}
+                                                                                    image={card.imageUrl}
+                                                                                    rarity={card.rarity}
+                                                                                    slabbed={card.slabbed}
+                                                                                    grade={card.grade}
+                                                                                    description={card.flavorText}
+                                                                                    mintNumber={card.mintNumber}
+                                                                                    modifier={card.modifier}
+                                                                                    miniCard={true}
+                                                                                    limited={isLimited}
+                                                                                />
+                                                                                <button
+                                                                                    className="primary-button danger sm"
+                                                                                    onClick={() => handleReturnCard(userId, username, card)}
+                                                                                    style={{ width: '90%', marginTop: '0.25rem', fontSize: '0.8em' }}
+                                                                                >
+                                                                                    Return
+                                                                                </button>
+                                                                            </div>
                                                                         );
                                                                     })}
                                                                 </div>

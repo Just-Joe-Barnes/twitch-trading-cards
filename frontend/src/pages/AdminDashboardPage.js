@@ -6,9 +6,12 @@ import '../styles/AdminDashboardPage.css';
 import moment from 'moment';
 import {getRarityColor, rarities} from "../constants/rarities";
 
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 const AdminDashboardPage = ({user}) => {
     const navigate = useNavigate();
 
+    const boopSoundRef = useRef(new Audio('/sounds/boop.wav'));
     // User list state
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
@@ -17,8 +20,15 @@ const AdminDashboardPage = ({user}) => {
     const [sortColumn, setSortColumn] = useState(null);
     const [sortDirection, setSortDirection] = useState('asc');
 
+    const [activeTab, setActiveTab] = useState('raffle'); // 'raffle' or 'list'
+    const [isRolling, setIsRolling] = useState(false);
+    const [highlightedUserId, setHighlightedUserId] = useState(null);
+    const [raffleWinner, setRaffleWinner] = useState(null);
+
     // --- NEW: State for keyboard navigation ---
     const [focusedUserIndex, setFocusedUserIndex] = useState(null);
+    const [countdown, setCountdown] = useState(3);
+
     const rowRefs = useRef({});
 
     // Loading & animation states
@@ -35,19 +45,37 @@ const AdminDashboardPage = ({user}) => {
     const [revealedCards, setRevealedCards] = useState([]);
     const [faceDownCards, setFaceDownCards] = useState([]);
 
-    // Pack counter forces remounting of the video element each time
     const [packCounter, setPackCounter] = useState(0);
 
-    // Pack types
     const [packTypes, setPackTypes] = useState([]);
     const [selectedPackTypeId, setSelectedPackTypeId] = useState('');
     const [forceModifier, setForceModifier] = useState(false);
 
     const [sessionCounts, setSessionCounts] = useState({});
 
-    // --- MODIFIED: Wrapped in useCallback for stable reference ---
-    const openPackForUser = useCallback(async () => {
-        if (!selectedUser) return;
+
+    const updateSessionCount = useCallback((userId) => {
+        setSessionCounts(prevCounts => {
+            const newCounts = {...prevCounts, [userId]: (prevCounts[userId] || 0) + 1};
+
+            localStorage.setItem('packOpeningSession', JSON.stringify(newCounts));
+
+            return newCounts;
+        });
+    }, []);
+
+    const triggerPackOpening = useCallback(async (userToOpenFor) => {
+        if (!userToOpenFor) return;
+
+        const packIdToOpen = userToOpenFor._id === selectedUser?._id
+            ? selectedPackTypeId
+            : userToOpenFor.preferredPack?._id || (packTypes.length > 0 ? packTypes[0]._id : '');
+
+        if (!packIdToOpen) {
+            if (window.showToast) window.showToast("No pack type available to open.", 'error');
+            return;
+        }
+
         setPackAnimationDone(false);
         setCardsLoaded(false);
         setPackCounter((prev) => prev + 1);
@@ -60,10 +88,10 @@ const AdminDashboardPage = ({user}) => {
 
         try {
             const res = await fetchWithAuth(
-                `/api/packs/admin/openPacksForUser/${selectedUser._id}`,
+                `/api/packs/admin/openPacksForUser/${userToOpenFor._id}`,
                 {
                     method: 'POST',
-                    body: JSON.stringify({templateId: selectedPackTypeId, forceModifier})
+                    body: JSON.stringify({ templateId: packIdToOpen, forceModifier })
                 }
             );
             const {newCards} = res;
@@ -71,10 +99,10 @@ const AdminDashboardPage = ({user}) => {
             setRevealedCards(Array(newCards.length).fill(false));
             setFaceDownCards(Array(newCards.length).fill(true));
             setCardsLoaded(true);
-            updateSessionCount(selectedUser._id);
+            updateSessionCount(userToOpenFor._id);
             setUsers((prev) =>
                 prev.map((u) =>
-                    u._id === selectedUser._id ? {...u, packs: u.packs - 1} : u
+                    u._id === userToOpenFor._id ? {...u, packs: u.packs - 1} : u
                 )
             );
             if (packAnimationDone) {
@@ -86,7 +114,7 @@ const AdminDashboardPage = ({user}) => {
         } finally {
             setLoading(false);
         }
-    }, [selectedUser, selectedPackTypeId, forceModifier, packAnimationDone]);
+    }, [selectedUser, selectedPackTypeId, forceModifier, packAnimationDone, packTypes, updateSessionCount]);
 
 
     // Fetch users with packs
@@ -148,17 +176,6 @@ const AdminDashboardPage = ({user}) => {
 
         return () => clearInterval(intervalId);
     }, [user, navigate, activeFilter]);
-
-
-    const updateSessionCount = useCallback((userId) => {
-        setSessionCounts(prevCounts => {
-            const newCounts = { ...prevCounts, [userId]: (prevCounts[userId] || 0) + 1 };
-
-            localStorage.setItem('packOpeningSession', JSON.stringify(newCounts));
-
-            return newCounts;
-        });
-    }, []);
 
 
     const handleResetSession = () => {
@@ -223,11 +240,103 @@ const AdminDashboardPage = ({user}) => {
         return 0;
     });
 
-    // --- MODIFIED: Wrapped in useCallback for stable reference ---
     const toggleUserSelection = useCallback((u) => {
         setSelectedUser((prev) => (prev?._id === u._id ? null : u));
-        setSelectedPackTypeId(u.preferredPack?._id || '67f68591c7560fa1a75f142c')
-    }, []);
+        setSelectedPackTypeId(u.preferredPack?._id || (packTypes.length > 0 ? packTypes[0]._id : ''));
+    }, [packTypes]);
+
+    const raffleUsers = users.filter(u => u.packs > 0);
+
+    // --- NEW: The core "Roll" logic ---
+    const handleRoll = async () => {
+        if (isRolling || raffleUsers.length === 0) return;
+        setSelectedUser(null);
+        setIsRolling(true);
+        setHighlightedUserId(null);
+        setRaffleWinner(null);
+
+        // 1. Create a weighted pool of users
+        const weightedPool = [];
+        raffleUsers.forEach(user => {
+            const packsOpened = sessionCounts[user._id] || 0;
+            const weight = packsOpened === 0 ? 10 : 1;
+            for (let i = 0; i < weight; i++) {
+                weightedPool.push(user._id);
+            }
+        });
+
+        // 2. Select a winner from the weighted pool
+        const winnerId = weightedPool[Math.floor(Math.random() * weightedPool.length)];
+        const winner = raffleUsers.find(u => u._id === winnerId);
+
+        // 3. Create a random animation sequence
+        const animationLength = Math.floor(Math.random() * 11) + 30; // 10 to 20 users
+        const animationSequence = [];
+        for (let i = 0; i < animationLength; i++) {
+            animationSequence.push(raffleUsers[Math.floor(Math.random() * raffleUsers.length)]);
+        }
+
+        const startDelay = 75;
+        const endDelay = 500;
+        const totalSteps = animationSequence.length;
+
+        for (let i = 0; i < totalSteps; i++) {
+            const userToHighlight = animationSequence[i];
+            setHighlightedUserId(userToHighlight._id);
+
+            const boopSound = boopSoundRef.current;
+            if (boopSound) {
+                boopSound.playbackRate = Math.random() * .4 + 1;
+                boopSound.volume = 0.4;
+                boopSound.currentTime = 0;
+                boopSound.play();
+            }
+
+            const progress = i / (totalSteps - 1);
+            const easedProgress = Math.pow(progress, 2);
+            const currentDelay = startDelay + (easedProgress * (endDelay - startDelay));
+
+            await sleep(currentDelay);
+        }
+
+
+        const boopSound = boopSoundRef.current;
+        if (boopSound) {
+            boopSound.playbackRate = Math.random() * (1.2 - 0.1) + 0.3;
+            boopSound.currentTime = 0;
+            boopSound.play();
+        }
+        setHighlightedUserId(winner._id);
+        await sleep(1000);
+
+        setRaffleWinner(winner);
+        setIsRolling(false);
+    };
+
+    const handleConfirmWinner = useCallback(() => {
+        if (raffleWinner) {
+            triggerPackOpening(raffleWinner);
+        }
+        setRaffleWinner(null);
+    }, [raffleWinner, triggerPackOpening]);
+
+    useEffect(() => {
+        if (raffleWinner) {
+            setCountdown(3);
+            const timerId = setInterval(() => {
+                setCountdown(prevCountdown => {
+                    if (prevCountdown <= 1) {
+                        clearInterval(timerId);
+                        handleConfirmWinner();
+                        return 0;
+                    }
+                    return prevCountdown - 1;
+                });
+            }, 1000);
+            return () => clearInterval(timerId);
+        }
+    }, [raffleWinner, handleConfirmWinner]);
+
 
     // Debug open pack without affecting inventory
     const openDebugPackForUser = async () => {
@@ -326,17 +435,16 @@ const AdminDashboardPage = ({user}) => {
                 if (focusedUserIndex !== null && sortedUsers[focusedUserIndex]) {
                     const focusedUser = sortedUsers[focusedUserIndex];
                     if (selectedUser?._id === focusedUser._id && selectedUser.packs > 0) {
-                        openPackForUser();
+                        triggerPackOpening(selectedUser);
                     } else {
                         toggleUserSelection(focusedUser);
                     }
                 }
             }
         };
-
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [sortedUsers, focusedUserIndex, selectedUser, toggleUserSelection, openPackForUser]);
+    }, [sortedUsers, focusedUserIndex, selectedUser, toggleUserSelection, triggerPackOpening]);
 
     // --- NEW: Effect to scroll the focused user into view ---
     useEffect(() => {
@@ -344,7 +452,7 @@ const AdminDashboardPage = ({user}) => {
             const userId = sortedUsers[focusedUserIndex]._id;
             const rowEl = rowRefs.current[userId];
             if (rowEl) {
-                rowEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                rowEl.scrollIntoView({behavior: 'smooth', block: 'nearest'});
             }
         }
     }, [focusedUserIndex, sortedUsers]);
@@ -354,8 +462,50 @@ const AdminDashboardPage = ({user}) => {
         setFocusedUserIndex(null);
     }, [searchQuery, activeFilter, sortColumn, sortDirection]);
 
+    const raffleGridRef = useRef(null);
+    const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+
+    useEffect(() => {
+        const resizeObserver = new ResizeObserver(entries => {
+            if (entries && entries.length > 0) {
+                const { width, height } = entries[0].contentRect;
+                setContainerSize({ width, height });
+            }
+        });
+
+        if (raffleGridRef.current) {
+            resizeObserver.observe(raffleGridRef.current);
+        }
+
+        return () => resizeObserver.disconnect();
+    }, [activeTab]);
+
+    const count = raffleUsers.length;
+    let cols = 1;
+    let rows = 1;
+
+    if (count > 0 && containerSize.width > 0) {
+        const aspectRatio = containerSize.width / containerSize.height;
+        rows = Math.max(1, Math.round(Math.sqrt(count / aspectRatio))) +1 ;
+        cols = Math.ceil(count / rows);
+    }
+
+    const totalSessionPacks = Object.values(sessionCounts).reduce((total, count) => total + count, 0);
+
     return (
         <div className="page full">
+            {raffleWinner && (
+                <div className="winner-modal-overlay">
+                    <div className="winner-modal-content">
+                        <img src={raffleWinner.twitchProfilePic} alt={raffleWinner.username}/>
+                        <p>Ripping a pack for...</p>
+                        <h1>{raffleWinner.username}</h1>
+                        <button className="primary-button lg" onClick={handleConfirmWinner}>
+                            Open Pack! ({countdown})
+                        </button>
+                    </div>
+                </div>
+            )}
             {isOpeningAnimation && (
                 <div className="pack-opening-overlay">
                     <video
@@ -371,81 +521,129 @@ const AdminDashboardPage = ({user}) => {
             )}
 
             <div className="top-section">
-                <div className="grid-container">
+                <div className={`grid-container ${activeTab}`}>
                     <div className="section-card cam">
                         <button onClick={handleResetSession} className="secondary-button sm">
-                            <i className="fa-solid fa-arrows-rotate" style={{ marginRight: '8px' }}></i>
+                            <i className="fa-solid fa-arrows-rotate" style={{marginRight: '8px'}}></i>
                             Reset Session
                         </button>
                         <button onClick={handleAddPacksAllActiveUsers} className="secondary-button sm">
-                            <i className="fa-solid fa-cards" style={{ marginRight: '8px' }}></i>
+                            <i className="fa-solid fa-cards" style={{marginRight: '8px'}}></i>
                             Add 2 packs
                         </button>
+                        <div className="session-pack-counter">
+                            Session Packs: <strong>{totalSessionPacks}</strong>
+                        </div>
                     </div>
                     <div className="section-card">
-                        <div className="heading">
-                            <div className="users-filter-container">
-                                <input
-                                    type="text"
-                                    placeholder="Search users..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
-                                <div className="button-group">
-                                    <button
-                                        className={`primary-button sm ${activeFilter === 'all' ? 'active' : ''}`}
-                                        onClick={() => handleFilterChange('all')}
-                                    >
-                                        All Users
-                                    </button>
-                                    <button
-                                        className={`primary-button sm ${activeFilter === 'active' ? 'active' : ''}`}
-                                        onClick={() => handleFilterChange('active')}
-                                    >
-                                        Active in Last 30 Minutes
+                        <div className="tabs">
+                            <button className={activeTab === 'raffle' ? 'active' : ''}
+                                    onClick={() => setActiveTab('raffle')}>
+                                Random
+                            </button>
+                            <button className={activeTab === 'list' ? 'active' : ''}
+                                    onClick={() => setActiveTab('list')}>
+                                User List
+                            </button>
+                        </div>
+                        {activeTab === 'raffle' ? (
+                            <div className="raffle-container">
+                                <div ref={raffleGridRef} className={`raffle-grid ${isRolling ? 'rolling' : ''}`} style={{ '--grid-cols': cols, '--grid-rows': rows}}>
+                                    {raffleUsers.map(u => (
+                                        <div key={u._id} className={`raffle-user ${highlightedUserId === u._id ? 'highlighted' : ''}`}>
+                                        <img src={u.twitchProfilePic} alt={u.username}/>
+                                            <span className="raffle-username">{u.username}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="raffle-controls">
+                                    <button onClick={handleRoll} className="primary-button xl roll-button"
+                                            disabled={isRolling || isOpeningAnimation || raffleUsers.length === 0}>
+                                        {isRolling ? 'Rolling...' : (isOpeningAnimation ? 'Opening...' : 'Open Pack')}
                                     </button>
                                 </div>
                             </div>
-                        </div>
-                        <div className="table-container">
-                            <table className="users-table">
-                                <thead>
-                                <tr>
-                                    <th onClick={() => handleSort('username')}>Username</th>
-                                    <th onClick={() => handleSort('packs')}>Unopened Packs</th>
-                                    <th onClick={() => handleSort('preferredPack')}>Preferred Pack</th>
-                                    <th onClick={() => handleSort('lastActive')}>Last Active</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {sortedUsers.map((u, index) => (
-                                    <tr
-                                        key={u._id}
-                                        // --- MODIFIED: Added ref and classes for keyboard nav ---
-                                        ref={el => rowRefs.current[u._id] = el}
-                                        className={`${selectedUser?._id === u._id ? 'selected' : ''} ${focusedUserIndex === index ? 'focused' : ''}`}
-                                        onClick={() => {
-                                            toggleUserSelection(u);
-                                            setFocusedUserIndex(index);
-                                        }}
-                                    >
-                                        <td>{u.username}</td>
-                                        <td>{u.packs}</td>
-                                        <td>{u.preferredPack ? (u.preferredPack.name || u.preferredPack.type || 'Unnamed') : '-'}</td>
-                                        <td>{u.lastActive ? moment(u.lastActive).fromNow() : 'Never'}</td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        ) : (
+                            <>
+                                <div className="heading">
+                                    <div className="users-filter-container">
+                                        <input
+                                            type="text"
+                                            placeholder="Search users..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                        />
+                                        <div className="button-group">
+                                            <button
+                                                className={`primary-button sm ${activeFilter === 'all' ? 'active' : ''}`}
+                                                onClick={() => handleFilterChange('all')}
+                                            >
+                                                All Users
+                                            </button>
+                                            <button
+                                                className={`primary-button sm ${activeFilter === 'active' ? 'active' : ''}`}
+                                                onClick={() => handleFilterChange('active')}
+                                            >
+                                                Active in Last 30 Minutes
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="table-container">
+                                    <table className="users-table">
+                                        <thead>
+                                        <tr>
+                                            <th onClick={() => handleSort('username')}>Username</th>
+                                            <th onClick={() => handleSort('packs')}>Unopened Packs</th>
+                                            <th onClick={() => handleSort('preferredPack')}>Preferred Pack</th>
+                                            <th onClick={() => handleSort('lastActive')}>Last Active</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {sortedUsers.map((u, index) => (
+                                            <tr
+                                                key={u._id}
+                                                ref={el => rowRefs.current[u._id] = el}
+                                                className={`${selectedUser?._id === u._id ? 'selected' : ''} ${focusedUserIndex === index ? 'focused' : ''}`}
+                                                onClick={() => {
+                                                    toggleUserSelection(u);
+                                                    setFocusedUserIndex(index);
+                                                }}
+                                            >
+                                                <td>{u.username}</td>
+                                                <td>{u.packs}</td>
+                                                <td>{u.preferredPack ? (u.preferredPack.name || u.preferredPack.type || 'Unnamed') : '-'}</td>
+                                                <td>{u.lastActive ? moment(u.lastActive).fromNow() : 'Never'}</td>
+                                            </tr>
+                                        ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        )}
                     </div>
 
-                    <div className="section-card" style={{position: 'relative'}}>
-                        {selectedUser && (
-                            <>
+                    {activeTab === 'list' && (
+                        <>
+                            <div className="section-card" style={{position: 'relative'}}>
+                                {!selectedUser && (
+                                    <>
+                                        <h3>Rip a pack..</h3>
+                                        <p>Choose a user in the list to the left to begin!</p>
+                                    </>
+                                )}
+                                {activeTab === 'list' && selectedUser && (
+                                    <>
                                 <h2>Open Pack for {selectedUser.username}</h2>
                                 <img src={selectedUser.twitchProfilePic} className="userpic" alt="Profile"/>
-                                <div className="session-counter" style={{marginBottom: '.4rem', textTransform: 'uppercase', opacity: '0.4', letterSpacing: '2px', fontSize: '.7rem', textAlign: 'center'}}>
+                                <div className="session-counter" style={{
+                                    marginBottom: '.4rem',
+                                    textTransform: 'uppercase',
+                                    opacity: '0.4',
+                                    letterSpacing: '2px',
+                                    fontSize: '.7rem',
+                                    textAlign: 'center'
+                                }}>
                                     Packs opened this session: <strong>{sessionCounts[selectedUser._id] || 0}</strong>
                                 </div>
                                 <select
@@ -460,11 +658,12 @@ const AdminDashboardPage = ({user}) => {
                                     ))}
                                 </select>
                                 <button
-                                    onClick={openPackForUser}
+                                    onClick={() => triggerPackOpening(selectedUser)}
                                     className="primary-button xl"
                                     disabled={loading || isOpeningAnimation || selectedUser.packs <= 0}
                                 >
-                                    {loading ? 'Opening...' : (<span>Open Pack <i className="fa-solid fa-cards-blank" /></span>)}
+                                    {loading ? 'Opening...' : (
+                                        <span>Open Pack <i className="fa-solid fa-cards-blank"/></span>)}
                                 </button>
                                 {showDebugControls && (
                                     <div className="debug-card">
@@ -486,9 +685,13 @@ const AdminDashboardPage = ({user}) => {
                                         </button>
                                     </div>
                                 )}
-                            </>
-                        )}
-                    </div>
+                                {(!selectedUser && activeTab === 'list') &&
+                                    <p>Select a user from the list to open a pack.</p>}
+                                    </>
+                                )}
+                            </div>
+                        </>
+                    )}
 
                     <div>
                         <div className="section-card">
@@ -513,7 +716,10 @@ const AdminDashboardPage = ({user}) => {
 
             <div>
                 {waitingOnPack && (
-                    <div className="opened-cards">
+                    <div className="opened-cards" style={{padding: activeTab === 'raffle' ? '2rem 5rem 5rem 5rem' : '7rem'}}>
+                        {activeTab === 'raffle' && selectedUser && (
+                            <h1 style={{marginTop: '0', padding: '0'}}>{selectedUser.username}</h1>
+                        )}
                         <div className="cards-container">
                             {openedCards.length === 0 && (
                                 <>

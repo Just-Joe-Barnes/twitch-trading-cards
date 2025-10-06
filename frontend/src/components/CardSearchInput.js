@@ -3,38 +3,38 @@ import { fetchWithAuth } from '../utils/api';
 import '../styles/AdminDashboardPage.css';
 import BaseCard from "./BaseCard";
 
-const CardSearchInput = ({ onCardSelect, initialCardId = null, displayRarity= 'Basic' }) => {
+const CardSearchInput = ({ onCardSelect, initialCardId = null, displayRarity = 'Basic' }) => {
     const [allCards, setAllCards] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [suggestions, setSuggestions] = useState([]);
     const [selectedCard, setSelectedCard] = useState(null);
 
-    // On component mount, fetch all card definitions
+
     useEffect(() => {
         const fetchAllCards = async () => {
             try {
                 const res = await fetchWithAuth('/api/admin/cards');
                 const all = [];
-                // Flatten the grouped card structure into a single array
                 Object.values(res.groupedCards || {}).forEach(cards => all.push(...cards));
-                // Create a unique list of cards based on name
                 const uniqueCards = Array.from(new Map(all.map(card => [card.name, card])).values());
                 setAllCards(uniqueCards);
-
-                // If an initial card ID is provided (for editing an event), find and set it
-                if (initialCardId) {
-                    const initialCard = uniqueCards.find(c => c._id === initialCardId);
-                    if (initialCard) {
-                        setSelectedCard(initialCard);
-                        // We don't need to call onCardSelect here, as the parent form already has the ID
-                    }
-                }
             } catch (error) {
                 console.error('Error fetching cards for search:', error);
             }
         };
         fetchAllCards();
-    }, [initialCardId]);
+    }, []);
+
+    useEffect(() => {
+        if (initialCardId && allCards.length > 0) {
+            const initialCard = allCards.find(c => c._id === initialCardId);
+            if (initialCard) {
+                setSelectedCard(initialCard);
+            }
+        } else {
+            setSelectedCard(null);
+        }
+    }, [initialCardId, allCards]);
 
     const handleSearchChange = (e) => {
         const term = e.target.value;
@@ -45,35 +45,29 @@ const CardSearchInput = ({ onCardSelect, initialCardId = null, displayRarity= 'B
         }
         const lower = term.toLowerCase();
         const filtered = allCards.filter(c => c.name.toLowerCase().includes(lower));
-        setSuggestions(filtered.slice(0, 10)); // Limit to 10 suggestions
+        setSuggestions(filtered.slice(0, 10));
     };
 
     const handleSelectSuggestion = (card) => {
         setSearchTerm('');
         setSuggestions([]);
-        setSelectedCard(card);
-        onCardSelect(card); // Pass the selected card object to the parent component
+        onCardSelect(card);
     };
 
     const clearSelection = () => {
-        setSelectedCard(null);
-        setSearchTerm('');
-        onCardSelect(null); // Inform parent that the selection is cleared
+        onCardSelect(null);
     };
 
     if (selectedCard) {
         return (
             <div className="selected-card-display">
                 <div className="card-tile">
-                    <div style={{height: '200px'}}>
                         <BaseCard
                             name={selectedCard.name}
                             description={selectedCard.description}
                             image={selectedCard.imageUrl}
                             rarity={displayRarity}
-                            miniCard={true}
                         />
-                    </div>
                     <div className="actions">
                         <button type="button" className="secondary-button sm" onClick={clearSelection} style={{ marginLeft: '1rem' }}>
                             Change

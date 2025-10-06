@@ -1596,6 +1596,25 @@ $card-artwork-height: 216px;
   }
 
   &.event {
+    animation: event-glow-mini 3s infinite alternate;
+
+    &:hover {
+      animation: event-glow-hover-mini 1.5s infinite alternate;
+      &::after {
+        opacity: 0.2;
+      }
+    }
+
+    @keyframes event-glow-mini {
+      0% { box-shadow: 0 0 9px 3px rgba(255, 140, 0, 0.2); }
+      100% { box-shadow: 0 0 10px 3px rgba(186, 177, 82, .4); }
+    }
+
+    @keyframes event-glow-hover-mini {
+      0%, 100% { box-shadow: 0 0 10px 1px rgba(223, 130, 62, 0.2), 0 0 10px 1px rgba(188, 97, 34, 0.3); }
+      50% { box-shadow: 0 0 10px 5px rgba(236, 144, 77, 0.6), 0 0 10px 5px rgba(228, 135, 70, 0.6); }
+    }
+
     .mini-card-border .mini-card-header {
       position: absolute;
       top: unset;

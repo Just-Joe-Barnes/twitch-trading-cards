@@ -170,18 +170,16 @@ const grantPackReward = async (user, details) => {
     const amount = parseInt(details.amount, 10);
     if (isNaN(amount) || amount <= 0) {
         console.error(`Invalid pack reward amount for user ${user.username}: ${details.amount}`);
-        return null; // --- CHANGED: Return null on failure
+        return null;
     }
 
     try {
         user.packs = (user.packs || 0) + amount;
         await user.save();
         console.log(`Successfully granted ${amount} pack(s) to user ${user.username}`);
-        // --- CHANGED: Return an object with the amount ---
         return { amount };
     } catch (error) {
         console.error(`Failed to grant pack reward to user ${user.username}:`, error.message);
-        // --- CHANGED: Return null on failure ---
         return null;
     }
 };
@@ -194,22 +192,20 @@ const grantXpReward = async (user, details) => {
     const amount = parseInt(details.amount, 10);
     if (isNaN(amount) || amount <= 0) {
         console.error(`Invalid XP reward amount for user ${user.username}: ${details.amount}`);
-        return null; // --- CHANGED: Return null on failure
+        return null;
     }
 
     try {
         const newXp = (user.xp || 0) + amount;
-        const newLevel = Math.floor(newXp / 100) + 1; // Assuming 100 XP per level
+        const newLevel = Math.floor(newXp / 100) + 1;
 
         user.xp = newXp;
         user.level = newLevel;
         await user.save();
         console.log(`Successfully granted ${amount} XP to user ${user.username}. New level: ${newLevel}`);
-        // --- CHANGED: Return an object with the amount ---
         return { amount };
     } catch (error) {
         console.error(`Failed to grant XP reward to user ${user.username}:`, error.message);
-        // --- CHANGED: Return null on failure ---
         return null;
     }
 };
