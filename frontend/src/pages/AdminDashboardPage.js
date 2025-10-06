@@ -250,7 +250,6 @@ const AdminDashboardPage = ({user}) => {
     // --- NEW: The core "Roll" logic ---
     const handleRoll = async () => {
         if (isRolling || raffleUsers.length === 0) return;
-        setSelectedUser(null);
         setIsRolling(true);
         setHighlightedUserId(null);
         setRaffleWinner(null);
@@ -315,6 +314,7 @@ const AdminDashboardPage = ({user}) => {
 
     const handleConfirmWinner = useCallback(() => {
         if (raffleWinner) {
+            setSelectedUser(raffleWinner); // Set the winner here
             triggerPackOpening(raffleWinner);
         }
         setRaffleWinner(null);
