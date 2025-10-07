@@ -126,7 +126,7 @@ const AdminDashboardPage = ({user}) => {
         }
         setLoading(true);
         try {
-            const activeMinutesParam = activeFilter === 'active' ? '&activeMinutes=30' : '';
+            const activeMinutesParam = activeFilter === 'active' ? '&activeMinutes=2400' : '';
             const data = await fetchWithAuth(`/api/admin/users-activity?${activeMinutesParam}`);
             setUsers(data || []);
         } catch (err) {
@@ -247,36 +247,55 @@ const AdminDashboardPage = ({user}) => {
 
     const raffleUsers = users.filter(u => u.packs > 0);
 
-    // --- NEW: The core "Roll" logic ---
     const handleRoll = async () => {
-        if (isRolling || raffleUsers.length === 0) return;
+        const eligibleRaffleUsers = raffleUsers.filter(u => !sessionCounts[u._id]);
+
+        if (isRolling || eligibleRaffleUsers.length === 0) return;
         setIsRolling(true);
         setHighlightedUserId(null);
         setRaffleWinner(null);
 
-        // 1. Create a weighted pool of users
-        const weightedPool = [];
-        raffleUsers.forEach(user => {
-            const packsOpened = sessionCounts[user._id] || 0;
-            const weight = packsOpened === 0 ? 10 : 1;
-            for (let i = 0; i < weight; i++) {
-                weightedPool.push(user._id);
+        // Handle the special case where there is only one user left
+        if (eligibleRaffleUsers.length === 1) {
+            const singleWinner = eligibleRaffleUsers[0];
+            setHighlightedUserId(singleWinner._id);
+
+            const boopSound = boopSoundRef.current;
+            if (boopSound) {
+                boopSound.playbackRate = 1.2;
+                boopSound.currentTime = 0;
+                boopSound.play();
             }
-        });
+            await sleep(1500); // A brief pause to show the winner
 
-        // 2. Select a winner from the weighted pool
-        const winnerId = weightedPool[Math.floor(Math.random() * weightedPool.length)];
-        const winner = raffleUsers.find(u => u._id === winnerId);
+            setRaffleWinner(singleWinner);
+            setIsRolling(false);
+            return; // Exit the function early
+        }
 
-        // 3. Create a random animation sequence
-        const animationLength = Math.floor(Math.random() * 11) + 30; // 10 to 20 users
+        const winner = eligibleRaffleUsers[Math.floor(Math.random() * eligibleRaffleUsers.length)];
+
+        let animationLength;
+        let endDelay = 500; // Default end delay
+        const userCount = eligibleRaffleUsers.length;
+
+        if (userCount <= 3) { // This now correctly handles 2-3 users
+            animationLength = Math.floor(Math.random() * 6) + 8; // 8-13 rolls
+            endDelay = 250; // Make the slowdown faster
+        } else if (userCount <= 10) {
+            animationLength = Math.floor(Math.random() * 6) + 15; // 15-20 rolls
+        } else if (userCount <= 25) {
+            animationLength = Math.floor(Math.random() * 11) + 25; // 25-35 rolls
+        } else {
+            animationLength = Math.floor(Math.random() * 11) + 35; // 35-45 rolls
+        }
+
         const animationSequence = [];
         for (let i = 0; i < animationLength; i++) {
-            animationSequence.push(raffleUsers[Math.floor(Math.random() * raffleUsers.length)]);
+            animationSequence.push(eligibleRaffleUsers[Math.floor(Math.random() * eligibleRaffleUsers.length)]);
         }
 
         const startDelay = 75;
-        const endDelay = 500;
         const totalSteps = animationSequence.length;
 
         for (let i = 0; i < totalSteps; i++) {
@@ -462,6 +481,8 @@ const AdminDashboardPage = ({user}) => {
         setFocusedUserIndex(null);
     }, [searchQuery, activeFilter, sortColumn, sortDirection]);
 
+
+
     const raffleGridRef = useRef(null);
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
@@ -499,7 +520,11 @@ const AdminDashboardPage = ({user}) => {
                     <div className="winner-modal-content">
                         <img src={raffleWinner.twitchProfilePic} alt={raffleWinner.username}/>
                         <p>Ripping a pack for...</p>
-                        <h1>{raffleWinner.username}</h1>
+                        <h1>
+                            {raffleWinner.username}<br/>
+                            <span style={{margin: 0, padding: 0, fontSize: '0.8rem'}}>Packs Remaining ({raffleWinner.packs - 1})</span>
+                        </h1>
+
                         <button className="primary-button lg" onClick={handleConfirmWinner}>
                             Open Pack! ({countdown})
                         </button>
@@ -534,6 +559,9 @@ const AdminDashboardPage = ({user}) => {
                         <div className="session-pack-counter">
                             Session Packs: <strong>{totalSessionPacks}</strong>
                         </div>
+                        <div className="session-pack-counter">
+                            Raffle Users: <strong>{raffleUsers.length}</strong>
+                        </div>
                     </div>
                     <div className="section-card">
                         <div className="tabs">
@@ -550,15 +578,16 @@ const AdminDashboardPage = ({user}) => {
                             <div className="raffle-container">
                                 <div ref={raffleGridRef} className={`raffle-grid ${isRolling ? 'rolling' : ''}`} style={{ '--grid-cols': cols, '--grid-rows': rows}}>
                                     {raffleUsers.map(u => (
-                                        <div key={u._id} className={`raffle-user ${highlightedUserId === u._id ? 'highlighted' : ''}`}>
-                                        <img src={u.twitchProfilePic} alt={u.username}/>
+                                        <div key={u._id}
+                                             className={`raffle-user ${highlightedUserId === u._id ? 'highlighted' : ''} ${sessionCounts[u._id] ? 'has-opened-pack' : ''}`}>
+                                            <img src={u.twitchProfilePic} alt={u.username}/>
                                             <span className="raffle-username">{u.username}</span>
                                         </div>
                                     ))}
                                 </div>
                                 <div className="raffle-controls">
                                     <button onClick={handleRoll} className="primary-button xl roll-button"
-                                            disabled={isRolling || isOpeningAnimation || raffleUsers.length === 0}>
+                                            disabled={isRolling || isOpeningAnimation || raffleUsers.filter(u => !sessionCounts[u._id]).length === 0}>
                                         {isRolling ? 'Rolling...' : (isOpeningAnimation ? 'Opening...' : 'Open Pack')}
                                     </button>
                                 </div>
@@ -634,59 +663,59 @@ const AdminDashboardPage = ({user}) => {
                                 )}
                                 {activeTab === 'list' && selectedUser && (
                                     <>
-                                <h2>Open Pack for {selectedUser.username}</h2>
-                                <img src={selectedUser.twitchProfilePic} className="userpic" alt="Profile"/>
-                                <div className="session-counter" style={{
-                                    marginBottom: '.4rem',
-                                    textTransform: 'uppercase',
-                                    opacity: '0.4',
-                                    letterSpacing: '2px',
-                                    fontSize: '.7rem',
-                                    textAlign: 'center'
-                                }}>
-                                    Packs opened this session: <strong>{sessionCounts[selectedUser._id] || 0}</strong>
-                                </div>
-                                <select
-                                    className="pack-type-select"
-                                    value={selectedPackTypeId}
-                                    onChange={(e) => setSelectedPackTypeId(e.target.value)}
-                                >
-                                    {packTypes.map((p) => (
-                                        <option key={p._id} value={p._id}>
-                                            {p.name || p.type || 'Unnamed'}
-                                        </option>
-                                    ))}
-                                </select>
-                                <button
-                                    onClick={() => triggerPackOpening(selectedUser)}
-                                    className="primary-button xl"
-                                    disabled={loading || isOpeningAnimation || selectedUser.packs <= 0}
-                                >
-                                    {loading ? 'Opening...' : (
-                                        <span>Open Pack <i className="fa-solid fa-cards-blank"/></span>)}
-                                </button>
-                                {showDebugControls && (
-                                    <div className="debug-card">
-                                        <label style={{marginLeft: '1rem'}}>
-                                            <input
-                                                type="checkbox"
-                                                checked={forceModifier}
-                                                onChange={(e) => setForceModifier(e.target.checked)}
-                                            />
-                                            Force Random Modifier
-                                        </label>
-                                        <button
-                                            onClick={openDebugPackForUser}
-                                            disabled={loading || isOpeningAnimation}
-                                            style={{marginLeft: '0.5rem'}}
-                                            className="secondary-button"
+                                        <h2>Open Pack for {selectedUser.username}</h2>
+                                        <img src={selectedUser.twitchProfilePic} className="userpic" alt="Profile"/>
+                                        <div className="session-counter" style={{
+                                            marginBottom: '.4rem',
+                                            textTransform: 'uppercase',
+                                            opacity: '0.4',
+                                            letterSpacing: '2px',
+                                            fontSize: '.7rem',
+                                            textAlign: 'center'
+                                        }}>
+                                            Packs opened this session: <strong>{sessionCounts[selectedUser._id] || 0}</strong>
+                                        </div>
+                                        <select
+                                            className="pack-type-select"
+                                            value={selectedPackTypeId}
+                                            onChange={(e) => setSelectedPackTypeId(e.target.value)}
                                         >
-                                            {loading && isOpeningAnimation ? 'Opening...' : 'Debug Pack'}
+                                            {packTypes.map((p) => (
+                                                <option key={p._id} value={p._id}>
+                                                    {p.name || p.type || 'Unnamed'}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <button
+                                            onClick={() => triggerPackOpening(selectedUser)}
+                                            className="primary-button xl"
+                                            disabled={loading || isOpeningAnimation || selectedUser.packs <= 0}
+                                        >
+                                            {loading ? 'Opening...' : (
+                                                <span>Open Pack <i className="fa-solid fa-cards-blank"/></span>)}
                                         </button>
-                                    </div>
-                                )}
-                                {(!selectedUser && activeTab === 'list') &&
-                                    <p>Select a user from the list to open a pack.</p>}
+                                        {showDebugControls && (
+                                            <div className="debug-card">
+                                                <label style={{marginLeft: '1rem'}}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={forceModifier}
+                                                        onChange={(e) => setForceModifier(e.target.checked)}
+                                                    />
+                                                    Force Random Modifier
+                                                </label>
+                                                <button
+                                                    onClick={openDebugPackForUser}
+                                                    disabled={loading || isOpeningAnimation}
+                                                    style={{marginLeft: '0.5rem'}}
+                                                    className="secondary-button"
+                                                >
+                                                    {loading && isOpeningAnimation ? 'Opening...' : 'Debug Pack'}
+                                                </button>
+                                            </div>
+                                        )}
+                                        {(!selectedUser && activeTab === 'list') &&
+                                            <p>Select a user from the list to open a pack.</p>}
                                     </>
                                 )}
                             </div>
@@ -723,7 +752,6 @@ const AdminDashboardPage = ({user}) => {
                         <div className="cards-container">
                             {openedCards.length === 0 && (
                                 <>
-                                    Ripping Packs...
                                     <img src="/animations/loadingspinner.gif" alt="Loading..."
                                          className="spinner-image"/>
                                 </>

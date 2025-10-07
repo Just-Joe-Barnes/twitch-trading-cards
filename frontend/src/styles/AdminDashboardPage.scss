@@ -75,8 +75,8 @@
       }
 
       &.focused {
-          outline: 2px solid $brand-secondary;
-          outline-offset: -2px;
+        outline: 2px solid $brand-secondary;
+        outline-offset: -2px;
       }
     }
 
@@ -622,7 +622,7 @@ h1::after {
   overflow: hidden !important;
   position: relative;
   opacity: 0.4;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
 
   &:hover {
@@ -642,6 +642,7 @@ h1::after {
   aspect-ratio: 1 / 1;
   object-fit: cover;
   border-radius: 8px;
+  transition: filter 0.3s ease;
 }
 
 .raffle-user .raffle-username {
@@ -668,6 +669,35 @@ h1::after {
   box-shadow: 0 0 20px 5px var(--primary-color);
   z-index: 10;
 }
+
+/* NEW STYLES: For users who have had a pack opened */
+.raffle-user.has-opened-pack {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.raffle-user.has-opened-pack:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.raffle-user.has-opened-pack img {
+  filter: grayscale(100%);
+}
+
+.raffle-user.has-opened-pack::after {
+  content: '✔';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #4CAF50;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 1);
+  z-index: 10;
+}
+
 
 .raffle-controls {
   text-align: center;
