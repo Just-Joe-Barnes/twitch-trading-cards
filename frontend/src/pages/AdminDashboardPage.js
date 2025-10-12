@@ -126,9 +126,10 @@ const AdminDashboardPage = ({user}) => {
         }
         setLoading(true);
         try {
-            const activeMinutesParam = activeFilter === 'active' ? '&activeMinutes=2400' : '';
+            const activeMinutesParam = activeFilter === 'active' ? '&activeMinutes=45' : '';
             const data = await fetchWithAuth(`/api/admin/users-activity?${activeMinutesParam}`);
-            setUsers(data || []);
+            const filteredData = (data || []).filter(u => u._id !== '67902369038799d79f21246f');
+            setUsers(filteredData);
         } catch (err) {
             console.error('Error fetching users with activity:', err);
         } finally {
@@ -276,18 +277,18 @@ const AdminDashboardPage = ({user}) => {
         const winner = eligibleRaffleUsers[Math.floor(Math.random() * eligibleRaffleUsers.length)];
 
         let animationLength;
-        let endDelay = 500; // Default end delay
+        let endDelay = 500;
         const userCount = eligibleRaffleUsers.length;
 
-        if (userCount <= 3) { // This now correctly handles 2-3 users
-            animationLength = Math.floor(Math.random() * 6) + 8; // 8-13 rolls
-            endDelay = 250; // Make the slowdown faster
+        if (userCount <= 3) {
+            animationLength = Math.floor(Math.random() * 4) + 4;
+            endDelay = 250;
         } else if (userCount <= 10) {
-            animationLength = Math.floor(Math.random() * 6) + 15; // 15-20 rolls
+            animationLength = Math.floor(Math.random() * 6) + 10;
         } else if (userCount <= 25) {
-            animationLength = Math.floor(Math.random() * 11) + 25; // 25-35 rolls
+            animationLength = Math.floor(Math.random() * 11) + 15;
         } else {
-            animationLength = Math.floor(Math.random() * 11) + 35; // 35-45 rolls
+            animationLength = Math.floor(Math.random() * 11) + 25;
         }
 
         const animationSequence = [];
