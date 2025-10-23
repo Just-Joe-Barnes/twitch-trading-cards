@@ -4,9 +4,11 @@ const { findRandomCardTemplate, grantCardReward, grantPackReward, grantXpReward 
 const { createLogEntry } = require("../utils/logService");
 const { createNotification } = require('../helpers/notificationHelper');
 const { sendNotificationToUser } = require('../../notificationService');
+const Card = require("../models/cardModel");
 
 const checkAndAwardLoginEvents = async (user) => {
     const grantedRewards = [];
+    let rewardsAdded = false;
 
     try {
         const now = new Date();
@@ -110,7 +112,7 @@ const checkAndAwardLoginEvents = async (user) => {
                     let notificationMessage = '';
                     const link = `/collection/${user.username}`;
 
-                    if (rewardType === 'CARD') {
+                    if (rewardType === 'CARD' || rewardType === 'RANDOM_CARD') { // <-- Handle RANDOM_CARD
                         notificationMessage = `Event Reward: You received the card '${rewardData.name}' (Mint #${rewardData.mintNumber})!`;
                     } else if (rewardType === 'PACK') {
                         const plural = rewardData.amount > 1 ? 's' : '';
@@ -125,10 +127,7 @@ const checkAndAwardLoginEvents = async (user) => {
                         link: link
                     };
 
-                    // 2. Save the notification to the database
                     await createNotification(user._id, notificationPayload);
-
-                    // 3. Send the real-time push notification
                     sendNotificationToUser(user._id, notificationPayload);
 
                     const payload = {
@@ -136,6 +135,13 @@ const checkAndAwardLoginEvents = async (user) => {
                         data: rewardData,
                         message: event.message
                     };
+
+                    if (!user.pendingEventReward) {
+                        user.pendingEventReward = [];
+                    }
+                    user.pendingEventReward.push(payload);
+                    rewardsAdded = true;
+
                     grantedRewards.push(payload);
                     console.log(`[EventService] Staged reward for event '${event.name}'. Total staged: ${grantedRewards.length}`);
                 }
@@ -152,6 +158,11 @@ const checkAndAwardLoginEvents = async (user) => {
                 );
             }
         }
+
+        if (rewardsAdded) {
+            await user.save();
+        }
+
     } catch (error) {
         console.error(`[EventService] Error checking login events for user ${user.username}:`, error.message);
         await createLogEntry(
