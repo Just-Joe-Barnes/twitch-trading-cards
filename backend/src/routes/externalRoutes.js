@@ -76,23 +76,6 @@ const updatePeriodCounters = async (subCount, userTwitchId = null) => {
     }
 };
 
-const trackUserActivity = async (userTwitchId) => {
-    if (!userTwitchId) return;
-    try {
-        const m = getMonthlyKey();
-        await PeriodCounter.updateOne(
-            { scope: 'monthly', periodKey: m.periodKey },
-            {
-                $addToSet: { activeUserIds: userTwitchId },
-                $setOnInsert: { ...m, scope: 'monthly', count: 0 }
-            },
-            { upsert: true }
-        );
-    } catch (error) {
-        console.error('Failed to track user activity:', error);
-    }
-};
-
 router.get('/earn-pack', validateApiKey, async (req, res) => {
     let streamerUser;
     try {
@@ -168,7 +151,6 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
 
                 const updatePromises = recipientIds.map(id => {
                     const trimmedId = id.trim();
-                    trackUserActivity(trimmedId);
                     return addPacksToUser(trimmedId, recipientPacks);
                 });
                 const results = await Promise.all(updatePromises);
@@ -191,8 +173,6 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
             case 'redemption':
                 const redeemerName = req.headers.redeemername || 'An anonymous user';
                 packsToAward = 1;
-
-                trackUserActivity(userid);
 
                 const redeemer = await addPacksToUser(userid, packsToAward);
 
@@ -245,15 +225,13 @@ router.get('/redeem-pack', validateApiKey, async (req, res) => {
             return res.status({ message: `Streamer with Twitch ID ${streamerId} not found.` });
         }
 
-        trackUserActivity(userId);
-
         const redeemer = await User.findOne({ twitchId: userId }).populate('preferredPack');
         if (!redeemer) {
             await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `User with Twitch ID ${userId} not found.`);
             return res.status(404).json({ message: `User with Twitch ID ${userId} not found.` });
         }
 
-        const templateId = redeemer.preferredPack?._id || null;
+        const templateId = redeemer.preferredPack?._id || '67f68591c7560fa1a75f142c';
 
         await addToQueue({
             streamerDbId: streamerId,

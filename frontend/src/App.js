@@ -184,9 +184,15 @@ const App = () => {
             }
         };
 
-
         handleTokenFromURL();
-        initializeApp();
+
+        const isStreamOverlay = window.location.pathname.startsWith('/stream-overlay');
+
+        if (isStreamOverlay) {
+            setLoading(false);
+        } else {
+            initializeApp();
+        }
     }, []);
 
 

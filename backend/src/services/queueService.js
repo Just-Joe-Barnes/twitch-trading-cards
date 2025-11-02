@@ -35,12 +35,18 @@ const processQueue = async () => {
         return;
     }
 
-    const nextJob = await QueuedPack.findOne()
+    const connectedStreamerIds = Array.from(overlaySocketMapInstance.keys());
+    if (connectedStreamerIds.length === 0) {
+        console.log('[QueueService] No overlays connected. Waiting.');
+        return;
+    }
+
+    const nextJob = await QueuedPack.findOne({ streamerDbId: { $in: connectedStreamerIds } })
         .sort({ createdAt: 'asc' })
         .populate('redeemer');
 
     if (!nextJob) {
-        console.log('[QueueService] No jobs in DB queue.');
+        console.log('[QueueService] No jobs in DB queue for any connected streamers.');
         return;
     }
 
@@ -114,7 +120,7 @@ const markAsReady = (socketId) => {
     isOverlayBusy = false;
     busyForStreamerId = null;
 
-    if (!isQueuePaused) { // <-- FIX 2: Only process if queue is not manually paused.
+    if (!isQueuePaused) {
         setTimeout(processQueue, 100);
     }
 };
@@ -162,4 +168,3 @@ module.exports = {
     resumeQueue,
     handleOverlayDisconnect,
 };
-

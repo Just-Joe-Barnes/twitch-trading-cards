@@ -23,6 +23,7 @@ const StreamOverlayPage = () => {
     const [faceDownCards, setFaceDownCards] = useState([]);
     const [packMessageParts, setPackMessageParts] = useState(null);
     const [queue, setQueue] = useState([]);
+    const [isQueuePaused, setIsQueuePaused] = useState(false);
     const socketRef = useRef(null);
 
     const rarityOrderMap = useMemo(() => rarities.reduce((acc, r, index) => {
@@ -30,11 +31,30 @@ const StreamOverlayPage = () => {
         return acc;
     }, {}), []);
 
+    const socketUrl = process.env.REACT_APP_API_BASE_URL || 'http://192.168.0.136:5000';
+    const apiUrl = `${socketUrl}/api`;
+
     useEffect(() => {
         if (!userId) return;
 
         document.body.classList.add('transparent');
-        const socketUrl = process.env.REACT_APP_API_BASE_URL || 'http://192.168.0.136:5000';
+
+        const fetchQueueStatus = async () => {
+            try {
+                const response = await fetch(`${apiUrl}/admin/queues/status`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch queue status');
+                }
+                const data = await response.json();
+                setQueue(data.queue)
+                setIsQueuePaused(data.isPaused);
+            } catch (error) {
+                console.error("Error fetching queue status:", error);
+            }
+        };
+
+        fetchQueueStatus();
+
         const socket = io(socketUrl, {
             transports: ['websocket'],
             reconnectionAttempts: 5,
@@ -42,10 +62,7 @@ const StreamOverlayPage = () => {
         socketRef.current = socket;
 
         socket.on('connect', () => {
-            console.log('Socket connected, joining room:', userId);
             socket.emit('join', userId);
-
-            console.log('Registering as overlay...');
             socket.emit('register-overlay', userId);
         });
 
@@ -69,16 +86,14 @@ const StreamOverlayPage = () => {
         });
 
         socket.on('queue-updated', (queueUsernames) => {
-            console.log('Queue updated:', queueUsernames);
             setQueue(queueUsernames);
         });
 
         return () => {
-            console.log('Disconnecting socket...');
             socket.disconnect();
             document.body.classList.remove('transparent');
         };
-    }, [userId, rarityOrderMap]);
+    }, [userId, rarityOrderMap, apiUrl, socketUrl]);
 
     const startCardReveal = async (cards) => {
         setPackMessageParts(null);
@@ -131,19 +146,13 @@ const StreamOverlayPage = () => {
         setOpenedCards([]);
 
         if (socketRef.current) {
-            console.log('Animation complete, signaling server.');
             socketRef.current.emit('animation-complete');
         }
     };
 
-    if (!isOpening) {
-        return null;
-    }
-
     return (
         <div className="stream-overlay">
-
-            {queue.length > 0 && (
+            {(!isQueuePaused && queue.length > 0) && (
                 <div className="queue-display">
                     <span>{queue.length}</span> <br/>
                     Packs in Queue
