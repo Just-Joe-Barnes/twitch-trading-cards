@@ -39,7 +39,7 @@ const CataloguePage = ({user}) => {
     const [selectedModifier, setSelectedModifier] = useState('None');
     const [sortOption, setSortOption] = useState('name');
     const [sortOrder, setSortOrder] = useState('asc');
-    const [randomRaritySeed, setRandomRaritySeed] = useState(0);
+    const [setRandomRaritySeed] = useState(0);
     const defaultCardScale = 1;
     const [cardScale, setCardScale] = useState(() => {
         const storedScale = parseFloat(localStorage.getItem("cardScale"));
