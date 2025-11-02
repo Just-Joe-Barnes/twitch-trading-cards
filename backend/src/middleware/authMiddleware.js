@@ -9,11 +9,11 @@ const protect = async (req, res, next) => {
         try {
             // Extract the token from the Authorization header
             token = req.headers.authorization.split(' ')[1];
-            console.log('[AUTH VALIDATE] Token received:', token);
+            // console.log('[AUTH VALIDATE] Token received:', token);
 
             // Decode and verify the token
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            console.log('[AUTH VALIDATE] Decoded token:', decoded);
+            // console.log('[AUTH VALIDATE] Decoded token:', decoded);
 
             // Find the user by `twitchId` or `_id` based on the token payload
             req.user = await User.findOne({ twitchId: decoded.id })

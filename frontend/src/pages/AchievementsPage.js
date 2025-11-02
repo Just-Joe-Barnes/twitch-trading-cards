@@ -65,17 +65,15 @@ const AchievementsPage = () => {
         setClaiming(true);
         try {
             const res = await claimAchievement(ach.name);
-            if (res.card) {
-                const {name, imageUrl, flavorText, rarity, mintNumber, modifier} = res.card;
-                window.inspectCard({
-                    name,
-                    image: imageUrl,
-                    description: flavorText,
-                    rarity,
-                    mintNumber,
-                    modifier,
-                });
+
+            // --- THIS IS THE FIX ---
+            // We now get 'pendingRewards' which is an ARRAY of *new* rewards.
+            // We must call 'addNewRewards' (defined in App.js) to ADD them to the queue.
+            if (res.pendingRewards && res.pendingRewards.length > 0 && window.addNewRewards) {
+                window.addNewRewards(res.pendingRewards);
             }
+            // --- END FIX ---
+
             window.showToast('Reward claimed!', 'success');
             setAchievements((prev) =>
                 prev.map((a) => (a.name === ach.name ? {...a, claimed: true} : a))
@@ -100,23 +98,10 @@ const AchievementsPage = () => {
             {claiming && <LoadingSpinner/>}
             <h1>Achievements</h1>
 
-            {/*<p className="achievement-count">{achievedCount}/{totalAchievements} Achieved</p>*/}
-
             <div className="info-section section-card narrow">
                 Earn achievements by completing various tasks. Click on an unlocked
                 achievement to claim your reward.
             </div>
-
-            {/*<div className="filter-controls">*/}
-            {/*    <label>*/}
-            {/*        <input*/}
-            {/*            type="checkbox"*/}
-            {/*            checked={showAchieved}*/}
-            {/*            onChange={handleShowAchievedToggle}*/}
-            {/*        />*/}
-            {/*        Show Achieved Achievements*/}
-            {/*    </label>*/}
-            {/*</div>*/}
 
             <div className="achievements-grid">
                 {filteredAchievements.length > 0 ? (
@@ -177,3 +162,4 @@ const AchievementsPage = () => {
 };
 
 export default AchievementsPage;
+

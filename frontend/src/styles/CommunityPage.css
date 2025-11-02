@@ -1,0 +1,211 @@
+.community-stats-container {
+  border-radius: 8px;
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.goal-progress-bar {
+  margin-bottom: 2.5rem;
+}
+
+.goal-progress-bar h3 {
+  color: #fff;
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 30px;
+  background-color: #1e1e1e;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid #4f4f51;
+}
+
+.progress-bar-filler {
+  height: 100%;
+  background: linear-gradient(90deg, #cd82e6 0%, #88d3ce 100%);
+  border-radius: 0;
+  transition: width 0.5s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.progress-bar-label {
+  padding: 0 1rem;
+  color: #fff;
+  font-weight: bold;
+  font-size: 0.9rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.goal-markers {
+  position: relative;
+  height: 30px;
+  margin-top: 5px;
+}
+.goal-markers .goal-marker {
+  position: absolute;
+  bottom: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.goal-markers .goal-marker-dot {
+  display: block;
+  background: rgba(255, 255, 255, 0.1);
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  height: 24px;
+  width: 1px;
+}
+
+.goal-markers.monthly .goal-marker .goal-marker-dot {
+  top: -35px;
+}
+
+.goal-marker-label {
+  color: #aaa;
+  font-size: 0.8rem;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.error-message {
+  color: #ff6b6b;
+  text-align: center;
+}
+
+.twitch-section iframe {
+  width: 100%;
+  height: 350px;
+  border-radius: 16px;
+  border: 1px solid var(--border-dark);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.twitch-details {
+  text-align: center;
+  font-size: 1rem;
+  color: var(--brand-secondary);
+  margin-top: 1rem;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 0.6rem;
+}
+@media screen and (max-width: 1160px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pack-luck-container {
+  display: flex;
+  gap: 6px;
+  margin: 12px 0;
+  padding-left: 2px; /* Small offset */
+}
+
+.luck-card {
+  width: 30px;
+  height: 45px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.luck-card span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* --- GOAL PACK LUCK STYLES (NEW) --- */
+.goal-luck-container {
+  display: flex;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.goal-luck-card {
+  width: 7px;
+  height: 11px;
+  border-radius: 2px;
+  font-size: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.7);
+  position: relative;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.goal-luck-card span {
+  display: none; /* Hide '?' on small cards */
+}
+
+/* --- SHARED LUCK CARD COLORS --- */
+.luck-card.grey, .goal-luck-card.grey {
+  background: linear-gradient(145deg, #5a5a5a, #444444);
+  border: 1px solid #777;
+  color: #aaa;
+}
+
+.luck-card.rare, .goal-luck-card.rare {
+  background: linear-gradient(145deg, #AB47BC, #893298);
+  border: 1px solid #b95ec8;
+  color: #fff;
+}
+
+.luck-card.epic, .goal-luck-card.epic {
+  background: linear-gradient(145deg, #FFA726, #bf7407);
+  border: 1px solid #fabc60;
+  color: #fff;
+}
+
+.current-reward {
+  padding: 0.6rem;
+  margin: 1rem 0;
+  font-size: 2rem;
+  background: #131313;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+.current-reward.packs {
+  font-size: 2rem;
+}
+
+h3.tiny {
+  font-size: 45%;
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+  color: #fff;
+  text-align: center;
+  margin: 0;
+}
+h3.tiny strong {
+  font-size: 300%;
+  font-weight: bold;
+  color: #e680a7;
+}
+
+/*# sourceMappingURL=CommunityPage.css.map */

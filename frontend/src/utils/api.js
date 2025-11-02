@@ -1,4 +1,3 @@
-// src/utils/api.js
 export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://192.168.0.136:5000';
 
 export const fetchWithAuth = async (endpoint, options = {}) => {
@@ -34,7 +33,6 @@ export const fetchWithAuth = async (endpoint, options = {}) => {
                     errorMessage = errorData.message;
                 }
             } catch (e) {
-                // Ignore JSON parse errors, keep default message
             }
             console.error("[API] HTTP error:", response.status, response.statusText, errorMessage);
             throw new Error(errorMessage);
@@ -47,17 +45,14 @@ export const fetchWithAuth = async (endpoint, options = {}) => {
     }
 };
 
-// Fetch user's packs
 export const fetchMyPacks = async () => {
     return fetchWithAuth("/api/packs/mypacks", {method: "GET"});
 };
 
-// Fetch logged-in user's profile
 export const fetchUserProfile = async () => {
     return fetchWithAuth("/api/users/me", {method: "GET"});
 };
 
-// Fetch a user profile by username
 export const fetchUserProfileByUsername = async (username) => {
     try {
         return fetchWithAuth(`/api/users/profile/${username}`, {method: "GET"});
@@ -67,7 +62,6 @@ export const fetchUserProfileByUsername = async (username) => {
     }
 };
 
-// Fetch user collection (cards and packs)
 export const fetchUserCollection = async (userId) => {
     try {
         const response = await fetchWithAuth(`/api/users/${userId}/collection`, {method: "GET"});
@@ -79,7 +73,6 @@ export const fetchUserCollection = async (userId) => {
     }
 };
 
-// Fetch all cards recursively with pagination support
 export const fetchCards = async ({search = "", rarity = "", sort = "", page = 1, limit = 50, isAdmin = false}) => {
     const queryParams = new URLSearchParams({search, rarity, sort, page, limit});
 
@@ -90,7 +83,6 @@ export const fetchCards = async ({search = "", rarity = "", sort = "", page = 1,
     try {
         const response = await fetchWithAuth(`/api/cards?${queryParams.toString()}`, {method: "GET"});
         if (response.cards?.length === limit) {
-            // --- MODIFIED --- Pass isAdmin in the recursive call
             const nextPageData = await fetchCards({search, rarity, sort, page: page + 1, limit, isAdmin});
             return {
                 cards: [...response.cards, ...nextPageData.cards],
@@ -105,7 +97,6 @@ export const fetchCards = async ({search = "", rarity = "", sort = "", page = 1,
     }
 };
 
-// NEW: Search cards by name (for admin card search tool)
 export const searchCardsByName = async (query) => {
     try {
         const response = await fetchWithAuth(`/api/cards/search?name=${encodeURIComponent(query)}`, {
@@ -118,12 +109,10 @@ export const searchCardsByName = async (query) => {
     }
 };
 
-// Award a pack for first login
 export const awardFirstLoginPack = async () => {
     return fetchWithAuth("/api/packs/firstlogin", {method: "POST"});
 };
 
-// Fetch featured cards for the logged-in user
 export const fetchFeaturedCards = async () => {
     try {
         const response = await fetchWithAuth("/api/users/featured-cards", {method: "GET"});
@@ -135,7 +124,6 @@ export const fetchFeaturedCards = async () => {
     }
 };
 
-// Update the featured cards for the logged-in user
 export const updateFeaturedCards = async (featuredCards) => {
     try {
         const response = await fetchWithAuth("/api/users/featured-cards", {
@@ -150,7 +138,6 @@ export const updateFeaturedCards = async (featuredCards) => {
     }
 };
 
-// Fetch featured achievements for the logged-in user
 export const fetchFeaturedAchievements = async () => {
     try {
         const response = await fetchWithAuth('/api/users/featured-achievements', {method: 'GET'});
@@ -161,7 +148,6 @@ export const fetchFeaturedAchievements = async () => {
     }
 };
 
-// Update the featured achievements for the logged-in user
 export const updateFeaturedAchievements = async (achievements) => {
     try {
         const response = await fetchWithAuth('/api/users/featured-achievements', {
@@ -175,7 +161,6 @@ export const updateFeaturedAchievements = async (achievements) => {
     }
 };
 
-// Fetch favorite card for the logged-in user
 export const fetchFavoriteCard = async () => {
     try {
         const response = await fetchWithAuth("/api/users/favorite-card", {method: "GET"});
@@ -186,7 +171,6 @@ export const fetchFavoriteCard = async () => {
     }
 };
 
-// Update favorite card for the logged-in user
 export const updateFavoriteCard = async (name, rarity) => {
     try {
         const response = await fetchWithAuth("/api/users/favorite-card", {
@@ -200,7 +184,6 @@ export const updateFavoriteCard = async (name, rarity) => {
     }
 };
 
-// Fetch preferred pack for the logged-in user
 export const fetchPreferredPack = async () => {
     try {
         const response = await fetchWithAuth('/api/users/preferred-pack', {method: 'GET'});
@@ -211,7 +194,6 @@ export const fetchPreferredPack = async () => {
     }
 };
 
-// Update preferred pack for the logged-in user
 export const updatePreferredPack = async (packId) => {
     try {
         const response = await fetchWithAuth('/api/users/preferred-pack', {
@@ -225,7 +207,6 @@ export const updatePreferredPack = async (packId) => {
     }
 };
 
-// Fetch list of all packs (public)
 export const fetchAllPacks = async () => {
     try {
         const res = await fetchWithAuth('/api/admin/packs', {method: 'GET'});
@@ -236,9 +217,7 @@ export const fetchAllPacks = async () => {
     }
 };
 
-// Create a new trade
 export const createTrade = async (tradeData) => {
-    // This function was not using fetchWithAuth, so I'm updating it to do so.
     try {
         const response = await fetchWithAuth('/api/trades', {
             method: 'POST',
@@ -251,7 +230,6 @@ export const createTrade = async (tradeData) => {
     }
 };
 
-// Fetch trades (incoming and outgoing)
 export const fetchTrades = async (userId) => {
     try {
         const response = await fetchWithAuth(`/api/trades/${userId}`);
@@ -263,8 +241,6 @@ export const fetchTrades = async (userId) => {
     }
 };
 
-// Fetch pending trades with status filtering
-// Fetch pending trades for a user
 export const fetchPendingTrades = async (userId) => {
     try {
         const response = await fetchWithAuth(`/api/trades/${userId}/pending`);
@@ -276,7 +252,6 @@ export const fetchPendingTrades = async (userId) => {
     }
 };
 
-// Accept a trade
 export const acceptTrade = async (tradeId) => {
     try {
         const response = await fetchWithAuth(`/api/trades/${tradeId}/status`, {
@@ -291,7 +266,6 @@ export const acceptTrade = async (tradeId) => {
     }
 };
 
-// Reject a trade
 export const rejectTrade = async (tradeId) => {
     try {
         const response = await fetchWithAuth(`/api/trades/${tradeId}/status`, {
@@ -306,7 +280,6 @@ export const rejectTrade = async (tradeId) => {
     }
 };
 
-// Cancel a trade (for outgoing trades)
 export const cancelTrade = async (tradeId) => {
     try {
         const response = await fetchWithAuth(`/api/trades/${tradeId}/status`, {
@@ -321,7 +294,6 @@ export const cancelTrade = async (tradeId) => {
     }
 };
 
-// Update trade status (accept, reject)
 export const updateTradeStatus = async (tradeId, status) => {
     try {
         const response = await fetchWithAuth(`/api/trades/${tradeId}`, {
@@ -336,7 +308,6 @@ export const updateTradeStatus = async (tradeId, status) => {
     }
 };
 
-// Search for users by username
 export const searchUsers = async (query) => {
     try {
         const response = await fetchWithAuth(`/api/users/search?query=${query}`, {method: "GET"});
@@ -348,27 +319,22 @@ export const searchUsers = async (query) => {
     }
 };
 
-// Fetch all notifications for the logged-in user
 export const fetchNotifications = async () => {
     return fetchWithAuth('/api/notifications', {method: 'GET'});
 };
 
-// Mark all notifications as read (called when the dropdown opens)
 export const markNotificationsAsRead = async () => {
     return fetchWithAuth('/api/notifications/read', {method: 'PUT'});
 };
 
-// Delete a single notification by its ID
 export const deleteNotification = async (notificationId) => {
     return fetchWithAuth(`/api/notifications/${notificationId}`, {method: 'DELETE'});
 };
 
-// Optionally, delete all notifications
 export const clearNotifications = async () => {
     return fetchWithAuth('/api/notifications/clear', {method: 'DELETE'});
 };
 
-// Fetch active market listings for a specific user
 export const fetchUserMarketListings = async (userId, limit = 3) => {
     try {
         const response = await fetchWithAuth(`/api/market/user/${userId}/listings?limit=${limit}`);
@@ -382,7 +348,6 @@ export const fetchUserMarketListings = async (userId, limit = 3) => {
     }
 };
 
-// Fetch achievements and progress for the logged in user
 export const fetchAchievements = async () => {
     try {
         const response = await fetchWithAuth('/api/achievements', {method: 'GET'});
@@ -393,7 +358,6 @@ export const fetchAchievements = async () => {
     }
 };
 
-// Claim a reward for a specific achievement name
 export const claimAchievement = async (name) => {
     try {
         return await fetchWithAuth('/api/achievements/claim', {
@@ -406,7 +370,7 @@ export const claimAchievement = async (name) => {
     }
 };
 
-// Grade a specific card for a user (admin only)
+
 export const gradeCard = async (userId, cardId) => {
     try {
         return await fetchWithAuth('/api/grading/grade-card', {
@@ -444,16 +408,13 @@ export const revealGradedCard = async (userId, cardId) => {
 };
 
 export const fetchAdminCardAudit = async () => {
-    // Uses fetchWithAuth for consistency
     return fetchWithAuth('/api/admin/audit-cards', {method: 'GET'});
 };
 
-export const fixCardDefinitionInconsistencies = async (dryRun = true) => { // Default to dryRun
-    // Uses fetchWithAuth for consistency
+export const fixCardDefinitionInconsistencies = async (dryRun = true) => {
     const url = `/api/admin/fix-card-definition-inconsistencies?dryRun=${dryRun}`;
     return fetchWithAuth(url, {
         method: 'POST',
-        // fetchWithAuth automatically handles Content-Type and Authorization for JSON body
     });
 };
 
@@ -535,11 +496,10 @@ export const fixMissingModifierPrefixes = async (options = { dryRun: true }) => 
 export const wipeDatabase = async (payload) => {
     return await fetchWithAuth('/api/admin/wipe-database', {
         method: 'POST',
-        body: JSON.stringify(payload), // Send the entire payload object
+        body: JSON.stringify(payload),
     });
 };
 
-// Add a log entry to the backend with a timestamp and a user reference
 export const logEvent = async (logMessage) => {
     try {
         const response = await fetchWithAuth("/api/log", {
@@ -554,11 +514,16 @@ export const logEvent = async (logMessage) => {
     }
 };
 
-// Fetch all cards for the admin panel recursively with pagination support
+export const clearReward = async (rewardId) => {
+    return fetchWithAuth('/api/achievements/clear-reward', {
+        method: 'POST',
+        body: JSON.stringify({ rewardId })
+    });
+};
+
 export const fetchAdminCards = async ({ search = "", rarity = "", sort = "", page = 1, limit = 50 }) => {
     const queryParams = new URLSearchParams({ search, rarity, sort, page, limit });
     try {
-        // Note the different URL: /api/admin/catalogue
         const response = await fetchWithAuth(`/api/admin/catalogue?${queryParams.toString()}`, { method: "GET" });
 
         if (response.cards?.length === limit) {

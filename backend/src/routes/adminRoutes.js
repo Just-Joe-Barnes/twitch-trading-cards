@@ -1,4 +1,3 @@
-// File: backend/src/routes/adminRoutes.js
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
@@ -9,7 +8,6 @@ const { Readable } = require('stream');
 const UserActivity = require('../models/UserActivity');
 const { grantCardReward, grantPackReward, grantXpReward} = require('../helpers/eventHelpers');
 
-// Models
 const User = require('../models/userModel');
 const Card = require('../models/cardModel');
 const Pack = require('../models/packModel');
@@ -21,7 +19,6 @@ const MarketListing = require('../models/MarketListing');
 const EventClaim = require('../models/eventClaimModel');
 const Setting = require('../models/settingsModel');
 
-// Middleware & Services
 const { protect } = require('../middleware/authMiddleware');
 const { broadcastNotification, sendNotificationToUser} = require('../../notificationService');
 const {getStatus, forceResume, resumeQueue, pauseQueue} = require("../services/queueService");
@@ -31,9 +28,6 @@ const tradeController = require('../controllers/tradeController');
 const {createNotification} = require("../helpers/notificationHelper");
 const {createLogEntry} = require("../utils/logService");
 
-// --- Middleware & Helper Functions ---
-
-// Middleware to check admin privileges (updated)
 const adminOnly = (req, res, next) => {
     if (!req.user || !req.user.isAdmin) {
         return res.status(403).json({ message: 'Admin access required.' });
@@ -49,7 +43,6 @@ const MODIFIER_NAME_TO_PREFIX_MAP = {
 
 const stripCardNameModifiers = (cardName) => {
     if (typeof cardName !== 'string') return cardName;
-    // We can derive the prefixes from our map now
     const PREFIXES_TO_STRIP = Object.values(MODIFIER_NAME_TO_PREFIX_MAP);
     for (const modifier of PREFIXES_TO_STRIP) {
         if (cardName.startsWith(modifier)) {
@@ -64,13 +57,11 @@ const slugify = (text) => {
         .toString()
         .toLowerCase()
         .trim()
-        .replace(/\s+/g, '-')           // Replace spaces with -
-        .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
-        .replace(/\-\-+/g, '-');        // Replace multiple - with single -
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-');
 };
 
-// --- User & Pack Management Routes ---
-// ... (No changes in this section, from /clear-cards down to /users-activity)
 router.post('/clear-cards', protect, adminOnly, async (req, res) => {
     const { userId } = req.body;
     if (!userId) {
@@ -81,7 +72,6 @@ router.post('/clear-cards', protect, adminOnly, async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found.' });
         }
-        // Clear the cards array
         user.cards = [];
         await user.save();
         res.json({ message: 'All cards removed successfully.' });
@@ -125,14 +115,12 @@ router.post('/add-packs-active', protect, adminOnly, async (req, res) => {
     }
 
     try {
-        // Step 1: Define what "active" means (e.g., active in the last 30 minutes)
         const activeMinutes = 30;
         const cutoffDate = new Date(Date.now() - activeMinutes * 60 * 1000);
 
-        // Step 2: Find the IDs of all users who meet the "active" criteria
         const activeActivities = await UserActivity.find({
             lastActive: { $gte: cutoffDate }
-        }).select('userId'); // We only need the userId
+        }).select('userId');
 
         const activeUserIds = activeActivities.map(activity => activity.userId);
 
@@ -140,10 +128,9 @@ router.post('/add-packs-active', protect, adminOnly, async (req, res) => {
             return res.json({ message: 'No active users found to give packs to.', updatedCount: 0 });
         }
 
-        // Step 3: Update only the users whose IDs are in our active list
         const result = await User.updateMany(
-            { _id: { $in: activeUserIds } }, // The filter
-            { $inc: { packs: num } }          // The update
+            { _id: { $in: activeUserIds } },
+            { $inc: { packs: num } }
         );
 
         res.json({ message: `Added ${num} packs to ${result.modifiedCount} active users.`, updatedCount: result.modifiedCount });
@@ -193,20 +180,15 @@ router.get('/users-activity', protect, adminOnly, async (req, res) => {
         const { activeMinutes } = req.query;
         const activeMinutesNum = parseInt(activeMinutes) || 15;
 
-        // Start building the aggregation pipeline
         const pipeline = [
-            // Stage 1: Join with the useractivities collection
             {
                 $lookup: {
-                    from: 'useractivities', // The actual collection name in MongoDB (usually plural and lowercase)
+                    from: 'useractivities',
                     localField: '_id',
                     foreignField: 'userId',
-                    as: 'activityInfo' // Name for the new field with the joined data
+                    as: 'activityInfo'
                 }
             },
-            // Stage 2: Deconstruct the activityInfo array.
-            // A user will only have one activity doc, so this turns the array [ { ... } ] into an object { ... }
-            // preserveNullAndEmptyArrays ensures we still include users who may not have an activity record yet.
             {
                 $unwind: {
                     path: '$activityInfo',
@@ -215,43 +197,34 @@ router.get('/users-activity', protect, adminOnly, async (req, res) => {
             }
         ];
 
-        // Stage 3 (Conditional): Add the filter if activeMinutes is provided
         if (activeMinutes) {
             const cutoff = new Date(Date.now() - activeMinutesNum * 60 * 1000);
             pipeline.push({
                 $match: {
-                    // We filter on the field from the joined collection
                     'activityInfo.lastActive': { $gte: cutoff }
                 }
             });
         }
 
-        // Stage 4: Add the sorting stage
         pipeline.push({
             $sort: {
-                // We sort on the field from the joined collection
                 'activityInfo.lastActive': -1
             }
         });
 
-        // Stage 5: Select the fields you want to return (improves performance)
         pipeline.push({
             $project: {
-                _id: 1, // Explicitly include the _id
+                _id: 1,
                 username: 1,
                 packs: 1,
                 preferredPack: 1,
                 twitchProfilePic: 1,
-                // Assign the nested lastActive field to a top-level field
                 lastActive: '$activityInfo.lastActive'
             }
         });
 
-        // Execute the aggregation
         const users = await User.aggregate(pipeline);
 
-        // Aggregation returns plain objects, so we populate them separately.
-        // Mongoose is smart enough to handle this.
         await User.populate(users, {
             path: 'preferredPack',
             select: 'name'
@@ -264,12 +237,6 @@ router.get('/users-activity', protect, adminOnly, async (req, res) => {
     }
 });
 
-// --- Trade Management ---
-/**
- * @route   GET /api/admin/trades
- * @desc    Get all trades for the admin panel using snapshot data
- * @access  Private (Admin only)
- */
 router.get('/trades', protect, adminOnly, async (req, res) => {
     try {
         const trades = await Trade.find({})
@@ -278,7 +245,6 @@ router.get('/trades', protect, adminOnly, async (req, res) => {
             .populate('recipient', 'username')
             .lean();
 
-        // The snapshot data is already in the trade document, no complex lookups needed!
         res.json(trades);
 
     } catch (err) {
@@ -287,20 +253,10 @@ router.get('/trades', protect, adminOnly, async (req, res) => {
     }
 });
 
-/**
- * @desc    Admin action routes that leverage the main tradeController
- * @access  Private (Admin only)
- */
 const handleAdminTradeAction = (action) => {
     return (req, res, next) => {
-        // We set the status and a flag indicating this is an admin action.
         req.body.status = action;
-
-        // The tradeController's auth check is bypassed because req.user.isAdmin is true.
-        // We also need to add req.userId so the controller knows who initiated, even if it's not checked for auth.
         req.userId = req.user._id;
-
-        // Pass the modified request to the existing, powerful controller function.
         tradeController.updateTradeStatus(req, res, next);
     };
 };
@@ -309,10 +265,7 @@ router.post('/trades/:tradeId/accept', protect, adminOnly, handleAdminTradeActio
 router.post('/trades/:tradeId/cancel', protect, adminOnly, handleAdminTradeAction('cancelled'));
 router.post('/trades/:tradeId/reject', protect, adminOnly, handleAdminTradeAction('rejected'));
 
-// --- Notification Routes ---
-// ... (No changes in this section)
 router.post('/notifications', protect, adminOnly, async (req, res) => {
-    // 1. Look for an optional userId in the request body
     const { type, message, link = "", userId } = req.body;
 
     if (!type || !message) {
@@ -320,11 +273,7 @@ router.post('/notifications', protect, adminOnly, async (req, res) => {
     }
 
     try {
-        // 2. Check if a specific userId was provided
         if (userId) {
-            // --- Logic for sending to a SINGLE user ---
-
-            // Validate the user exists (optional but recommended)
             const user = await User.findById(userId);
             if (!user) {
                 return res.status(404).json({ message: 'User not found.' });
@@ -347,7 +296,6 @@ router.post('/notifications', protect, adminOnly, async (req, res) => {
             res.status(200).json({ message: `Notification sent to ${user.username} successfully.` });
 
         } else {
-            // --- Original logic for broadcasting to ALL users ---
             const notificationPayload = {
                 type,
                 message,
@@ -366,7 +314,6 @@ router.post('/notifications', protect, adminOnly, async (req, res) => {
                 await Notification.insertMany(docs);
             }
 
-            // Your existing broadcast function for real-time updates to everyone
             broadcastNotification(notificationPayload);
 
             res.status(200).json({ message: 'Notification broadcast successfully.' });
@@ -377,8 +324,6 @@ router.post('/notifications', protect, adminOnly, async (req, res) => {
     }
 });
 
-// --- Card & Pack CRUD Routes ---
-// ... (No changes in this section, from the multer storage down to /grant-pack)
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
         cb(null, path.join(__dirname, '../../public/uploads/cards'));
@@ -413,17 +358,10 @@ router.post('/cards', protect, adminOnly, async (req, res) => {
     }
 });
 
-// --- NEW ROUTE ---
-/**
- * @route   POST /api/admin/cards/backfill-hidden-field
- * @desc    Adds isHidden: false to all card definitions that do not have this field.
- * @access  Private (Admin only)
- */
 router.post('/cards/backfill-hidden-field', protect, adminOnly, async (req, res) => {
     const { dryRun } = req.body;
 
     try {
-        // The query to find documents where the 'isHidden' field does not exist
         const query = { isHidden: { $exists: false } };
 
         if (dryRun) {
@@ -435,7 +373,6 @@ router.post('/cards/backfill-hidden-field', protect, adminOnly, async (req, res)
             });
         }
 
-        // Perform the actual update
         const updateResult = await Card.updateMany(
             query,
             { $set: { isHidden: false } }
@@ -555,7 +492,7 @@ router.post('/update-card-availability', protect, adminOnly, async (req, res) =>
 });
 
 router.post('/upsert-pack', protect, adminOnly, async (req, res) => {
-    const { packId, name, cardPool } = req.body;
+    const { packId, name, cardPool, animationUrl } = req.body;
     try {
         let pack;
         if (packId) {
@@ -567,6 +504,7 @@ router.post('/upsert-pack', protect, adminOnly, async (req, res) => {
 
         if (name !== undefined) pack.name = name;
         if (cardPool !== undefined) pack.cardPool = cardPool;
+        if (animationUrl !== undefined) pack.animationUrl = animationUrl;
 
         await pack.save();
         res.json({ message: 'Pack saved successfully', pack });
@@ -632,8 +570,6 @@ router.post('/grant-pack', protect, adminOnly, async (req, res) => {
 });
 
 
-// --- Achievement Management Endpoints ---
-// ... (No changes in this section)
 router.get('/achievements', protect, adminOnly, async (req, res) => {
     try {
         const achievements = await Achievement.find();
@@ -766,7 +702,6 @@ router.get('/audit-cards', protect, adminOnly, async (req, res) => {
 
                 const userCardName = String(userCard.name);
 
-                // --- FIX: Renamed variable for consistency. This was the cause of the bug. ---
                 const cleanedCardName = stripCardNameModifiers(userCardName);
 
                 if (userCardName.startsWith("Glitch ")) {
@@ -881,16 +816,10 @@ router.get('/audit-cards', protect, adminOnly, async (req, res) => {
     }
 });
 
-/**
- * @route   POST /api/admin/trades/backfill-snapshots
- * @desc    Finds legacy trades missing snapshot data and populates it.
- * @access  Private (Admin only)
- */
 router.post('/trades/backfill-snapshots', protect, adminOnly, async (req, res) => {
     const { dryRun } = req.body;
 
     try {
-        // Find trades where the snapshot field doesn't exist or is empty
         const legacyTrades = await Trade.find({
             $or: [
                 { 'offeredItemsSnapshot': { $exists: false } },
@@ -907,7 +836,6 @@ router.post('/trades/backfill-snapshots', protect, adminOnly, async (req, res) =
             });
         }
 
-        // --- Optimization: Build a map of all card instances for quick lookup ---
         console.log('Building card map...');
         const cardMap = new Map();
         const usersWithCards = await User.find({ 'cards.0': { $exists: true } }).select('cards').lean();
@@ -925,7 +853,6 @@ router.post('/trades/backfill-snapshots', protect, adminOnly, async (req, res) =
             const offeredItemsSnapshot = trade.offeredItems.map(id => cardMap.get(id.toString())).filter(Boolean);
             const requestedItemsSnapshot = trade.requestedItems.map(id => cardMap.get(id.toString())).filter(Boolean);
 
-            // Check if we found all the necessary card details
             if (offeredItemsSnapshot.length === trade.offeredItems.length && requestedItemsSnapshot.length === trade.requestedItems.length) {
                 tradesFound++;
                 bulkOps.push({
@@ -951,7 +878,6 @@ router.post('/trades/backfill-snapshots', protect, adminOnly, async (req, res) =
             });
         }
 
-        // --- Execute the actual fix ---
         if (bulkOps.length === 0) {
             return res.json({
                 isDryRun: false,
@@ -990,15 +916,12 @@ router.post('/fix-legacy-glitch-names', protect, adminOnly, async (req, res) => 
     };
 
     try {
-        // We find users who might have cards with the old name format.
-        // Using a regex is efficient for this.
         const usersToUpdate = await User.find({ 'cards.name': /^Glitch / }).select('_id username cards');
 
         for (const user of usersToUpdate) {
             let userModified = false;
             for (const userCard of user.cards) {
                 if (userCard.name && userCard.name.startsWith("Glitch ")) {
-                    // Replace "Glitch " with "Glitched "
                     userCard.name = "Glitched " + userCard.name.substring("Glitch ".length);
                     fixReport.details.updatedCards++;
                     userModified = true;
@@ -1029,8 +952,6 @@ router.post('/fix-legacy-glitch-names', protect, adminOnly, async (req, res) => 
     }
 });
 
-// --- THIS ROUTE HAS BEEN REPLACED and RENAMED ---
-// It now correctly ADDS prefixes based on the modifier field
 router.post('/fix-missing-modifier-prefixes', protect, adminOnly, async (req, res) => {
     const { dryRun } = req.body;
     const fixReport = {
@@ -1045,7 +966,6 @@ router.post('/fix-missing-modifier-prefixes', protect, adminOnly, async (req, re
     };
 
     try {
-        // Fetch all modifiers to create a lookup map from ID to Name
         const allModifiers = await Modifier.find({}).lean();
         const modifierIdToNameMap = new Map();
         allModifiers.forEach(mod => {
@@ -1146,12 +1066,11 @@ router.post('/fix-card-data-mismatches', protect, adminOnly, async (req, res) =>
             }
 
             if (userModified) {
-                fixReport.details.updatedUsers++; // Count user for dry run report
+                fixReport.details.updatedUsers++;
                 if (!dryRun) {
                     try {
                         await user.save();
                     } catch (saveError) {
-                        // If save fails, remove from updatedUsers count and add to failed
                         fixReport.details.updatedUsers--;
                         fixReport.details.failedUpdates.push({ userId: user._id, username: user.username, error: saveError.message });
                     }
@@ -1514,10 +1433,6 @@ router.post('/fix-duplicate-mint-numbers', protect, adminOnly, async (req, res) 
     }
 });
 
-/**
- * GET /api/admin/card-ownership/:cardId
- * Finds all owners of a specific card, grouped by rarity.
- */
 router.get('/card-ownership/:cardId', protect, adminOnly, async (req, res) => {
     try {
         const { cardId } = req.params;
@@ -1527,21 +1442,12 @@ router.get('/card-ownership/:cardId', protect, adminOnly, async (req, res) => {
             return res.status(404).json({ message: 'Card definition not found.' });
         }
 
-        // We need a regex to match the base card name, ignoring prefixes like "Glitched "
-        // This regex ensures we match "Card Name" as well as "Glitched Card Name", etc.
         const cardNameRegex = new RegExp(`(Glitched |Negative |Prismatic )?${card.name}$`);
 
         const ownership = await User.aggregate([
-            // 1. Find all users who have at least one version of this card
             { $match: { 'cards.name': cardNameRegex } },
-
-            // 2. Deconstruct the cards array to process each card individually
             { $unwind: '$cards' },
-
-            // 3. Filter the unwound cards to only keep the ones that match our card
             { $match: { 'cards.name': cardNameRegex } },
-
-            // 4. Group by rarity and user to count cards and collect instances
             {
                 $group: {
                     _id: {
@@ -1550,11 +1456,9 @@ router.get('/card-ownership/:cardId', protect, adminOnly, async (req, res) => {
                         username: '$username'
                     },
                     count: { $sum: 1 },
-                    cards: { $push: '$cards' } // Collect the full card objects
+                    cards: { $push: '$cards' }
                 }
             },
-
-            // 5. Group again by rarity to create the nested owners list
             {
                 $group: {
                     _id: '$_id.rarity',
@@ -1568,8 +1472,6 @@ router.get('/card-ownership/:cardId', protect, adminOnly, async (req, res) => {
                     }
                 }
             },
-
-            // 6. Project to the final, clean format
             {
                 $project: {
                     _id: 0,
@@ -1577,8 +1479,6 @@ router.get('/card-ownership/:cardId', protect, adminOnly, async (req, res) => {
                     owners: 1
                 }
             },
-
-            // 7. Sort by rarity (optional, but nice)
             { $sort: { rarity: 1 } }
         ]);
 
@@ -1591,12 +1491,6 @@ router.get('/card-ownership/:cardId', protect, adminOnly, async (req, res) => {
 });
 
 
-/**
- * @route   POST /api/admin/cards/return-instance
- * @desc    Removes a card instance from a user and returns its mint number to the pool,
- * after cancelling any associated trades, market listings, or market offers.
- * @access  Private (Admin only)
- */
 router.post('/cards/return-instance', protect, adminOnly, async (req, res) => {
     const { userId, userCardId, cardName, rarity, mintNumber } = req.body;
 
@@ -1717,11 +1611,6 @@ router.post('/cards/return-instance', protect, adminOnly, async (req, res) => {
 });
 
 
-/**
- * @route   POST /api/admin/wipe-database
- * @desc    Performs a partial wipe of the database for a new season or reset.
- * @access  Private (Admin only)
- */
 router.post('/wipe-database', protect, adminOnly, async (req, res) => {
     const { confirmation, wipeRewardCardId, wipeRewardRarity, packAssignments } = req.body;
     if (confirmation !== 'PERMANENTLY WIPE DATA') {
@@ -1733,7 +1622,6 @@ router.post('/wipe-database', protect, adminOnly, async (req, res) => {
     console.log(`[DB WIPE] Wipe initiated by admin: ${req.user.username}`);
 
     try {
-        // --- Step 1: Clear collections ---
         console.log('[DB WIPE] Clearing collections...');
         const [tradeDeletion, notificationDeletion, userActivityDeletion, marketListingDeletion, eventClaimDeletion] = await Promise.all([
             Trade.deleteMany({}),
@@ -1744,7 +1632,6 @@ router.post('/wipe-database', protect, adminOnly, async (req, res) => {
         ]);
         console.log('[DB WIPE] Collections cleared.');
 
-        // --- Step 2: Reset users ---
         console.log('[DB WIPE] Resetting user data...');
         const userUpdateResult = await User.updateMany({}, {
             $set: {
@@ -1782,7 +1669,6 @@ router.post('/wipe-database', protect, adminOnly, async (req, res) => {
         if (packAssignments && typeof packAssignments === 'object' && Object.keys(packAssignments).length > 0) {
             console.log('[DB WIPE] Starting pack reward queuing process...');
 
-            // Logic to find existing users and identify misses remains the same
             const inputUsernames = Object.keys(packAssignments);
             const usersFound = await User.find({ username: { $in: inputUsernames } }).select('username').lean();
             const foundUsernames = new Set(usersFound.map(u => u.username));
@@ -1815,10 +1701,7 @@ router.post('/wipe-database', protect, adminOnly, async (req, res) => {
                         updateOne: {
                             filter: { username: username },
                             update: {
-                                // Action 1: Push the event for the popup notification
                                 $push: { pendingEventReward: packRewardPayload },
-
-                                // --- MODIFICATION: Add this line to grant the packs immediately ---
                                 $inc: { packs: packCount }
                             }
                         }
@@ -1834,7 +1717,6 @@ router.post('/wipe-database', protect, adminOnly, async (req, res) => {
         }
 
 
-        // --- Step 3: Reset card definitions ---
         console.log('[DB WIPE] Resetting card definitions (mint numbers)...');
         const allCards = await Card.find({}).lean();
         const bulkCardOps = allCards.map(card => {
@@ -1847,7 +1729,6 @@ router.post('/wipe-database', protect, adminOnly, async (req, res) => {
         }
         console.log(`[DB WIPE] Card definitions reset. Modified: ${cardUpdateResult.modifiedCount}`);
 
-        // --- Step 4: Grant a specific card to all users as a "Wipe Reward" ---
         let wipeRewardsGranted = 0;
         if (wipeRewardCardId && wipeRewardRarity) {
             console.log(`[DB WIPE] Starting wipe reward grant process for Card ID: ${wipeRewardCardId}`);
@@ -1883,7 +1764,6 @@ router.post('/wipe-database', protect, adminOnly, async (req, res) => {
         res.status(200).json({
             message: 'Database wipe completed successfully!',
             details: {
-                // (FIXED) All deletion counts and other details are now correctly listed.
                 deletedTrades: tradeDeletion.deletedCount,
                 deletedNotifications: notificationDeletion.deletedCount,
                 deletedUserActivities: userActivityDeletion.deletedCount,
@@ -1904,8 +1784,6 @@ router.post('/wipe-database', protect, adminOnly, async (req, res) => {
     }
 });
 
-// POST /api/admin/settings/maintenance
-// Toggles maintenance mode. Requires admin privileges.
 router.post('/settings/maintenance', protect, adminOnly, async (req, res) => {
     const { mode } = req.body;
 
@@ -1917,7 +1795,7 @@ router.post('/settings/maintenance', protect, adminOnly, async (req, res) => {
         const updatedSetting = await Setting.findOneAndUpdate(
             { key: 'maintenanceMode' },
             { value: mode },
-            { new: true, upsert: true } // Creates the document if it doesn't exist
+            { new: true, upsert: true }
         );
 
         req.io.emit('maintenanceStatusChanged', { maintenanceMode: updatedSetting.value });
@@ -1932,12 +1810,6 @@ router.post('/settings/maintenance', protect, adminOnly, async (req, res) => {
     }
 });
 
-/**
- * @route   GET /api/admin/catalogue
- * @desc    Fetches all cards for the admin catalogue, with pagination and filtering.
- * This route bypasses the isHidden flag by default.
- * @access  Private (Admin only)
- */
 router.get('/catalogue', protect, adminOnly, async (req, res) => {
     try {
         const {
@@ -1948,7 +1820,6 @@ router.get('/catalogue', protect, adminOnly, async (req, res) => {
             limit = 50,
         } = req.query;
 
-        // The query is empty by default, so it will fetch ALL cards, including hidden ones.
         const query = {};
 
         if (search) {
@@ -1959,7 +1830,7 @@ router.get('/catalogue', protect, adminOnly, async (req, res) => {
             query['rarities.rarity'] = rarity;
         }
 
-        let sortOption = { name: 1 }; // default sort by name ascending
+        let sortOption = { name: 1 };
         if (sort) {
             const direction = sort.startsWith('-') ? -1 : 1;
             const field = sort.replace(/^-/, '');
@@ -1990,11 +1861,6 @@ router.get('/catalogue', protect, adminOnly, async (req, res) => {
 });
 
 
-/**
- * @route   POST /api/admin/grant-gift
- * @desc    Directly grants a reward (gift) to a specific user.
- * @access  Private (Admin only)
- */
 router.post('/grant-gift', protect, adminOnly, async (req, res) => {
     const { username, rewardType, rewardDetails, message } = req.body;
     const adminUser = req.user;
@@ -2080,9 +1946,14 @@ router.post('/grant-gift', protect, adminOnly, async (req, res) => {
 
 
 
-router.get('/queues/status', protect, adminOnly, (req, res) => {
-    const status = getStatus();
-    res.json(status);
+router.get('/queues/status', protect, adminOnly, async (req, res) => {
+    try {
+        const status = await getStatus();
+        res.json(status);
+    } catch (error) {
+        console.error("Error getting queue status:", error);
+        res.status(500).json({ message: "Error getting queue status" });
+    }
 });
 
 router.post('/queues/pause', protect, adminOnly, (req, res) => {

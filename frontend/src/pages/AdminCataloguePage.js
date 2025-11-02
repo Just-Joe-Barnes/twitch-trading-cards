@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { fetchAdminCards } from '../utils/api';
+import { fetchAdminCards, fetchWithAuth } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { rarities } from "../constants/rarities";
@@ -17,6 +17,7 @@ const useIsMobile = (breakpoint = 768) => {
 
 const AdminCataloguePage = ({ onClose }) => {
     const [cards, setCards] = useState([]);
+    const [packs, setPacks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -25,6 +26,7 @@ const AdminCataloguePage = ({ onClose }) => {
     const [selectedModifier] = useState('None');
     const [sortOrder, setSortOrder] = useState('asc');
     const [setRandomRaritySeed] = useState(0);
+    const [showOnlyNotInPacks, setShowOnlyNotInPacks] = useState(false);
 
     const isMobile = useIsMobile();
     const defaultCardScale = 1;
@@ -60,8 +62,12 @@ const AdminCataloguePage = ({ onClose }) => {
         const fetchAllData = async () => {
             try {
                 setLoading(true);
-                const cardsResponse = await fetchAdminCards({});
+                const [cardsResponse, packsResponse] = await Promise.all([
+                    fetchAdminCards({}),
+                    fetchWithAuth('/api/admin/packs')
+                ]);
                 setCards(cardsResponse.cards || []);
+                setPacks(packsResponse.packs || []);
             } catch (err) {
                 console.error('Error fetching admin catalogue data:', err.message);
                 setError('Failed to load admin catalogue data.');
@@ -71,6 +77,18 @@ const AdminCataloguePage = ({ onClose }) => {
         };
         fetchAllData();
     }, []);
+
+    const allCardIdsInPacks = useMemo(() => {
+        const cardIdSet = new Set();
+        packs.forEach(pack => {
+            if (pack.cardPool) {
+                pack.cardPool.forEach(cardId => {
+                    cardIdSet.add(cardId.toString());
+                });
+            }
+        });
+        return cardIdSet;
+    }, [packs]);
 
     const handleSearchChange = (e) => setSearchQuery(e.target.value);
     const handleRarityChange = (rarityName) => {
@@ -97,13 +115,18 @@ const AdminCataloguePage = ({ onClose }) => {
         let currentCards = cards.filter(card =>
             card.name.toLowerCase().includes(searchQuery.toLowerCase())
         );
+
+        if (showOnlyNotInPacks) {
+            currentCards = currentCards.filter(card => !allCardIdsInPacks.has(card._id.toString()));
+        }
+
         currentCards.sort((a, b) => {
             const nameA = getNameForSort(a.name);
             const nameB = getNameForSort(b.name);
             return sortOrder === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
         });
         return currentCards;
-    }, [cards, searchQuery, sortOrder]);
+    }, [cards, searchQuery, sortOrder, showOnlyNotInPacks, allCardIdsInPacks]);
 
     if (loading) return <LoadingSpinner />;
     if (error) return <div className="cata-page">{error}</div>;
@@ -128,6 +151,14 @@ const AdminCataloguePage = ({ onClose }) => {
                 <button onClick={handleSortOrderChange} className="primary-button">
                     Sort: {sortOrder === 'asc' ? 'A-Z' : 'Z-A'}
                 </button>
+                <label className="checkbox-label">
+                    <input
+                        type="checkbox"
+                        checked={showOnlyNotInPacks}
+                        onChange={(e) => setShowOnlyNotInPacks(e.target.checked)}
+                    />
+                    Show only cards not in packs
+                </label>
             </div>
             <div className="slidecontainer">
                 <label>Card Scale: </label>

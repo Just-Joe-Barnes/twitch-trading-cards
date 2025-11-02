@@ -7,11 +7,11 @@ const {
     generatePackPreview,
     generatePackPreviewFromPool
 } = require('../helpers/cardHelpers');
+const { openPackForUserLogic } = require('../helpers/packHelpers');
 const Log = require("../models/logModel");
 const {createLogEntry} = require("../utils/logService");
 const MODIFIER_CHANCE = parseFloat(process.env.MODIFIER_CHANCE || '0.05');
 
-// Get all users with packs (Admin-only functionality)
 const getUsersWithPacks = async (req, res) => {
     try {
         const usersWithPacks = await User.find({ packs: { $gt: 0 } }).select('username packs');
@@ -21,7 +21,6 @@ const getUsersWithPacks = async (req, res) => {
     }
 };
 
-// Open a single pack (User functionality)
 const openPack = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -86,7 +85,6 @@ const openPack = async (req, res) => {
     }
 };
 
-// Get all packs (Admin-only functionality)
 const getAllPacks = async (req, res) => {
     try {
         const packs = await Pack.find();
@@ -96,85 +94,12 @@ const getAllPacks = async (req, res) => {
     }
 };
 
-// Open packs for a specific user (Admin functionality)
 const openPacksForUser = async (req, res) => {
     try {
         const { userId } = req.params;
         const { templateId, forceModifier } = req.body;
 
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        if (user.packs <= 0) {
-            return res.status(400).json({ message: 'No unopened packs available for this user' });
-        }
-
-        let newCards; // This will hold the generated cards with rarity and modifiers
-
-        // Dynamically import helpers to avoid circular dependencies if they are in the same folder
-        const { generatePackPreviewFromPool, generatePackPreview } = require('../helpers/cardHelpers');
-        const Card = require('../models/cardModel');
-
-        if (templateId) {
-            const templatePack = await Pack.findById(templateId);
-            if (!templatePack) {
-                return res.status(404).json({ message: 'Pack template not found' });
-            }
-
-            const now = new Date();
-            const poolCards = await Card.find({
-                _id: { $in: templatePack.cardPool },
-                $or: [
-                    { availableFrom: null },
-                    { availableFrom: { $lte: now } }
-                ],
-                $or: [
-                    { availableTo: null },
-                    { availableTo: { $gte: now } }
-                ]
-            }).select('_id').lean();
-
-            const filteredIds = poolCards.map(card => card._id.toString());
-
-            // Use generatePackPreviewFromPool which handles rarity and modifiers
-            newCards = await generatePackPreviewFromPool(filteredIds, 5, forceModifier, live=true);
-        } else {
-            // Use generatePackPreview for default packs
-            newCards = await generatePackPreview(5, forceModifier);
-        }
-
-        if (!newCards || !newCards.length) {
-            await createLogEntry(
-                req.user,
-                '[ERROR] Failed to generate cards for the pack',
-                'Length of newCards is 0 or undefined.'
-            );
-            return res.status(500).json({ message: 'Failed to generate cards for the pack' });
-        }
-
-        // Add acquiredAt timestamp to each generated card
-        for (const card of newCards) {
-            card.acquiredAt = new Date();
-        }
-
-        // User inventory update logic (kept intact)
-        const xpGain = 10;
-        const newXp = (user.xp || 0) + xpGain;
-        const newLevel = Math.floor(newXp / 100) + 1;
-
-        const updatedUser = await User.findByIdAndUpdate(
-            userId,
-            {
-                $push: { cards: { $each: newCards } }, // Push the fully generated cards
-                $inc: { packs: -1, openedPacks: 1, xp: xpGain },
-                $set: { level: newLevel }
-            },
-            { new: true }
-        );
-
-        const { checkAndGrantAchievements } = require('../helpers/achievementHelper');
-        await checkAndGrantAchievements(updatedUser);
+        const { newCards } = await openPackForUserLogic(userId, templateId, forceModifier);
 
         res.status(200).json({ message: 'Pack opened successfully', newCards });
     } catch (error) {
@@ -188,7 +113,6 @@ const openPacksForUser = async (req, res) => {
     }
 };
 
-// Debug open pack for a user - does not modify user or card inventory
 const debugOpenPackForUser = async (req, res) => {
     try {
         const { userId } = req.params;
@@ -239,7 +163,6 @@ const debugOpenPackForUser = async (req, res) => {
     }
 };
 
-// Fetch unopened packs for the authenticated user
 const getMyPacks = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -255,7 +178,6 @@ const getMyPacks = async (req, res) => {
     }
 };
 
-// Open a specific pack by ID (Admin functionality)
 const openPackById = async (req, res) => {
     try {
         const { packId } = req.params;
@@ -266,7 +188,6 @@ const openPackById = async (req, res) => {
 
         let cards = [];
         if (pack.cardPool && pack.cardPool.length > 0) {
-            // Use the pack's specific card pool
             const Card = require('../models/cardModel');
             const now = new Date();
             const poolCards = await Card.find({
@@ -285,17 +206,16 @@ const openPackById = async (req, res) => {
                 if (poolCards.length === 0) break;
                 const randomIndex = Math.floor(Math.random() * poolCards.length);
                 const cardDoc = poolCards[randomIndex];
-                const rarityObj = cardDoc.rarities[0]; // Simplified, pick first rarity
+                const rarityObj = cardDoc.rarities[0];
                 cards.push({
                     name: cardDoc.name,
                     imageUrl: cardDoc.imageUrl,
                     flavorText: cardDoc.flavorText,
                     rarity: rarityObj.rarity,
-                    mintNumber: 0, // or generate mint number logic
+                    mintNumber: 0,
                 });
             }
         } else {
-            // Fallback to global card pool
             cards = await generatePack(5);
         }
 

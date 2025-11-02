@@ -39,7 +39,7 @@ const CataloguePage = ({user}) => {
     const [selectedModifier, setSelectedModifier] = useState('None');
     const [sortOption, setSortOption] = useState('name');
     const [sortOrder, setSortOrder] = useState('asc');
-    const [ setRandomRaritySeed] = useState(0);
+    const [randomRaritySeed, setRandomRaritySeed] = useState(0);
     const defaultCardScale = 1;
     const [cardScale, setCardScale] = useState(() => {
         const storedScale = parseFloat(localStorage.getItem("cardScale"));
@@ -52,6 +52,10 @@ const CataloguePage = ({user}) => {
     const isMobile = useIsMobile();
     const maxCardScale = isMobile ? 1.3 : 2;
     const minCardScale = isMobile ? 0.35 : 0.35;
+
+    const modifierNames = useMemo(() =>
+            modifiers.filter(m => m.name !== 'None').map(m => m.name.toLowerCase())
+        , []);
 
     useEffect(() => {
         localStorage.setItem("cardScale", cardScale);
@@ -139,10 +143,34 @@ const CataloguePage = ({user}) => {
         return found ? found.remaining : null;
     };
 
-    const getNameForSort = (name) => {
-        if (name.toLowerCase().startsWith('the ')) return name.substring(4);
-        return name;
-    };
+    const getNameForSort = useCallback((name) => {
+        let sortableName = name;
+        let lowerName = name.toLowerCase();
+
+        if (lowerName.startsWith('the ')) {
+            sortableName = sortableName.substring(4);
+            lowerName = lowerName.substring(4);
+        }
+
+        lowerName = lowerName.trimStart();
+
+        for (const modifier of modifierNames) {
+            let prefix = modifier + ' ';
+            if (modifier === 'glitch') {
+                prefix = 'glitched ';
+            }
+
+            if (lowerName.startsWith(prefix)) {
+                const originalLower = sortableName.toLowerCase();
+                const prefixIndex = originalLower.indexOf(prefix);
+                const cutIndex = prefixIndex + prefix.length;
+                sortableName = sortableName.substring(cutIndex);
+                break;
+            }
+        }
+
+        return sortableName.trimStart();
+    }, [modifierNames]);
 
     const getRandomRarityName = useCallback(() => {
         const selectableRarities = rarities.filter(r => r.name.toLowerCase() !== 'all');
@@ -169,7 +197,7 @@ const CataloguePage = ({user}) => {
             return 0;
         });
         return currentCards;
-    }, [cards, searchQuery, sortOption, sortOrder]);
+    }, [cards, searchQuery, sortOption, sortOrder, getNameForSort]);
 
     const eventAndLimitedCards = useMemo(() => {
         return cards.filter(card => {
@@ -177,7 +205,7 @@ const CataloguePage = ({user}) => {
             const isLimited = !!card.availableFrom && !!card.availableTo;
             return isEvent || isLimited;
         }).sort((a, b) => getNameForSort(a.name).localeCompare(getNameForSort(b.name)));
-    }, [cards]);
+    }, [cards, getNameForSort]);
 
     const cardsByPack = useMemo(() => {
         if (!packs.length || !cards.length) return [];
@@ -187,11 +215,11 @@ const CataloguePage = ({user}) => {
             const cardsInThisPack = cards.filter(card => cardIdsInPack.has(card._id));
             return {
                 ...pack,
-                id: packId, // Normalize ID for easier access
+                id: packId,
                 cards: cardsInThisPack.sort((a, b) => getNameForSort(a.name).localeCompare(getNameForSort(b.name)))
             };
         }).filter(pack => pack.cards.length > 0);
-    }, [packs, cards]);
+    }, [packs, cards, getNameForSort]);
 
     const CardGrid = ({cardList}) => (
         <div className={`cards-grid ${cardScale === 0.35 ? 'mini' : ''}`}
@@ -229,7 +257,6 @@ const CataloguePage = ({user}) => {
         </div>
     );
 
-    // --- NEW --- Find the currently active pack based on activeTab state
     const activePack = useMemo(() => {
         if (activeTab === 'all' || activeTab === 'event') return null;
         return cardsByPack.find(p => p.id === activeTab);

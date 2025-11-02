@@ -1,14 +1,14 @@
 const mongoose = require('mongoose');
 
-// Define the schema for packs
 const packSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false }, // Owner of the pack (optional for templates)
-    isOpened: { type: Boolean, default: false }, // Whether the pack has been opened
-    openedAt: { type: Date }, // Timestamp for when the pack was opened
-    cards: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Card' }], // Cards in the pack
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
+    isOpened: { type: Boolean, default: false },
+    openedAt: { type: Date },
+    cards: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Card' }],
 
-    name: { type: String, required: true }, // Pack name/title
-    cardPool: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Card' }], // Optional specific card pool
-}, { timestamps: true }); // Automatically adds createdAt and updatedAt fields
+    name: { type: String, required: true },
+    cardPool: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Card' }],
+    animationUrl: { type: String, default: '/animations/packopening.mp4' }
+}, { timestamps: true });
 
 module.exports = mongoose.model('Pack', packSchema);

@@ -1,10 +1,6 @@
-// /src/helpers/eventHelpers.js
-
 const mongoose = require('mongoose');
 const User = require('../models/userModel');
 const Card = require('../models/cardModel');
-
-// --- Card Generation Logic (Adapted from cardHelpers.js) ---
 
 const rarityProbabilities = [
     { rarity: 'Basic', probability: 0.40 },
@@ -20,7 +16,6 @@ const rarityProbabilities = [
 ];
 
 const pickRarityFromList = (probabilities) => {
-    // ... (This function is correct, no changes needed)
     const random = Math.random();
     let cumulativeProbability = 0;
 
@@ -34,43 +29,35 @@ const pickRarityFromList = (probabilities) => {
 };
 
 /**
- * Finds a random card template based on a specified rarity.
- * @param {string} rarity - The desired rarity (e.g., 'Rare', 'Epic', or 'Random').
- * @returns {Promise<object|null>} The Mongoose document for the found card template or null.
+ * Finds a random card template matching a rarity.
  */
 const findRandomCardTemplate = async (rarity) => {
     try {
-        // Build the query. If rarity is 'Random', the match is empty, finding any card.
-        // We also check that the rarity has mints available to avoid giving an impossible reward.
         const matchQuery = rarity && rarity.toLowerCase() !== 'random'
             ? { 'rarities.rarity': rarity, 'rarities.remainingCopies': { $gt: 0 } }
-            : { 'rarities.remainingCopies': { $gt: 0 } }; // For 'Random', find any card with any available rarity
+            : { 'rarities.remainingCopies': { $gt: 0 } };
 
-        // Use MongoDB's aggregation pipeline to efficiently get one random document.
         const randomCards = await Card.aggregate([
             { $match: matchQuery },
             { $sample: { size: 1 } }
         ]);
 
         if (randomCards.length > 0) {
-            // The result from aggregate is a plain object, so we find the full document.
             return await Card.findById(randomCards[0]._id);
         }
 
         console.warn(`[EventHelper] No card templates found for rarity query:`, matchQuery);
-        return null; // No card found
+        return null;
     } catch (error) {
         console.error(`[EventHelper] Error finding random card template:`, error);
         return null;
     }
 };
 
-
 /**
- * Grants a specific card to a user.
- * @param {object} user - The Mongoose user document.
- * @param {object} details - The rewardDetails object from the event.
- * @returns {Promise<object|null>} The granted card instance object or null on failure.
+ * Grants a specific card. This is a complex transaction.
+ * It *does* commit its own changes to the DB because it needs
+ * to atomically claim a mint number.
  */
 const grantCardReward = async (user, details) => {
     if (!details.cardId || !details.rarity) {
@@ -79,9 +66,11 @@ const grantCardReward = async (user, details) => {
 
     const MAX_RETRIES = 3;
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        // Start a transaction
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
+            // Find the card template
             const cardDoc = await Card.findById(details.cardId).session(session);
             if (!cardDoc) {
                 throw new Error(`Card definition with ID ${details.cardId} not found.`);
@@ -89,6 +78,7 @@ const grantCardReward = async (user, details) => {
 
             let chosenRarity;
 
+            // Handle 'Random' rarity for a specific card
             if (details.rarity.toLowerCase() === 'random') {
                 const availableRaritiesOnCard = cardDoc.rarities
                     .filter(r => r.remainingCopies > 0 && r.availableMintNumbers.length > 0)
@@ -114,9 +104,11 @@ const grantCardReward = async (user, details) => {
                 throw new Error(`No mints available for card '${cardDoc.name}' with rarity '${chosenRarity}'.`);
             }
 
+            // Pick a random mint number from the available list
             const randomIndex = Math.floor(Math.random() * rarityObj.availableMintNumbers.length);
             const mintNumber = rarityObj.availableMintNumbers[randomIndex];
 
+            // Atomically pull that mint number and decrement remaining copies
             const updatedCard = await Card.findOneAndUpdate(
                 { _id: cardDoc._id, 'rarities.rarity': rarityObj.rarity, 'rarities.availableMintNumbers': mintNumber },
                 { $inc: { 'rarities.$.remainingCopies': -1 }, $pull: { 'rarities.$.availableMintNumbers': mintNumber } },
@@ -124,9 +116,11 @@ const grantCardReward = async (user, details) => {
             );
 
             if (!updatedCard) {
+                // This means another process grabbed the mint. Transaction will abort and retry.
                 throw new Error(`Mint number #${mintNumber} for ${cardDoc.name} was claimed by another process. Retrying.`);
             }
 
+            // Create the card *instance* to be added to the user's collection
             const newCardInstance = {
                 _id: new mongoose.Types.ObjectId(),
                 name: cardDoc.name,
@@ -135,36 +129,37 @@ const grantCardReward = async (user, details) => {
                 rarity: rarityObj.rarity,
                 mintNumber: mintNumber,
                 acquiredAt: new Date(),
-                // NOTE: Add any other fields your BaseCard component might need, like 'modifier'
-                modifier: null, // Example: assuming no modifier by default for event rewards
+                modifier: null,
             };
 
+            // Add the new card to the user's `cards` array
             await User.updateOne({ _id: user._id }, { $push: { cards: newCardInstance } }, { session });
 
+            // If all checks passed, commit the transaction
             await session.commitTransaction();
             console.log(`Successfully granted card '${newCardInstance.name}' #${mintNumber} (${rarityObj.rarity}) to user ${user.username}`);
 
-            // --- CHANGED: Return the detailed card object ---
+            // Return the new card object so the service knows what was granted
             return newCardInstance;
 
         } catch (error) {
+            // If anything failed, abort the transaction
             await session.abortTransaction();
             console.error(`Attempt ${attempt} failed for grantCardReward for user ${user.username}:`, error.message);
             if (attempt === MAX_RETRIES) {
-                // --- CHANGED: Return null on final failure ---
-                return null;
+                return null; // Failed all retries
             }
         } finally {
             session.endSession();
         }
     }
-    return null; // Should be unreachable, but good for safety
+    return null;
 };
-
 
 /**
  * Grants a specified number of packs to a user.
- * @returns {Promise<object|null>} An object with the amount or null on failure.
+ * IMPORTANT: This function *only* modifies the user object in memory.
+ * It does NOT save the user. The calling service is responsible for saving.
  */
 const grantPackReward = async (user, details) => {
     const amount = parseInt(details.amount, 10);
@@ -174,10 +169,11 @@ const grantPackReward = async (user, details) => {
     }
 
     try {
+        // Modify the user object in memory
         user.packs = (user.packs || 0) + amount;
-        await user.save();
-        console.log(`Successfully granted ${amount} pack(s) to user ${user.username}`);
-        return { amount };
+        // DO NOT SAVE HERE
+        console.log(`Successfully staged ${amount} pack(s) for user ${user.username}`);
+        return { amount }; // Return the reward data
     } catch (error) {
         console.error(`Failed to grant pack reward to user ${user.username}:`, error.message);
         return null;
@@ -185,8 +181,9 @@ const grantPackReward = async (user, details) => {
 };
 
 /**
- * Grants a specified amount of XP to a user and handles leveling up.
- * @returns {Promise<object|null>} An object with the amount or null on failure.
+ * Grants a specified amount of XP to a user.
+ * IMPORTANT: This function *only* modifies the user object in memory.
+ * It does NOT save the user. The calling service is responsible for saving.
  */
 const grantXpReward = async (user, details) => {
     const amount = parseInt(details.amount, 10);
@@ -196,14 +193,14 @@ const grantXpReward = async (user, details) => {
     }
 
     try {
+        // Modify the user object in memory
         const newXp = (user.xp || 0) + amount;
         const newLevel = Math.floor(newXp / 100) + 1;
-
         user.xp = newXp;
         user.level = newLevel;
-        await user.save();
-        console.log(`Successfully granted ${amount} XP to user ${user.username}. New level: ${newLevel}`);
-        return { amount };
+        // DO NOT SAVE HERE
+        console.log(`Successfully staged ${amount} XP to user ${user.username}. New level: ${newLevel}`);
+        return { amount }; // Return the reward data
     } catch (error) {
         console.error(`Failed to grant XP reward to user ${user.username}:`, error.message);
         return null;

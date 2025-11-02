@@ -160,8 +160,6 @@ const Navbar = ({isAdmin, isMaintenanceMode}) => {
                 <img src="/images/logo-horizontal.png" alt="Ned's Decks"/>
             </div>
 
-
-            {/* ... Desktop Search Bar ... */}
             {!isMobile && (
                 <div className="navbar-search">
                     <div className="search-wrapper">
@@ -212,6 +210,7 @@ const Navbar = ({isAdmin, isMaintenanceMode}) => {
                 } onClick={() => { setActiveDropdown(null); handleClearSearch(); }}>Trading</NavLink></li>
                 <li><NavLink to="/achievements" className="nav-link" style={{position: "relative"}} onClick={() => { setActiveDropdown(null); handleClearSearch(); }}>Achievements</NavLink></li>
                 <li><NavLink to="/grading" className="nav-link" onClick={() => { setActiveDropdown(null); handleClearSearch(); }}>Card Grading</NavLink></li>
+                <li><NavLink to="/community" className="nav-link" style={{position: "relative"}} onClick={() => { setActiveDropdown(null); handleClearSearch(); }}>Community</NavLink></li>
                 <li><NavLink to="/market" className="nav-link" onClick={() => { setActiveDropdown(null); handleClearSearch(); }}>Market</NavLink></li>
                 <li><NavLink to="/catalogue" className="nav-link" onClick={() => { setActiveDropdown(null); handleClearSearch(); }}>Catalogue</NavLink></li>
 

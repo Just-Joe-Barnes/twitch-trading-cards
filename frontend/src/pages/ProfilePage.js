@@ -113,7 +113,7 @@ const ProfilePage = () => {
         const fetchListings = async () => {
             if (!profileId) return;
             try {
-                const {listings} = await fetchUserMarketListings(profileId, 3);
+                const {listings} = await fetchUserMarketListings(profileId, 5);
                 setUserListings(listings);
             } catch (e) {
                 console.error('Error fetching user listings:', e);
@@ -285,6 +285,9 @@ const ProfilePage = () => {
                     {userListings.length > 0 && (
                         <div className="section-card">
                             <h2>{isOwnProfile ? 'Your' : username + '\'s'} Market Listing{userListings.length > 1 ? 's' : ''}</h2>
+                            {userListings.length > 0 && (
+                                <Link to={`/market/user/${username}`} className="button primary-button" style={{float: 'right', marginTop: '-6rem'}}>View all listings</Link>
+                            )}
 
                             <div className="card-tile-grid height-grid">
                                 {userListings.map((listing) => (

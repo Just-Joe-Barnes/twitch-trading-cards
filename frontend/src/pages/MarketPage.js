@@ -2,7 +2,7 @@ import React, {useState, useEffect, useMemo} from 'react';
 import {fetchWithAuth} from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
-import {Link, useNavigate} from 'react-router-dom';
+import {Link, useNavigate, useParams} from 'react-router-dom';
 import {rarities} from '../constants/rarities';
 import '../styles/MarketPage.css';
 import {io} from 'socket.io-client';
@@ -16,6 +16,10 @@ const MarketPage = () => {
     const [sortOption, setSortOption] = useState('name');
     const [sortOrder, setSortOrder] = useState('asc');
     const navigate = useNavigate();
+    const { username } = useParams();
+
+    const [sellers, setSellers] = useState([]);
+    const [selectedSellerId, setSelectedSellerId] = useState('');
 
     const [showFilters, setShowFilters] = useState(false);
     const [showSlabbedOnly, setShowSlabbedOnly] = useState(false);
@@ -30,15 +34,19 @@ const MarketPage = () => {
         Epic: 0, Legendary: 0, Mythic: 0, Unique: 0, Divine: 0
     });
 
-    const fetchListings = async (page = 1) => {
+    const fetchListings = async (page = 1, sellerId = '') => {
+        setLoading(true);
         try {
-            const res = await fetchWithAuth(`/api/market/listings?page=${page}&limit=${listingsPerPage}`);
+            let url = `/api/market/listings?page=${page}&limit=${listingsPerPage}`;
+            if (sellerId) {
+                url += `&sellerId=${sellerId}`;
+            }
+            const res = await fetchWithAuth(url);
             setListings(res.listings);
             setCurrentPage(res.page);
             setTotalPages(res.pages);
 
             const newRarityCounts = rarities.reduce((acc, r) => ({...acc, [r.name]: 0}), {});
-
             for (const listing of res.listings) {
                 const rarity = listing.card.rarity;
                 if (newRarityCounts.hasOwnProperty(rarity)) {
@@ -55,7 +63,30 @@ const MarketPage = () => {
     };
 
     useEffect(() => {
-        fetchListings(currentPage);
+        const fetchSellers = async () => {
+            try {
+                const sellersData = await fetchWithAuth('/api/market/sellers');
+                setSellers(sellersData);
+            } catch (err) {
+                console.error('Error fetching sellers:', err);
+            }
+        };
+        fetchSellers();
+    }, []);
+
+    useEffect(() => {
+        if (username && sellers.length > 0) {
+            const seller = sellers.find(s => s.username.toLowerCase() === username.toLowerCase());
+            if (seller) {
+                setSelectedSellerId(seller._id);
+            }
+        } else if (!username) {
+            setSelectedSellerId('');
+        }
+    }, [username, sellers]);
+
+    useEffect(() => {
+        fetchListings(currentPage, selectedSellerId);
 
         const socket = io(process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000', {
             transports: ['websocket'],
@@ -65,7 +96,22 @@ const MarketPage = () => {
         socket.on('market:newListing', (newListing) => setListings((prev) => [newListing, ...prev]));
 
         return () => socket.disconnect();
-    }, [currentPage]);
+    }, [currentPage, selectedSellerId]);
+
+    const handleSellerChange = (e) => {
+        const sellerId = e.target.value;
+        setCurrentPage(1); // Reset to first page on new filter
+        setSelectedSellerId(sellerId);
+
+        if (sellerId) {
+            const seller = sellers.find(s => s._id === sellerId);
+            if (seller) {
+                navigate(`/market/user/${seller.username}`, { replace: true });
+            }
+        } else {
+            navigate('/market', { replace: true });
+        }
+    };
 
     const handleRarityChange = (rarityName) => {
         const normalizedRarityName = rarityName.toLowerCase();
@@ -119,15 +165,13 @@ const MarketPage = () => {
 
     const handlePreviousPage = () => {
         if (currentPage > 1) {
-            setLoading(true);
-            fetchListings(currentPage - 1);
+            setCurrentPage(prev => prev - 1);
         }
     };
 
     const handleNextPage = () => {
         if (currentPage < totalPages) {
-            setLoading(true);
-            fetchListings(currentPage + 1);
+            setCurrentPage(prev => prev + 1);
         }
     };
 
@@ -187,6 +231,18 @@ const MarketPage = () => {
                                                 className="filter-select">
                                             <option value="name">Name</option>
                                             <option value="rarity">Rarity</option>
+                                        </select>
+                                        <select
+                                            value={selectedSellerId}
+                                            onChange={handleSellerChange}
+                                            className="filter-select"
+                                        >
+                                            <option value="">All Sellers</option>
+                                            {sellers.map(seller => (
+                                                <option key={seller._id} value={seller._id}>
+                                                    {seller.username}
+                                                </option>
+                                            ))}
                                         </select>
                                         <div className="checkbox-group button-row">
                                             <div className="sort-order-toggle checkbox-wrapper">

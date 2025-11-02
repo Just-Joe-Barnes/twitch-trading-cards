@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 const { checkAndAwardLoginEvents } = require('../services/eventService');
 const Setting = require('../models/settingsModel');
+const {trackUserActivity} = require("../services/periodCounterService");
 
 const router = express.Router();
 
@@ -56,14 +57,29 @@ module.exports = function(io) {
                     dbUser.username = user.display_name;
                 }
                 const now = new Date();
-                // Check if last login was within the last 24 hours to continue streak
-                if (dbUser.lastLogin && (now.getTime() - dbUser.lastLogin.getTime()) <= 24 * 60 * 60 * 1000) {
-                    // Check if it's a new day to increment streak
-                    if (dbUser.lastLogin.getUTCDate() !== now.getUTCDate()) {
+                const lastLogin = dbUser.lastLogin;
+
+                const isSameDay = (d1, d2) => {
+                    if (!d1 || !d2) return false;
+                    return d1.getFullYear() === d2.getFullYear() &&
+                        d1.getMonth() === d2.getMonth() &&
+                        d1.getDate() === d2.getDate();
+                };
+
+                if (!isSameDay(now, lastLogin)) {
+                    dbUser.loginCount = (dbUser.loginCount || 0) + 1;
+
+                    const yesterday = new Date();
+                    yesterday.setDate(now.getDate() - 1);
+
+                    if (lastLogin && isSameDay(lastLogin, yesterday)) {
                         dbUser.loginStreak = (dbUser.loginStreak || 0) + 1;
+                    } else {
+                        dbUser.loginStreak = 1;
                     }
-                } else {
-                    dbUser.loginStreak = 1;
+
+                    dbUser.lastLogin = now;
+                    await dbUser.save();
                 }
                 dbUser.lastLogin = now;
                 await dbUser.save();
@@ -78,16 +94,15 @@ module.exports = function(io) {
                 console.error("Failed to save login log:", logErr);
             }
 
-            // --- MODIFICATION --- Only award login events if maintenance is off or user is an admin
             if (!isMaintenanceMode || dbUser.isAdmin) {
                 const rewardPayloads = await checkAndAwardLoginEvents(dbUser);
                 if (rewardPayloads && rewardPayloads.length > 0) {
                     dbUser.pendingEventReward = rewardPayloads;
                     await dbUser.save();
                 }
+                await trackUserActivity(dbUser._id);
             }
 
-            // This logic makes sure your user account (Joe) is always an admin
             if (dbUser.twitchId === "77266375" && !dbUser.isAdmin) {
                 dbUser.isAdmin = true;
                 await dbUser.save();

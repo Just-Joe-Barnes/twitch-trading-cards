@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useMemo, useCallback} from 'react';
 import {useParams} from 'react-router-dom';
 import {
     fetchUserCollection,
@@ -12,6 +12,7 @@ import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/CollectionPage.css';
 import {rarities} from '../constants/rarities';
+import {modifiers} from '../constants/modifiers';
 
 const useIsMobile = (breakpoint = 768) => {
     const [isMobile, setIsMobile] = useState(window.innerWidth < breakpoint);
@@ -65,6 +66,39 @@ const CollectionPage = ({
     const isMobile = useIsMobile();
     const maxCardScale = isMobile ? 1.3 : 2;
     const minCardScale = isMobile ? 0.35 : 0.35;
+
+    const modifierNames = useMemo(() =>
+            modifiers.filter(m => m.name !== 'None').map(m => m.name.toLowerCase())
+        , []);
+
+    const getNameForSort = useCallback((name) => {
+        let sortableName = name;
+        let lowerName = name.toLowerCase();
+
+        if (lowerName.startsWith('the ')) {
+            sortableName = sortableName.substring(4);
+            lowerName = lowerName.substring(4);
+        }
+
+        lowerName = lowerName.trimStart();
+
+        for (const modifier of modifierNames) {
+            let prefix = modifier + ' ';
+            if (modifier === 'glitch') {
+                prefix = 'glitched ';
+            }
+
+            if (lowerName.startsWith(prefix)) {
+                const originalLower = sortableName.toLowerCase();
+                const prefixIndex = originalLower.indexOf(prefix);
+                const cutIndex = prefixIndex + prefix.length;
+                sortableName = sortableName.substring(cutIndex);
+                break;
+            }
+        }
+
+        return sortableName.trimStart();
+    }, [modifierNames]);
 
     useEffect(() => {
         if (isMobile) {
@@ -215,14 +249,11 @@ const CollectionPage = ({
             currentFilteredCards = currentFilteredCards.filter(card => card.slabbed);
         }
 
-        // --- MODIFICATION START ---
-        // Update the filter to include both time-limited and Event rarity cards.
         if (showLimitedOnly) {
             currentFilteredCards = currentFilteredCards.filter((card) =>
                 isCardLimited(card) || card.rarity === 'Event'
             );
         }
-        // --- MODIFICATION END ---
 
         const newDisplayRarityCounts = {
             Basic: 0, Common: 0, Standard: 0, Uncommon: 0, Rare: 0,
@@ -262,7 +293,9 @@ const CollectionPage = ({
                     const bNum = parseInt(b.mintNumber, 10);
                     result = aNum - bNum;
                 } else if (sortOption === 'name') {
-                    result = a.name.localeCompare(b.name);
+                    const nameA = getNameForSort(a.name);
+                    const nameB = getNameForSort(b.name);
+                    result = nameA.localeCompare(nameB);
                 } else if (sortOption === 'rarity') {
                     const rarityA = rarities.findIndex(
                         (r) => r.name.toLowerCase() === a.rarity.toLowerCase()
@@ -279,7 +312,7 @@ const CollectionPage = ({
         }
 
         setFilteredCards(currentFilteredCards);
-    }, [allCards, search, showFeaturedOnly, showSlabbedOnly, showLimitedOnly, featuredCards, selectedRarity, limitedCards, sortOption, order]);
+    }, [allCards, search, showFeaturedOnly, showSlabbedOnly, showLimitedOnly, featuredCards, selectedRarity, limitedCards, sortOption, order, getNameForSort]);
 
     useEffect(() => {
         if (selectedRarity !== '') {

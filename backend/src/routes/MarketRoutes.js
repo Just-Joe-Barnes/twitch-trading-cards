@@ -115,14 +115,20 @@ router.get('/listings', protect, async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 9;
         const skip = (page - 1) * limit;
+        const { sellerId } = req.query;
 
-        const listingsPromise = MarketListing.find({ status: 'active' })
+        const query = { status: 'active' };
+        if (sellerId) {
+            query.owner = sellerId;
+        }
+
+        const listingsPromise = MarketListing.find(query)
             .populate('owner', 'username')
             .populate('offers.offerer', 'username')
             .skip(skip)
             .limit(limit);
 
-        const countPromise = MarketListing.countDocuments({ status: 'active' });
+        const countPromise = MarketListing.countDocuments(query);
         const [listings, total] = await Promise.all([listingsPromise, countPromise]);
         const pages = Math.ceil(total / limit);
 
@@ -132,6 +138,18 @@ router.get('/listings', protect, async (req, res) => {
         console.error('Error message:', error.message);
         console.error('Error stack:', error.stack);
         res.status(500).json({ message: 'Server error fetching listings' });
+    }
+});
+
+// GET /api/market/sellers - Get all unique users with active listings.
+router.get('/sellers', protect, async (req, res) => {
+    try {
+        const ownerIds = await MarketListing.distinct('owner', { status: 'active' });
+        const sellers = await User.find({ '_id': { $in: ownerIds } }).select('username _id').lean();
+        res.status(200).json(sellers);
+    } catch (error) {
+        console.error('Error fetching market sellers:', error);
+        res.status(500).json({ message: 'Server error fetching sellers' });
     }
 });
 
@@ -298,32 +316,32 @@ router.post('/listings/:id/offers', protect, sensitiveLimiter, async (req, res) 
 
 // PUT /api/market/listings/:id/offers/:offerId/accept - Accept an offer (listing owner only)
 router.put('/listings/:id/offers/:offerId/accept', protect, sensitiveLimiter, async (req, res) => {
-  logAudit('Market Offer Accept Attempt', { userId: req.user._id, listingId: req.params.id, offerId: req.params.offerId });
+    logAudit('Market Offer Accept Attempt', { userId: req.user._id, listingId: req.params.id, offerId: req.params.offerId });
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-  try {
-    const result = await marketService.acceptOffer(req.params.id, req.params.offerId, req.user._id.toString(), session);
+    try {
+        const result = await marketService.acceptOffer(req.params.id, req.params.offerId, req.user._id.toString(), session);
 
-    if (!result.success) {
-      await session.abortTransaction();
-      session.endSession();
-      return res.status(result.status || 500).json({ message: result.message });
+        if (!result.success) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(result.status || 500).json({ message: result.message });
+        }
+
+        await session.commitTransaction();
+        session.endSession();
+
+        await marketService.finalizeOfferAcceptance(result);
+
+        res.status(200).json({ message: 'Offer accepted, card transferred, and listing sold.' });
+    } catch (error) {
+        console.error('Error accepting offer:', error);
+        await session.abortTransaction();
+        session.endSession();
+        res.status(500).json({ message: 'Failed to accept offer', error: error.message });
     }
-
-    await session.commitTransaction();
-    session.endSession();
-
-    await marketService.finalizeOfferAcceptance(result);
-
-    res.status(200).json({ message: 'Offer accepted, card transferred, and listing sold.' });
-  } catch (error) {
-    console.error('Error accepting offer:', error);
-    await session.abortTransaction();
-    session.endSession();
-    res.status(500).json({ message: 'Failed to accept offer', error: error.message });
-  }
 });
 
 // DELETE /api/market/listings/:id/offers/self - Cancel (delete) your own offer

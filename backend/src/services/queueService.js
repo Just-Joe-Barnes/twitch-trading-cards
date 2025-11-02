@@ -1,83 +1,154 @@
 let ioInstance = null;
-const packQueue = [];
+let overlaySocketMapInstance = null;
 let isOverlayBusy = false;
-let isQueuePaused = true; // NEW: The queue will now start in a PAUSED state.
+let isQueuePaused = true;
+let busyForStreamerId = null;
 
-const initializeQueueService = (io) => {
+const QueuedPack = require('../models/queuedPackModel');
+const { openPackForUserLogic } = require('../helpers/packHelpers');
+const { createLogEntry } = require('../utils/logService');
+const User = require("../models/userModel");
+
+const initializeQueueService = (io, overlaySocketMap) => {
     ioInstance = io;
-    console.log('[QueueService] Initialized. Queue is PAUSED by default.');
+    overlaySocketMapInstance = overlaySocketMap;
+    console.log('[QueueService] Initialized (DB). Queue is PAUSED by default.');
 };
 
-const processQueue = () => {
-    // UPDATED: Now checks the paused flag first.
-    if (isQueuePaused || isOverlayBusy || packQueue.length === 0) {
-        console.log(`[QueueService] SKIPPING PROCESS: Paused: ${isQueuePaused}, Busy: ${isOverlayBusy}, Queue Size: ${packQueue.length}`);
+const broadcastQueueUpdate = async (streamerDbId) => {
+    try {
+        const jobs = await QueuedPack.find({ streamerDbId })
+            .populate('redeemer', 'username')
+            .sort({ createdAt: 'asc' });
+
+        const queueUsernames = jobs.map(j => j.redeemer.username);
+        ioInstance.to(streamerDbId).emit('queue-updated', queueUsernames);
+        return queueUsernames;
+    } catch (error) {
+        console.error('[QueueService] Error broadcasting queue update:', error);
+    }
+};
+
+const processQueue = async () => {
+    if (isQueuePaused || isOverlayBusy) {
+        console.log(`[QueueService] SKIPPING PROCESS: Paused: ${isQueuePaused}, Busy: ${isOverlayBusy}`);
+        return;
+    }
+
+    const nextJob = await QueuedPack.findOne()
+        .sort({ createdAt: 'asc' })
+        .populate('redeemer');
+
+    if (!nextJob) {
+        console.log('[QueueService] No jobs in DB queue.');
         return;
     }
 
     isOverlayBusy = true;
-    console.log(`[QueueService] LOCK ACQUIRED. Overlay is now BUSY.`);
+    busyForStreamerId = nextJob.streamerDbId;
+    console.log(`[QueueService] LOCK ACQUIRED for ${busyForStreamerId}. Processing job ${nextJob._id}.`);
 
-    const nextJob = packQueue.shift();
-    const streamerUserId = nextJob.streamerDbId;
+    const { streamerDbId, redeemer, templateId } = nextJob;
 
-    const room = ioInstance.sockets.adapter.rooms.get(streamerUserId);
-    if (!room || room.size === 0) {
-        console.log(`[QueueService] No clients in room ${streamerUserId}. Re-queueing job and pausing.`);
-        packQueue.unshift(nextJob);
+    const overlaySocketId = overlaySocketMapInstance.get(streamerDbId);
+    const room = ioInstance.sockets.adapter.rooms.get(streamerDbId);
+    const overlaySocket = overlaySocketId ? ioInstance.sockets.sockets.get(overlaySocketId) : null;
+
+    if (!overlaySocket || !room || !room.has(overlaySocketId)) {
+        console.log(`[QueueService] Overlay socket for ${streamerDbId} is not connected. Pausing.`);
         isOverlayBusy = false;
-        console.log(`[QueueService] LOCK RELEASED. Waiting for client to connect.`);
+        busyForStreamerId = null;
+        console.log(`[QueueService] LOCK RELEASED. Waiting for overlay to connect.`);
+        pauseQueue();
         return;
     }
 
-    ioInstance.to(streamerUserId).emit('new-pack-opening', {
-        cards: nextJob.cards,
-        username: nextJob.redeemer.username
-    });
+    try {
+        if (!redeemer) {
+            await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `User with Twitch ID ${userId} not found.`);
+            return res.status(404).json({ message: `User with Twitch ID ${userId} not found.` });
+        }
 
-    const queueUsernames = packQueue.map(job => job.redeemer.username);
-    ioInstance.to(streamerUserId).emit('queue-updated', queueUsernames);
+        await User.findByIdAndUpdate(redeemer._id, {
+            $inc: { packs: 1 }
+        });
 
-    console.log(`[QueueService] > Sent pack to ${nextJob.redeemer.username}. Remaining queue: ${packQueue.length}`);
+        const { newCards } = await openPackForUserLogic(redeemer._id, templateId, false);
+
+        ioInstance.to(streamerDbId).emit('new-pack-opening', {
+            cards: newCards,
+            username: redeemer.username
+        });
+
+        await QueuedPack.findByIdAndDelete(nextJob._id);
+        console.log(`[QueueService] > Sent pack to ${redeemer.username}. Job ${nextJob._id} deleted.`);
+
+        broadcastQueueUpdate(streamerDbId);
+
+    } catch (error) {
+        console.error(`[QueueService] Error in openPackForUserLogic for ${redeemer.username}:`, error.message);
+        await createLogEntry(null, 'ERROR_QUEUE_PROCESS', `Failed to open pack for ${redeemer.username}: ${error.message}`);
+        markAsReady(null);
+    }
 };
 
-const addToQueue = (job) => {
-    packQueue.push(job);
-    console.log(`[QueueService] Added ${job.redeemer.username} to queue. New queue size: ${packQueue.length}`);
+const addToQueue = async (job) => {
+    try {
+        const { streamerDbId, redeemer, templateId } = job;
+        await QueuedPack.create({
+            streamerDbId,
+            redeemer: redeemer._id,
+            templateId
+        });
+        console.log(`[QueueService] Added ${redeemer.username} to DB queue.`);
 
-    if (ioInstance) {
-        const streamerUserId = job.streamerDbId;
-        const queueUsernames = packQueue.map(j => j.redeemer.username);
-        ioInstance.to(streamerUserId).emit('queue-updated', queueUsernames);
+        broadcastQueueUpdate(streamerDbId);
+        processQueue();
+    } catch (error) {
+        console.error('[QueueService] Error adding to queue:', error);
     }
-
-    // REMOVED: No longer automatically processes the queue when an item is added.
-    // processQueue();
 };
 
 const markAsReady = (socketId) => {
-    console.log(`[QueueService] Signal from socket ${socketId}: Overlay is READY.`);
+    console.log(`[QueueService] Signal from socket ${socketId || 'system'}: Overlay is READY.`);
     isOverlayBusy = false;
-    setTimeout(processQueue, 100);
+    busyForStreamerId = null;
+
+    if (!isQueuePaused) { // <-- FIX 2: Only process if queue is not manually paused.
+        setTimeout(processQueue, 100);
+    }
 };
 
-// NEW: Functions to control the paused state
 const pauseQueue = () => {
-    console.log('[QueueService] Queue has been PAUSED by an admin.');
+    console.log('[QueueService] Queue has been PAUSED.');
     isQueuePaused = true;
 };
 
 const resumeQueue = () => {
-    console.log('[QueueService] Queue has been RESUMED by an admin.');
+    console.log('[QueueService] Queue has been RESUMED.');
     isQueuePaused = false;
-    processQueue(); // Immediately try to process the queue
+    processQueue();
 };
 
-const getStatus = () => {
+const handleOverlayDisconnect = (userId) => {
+    if (isOverlayBusy && busyForStreamerId === userId) {
+        console.log(`[QueueService] Overlay for ${userId} disconnected while busy. Forcing lock release.`);
+        isOverlayBusy = false;
+        busyForStreamerId = null;
+    }
+    console.log(`[QueueService] Overlay for ${userId} disconnected. Auto-pausing queue.`);
+    pauseQueue();
+};
+
+const getStatus = async () => {
+    const jobs = await QueuedPack.find()
+        .populate('redeemer', 'username')
+        .sort({ createdAt: 'asc' });
+
     return {
         isBusy: isOverlayBusy,
-        isPaused: isQueuePaused, // <-- NEW: Include the paused status
-        queue: packQueue.map(job => job.redeemer.username),
+        isPaused: isQueuePaused,
+        queue: jobs.map(job => job.redeemer.username),
     };
 };
 
@@ -87,6 +158,8 @@ module.exports = {
     markAsReady,
     getStatus,
     processQueue,
-    pauseQueue,   // <-- Export new function
-    resumeQueue,  // <-- Export new function
+    pauseQueue,
+    resumeQueue,
+    handleOverlayDisconnect,
 };
+

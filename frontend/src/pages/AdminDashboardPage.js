@@ -12,7 +12,6 @@ const AdminDashboardPage = ({user}) => {
     const navigate = useNavigate();
 
     const boopSoundRef = useRef(new Audio('/sounds/boop.wav'));
-    // User list state
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -20,18 +19,16 @@ const AdminDashboardPage = ({user}) => {
     const [sortColumn, setSortColumn] = useState(null);
     const [sortDirection, setSortDirection] = useState('asc');
 
-    const [activeTab, setActiveTab] = useState('raffle'); // 'raffle' or 'list'
+    const [activeTab, setActiveTab] = useState('raffle');
     const [isRolling, setIsRolling] = useState(false);
     const [highlightedUserId, setHighlightedUserId] = useState(null);
     const [raffleWinner, setRaffleWinner] = useState(null);
 
-    // --- NEW: State for keyboard navigation ---
     const [focusedUserIndex, setFocusedUserIndex] = useState(null);
     const [countdown, setCountdown] = useState(3);
 
     const rowRefs = useRef({});
 
-    // Loading & animation states
     const [loading, setLoading] = useState(true);
     const [waitingOnPack, setWaitingOnPack] = useState(false);
     const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
@@ -40,7 +37,6 @@ const AdminDashboardPage = ({user}) => {
 
     const [showDebugControls, setShowDebugControls] = useState(false);
 
-    // Cards state
     const [openedCards, setOpenedCards] = useState([]);
     const [revealedCards, setRevealedCards] = useState([]);
     const [faceDownCards, setFaceDownCards] = useState([]);
@@ -53,6 +49,11 @@ const AdminDashboardPage = ({user}) => {
 
     const [sessionCounts, setSessionCounts] = useState({});
 
+    const [isQueuePaused, setIsQueuePaused] = useState(true);
+    const [queueCount, setQueueCount] = useState(0);
+    const [weeklySubCount, setWeeklySubCount] = useState(0);
+
+    const [currentVideoUrl, setCurrentVideoUrl] = useState('/animations/packopening.mp4');
 
     const updateSessionCount = useCallback((userId) => {
         setSessionCounts(prevCounts => {
@@ -75,6 +76,10 @@ const AdminDashboardPage = ({user}) => {
             if (window.showToast) window.showToast("No pack type available to open.", 'error');
             return;
         }
+
+        const packToOpen = packTypes.find(p => p._id === packIdToOpen);
+        const videoUrl = packToOpen?.animationUrl || '/animations/packopening.mp4';
+        setCurrentVideoUrl(videoUrl);
 
         setPackAnimationDone(false);
         setCardsLoaded(false);
@@ -117,7 +122,6 @@ const AdminDashboardPage = ({user}) => {
     }, [selectedUser, selectedPackTypeId, forceModifier, packAnimationDone, packTypes, updateSessionCount]);
 
 
-    // Fetch users with packs
     const fetchData = async () => {
         if (!user?.isAdmin) {
             console.warn('Access denied: Admins only.');
@@ -137,7 +141,25 @@ const AdminDashboardPage = ({user}) => {
         }
     };
 
-    // On mount fetch packs and when filter changes, fetch users once
+    const fetchQueueStatus = async () => {
+        try {
+            const status = await fetchWithAuth('/api/admin/queues/status');
+            setIsQueuePaused(status.isPaused);
+            setQueueCount(status.queue.length);
+        } catch (err) {
+            console.error('Error fetching queue status:', err);
+        }
+    };
+
+    const fetchCommunityStats = async () => {
+        try {
+            const data = await fetchWithAuth('/api/community/stats');
+            setWeeklySubCount(data?.weekly?.count ?? 0);
+        } catch (err) {
+            console.error('Error fetching community stats:', err);
+        }
+    };
+
     useEffect(() => {
         fetchData();
     }, [user, navigate, activeFilter]);
@@ -167,15 +189,21 @@ const AdminDashboardPage = ({user}) => {
             }
         };
         fetchPacks();
+        fetchQueueStatus();
+        fetchCommunityStats();
     }, []);
 
-    // Poll every 30 seconds for updates
     useEffect(() => {
         const intervalId = setInterval(() => {
             fetchData();
+            fetchCommunityStats();
         }, 30000);
 
-        return () => clearInterval(intervalId);
+        const intervalIdQueue = setInterval(() => {
+            fetchQueueStatus();
+        }, 5000);
+
+        return () => {clearInterval(intervalId);clearInterval(intervalIdQueue);}
     }, [user, navigate, activeFilter]);
 
 
@@ -199,6 +227,28 @@ const AdminDashboardPage = ({user}) => {
             window.showToast(`Added 2 packs to all active users.`, 'success');
         } catch {
             window.showToast('Error adding packs to all active users.', 'error');
+        }
+    };
+
+    const handlePauseQueue = async () => {
+        try {
+            await fetchWithAuth('/api/admin/queues/pause', { method: 'POST' });
+            await fetchQueueStatus();
+            if (window.showToast) window.showToast('Queue paused.', 'info');
+        } catch (err) {
+            console.error('Error pausing queue:', err);
+            if (window.showToast) window.showToast('Error pausing queue.', 'error');
+        }
+    };
+
+    const handleResumeQueue = async () => {
+        try {
+            await fetchWithAuth('/api/admin/queues/resume', { method: 'POST' });
+            await fetchQueueStatus();
+            if (window.showToast) window.showToast('Queue resumed.', 'success');
+        } catch (err) {
+            console.error('Error resuming queue:', err);
+            if (window.showToast) window.showToast('Error resuming queue.', 'error');
         }
     };
 
@@ -256,7 +306,6 @@ const AdminDashboardPage = ({user}) => {
         setHighlightedUserId(null);
         setRaffleWinner(null);
 
-        // Handle the special case where there is only one user left
         if (eligibleRaffleUsers.length === 1) {
             const singleWinner = eligibleRaffleUsers[0];
             setHighlightedUserId(singleWinner._id);
@@ -267,11 +316,11 @@ const AdminDashboardPage = ({user}) => {
                 boopSound.currentTime = 0;
                 boopSound.play();
             }
-            await sleep(1500); // A brief pause to show the winner
+            await sleep(1500);
 
             setRaffleWinner(singleWinner);
             setIsRolling(false);
-            return; // Exit the function early
+            return;
         }
 
         const winner = eligibleRaffleUsers[Math.floor(Math.random() * eligibleRaffleUsers.length)];
@@ -334,7 +383,7 @@ const AdminDashboardPage = ({user}) => {
 
     const handleConfirmWinner = useCallback(() => {
         if (raffleWinner) {
-            setSelectedUser(raffleWinner); // Set the winner here
+            setSelectedUser(raffleWinner);
             triggerPackOpening(raffleWinner);
         }
         setRaffleWinner(null);
@@ -358,9 +407,13 @@ const AdminDashboardPage = ({user}) => {
     }, [raffleWinner, handleConfirmWinner]);
 
 
-    // Debug open pack without affecting inventory
     const openDebugPackForUser = async () => {
         if (!selectedUser) return;
+
+        const packToOpen = packTypes.find(p => p._id === selectedPackTypeId);
+        const videoUrl = packToOpen?.animationUrl || '/animations/packopening.mp4';
+        setCurrentVideoUrl(videoUrl);
+
         setPackAnimationDone(false);
         setCardsLoaded(false);
         setPackCounter((prev) => prev + 1);
@@ -396,7 +449,6 @@ const AdminDashboardPage = ({user}) => {
         }
     };
 
-    // Helper to reveal cards one by one with delay
     const revealAllCards = async (count) => {
         for (let i = 0; i < count; i++) {
             setRevealedCards((prev) => {
@@ -438,7 +490,6 @@ const AdminDashboardPage = ({user}) => {
         setActiveFilter(filter);
     };
 
-    // --- NEW: Effect to handle keyboard navigation ---
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (e.key === 'ArrowDown') {
@@ -466,7 +517,6 @@ const AdminDashboardPage = ({user}) => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [sortedUsers, focusedUserIndex, selectedUser, toggleUserSelection, triggerPackOpening]);
 
-    // --- NEW: Effect to scroll the focused user into view ---
     useEffect(() => {
         if (focusedUserIndex !== null && sortedUsers[focusedUserIndex]) {
             const userId = sortedUsers[focusedUserIndex]._id;
@@ -477,11 +527,37 @@ const AdminDashboardPage = ({user}) => {
         }
     }, [focusedUserIndex, sortedUsers]);
 
-    // --- NEW: Effect to reset focus when filters change ---
     useEffect(() => {
         setFocusedUserIndex(null);
     }, [searchQuery, activeFilter, sortColumn, sortDirection]);
 
+    const CurrentPackLuckIndicator = ({ count }) => {
+        const cards = ['grey', 'grey', 'grey', 'grey', 'grey'];
+        if (count < 15) {
+            cards[0] = 'rare';
+        } else if (count < 30) {
+            cards[0] = 'epic';
+        } else if (count < 45) {
+            cards[0] = 'rare';
+            cards[1] = 'rare';
+        } else if (count < 60) {
+            cards[0] = 'epic';
+            cards[1] = 'rare';
+        } else {
+            cards[0] = 'epic';
+            cards[1] = 'epic';
+        }
+
+        return (
+            <div className="pack-luck-container">
+                {cards.map((color, index) => (
+                    <div key={index} className={`luck-card ${color}`}>
+                        <span>?</span>
+                    </div>
+                ))}
+            </div>
+        );
+    };
 
 
     const raffleGridRef = useRef(null);
@@ -537,7 +613,7 @@ const AdminDashboardPage = ({user}) => {
                     <video
                         key={packCounter}
                         className="pack-opening-video"
-                        src="/animations/packopening.mp4"
+                        src={currentVideoUrl}
                         autoPlay
                         playsInline
                         controls={false}
@@ -557,6 +633,22 @@ const AdminDashboardPage = ({user}) => {
                             <i className="fa-solid fa-cards" style={{marginRight: '8px'}}></i>
                             Add 2 packs
                         </button>
+
+                        {isQueuePaused ? (
+                            <button onClick={handleResumeQueue} className="secondary-button sm success">
+                                <i className="fa-solid fa-play" style={{marginRight: '8px'}}></i>
+                                Resume Queue
+                            </button>
+                        ) : (
+                            <button onClick={handlePauseQueue} className="secondary-button sm warning">
+                                <i className="fa-solid fa-pause" style={{marginRight: '8px'}}></i>
+                                Pause Queue
+                            </button>
+                        )}
+                        <div className="session-pack-counter">
+                            Packs in Queue: <strong>{queueCount}</strong>
+                        </div>
+
                         <div className="session-pack-counter">
                             Session Packs: <strong>{totalSessionPacks}</strong>
                         </div>
@@ -738,6 +830,12 @@ const AdminDashboardPage = ({user}) => {
                                     </span>
                                     );
                                 })}
+                            </div>
+                            <div className="current-reward">
+                                <h3 className="tiny">
+                                    Current Rigged Pack Luck
+                                </h3>
+                                <CurrentPackLuckIndicator count={weeklySubCount} />
                             </div>
                         </div>
                     </div>

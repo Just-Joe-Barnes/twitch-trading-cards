@@ -23,6 +23,8 @@ import AdminLogs from "./pages/AdminLogs";
 import AdminActionsLayout from "./components/AdminActionsLayout";
 import BountyBoardPage from "./pages/BountyBoardPage";
 import AdminGiftPage from "./pages/AdminGift";
+import { clearReward } from './utils/api';
+import CommunityPage from "./pages/CommunityPage";
 
 const MaintenancePage = lazy(() => import('./pages/MaintenancePage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
@@ -42,6 +44,7 @@ const CardEditor = lazy(() => import('./components/CardEditor'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AchievementsPage = lazy(() => import('./pages/AchievementsPage'));
 
+
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 const App = () => {
@@ -54,10 +57,9 @@ const App = () => {
     const [currentReward, setCurrentReward] = useState(null);
     const [rewardQueue, setRewardQueue] = useState([]);
 
-    // --- NEW --- Logout handler to clear state and local storage
     const handleLogout = () => {
         localStorage.removeItem('token');
-        setUser(null); // This is the key change to force a re-render
+        setUser(null);
     };
 
     const showToast = (message, type = 'info') => {
@@ -69,10 +71,19 @@ const App = () => {
         setToasts((prev) => prev.filter((t) => t.id !== id));
     };
 
+    const addNewRewards = (newRewards = []) => {
+        if (newRewards.length > 0) {
+            setRewardQueue(prevQueue => [...prevQueue, ...newRewards]);
+        }
+    };
+
     useEffect(() => {
         window.showToast = showToast;
         window.inspectCard = (card) => setInspectedCard(card);
+        window.addNewRewards = addNewRewards;
+        window.updateRewardQueue = (newQueue) => setRewardQueue(newQueue);
     }, []);
+
 
     useEffect(() => {
         const canShowReward = !isMaintenanceMode || (user && user.isAdmin);
@@ -93,7 +104,6 @@ const App = () => {
             socket.emit('join', user._id);
             console.log(`[Socket] Joining room for user ${user._id}`);
 
-            // --- NEW: Listen for maintenance mode changes ---
             socket.on('maintenanceStatusChanged', (data) => {
                 console.log('[Socket] Maintenance status updated:', data.maintenanceMode);
                 setIsMaintenanceMode(data.maintenanceMode);
@@ -106,24 +116,37 @@ const App = () => {
         }
     }, [user]);
 
+    const handleRewardModalClose = async () => {
+        console.log("Attempting to close reward modal and clear reward...");
+        console.log("Current reward to clear:", currentReward);
+
+        if (currentReward && currentReward._id) {
+            try {
+                await clearReward(currentReward._id);
+            } catch (error) {
+                console.error("Failed to clear reward from queue:", error);
+            }
+        } else {
+            console.warn("Could not clear reward: _id is missing.", currentReward);
+        }
+        setCurrentReward(null);
+    };
+
     useEffect(() => {
         const initializeApp = async () => {
             try {
-                // 1. Fetch maintenance status first
                 const maintenanceResponse = await fetch(`${API_BASE_URL}/api/settings/maintenance`);
                 if (!maintenanceResponse.ok) {
                     console.error('Failed to fetch maintenance status.');
-                    // Decide on a fallback, e.g., default to NOT maintenance mode
                     setIsMaintenanceMode(false);
                 } else {
                     const data = await maintenanceResponse.json();
                     setIsMaintenanceMode(data.maintenanceMode);
                 }
 
-                // 2. Then, fetch user data (your existing logic)
                 const token = localStorage.getItem('token');
                 if (!token) {
-                    return; // No user to fetch, we're done
+                    return;
                 }
                 const validateResponse = await fetch(`${API_BASE_URL}/api/auth/validate`, {
                     method: 'POST',
@@ -138,15 +161,17 @@ const App = () => {
                 if (!profileResponse.ok) throw new Error(`Profile fetch failed`);
 
                 const profileData = await profileResponse.json();
+
                 if (profileData.pendingEventReward && profileData.pendingEventReward.length > 0) {
-                    setRewardQueue(profileData.pendingEventReward);
+                    addNewRewards(profileData.pendingEventReward);
                 }
+
                 setUser(profileData);
             } catch (error) {
                 console.error('[App.js] Error initializing app:', error.message);
-                handleLogout(); // Clear state on any failure
+                handleLogout();
             } finally {
-                setLoading(false); // Set loading to false after ALL initial data is fetched
+                setLoading(false);
             }
         };
 
@@ -159,9 +184,10 @@ const App = () => {
             }
         };
 
+
         handleTokenFromURL();
         initializeApp();
-    }, []); // Empty dependency array ensures this runs only once on mount
+    }, []);
 
 
     if (loading) {
@@ -189,48 +215,25 @@ const App = () => {
                 <Suspense fallback={<LoadingSpinner/>}>
                     {user && <ConditionalNavbar user={user} isMaintenanceMode={isMaintenanceMode}/>}
                     <Routes>
-                        {/* --- MODIFICATION --- Pass handleLogout to LoginPage so it can update state */}
                         <Route path="/login" element={<LoginPage onLoginSuccess={setUser} />} />
-                        <Route path="/kitchensink" element={<KitchenSink/>}/>
-                        <Route
-                            path="/dashboard"
-                            element={user ? <DashboardPage user={user}/> : <Navigate to="/login"/>}
-                        />
-                        <Route path="/collection/:username" element={<CollectionPage/>}/>
-                        <Route
-                            path="/collection"
-                            element={user ? <CollectionPage user={user}/> : <Navigate to="/login"/>}
-                        />
-                        <Route path="/profile/:username" element={<ProfilePage/>}/>
-                        <Route
-                            path="/trading"
-                            element={user ? <TradingPage userId={user._id}/> : <Navigate to="/login"/>}
-                        />
-                        <Route
-                            path="/trades/pending"
-                            element={user ? <PendingTrades userId={user._id}/> : <Navigate to="/login"/>}
-                        />
-                        <Route
-                            path="/bounty"
-                            element={user ? <BountyBoardPage userId={user._id} username={user.username}/> : <Navigate to="/login"/>}
-                        />
-                        <Route
-                            path="/achievements"
-                            element={user ? <AchievementsPage/> : <Navigate to="/login"/>}
-                        />
-                        <Route
-                            path="/grading"
-                            element={user ? <CardGradingPage/> : <Navigate to="/login"/>}
-                        />
-                        <Route path="/catalogue" element={<CataloguePage user={user}/>}/>
-                        <Route path="/market" element={<MarketPage/>}/>
-                        <Route path="/market/create" element={<CreateListingPage/>}/>
-                        <Route path="/market/listing/:id" element={<MarketListingDetails/>}/>
-                        <Route path="/leaderboard" element={<LeaderboardPage/>}/>
-                        <Route
-                            path="/admin-dashboard"
-                            element={(user?.isAdmin) ? <AdminDashboardPage user={user}/> : <Navigate to="/login"/>}
-                        />
+                        <Route path="/kitchensink" element={<KitchenSink/>} />
+                        <Route path="/dashboard" element={user ? <DashboardPage user={user}/> : <Navigate to="/login"/>} />
+                        <Route path="/community" element={user ? <CommunityPage user={user}/> : <Navigate to="/login"/>} />
+                        <Route path="/collection/:username" element={<CollectionPage/>} />
+                        <Route path="/collection" element={user ? <CollectionPage user={user}/> : <Navigate to="/login"/>} />
+                        <Route path="/profile/:username" element={<ProfilePage/>} />
+                        <Route path="/trading" element={user ? <TradingPage userId={user._id}/> : <Navigate to="/login"/>} />
+                        <Route path="/trades/pending" element={user ? <PendingTrades userId={user._id}/> : <Navigate to="/login"/>} />
+                        <Route path="/bounty" element={user ? <BountyBoardPage userId={user._id} username={user.username}/> : <Navigate to="/login"/>} />
+                        <Route path="/achievements" element={user ? <AchievementsPage/> : <Navigate to="/login"/>} />
+                        <Route path="/grading" element={user ? <CardGradingPage/> : <Navigate to="/login"/>} />
+                        <Route path="/catalogue" element={<CataloguePage user={user}/>} />
+                        <Route path="/market" element={<MarketPage/>} />
+                        <Route path="/market/user/:username" element={<MarketPage/>} />
+                        <Route path="/market/create" element={<CreateListingPage/>} />
+                        <Route path="/market/listing/:id" element={<MarketListingDetails/>} />
+                        <Route path="/leaderboard" element={<LeaderboardPage/>} />
+                        <Route path="/admin-dashboard" element={(user?.isAdmin) ? <AdminDashboardPage user={user}/> : <Navigate to="/login"/>} />
                         <Route path="/admin" element={<AdminActionsLayout/>}>
                             <Route index element={user?.isAdmin ? <AdminActions user={user}/> : <Navigate to="/login"/>} />
                             <Route path="packs" element={user?.isAdmin ? <AdminPacksPage/> : <Navigate to="/login"/>} />
@@ -239,13 +242,13 @@ const App = () => {
                             <Route path="gift" element={user?.isAdmin ? <AdminGiftPage user={user}/> : <Navigate to="/login"/>} />
                             <Route path="cardmanagement" element={user?.isAdmin ? <CardManagement user={user}/> : <Navigate to="/login"/>} />
                             <Route path="logs" element={user?.isAdmin ? <AdminLogs user={user}/> : <Navigate to="/login"/>} />
-                            <Route path="cards/:id" element={<CardEditor/>}/>
-                            <Route path="cardaudit" element={<AdminCardAudit/>}/>
-                            <Route path="trades" element={<AdminTrades/>}/>
+                            <Route path="cards/:id" element={<CardEditor/>} />
+                            <Route path="cardaudit" element={<AdminCardAudit/>} />
+                            <Route path="trades" element={<AdminTrades/>} />
                         </Route>
-                        <Route path="/stream-overlay/:userId" element={<StreamOverlayPage/>}/>
-                        <Route path="/" element={<Navigate to="/dashboard"/>}/>
-                        <Route path="*" element={<NotFoundPage/>}/>
+                        <Route path="/stream-overlay/:userId" element={<StreamOverlayPage/>} />
+                        <Route path="/" element={<Navigate to="/dashboard"/>} />
+                        <Route path="*" element={<NotFoundPage/>} />
                     </Routes>
                 </Suspense>
             </Router>
@@ -262,7 +265,7 @@ const App = () => {
                 <EventRewardModal
                     reward={currentReward}
                     message={currentReward.message}
-                    onClose={() => setCurrentReward(null)}
+                    onClose={handleRewardModalClose}
                 />
             )}
             <ScrollToTopButton/>

@@ -70,8 +70,8 @@ const DashboardPage = () => {
                         <ul>
                             <li>Earn 1 pack for your first login and signing into the app.</li>
                             <li>
-                                Earn packs when you subscribe: 1 pack for tier 1,
-                                3 packs for tier 2, and 5 packs for tier 3.
+                                Earn packs when you subscribe: 3 packs for tier 1,
+                                6 packs for tier 2, and 12 packs for tier 3.
                             </li>
                             <li>
                                 Gifted subscriptions award packs to the gifter and

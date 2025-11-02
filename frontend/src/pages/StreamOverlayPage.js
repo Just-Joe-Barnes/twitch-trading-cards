@@ -21,7 +21,7 @@ const StreamOverlayPage = () => {
     const [isOpening, setIsOpening] = useState(false);
     const [revealedCards, setRevealedCards] = useState([]);
     const [faceDownCards, setFaceDownCards] = useState([]);
-    const [packMessage, setPackMessage] = useState('');
+    const [packMessageParts, setPackMessageParts] = useState(null);
     const [queue, setQueue] = useState([]);
     const socketRef = useRef(null);
 
@@ -44,6 +44,9 @@ const StreamOverlayPage = () => {
         socket.on('connect', () => {
             console.log('Socket connected, joining room:', userId);
             socket.emit('join', userId);
+
+            console.log('Registering as overlay...');
+            socket.emit('register-overlay', userId);
         });
 
         socket.on('connect_error', (err) => {
@@ -52,9 +55,9 @@ const StreamOverlayPage = () => {
 
         socket.on('new-pack-opening', ({cards, username}) => {
             const randomMessage = packMessages[Math.floor(Math.random() * packMessages.length)];
-            const formattedMessage = randomMessage.replace('{username}', username);
+            const parts = randomMessage.split('{username}');
+            setPackMessageParts({ pre: parts[0], username: username, post: parts[1] || '' });
 
-            setPackMessage(formattedMessage);
             setOpenedCards(cards);
             setRevealedCards(Array(cards.length).fill(false));
             setFaceDownCards(Array(cards.length).fill(true));
@@ -78,7 +81,7 @@ const StreamOverlayPage = () => {
     }, [userId, rarityOrderMap]);
 
     const startCardReveal = async (cards) => {
-        setPackMessage('');
+        setPackMessageParts(null);
         setRevealedCards(Array(cards.length).fill(true));
         await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -96,12 +99,8 @@ const StreamOverlayPage = () => {
             await new Promise(resolve => setTimeout(resolve, 700));
         }
 
-        // --- NEW SYMMETRIC EXIT ANIMATION ---
-
-        // 1. Wait for the cards to be admired
         await new Promise(resolve => setTimeout(resolve, 5000));
 
-        // 2. Loop from the outside in, hiding pairs of cards
         const numCards = cards.length;
         const middleIndex = Math.floor(numCards / 2);
 
@@ -111,14 +110,13 @@ const StreamOverlayPage = () => {
 
             setRevealedCards(prev => {
                 const updated = [...prev];
-                updated[leftIndex] = false;  // Hide left card
-                updated[rightIndex] = false; // Hide right card
+                updated[leftIndex] = false;
+                updated[rightIndex] = false;
                 return updated;
             });
-            await new Promise(resolve => setTimeout(resolve, 300)); // Stagger the pairs slightly
+            await new Promise(resolve => setTimeout(resolve, 300));
         }
 
-        // 3. If there's an odd number of cards, hide the middle one last
         if (numCards % 2 !== 0) {
             setRevealedCards(prev => {
                 const updated = [...prev];
@@ -127,10 +125,8 @@ const StreamOverlayPage = () => {
             });
         }
 
-        // 4. Wait for the last animation to finish
         await new Promise(resolve => setTimeout(resolve, 600));
 
-        // 5. NOW, fully remove the component from the screen
         setIsOpening(false);
         setOpenedCards([]);
 
@@ -149,15 +145,18 @@ const StreamOverlayPage = () => {
 
             {queue.length > 0 && (
                 <div className="queue-display">
-                    <h3>Packs in Queue: {queue.length}</h3>
+                    <span>{queue.length}</span> <br/>
+                    Packs in Queue
                 </div>
             )}
 
             {isOpening && (
                 <>
-                    {packMessage && (
+                    {packMessageParts && (
                         <div className="pack-ripping-message">
-                            {packMessage}
+                            {packMessageParts.pre}
+                            <b>{packMessageParts.username}</b>
+                            {packMessageParts.post}
                         </div>
                     )}
                     <div className="opened-cards-stream">
