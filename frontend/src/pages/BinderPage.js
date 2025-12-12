@@ -6,7 +6,7 @@ import {
     fetchCards,
 } from '../utils/api';
 import BaseCard from '../components/BaseCard';
-import '../styles/BinderPage.css';
+import './styles/BinderPage.css';
 import {rarities} from '../constants/rarities';
 import {modifiers} from '../constants/modifiers';
 
