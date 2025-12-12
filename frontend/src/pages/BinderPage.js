@@ -9,6 +9,7 @@ import BaseCard from '../components/BaseCard';
 import '../styles/BinderPage.css';
 import {rarities} from '../constants/rarities';
 import {modifiers} from '../constants/modifiers';
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const useIsMobile = (breakpoint = 768) => {
     const [isMobile, setIsMobile] = useState(window.innerWidth < breakpoint);
@@ -152,6 +153,8 @@ const CardPickerModal = ({
             prevRarity === normalizedRarityName ? '' : normalizedRarityName
         );
     };
+
+    if (loading) return <LoadingSpinner/>;
 
     return (
         <div className="modal-overlay" style={{
@@ -516,7 +519,7 @@ const BinderPage = () => {
                     <div className="binder-spine"></div>
 
                     {pages.map((pageData, pageIndex) => {
-                        let isVisible = false;
+                        let isVisible;
                         if (isMobile) {
                             isVisible = pageIndex === currentSpreadIndex;
                         } else {
