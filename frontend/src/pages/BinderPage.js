@@ -6,7 +6,7 @@ import {
     fetchCards,
 } from '../utils/api';
 import BaseCard from '../components/BaseCard';
-import './styles/BinderPage.css';
+import '../styles/BinderPage.css';
 import {rarities} from '../constants/rarities';
 import {modifiers} from '../constants/modifiers';
 
@@ -485,9 +485,11 @@ const BinderPage = () => {
 
             <div className="info-section">
                 Drag cards to organize. Hover over side arrows while dragging to flip pages.
+                <br/>
+                <br/>
+                <div><strong><u>Note - this page is just a test and does not function at all in any way how it should or will in the real feature. This is a test. Repeat, this is a test.</u></strong></div>
             </div>
 
-            <div><strong><u>Note - this page is just a test and does not function at all in any way how it should or will in the real feature. This is a test. Repeat, this is a test.</u></strong></div>
 
             <div className="binder-workspace">
 

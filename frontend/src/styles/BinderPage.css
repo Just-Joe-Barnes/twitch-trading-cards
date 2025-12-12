@@ -1,0 +1,330 @@
+h1 {
+  text-align: center;
+  font-size: 2.25rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 2rem 0 3rem;
+  position: relative;
+}
+h1::after {
+  content: "";
+  position: absolute;
+  bottom: -1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 2px;
+  background: var(--brand-primary);
+  border-radius: 2px;
+}
+
+.info-section {
+  background: var(--surface-dark);
+  border: 1px solid var(--border-dark);
+  padding: 1.6rem 2rem;
+  line-height: 3ch;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  margin-bottom: 1ch;
+  color: var(--text-primary);
+  max-width: 1000px;
+  margin: 0 auto 2rem auto;
+  text-align: center;
+}
+
+.top-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1800px;
+  margin-bottom: 2rem;
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  width: 100%;
+}
+
+.filter-toggle {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.btn-filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  padding: 10px 20px;
+}
+
+/* --- BINDER WORKSPACE STYLES --- */
+.binder-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding-bottom: 50px;
+}
+
+.binder-workspace {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px;
+  perspective: 1500px;
+  transition: transform 0.3s;
+  width: 100%;
+  max-width: 1600px;
+}
+
+/* --- Gutters & Controls (Desktop) --- */
+.binder-gutter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  height: 600px;
+  z-index: 10;
+}
+.binder-gutter .nav-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #888;
+}
+.binder-gutter .nav-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  transform: scale(1.05);
+}
+.binder-gutter .nav-button.disabled {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.binder-gutter .insert-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #2a2a2a;
+  border: 2px dashed #555;
+  color: #888;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.binder-gutter .insert-btn:hover {
+  border-color: white;
+  color: white;
+  background: #333;
+}
+
+/* --- The Binder Book --- */
+.binder-book {
+  display: flex;
+  background: #1a1a1a;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+  position: relative;
+  border: 1px solid #333;
+}
+.binder-book .binder-spine {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #111;
+  z-index: 20;
+  box-shadow: inset 0 0 10px black;
+  transform: translateX(-50%);
+}
+
+/* --- Individual Pages --- */
+.binder-page {
+  width: 420px;
+  height: 630px;
+  background: #1c1c1c;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 15px;
+  padding: 25px;
+  position: relative;
+}
+.binder-page.left-page {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  box-shadow: inset -15px 0 40px -10px rgba(0, 0, 0, 0.6);
+  border-right: 1px solid #111;
+}
+.binder-page.right-page {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  box-shadow: inset 15px 0 40px -10px rgba(0, 0, 0, 0.6);
+  border-left: 1px solid #111;
+}
+.binder-page .page-number {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  color: #444;
+  font-weight: bold;
+}
+
+/* --- Slots & Card Scaling --- */
+.binder-slot {
+  position: relative;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px dashed #2a2a2a;
+  border-radius: 8px;
+  aspect-ratio: 2/3;
+  overflow: hidden;
+  transition: border-color 0.2s;
+  cursor: pointer;
+}
+.binder-slot.hasCard {
+  border: none;
+}
+.binder-slot:hover {
+  border-color: #444;
+}
+.binder-slot.drag-over {
+  border-color: var(--brand-primary, #ff6b6b);
+  background: rgba(var(--brand-primary, #ff6b6b), 0.1);
+  border-style: solid;
+}
+.binder-slot .slot-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  opacity: 0.2;
+  font-size: 1.5rem;
+}
+.binder-slot .slot-content-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300px;
+  height: 450px;
+  transform: translate(-50%, -50%) scale(var(--scale-factor));
+  transform-origin: center center;
+  pointer-events: none;
+}
+.binder-slot .slot-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 8px;
+  z-index: 50;
+  pointer-events: auto;
+}
+.binder-slot .slot-controls .control-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  border: 2px solid white;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 24px;
+  padding: 30px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  transition: 0.2s;
+}
+.binder-slot .slot-controls .control-btn:hover {
+  transform: scale(1.1);
+}
+.binder-slot .slot-controls .control-btn.locked {
+  background: #e74c3c;
+  border-color: #c0392b;
+}
+.binder-slot .slot-controls .control-btn.remove {
+  color: #e74c3c;
+}
+.binder-slot .slot-controls .control-btn.remove:hover {
+  background: white;
+}
+
+/* --- Calculation for Scale Factor --- */
+.binder-page {
+  --scale-factor: 0.38;
+}
+
+/* --- Mobile Responsive Overrides --- */
+@media (max-width: 768px) {
+  .binder-workspace {
+    flex-direction: column;
+    padding: 10px;
+    gap: 10px;
+  }
+  .binder-gutter {
+    flex-direction: row;
+    height: auto;
+    width: 100%;
+    justify-content: space-between;
+    order: 2;
+  }
+  .binder-gutter .insert-btn {
+    width: 40px;
+    height: 40px;
+  }
+  .binder-gutter .nav-button {
+    height: 50px;
+    flex: 1;
+    margin: 0 5px;
+  }
+  .binder-book {
+    padding: 10px;
+    width: 100%;
+    order: 1;
+  }
+  .binder-book .binder-spine {
+    display: none;
+  }
+  .binder-page {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3/4.2;
+    padding: 15px;
+    grid-gap: 10px;
+    --scale-factor: 0.34;
+  }
+  .binder-page.single {
+    border-radius: 8px;
+    box-shadow: none;
+    border: none;
+  }
+}
+/* Small phones tweak */
+@media (max-width: 380px) {
+  .binder-page {
+    --scale-factor: 0.28;
+  }
+}
+
+/*# sourceMappingURL=BinderPage.css.map */
