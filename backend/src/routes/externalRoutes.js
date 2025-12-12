@@ -101,6 +101,7 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
         await createLogEntry(streamerUser, 'TWITCH_ROUTE_LOG', { headers: req.headers });
 
         console.log(`Received ${eventtype} event from Streamer.bot for user: ${userid}`);
+        console.log(eventtype);
 
         let packsToAward = 0;
         let message = '';
@@ -115,7 +116,9 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
                     return res.status(400).json({ message: 'Invalid payload. Missing subtier header.' });
                 }
 
-                packsToAward = subType[tier.toLowerCase()] || 1;
+                packsToAward = subType[tier.toLowerCase()] || 3;
+
+                console.log(tier, months, packsToAward);
 
                 const subscriber = await addPacksToUser(userid, packsToAward);
 
@@ -134,20 +137,28 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
                 const giftCount = parseInt(giftcount) || 1;
                 const gifterName = req.headers.giftername || 'An anonymous gifter';
 
+                console.log(giftTier, giftCount, gifterName);
+
                 if (!recipientid) {
                     await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `Gifted sub event is missing recipientid header.`);
                     return res.status(400).json({ message: 'Invalid payload. Missing recipientid header.' });
                 }
 
-                const packsPerTier = subType[giftTier.toLowerCase()] || 1;
+                const packsPerTier = subType[giftTier.toLowerCase()] || 3;
+
+                console.log(packsPerTier);
 
                 await updatePeriodCounters(giftCount, userid);
 
                 const gifterPacks = packsPerTier * giftCount;
                 const gifter = await addPacksToUser(userid, gifterPacks);
 
+                console.log(gifterPacks);
+
                 const recipientIds = recipientid.split(',');
                 const recipientPacks = packsPerTier;
+
+                console.log(recipientPacks);
 
                 const updatePromises = recipientIds.map(id => {
                     const trimmedId = id.trim();
@@ -167,6 +178,8 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
                 const recipientMessage = `Of the ${recipientIds.length} recipients, ${successfulRecipients.length} had accounts and received ${recipientPacks} packs each.`;
 
                 message = `${gifterMessage} ${recipientMessage}`;
+
+                console.log(message);
                 await createLogEntry(streamerUser, 'TWITCH_ROUTE_REDEMPTION', message);
                 break;
 

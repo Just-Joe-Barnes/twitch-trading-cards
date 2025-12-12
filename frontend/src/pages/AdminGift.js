@@ -8,7 +8,7 @@ import '../styles/AdminActions.css';
 
 const rarities = [
     'Basic', 'Common', 'Standard', 'Uncommon', 'Rare',
-    'Epic', 'Legendary', 'Mythic', 'Unique', 'Divine'
+    'Epic', 'Legendary', 'Mythic', 'Unique', 'Divine', 'Event'
 ];
 
 const GiftForm = ({

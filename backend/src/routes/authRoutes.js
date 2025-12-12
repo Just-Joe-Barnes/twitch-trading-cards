@@ -126,10 +126,8 @@ module.exports = function(io) {
         }
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            // Switched to findOne({ twitchId }) for consistency with the rest of the file
             const user = await User.findOne({ twitchId: decoded.id })
-                .select("username email isAdmin packs loginCount xp level twitchProfilePic")
-                .lean();
+                .select("username email isAdmin packs loginCount xp level twitchProfilePic pendingEventReward");
 
             if (!user) {
                 return res.status(401).json({ message: "User not found" });

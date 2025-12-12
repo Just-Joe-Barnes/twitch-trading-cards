@@ -4,7 +4,6 @@ import {fetchUserProfile, fetchWithAuth, searchCardsByName} from '../utils/api';
 import '../styles/AdminActions.css';
 
 const AdminActions = () => {
-    // ... (no changes to other state variables)
     const [newNote, setNewNote] = useState('');
     const [devNotes, setDevNotes] = useState(() => {
         const storedNotes = localStorage.getItem('devNotes');
@@ -31,7 +30,6 @@ const AdminActions = () => {
     });
     const [newAchievementResults, setNewAchievementResults] = useState([]);
 
-    // ADDED: State for the notification user search
     const [notificationType, setNotificationType] = useState('General Announcement');
     const [notificationUser, setNotificationUser] = useState('');
     const [isNotificationUserDropdownVisible, setNotificationUserDropdownVisible] = useState(false);
@@ -39,7 +37,6 @@ const AdminActions = () => {
 
     const navigate = useNavigate();
 
-    // ... (useEffect remains the same)
     useEffect(() => {
         const checkAdmin = async () => {
             try {
@@ -92,10 +89,9 @@ const AdminActions = () => {
         fetchMaintenanceStatus();
     }, [navigate]);
 
-    // ... (other handlers remain the same)
     const handleToggleMaintenanceMode = async () => {
         const newMode = !maintenanceMode;
-        setMaintenanceLoading(true); // Disable switch during API call
+        setMaintenanceLoading(true);
         try {
             await fetchWithAuth('/api/admin/settings/maintenance', {
                 method: 'POST',
@@ -231,15 +227,12 @@ const AdminActions = () => {
     };
 
 
-    // MODIFIED: This handler now checks for a selected user.
     const handleNotificationSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
-        // Find the user object if a username is selected
         const userObj = notificationUser ? users.find(u => u.username === notificationUser) : null;
 
-        // If a username is typed but not valid, show an error.
         if (notificationUser && !userObj) {
             window.showToast('Invalid user selected. Please choose a user from the list.', 'error');
             setLoading(false);
@@ -263,7 +256,6 @@ const AdminActions = () => {
                 : 'Global notification sent to all users.';
             window.showToast(successMessage, 'success');
 
-            // Reset form fields
             setNotificationType('General Announcement');
             setMessage('');
             setNotificationUser('');
@@ -276,12 +268,28 @@ const AdminActions = () => {
         }
     };
 
-    // Filter users for both pack management and notifications
+    const handleManualPayout = async () => {
+        const confirmed = window.confirm("Are you sure you want to attempt a manual payout for LAST month? This will only proceed if it hasn't happened yet.");
+        if (!confirmed) return;
+
+        setLoading(true);
+        try {
+            const res = await fetchWithAuth('/api/admin/trigger-monthly-payout', {
+                method: 'POST'
+            });
+            window.showToast(res.message, 'success');
+        } catch (err) {
+            const errMsg = err.message || 'Payout failed or already processed.';
+            window.showToast(errMsg, 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const filteredUsers = selectedUser
         ? users.filter(u => u.username.toLowerCase().includes(selectedUser.toLowerCase()))
         : [];
 
-    // ADDED: A separate filtered list for the notification user search
     const notificationFilteredUsers = notificationUser
         ? users.filter(u => u.username.toLowerCase().includes(notificationUser.toLowerCase()))
         : [];
@@ -300,7 +308,6 @@ const AdminActions = () => {
         <div className="page">
             {maintenanceMode && (<h1>Maintenance mode is ACTIVE</h1>)}
             <div className="admin-panel-grid">
-                {/* --- Achievements Panel (no changes) --- */}
                 <section className="section-card">
                     <h2>Achievements</h2>
                     {achievements.map((ach) => (
@@ -429,12 +436,10 @@ const AdminActions = () => {
                     </div>
                 </section>
 
-                {/* MODIFIED: Notification Panel */}
                 <section className="section-card">
                     <h2>Send Notification</h2>
                     <form onSubmit={handleNotificationSubmit} className="aa-admin-actions-form">
 
-                        {/* ADDED: User search input for notifications */}
                         <div className="aa-form-group" style={{ position: 'relative' }}>
                             <label>User (Optional):</label>
                             <input
@@ -489,7 +494,19 @@ const AdminActions = () => {
                     </form>
                 </section>
 
-                {/* --- Packs Management Panel (no changes) --- */}
+                <section className="section-card">
+                    <h2>Monthly Payout Failsafe</h2>
+                    <p style={{marginBottom:'1rem', color:'#aaa'}}>
+                        Manually trigger the pack distribution for the <strong>previous</strong> month.
+                        Safe to click: Checks if payout was already processed first.
+                    </p>
+                    <div className="button-group">
+                        <button className="primary-button" onClick={handleManualPayout} disabled={loading}>
+                            {loading ? 'Processing...' : 'Trigger Last Month Payout'}
+                        </button>
+                    </div>
+                </section>
+
                 <section className="section-card">
                     <h2>Manage User Packs</h2>
                     <form onSubmit={handleGivePacks} className="aa-admin-packs-form" style={{position: 'relative'}}>
@@ -567,7 +584,6 @@ const AdminActions = () => {
                     </form>
                 </section>
 
-                {/* --- User Profile Viewer (no changes) --- */}
                 <section className="section-card">
                     <h2>User Profile</h2>
                     <div style={{position: 'relative'}}>
@@ -612,7 +628,6 @@ const AdminActions = () => {
                     )}
                 </section>
 
-                {/* --- Dev Notes (no changes) --- */}
                 <section className="section-card">
                     <h2>Dev Notes</h2>
                     <div className="aa-admin-actions-form">
@@ -668,7 +683,6 @@ const AdminActions = () => {
                     </div>
                 </section>
 
-                {/* --- App Settings (no changes) --- */}
                 <section className={`section-card ${maintenanceMode && 'maintenance-mode'}`}>
                     <h2>App Settings</h2>
                     <div className="setting-row">

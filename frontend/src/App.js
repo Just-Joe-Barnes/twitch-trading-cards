@@ -25,6 +25,7 @@ import BountyBoardPage from "./pages/BountyBoardPage";
 import AdminGiftPage from "./pages/AdminGift";
 import { clearReward } from './utils/api';
 import CommunityPage from "./pages/CommunityPage";
+import BinderPage from "./pages/BinderPage";
 
 const MaintenancePage = lazy(() => import('./pages/MaintenancePage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
@@ -225,7 +226,8 @@ const App = () => {
                         <Route path="/kitchensink" element={<KitchenSink/>} />
                         <Route path="/dashboard" element={user ? <DashboardPage user={user}/> : <Navigate to="/login"/>} />
                         <Route path="/community" element={user ? <CommunityPage user={user}/> : <Navigate to="/login"/>} />
-                        <Route path="/collection/:username" element={<CollectionPage/>} />
+                        <Route path="/collection/:username" element={user? <CollectionPage/> : <Navigate to="/login"/>} />
+                        <Route path="/collection/:username/binder" element={user? <BinderPage/> : <Navigate to="/login"/>} />
                         <Route path="/collection" element={user ? <CollectionPage user={user}/> : <Navigate to="/login"/>} />
                         <Route path="/profile/:username" element={<ProfilePage/>} />
                         <Route path="/trading" element={user ? <TradingPage userId={user._id}/> : <Navigate to="/login"/>} />

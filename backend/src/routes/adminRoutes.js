@@ -7,6 +7,7 @@ const path = require('path');
 const { Readable } = require('stream');
 const UserActivity = require('../models/UserActivity');
 const { grantCardReward, grantPackReward, grantXpReward} = require('../helpers/eventHelpers');
+const { handleMonthlyPayout } = require('../services/payoutService');
 
 const User = require('../models/userModel');
 const Card = require('../models/cardModel');
@@ -1964,6 +1965,21 @@ router.post('/queues/pause', protect, adminOnly, (req, res) => {
 router.post('/queues/resume', protect, adminOnly, (req, res) => {
     resumeQueue();
     res.json({ success: true, message: 'Queue resumed.' });
+});
+
+
+router.post('/trigger-monthly-payout', protect, adminOnly, async (req, res) => {
+    try {
+        const result = await handleMonthlyPayout(true);
+        if (result.success) {
+            res.json({ message: result.message });
+        } else {
+            res.status(400).json({ message: result.message });
+        }
+    } catch (error) {
+        console.error('Manual payout error:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
 });
 
 module.exports = router;
