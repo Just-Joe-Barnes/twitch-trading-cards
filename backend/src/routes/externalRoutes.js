@@ -246,7 +246,12 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
                     break;
                 }
 
-                message = `${recipient.username} received ${packsPerTier} packs for receiving a gifted sub from ${gifterName}.`;
+                message =
+                `GIFTED SUB (RECIPIENT) | ` +
+                `Recipient: ${recipient.username} (twitchId: ${recipientid}) | ` +
+                `Gifter: ${gifterName} (twitchId: ${userid}) | ` +
+                `Tier: ${tier} | ` +
+                `Packs Awarded: ${packsPerTier}`;
                 await createLogEntry(streamerUser, 'TWITCH_ROUTE_REDEMPTION', message);
                 break;
             }
