@@ -139,11 +139,6 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
 
         console.log(giftTier, giftCount, gifterName);
 
-                if (!recipientid) {
-                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `Gifted sub event is missing recipientid header.`);
-                    return res.status(400).json({ message: 'Invalid payload. Missing recipientid header.' });
-                }
-
                 const packsPerTier = subType[giftTier.toLowerCase()] || 3;
 
                 console.log(packsPerTier);
