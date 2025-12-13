@@ -139,11 +139,6 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
 
                 console.log(giftTier, giftCount, gifterName);
 
-                if (!recipientid) {
-                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `Gifted sub event is missing recipientid header.`);
-                    return res.status(400).json({ message: 'Invalid payload. Missing recipientid header.' });
-                }
-
                 const packsPerTier = subType[giftTier.toLowerCase()] || 3;
 
                 console.log(packsPerTier);
@@ -155,7 +150,75 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
 
                 console.log(gifterPacks);
 
-                const recipientIds = recipientid.split(',');
+                const normalizeRecipientIds = (...rawValues) => {
+                    const ids = [];
+
+                    const pushId = (value) => {
+                        if (value === null || value === undefined) return;
+                        const str = String(value).trim();
+                        if (str.length > 0) {
+                            ids.push(str);
+                        }
+                    };
+
+                    const flatten = (value) => {
+                        if (Array.isArray(value)) {
+                            value.forEach(flatten);
+                            return;
+                        }
+
+                        if (value && typeof value === 'object') {
+                            // Support payloads like [{ id: "..." }, { recipientid: "..." }]
+                            if ('id' in value) pushId(value.id);
+                            if ('recipientid' in value) pushId(value.recipientid);
+                            return;
+                        }
+
+                        if (typeof value !== 'string') {
+                            pushId(value);
+                            return;
+                        }
+
+                        const trimmed = value.trim();
+
+                        if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+                            try {
+                                const parsed = JSON.parse(trimmed);
+                                flatten(parsed);
+                                return;
+                            } catch (err) {
+                                console.error('Failed to parse recipientid JSON:', err);
+                                return;
+                            }
+                        }
+
+                        trimmed
+                            .split(/[,|;\s]+/)
+                            .forEach(part => pushId(part));
+                    };
+
+                    rawValues.forEach(flatten);
+
+                    return [...new Set(ids)];
+                };
+
+                const rawRecipientValues = [];
+                Object.entries(req.headers).forEach(([key, value]) => {
+                    if (key.startsWith('recipientid')) {
+                        rawRecipientValues.push(value);
+                    }
+                });
+
+                if (rawRecipientValues.length === 0 && recipientid) {
+                    rawRecipientValues.push(recipientid);
+                }
+
+                const recipientIds = normalizeRecipientIds(...rawRecipientValues);
+
+                if (recipientIds.length === 0) {
+                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', 'Gifted sub event is missing recipient identifiers.');
+                    return res.status(400).json({ message: 'Invalid payload. Missing recipient identifiers.' });
+                }
                 const recipientPacks = packsPerTier;
 
                 console.log(recipientPacks);
