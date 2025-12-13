@@ -223,7 +223,7 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
              *   giftcount=1
              *   giftername=<optional>
              */
-            case 'giftedSubRecipient': {
+                        case 'giftedSubRecipient': {
                 const tier = subtier;
                 const gifterName = req.headers.giftername || 'An anonymous gifter';
 
@@ -241,30 +241,28 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
                 const recipient = await addPacksToUser(recipientid, packsPerTier);
 
                 if (!recipient) {
-                    message = `${gifterName} gifted a sub, but the recipient (Twitch ID ${recipientid}) does not have an account, so no packs were awarded to the recipient.`;
+                    message =
+                        `GIFTED SUB (RECIPIENT) | ` +
+                        `Recipient: (no account) (twitchId: ${recipientid}) | ` +
+                        `Gifter: ${gifterName} (twitchId: ${userid}) | ` +
+                        `Tier: ${tier} | ` +
+                        `Packs Intended: ${packsPerTier} | ` +
+                        `Result: SKIPPED_NO_ACCOUNT`;
                     await createLogEntry(streamerUser, 'TWITCH_ROUTE_REDEMPTION', message);
                     break;
                 }
 
                 message =
-                `GIFTED SUB (RECIPIENT) | ` +
-                `Recipient: ${recipient.username} (twitchId: ${recipientid}) | ` +
-                `Gifter: ${gifterName} (twitchId: ${userid}) | ` +
-                `Tier: ${tier} | ` +
-                `Packs Awarded: ${packsPerTier}`;
+                    `GIFTED SUB (RECIPIENT) | ` +
+                    `Recipient: ${recipient.username} (twitchId: ${recipientid}) | ` +
+                    `Gifter: ${gifterName} (twitchId: ${userid}) | ` +
+                    `Tier: ${tier} | ` +
+                    `Packs Awarded: ${packsPerTier} | ` +
+                    `Result: AWARDED`;
                 await createLogEntry(streamerUser, 'TWITCH_ROUTE_REDEMPTION', message);
                 break;
             }
 
-            /**
-             * NEW: Gifter bulk handler (Gift Bomb trigger)
-             * - Send headers:
-             *   eventtype=giftedSubGifterBulk
-             *   userid=<gifter twitch id>
-             *   subtier=<tier string>
-             *   giftcount=<gifts>
-             *   giftername=<optional>
-             */
             case 'giftedSubGifterBulk': {
                 const tier = subtier;
                 const giftCount = parseInt(giftcount, 10) || 0;
@@ -289,12 +287,12 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
                 const gifter = await addPacksToUser(userid, gifterPacks);
 
                 if (!gifter) {
-                    message = `${gifterName} (who does not have an account) was not awarded packs for gifting ${giftCount} subs.`;
+                    message = `GIFTED SUB (GIFTER BULK) | ${gifterName} (twitchId: ${userid}) (no account) | Tier: ${String(tier)} | Gifts: ${giftCount} | Packs Intended: ${gifterPacks} (${packsPerTier} per gift) | Result: SKIPPED_NO_ACCOUNT`;
                     await createLogEntry(streamerUser, 'TWITCH_ROUTE_REDEMPTION', message);
                     break;
                 }
 
-                message = `${gifter.username} was awarded ${gifterPacks} packs for gifting ${giftCount} subs (${packsPerTier} packs per gift at ${String(tier)}).`;
+                message = `GIFTED SUB (GIFTER BULK) | Gifter: ${gifter.username} (twitchId: ${userid}) | Tier: ${String(tier)} | Gifts: ${giftCount} | Packs Awarded: ${gifterPacks} (${packsPerTier} per gift) | Result: AWARDED`;
                 await createLogEntry(streamerUser, 'TWITCH_ROUTE_REDEMPTION', message);
                 break;
             }
@@ -331,7 +329,28 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
 
                 const successfulRecipients = results.filter(u => u !== null);
 
-                const gifterMessage = gifter
+                
+                // Detailed recipient logging (who received what) for legacy giftedSub payloads
+                const recipientDetails = recipientIds.map((id, i) => {
+                    const u = results[i];
+                    if (u) return `${u.username} (twitchId: ${id})`;
+                    return `(no account) (twitchId: ${id})`;
+                });
+
+                const recipientsAwarded = results
+                    .map((u, i) => (u ? `${u.username} (twitchId: ${recipientIds[i]})` : null))
+                    .filter(Boolean);
+
+                const recipientsSkipped = results
+                    .map((u, i) => (!u ? `(twitchId: ${recipientIds[i]})` : null))
+                    .filter(Boolean);
+
+                await createLogEntry(
+                    streamerUser,
+                    'TWITCH_ROUTE_REDEMPTION',
+                    `GIFTED SUB (LEGACY) | Gifter: ${gifterName} (twitchId: ${userid}) | Tier: ${String(giftTier)} | Gifts: ${giftCount} | Recipient Packs Each: ${recipientPacks} | Awarded To: ${recipientsAwarded.length ? recipientsAwarded.join(', ') : 'none'} | Skipped (no account): ${recipientsSkipped.length ? recipientsSkipped.join(', ') : 'none'}`
+                );
+const gifterMessage = gifter
                     ? `${gifter.username} was awarded ${gifterPacks} packs for gifting.`
                     : `${gifterName} (who does not have an account) was not awarded packs.`;
 
