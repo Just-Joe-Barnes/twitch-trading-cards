@@ -98,7 +98,11 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
         }
 
         streamerUser = await User.findOne({ _id: streamerid });
-        await createLogEntry(streamerUser, 'TWITCH_ROUTE_LOG', { headers: req.headers });
+        await createLogEntry(streamerUser, 'TWITCH_ROUTE_LOG', {
+            headers: req.headers,
+            rawHeaders: req.rawHeaders,
+            query: req.query,
+        });
 
         console.log(`Received ${eventtype} event from Streamer.bot for user: ${userid}`);
         console.log(eventtype);
