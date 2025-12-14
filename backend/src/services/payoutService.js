@@ -68,7 +68,12 @@ async function handleMonthlyPayout() {
     // Use $push to add the reward to each user's pending array
     // This is one single, efficient database operation.
     await User.updateMany(
-        { _id: { $in: usersToReward } }, // Find all users in the active list
+        {
+            $or: [
+                { _id: { $in: usersToReward } },
+                { twitchId: { $in: usersToReward } }
+            ]
+        },
         { $push: { pendingEventReward: rewardPayload } }
     );
 }
