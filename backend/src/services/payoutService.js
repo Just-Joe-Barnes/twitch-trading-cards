@@ -80,6 +80,12 @@ async function handleMonthlyPayout() {
         },
         { $push: { pendingEventReward: rewardPayload } }
     );
+
+    return {
+        success: true,
+        matchedCount: updateResult.matchedCount,
+        modifiedCount: updateResult.modifiedCount
+    };
 }
 
 
