@@ -78,7 +78,10 @@ async function handleMonthlyPayout() {
                 { twitchId: { $in: usersToReward } }
             ]
         },
-        { $push: { pendingEventReward: rewardPayload } }
+ {
+            $push: { pendingEventReward: rewardPayload },
+            $inc: { packs: packsToAward }
+        }
     );
 
     return {
