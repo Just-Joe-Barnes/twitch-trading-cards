@@ -67,10 +67,14 @@ async function handleMonthlyPayout() {
 
     // Use $push to add the reward to each user's pending array
     // This is one single, efficient database operation.
+
+    const objectIdPattern = /^[0-9a-fA-F]{24}$/;
+    const validObjectIds = usersToReward.filter(id => objectIdPattern.test(id));
+
     await User.updateMany(
         {
             $or: [
-                { _id: { $in: usersToReward } },
+                { _id: { $in: validObjectIds } },
                 { twitchId: { $in: usersToReward } }
             ]
         },
@@ -82,3 +86,4 @@ async function handleMonthlyPayout() {
 module.exports = {
     handleMonthlyPayout
 };
+
