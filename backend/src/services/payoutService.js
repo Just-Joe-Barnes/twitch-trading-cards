@@ -71,7 +71,7 @@ async function handleMonthlyPayout() {
     const objectIdPattern = /^[0-9a-fA-F]{24}$/;
     const validObjectIds = usersToReward.filter(id => objectIdPattern.test(id));
 
-    await User.updateMany(
+    const updateResult = await User.updateMany(
         {
             $or: [
                 { _id: { $in: validObjectIds } },
