@@ -46,6 +46,8 @@ const getPacksPerTier = (rawTier) => {
     return subType[tierKey] || 3;
 };
 
+const escapeRegex = (value = '') => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const addPacksToUser = async (twitchId, packCount) => {
     if (!twitchId || packCount <= 0) {
         return null;
@@ -56,6 +58,28 @@ const addPacksToUser = async (twitchId, packCount) => {
         { $inc: { packs: packCount } },
         { new: true, upsert: false }
     );
+    return user;
+};
+
+const addPacksToRecipient = async (identifier, packCount) => {
+    if (packCount <= 0 || !identifier) {
+        return null;
+    }
+
+    const trimmed = String(identifier).trim();
+    if (!trimmed) return null;
+
+    const user = await User.findOneAndUpdate(
+        {
+            $or: [
+                { twitchId: trimmed },
+                { username: { $regex: new RegExp(`^${escapeRegex(trimmed)}$`, 'i') } }
+            ]
+        },
+        { $inc: { packs: packCount } },
+        { new: true, upsert: false }
+    );
+
     return user;
 };
 
