@@ -25,6 +25,8 @@ const subType = {
     '3000': 12
 }
 
+const escapeRegex = (value = '') => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const addPacksToUser = async (twitchId, packCount) => {
     if (packCount <= 0) {
         return null;
@@ -35,6 +37,28 @@ const addPacksToUser = async (twitchId, packCount) => {
         { $inc: { packs: packCount } },
         { new: true, upsert: false }
     );
+    return user;
+};
+
+const addPacksToRecipient = async (identifier, packCount) => {
+    if (packCount <= 0 || !identifier) {
+        return null;
+    }
+
+    const trimmed = String(identifier).trim();
+    if (!trimmed) return null;
+
+    const user = await User.findOneAndUpdate(
+        {
+            $or: [
+                { twitchId: trimmed },
+                { username: { $regex: new RegExp(`^${escapeRegex(trimmed)}$`, 'i') } }
+            ]
+        },
+        { $inc: { packs: packCount } },
+        { new: true, upsert: false }
+    );
+
     return user;
 };
 
@@ -98,7 +122,11 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
         }
 
         streamerUser = await User.findOne({ _id: streamerid });
-        await createLogEntry(streamerUser, 'TWITCH_ROUTE_LOG', { headers: req.headers });
+        await createLogEntry(streamerUser, 'TWITCH_ROUTE_LOG', {
+            headers: req.headers,
+            rawHeaders: req.rawHeaders,
+            query: req.query,
+        });
 
         console.log(`Received ${eventtype} event from Streamer.bot for user: ${userid}`);
         console.log(eventtype);
@@ -139,11 +167,6 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
 
                 console.log(giftTier, giftCount, gifterName);
 
-                if (!recipientid) {
-                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `Gifted sub event is missing recipientid header.`);
-                    return res.status(400).json({ message: 'Invalid payload. Missing recipientid header.' });
-                }
-
                 const packsPerTier = subType[giftTier.toLowerCase()] || 3;
 
                 console.log(packsPerTier);
@@ -155,14 +178,112 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
 
                 console.log(gifterPacks);
 
-                const recipientIds = recipientid.split(',');
+                const normalizeRecipientIds = (...rawValues) => {
+                    const ids = [];
+
+                    const pushId = (value) => {
+                        if (value === null || value === undefined) return;
+                        const str = String(value).trim();
+                        if (str.length > 0) {
+                            ids.push(str);
+                        }
+                    };
+
+                    const flatten = (value) => {
+                        if (Array.isArray(value)) {
+                            value.forEach(flatten);
+                            return;
+                        }
+
+                        if (value && typeof value === 'object') {
+                            // Support payloads like [{ id: "..." }, { recipientid: "..." }]
+                            if ('id' in value) pushId(value.id);
+                            if ('recipientid' in value) pushId(value.recipientid);
+                            return;
+                        }
+
+                        if (typeof value !== 'string') {
+                            pushId(value);
+                            return;
+                        }
+
+                        const trimmed = value.trim();
+
+                        if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+                            try {
+                                const parsed = JSON.parse(trimmed);
+                                flatten(parsed);
+                                return;
+                            } catch (err) {
+                                console.error('Failed to parse recipientid JSON:', err);
+                                return;
+                            }
+                        }
+
+                        trimmed
+                            .split(/[,|;\s]+/)
+                            .forEach(part => pushId(part));
+                    };
+
+                    rawValues.forEach(flatten);
+
+                    return [...new Set(ids)];
+                };
+
+                const rawRecipientValues = [];
+
+                const pushHeaderCandidate = (key, value) => {
+                    if (!key) return;
+                    const normalizedKey = key.toLowerCase();
+                    if (normalizedKey.startsWith('recipient')) {
+                        rawRecipientValues.push(value);
+                    }
+                };
+
+                Object.entries(req.headers).forEach(([key, value]) => {
+                    pushHeaderCandidate(key, value);
+                });
+
+                if (Array.isArray(req.rawHeaders)) {
+                    for (let i = 0; i < req.rawHeaders.length - 1; i += 2) {
+                        const headerName = req.rawHeaders[i];
+                        const headerValue = req.rawHeaders[i + 1];
+                        pushHeaderCandidate(headerName, headerValue);
+                    }
+                }
+
+                if (req.query) {
+                    Object.entries(req.query).forEach(([key, value]) => {
+                        pushHeaderCandidate(key, value);
+                    });
+                }
+
+                if (rawRecipientValues.length === 0 && recipientid) {
+                    rawRecipientValues.push(recipientid);
+                }
+
+                const recipientIds = normalizeRecipientIds(...rawRecipientValues);
+
+                console.log('Raw recipient values from headers/query/rawHeaders:', rawRecipientValues);
+                console.log('Normalized recipient IDs:', recipientIds);
+
+                await createLogEntry(
+                    streamerUser,
+                    'TWITCH_ROUTE_RECIPIENT_DEBUG',
+                    `Recipient candidates: ${JSON.stringify(rawRecipientValues)}; normalized IDs: ${JSON.stringify(recipientIds)}`
+                );
+
+                if (recipientIds.length === 0) {
+                    await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', 'Gifted sub event is missing recipient identifiers.');
+                    return res.status(400).json({ message: 'Invalid payload. Missing recipient identifiers.' });
+                }
                 const recipientPacks = packsPerTier;
 
                 console.log(recipientPacks);
 
                 const updatePromises = recipientIds.map(id => {
                     const trimmedId = id.trim();
-                    return addPacksToUser(trimmedId, recipientPacks);
+                    return addPacksToRecipient(trimmedId, recipientPacks);
                 });
                 const results = await Promise.all(updatePromises);
 
