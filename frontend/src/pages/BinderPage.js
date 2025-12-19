@@ -3,7 +3,8 @@ import {useParams} from 'react-router-dom';
 import {
     fetchUserCollection,
     fetchUserProfile,
-    fetchCards,\n} from '../utils/api';
+    fetchCards,
+} from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import '../styles/BinderPage.css';
 import {rarities} from '../constants/rarities';
