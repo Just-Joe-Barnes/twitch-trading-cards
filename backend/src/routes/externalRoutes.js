@@ -1,3 +1,5 @@
+// File: backend/routes/externalRoutes.js
+
 const express = require('express');
 const router = express.Router();
 const User = require('../models/userModel');
@@ -247,7 +249,7 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
              *   giftcount=1
              *   giftername=<optional>
              */
-                        case 'giftedSubRecipient': {
+            case 'giftedSubRecipient': {
                 const tier = subtier;
                 const gifterName = req.headers.giftername || 'An anonymous gifter';
 
@@ -344,29 +346,25 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
                 const gifterPacks = packsPerTier * giftCount;
                 const gifter = await addPacksToUser(userid, gifterPacks);
 
-                const recipientIds = normalizeRecipientIds(req.headers.recipientids || recipientid);
+                // Recipient list can come as usernames (e.g. %gift.recipientUser0%) or ids.
+                // Use addPacksToRecipient so we can match either twitchId OR username (case-insensitive exact).
+                const recipientIdsRaw = req.headers.recipientids || recipientid;
+                const recipientIds = normalizeRecipientIds(recipientIdsRaw).slice(0, giftCount);
+
                 const recipientPacks = packsPerTier;
 
                 const results = await Promise.all(
-                    recipientIds.map(id => addPacksToUser(id, recipientPacks))
+                    recipientIds.map(id => addPacksToRecipient(id, recipientPacks))
                 );
 
                 const successfulRecipients = results.filter(u => u !== null);
 
-                
-                // Detailed recipient logging (who received what) for legacy giftedSub payloads
-                const recipientDetails = recipientIds.map((id, i) => {
-                    const u = results[i];
-                    if (u) return `${u.username} (twitchId: ${id})`;
-                    return `(no account) (twitchId: ${id})`;
-                });
-
                 const recipientsAwarded = results
-                    .map((u, i) => (u ? `${u.username} (twitchId: ${recipientIds[i]})` : null))
+                    .map((u, i) => (u ? `${u.username} (idOrName: ${recipientIds[i]})` : null))
                     .filter(Boolean);
 
                 const recipientsSkipped = results
-                    .map((u, i) => (!u ? `(twitchId: ${recipientIds[i]})` : null))
+                    .map((u, i) => (!u ? `(idOrName: ${recipientIds[i]})` : null))
                     .filter(Boolean);
 
                 await createLogEntry(
@@ -374,7 +372,8 @@ router.get('/earn-pack', validateApiKey, async (req, res) => {
                     'TWITCH_ROUTE_REDEMPTION',
                     `GIFTED SUB (LEGACY) | Gifter: ${gifterName} (twitchId: ${userid}) | Tier: ${String(giftTier)} | Gifts: ${giftCount} | Recipient Packs Each: ${recipientPacks} | Awarded To: ${recipientsAwarded.length ? recipientsAwarded.join(', ') : 'none'} | Skipped (no account): ${recipientsSkipped.length ? recipientsSkipped.join(', ') : 'none'}`
                 );
-const gifterMessage = gifter
+
+                const gifterMessage = gifter
                     ? `${gifter.username} was awarded ${gifterPacks} packs for gifting.`
                     : `${gifterName} (who does not have an account) was not awarded packs.`;
 
