@@ -3,8 +3,7 @@ import {useParams} from 'react-router-dom';
 import {
     fetchUserCollection,
     fetchUserProfile,
-    fetchCards,
-} from '../utils/api';
+    fetchCards,\n} from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import '../styles/BinderPage.css';
 import {rarities} from '../constants/rarities';
@@ -15,288 +14,29 @@ const useIsMobile = (breakpoint = 768) => {
     const [isMobile, setIsMobile] = useState(window.innerWidth < breakpoint);
 
     useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth < breakpoint);
-        };
-
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [breakpoint]);
-
-    return isMobile;
-};
-
-const CardPickerModal = ({
-                             onSelectCard,
-                             onClose,
-                             collectionOwner,
-                             loggedInUser
-                         }) => {
-    const [allCards, setAllCards] = useState([]);
-    const [filteredCards, setFilteredCards] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [limitedCards, setLimitedCards] = useState([]);
-    const [showFilters, setShowFilters] = useState(false);
-
-    const [search, setSearch] = useState('');
-    const [sortOption, setSortOption] = useState('acquiredAt');
-    const [order, setOrder] = useState('desc');
-    const [selectedRarity, setSelectedRarity] = useState('');
-
-    const modifierNames = useMemo(() =>
-            modifiers.filter(m => m.name !== 'None').map(m => m.name.toLowerCase())
-        , []);
-
-    const getNameForSort = useCallback((name) => {
-        let sortableName = name;
-        let lowerName = name.toLowerCase();
-
-        if (lowerName.startsWith('the ')) {
-            sortableName = sortableName.substring(4);
-            lowerName = lowerName.substring(4);
+        if (!binderReady || !binderIdentifier) return;
+        if (initialLoadRef.current) {
+            initialLoadRef.current = false;
+            return;
         }
-        lowerName = lowerName.trimStart();
-        for (const modifier of modifierNames) {
-            let prefix = modifier + ' ';
-            if (modifier === 'glitch') {
-                prefix = 'glitched ';
-            }
-            if (lowerName.startsWith(prefix)) {
-                const cutIndex = lowerName.indexOf(prefix) + prefix.length;
-                sortableName = sortableName.substring(cutIndex);
-                break;
-            }
-        }
-        return sortableName.trimStart();
-    }, [modifierNames]);
 
-    const fetchCatalogue = async () => {
-        try {
-            const response = await fetchCards({limit: 'all'});
-            const fetchedCards = response.cards;
-            setLimitedCards(fetchedCards.filter((c) =>
-                !!c.availableFrom && !!c.availableTo
-            ));
-        } catch (err) {
-            console.error(err);
-        }
-    };
+        if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
-    const isCardLimited = (card) => {
-        return limitedCards.some((lc) => lc.name === card.name);
-    }
-
-    useEffect(() => {
-        const fetchCollectionData = async () => {
+        saveTimeoutRef.current = setTimeout(() => {
             try {
-                setLoading(true);
-                const identifier = collectionOwner || loggedInUser;
-                if (identifier) {
-                    const data = await fetchUserCollection(identifier);
-                    if (data.cards) {
-                        setAllCards(data.cards);
-                    }
-                }
+                localStorage.setItem(`binder:${binderIdentifier}`, JSON.stringify(pages));
             } catch (error) {
                 console.error(error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchCollectionData();
-        fetchCatalogue();
-    }, [collectionOwner, loggedInUser]);
-
-    useEffect(() => {
-        let currentFilteredCards = [...allCards];
-
-        if (search) {
-            currentFilteredCards = currentFilteredCards.filter((card) =>
-                card.name.toLowerCase().includes(search.toLowerCase())
-            );
-        }
-
-        if (selectedRarity) {
-            currentFilteredCards = currentFilteredCards.filter(
-                (card) => card.rarity.trim().toLowerCase() === selectedRarity.toLowerCase()
-            );
-        }
-
-        if (sortOption) {
-            currentFilteredCards.sort((a, b) => {
-                let result = 0;
-                if (sortOption === 'mintNumber') {
-                    const aNum = parseInt(a.mintNumber, 10);
-                    const bNum = parseInt(b.mintNumber, 10);
-                    result = aNum - bNum;
-                } else if (sortOption === 'name') {
-                    const nameA = getNameForSort(a.name);
-                    const nameB = getNameForSort(b.name);
-                    result = nameA.localeCompare(nameB);
-                } else if (sortOption === 'rarity') {
-                    const rarityA = rarities.findIndex(r => r.name.toLowerCase() === a.rarity.toLowerCase());
-                    const rarityB = rarities.findIndex(r => r.name.toLowerCase() === b.rarity.toLowerCase());
-                    result = rarityA - rarityB;
-                } else if (sortOption === 'acquiredAt') {
-                    result = new Date(a.acquiredAt) - new Date(b.acquiredAt);
+                if (window.showToast) {
+                    window.showToast('Failed to auto-save binder.', 'error');
                 }
-                return order === 'asc' ? result : -result;
-            });
-        }
-
-        setFilteredCards(currentFilteredCards);
-    }, [allCards, search, selectedRarity, limitedCards, sortOption, order, getNameForSort]);
-
-    const handleRarityChange = (rarityName) => {
-        const normalizedRarityName = rarityName.toLowerCase();
-        setSelectedRarity(prevRarity =>
-            prevRarity === normalizedRarityName ? '' : normalizedRarityName
-        );
-    };
-
-    if (loading) return <LoadingSpinner/>;
-
-    return (
-        <div className="modal-overlay" style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(10, 10, 10, 0.95)', zIndex: 2000, display: 'flex',
-            flexDirection: 'column', padding: '20px', overflowY: 'auto', backdropFilter: 'blur(5px)'
-        }}>
-            <div className="modal-content" style={{
-                backgroundColor: '#1e1e1e', borderRadius: '12px',
-                padding: '25px', margin: 'auto', maxWidth: '1200px', width: '100%',
-                maxHeight: '90vh', overflowY: 'scroll',
-                border: '1px solid #333',
-                boxShadow: '0 20px 50px rgba(0,0,0,0.8)'
-            }}>
-                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #333', paddingBottom:'15px'}}>
-                    <h2>Select a Card to Insert</h2>
-                    <button onClick={onClose} className="secondary-button">
-                        <i className="fa-solid fa-xmark"></i> Close
-                    </button>
-                </div>
-
-                <div style={{marginBottom: '1rem'}}>
-                    <button onClick={() => setShowFilters(!showFilters)} className="secondary-button" style={{width: '100%'}}>
-                        {showFilters ? (
-                            <span><i className="fa-solid fa-filter-circle-xmark"/> Hide Filters</span>
-                        ) : (
-                            <span><i className="fa-solid fa-filter"/> Show Filters</span>
-                        )}
-                    </button>
-                </div>
-
-                {showFilters && (
-                    <div className="filters section-card" style={{background: '#141414', padding:'15px'}}>
-                        <div className="filter-top-row">
-                            <div className="filter-card">
-                                <input
-                                    type="text"
-                                    placeholder="Search..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="filter-input"
-                                />
-                            </div>
-                            <div className="filter-button-group">
-                                <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} className="filter-select">
-                                    <option value="acquiredAt">Recent</option>
-                                    <option value="name">Name</option>
-                                    <option value="rarity">Rarity</option>
-                                </select>
-                                <div className="checkbox-group button-row">
-                                    <div className="checkbox-wrapper" style={{padding:'10px', cursor:'pointer'}}>
-                                        <label onClick={() => setOrder(prev => prev === 'asc' ? 'desc' : 'asc')} style={{cursor:'pointer'}}>
-                                            <i className={`fa-regular fa-arrow-${order === 'asc' ? 'down' : 'up'}-a-z`}></i> {order === 'asc' ? 'Asc' : 'Desc'}
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="rarity-key">
-                            {rarities.map((r) => (
-                                <button
-                                    key={r.name}
-                                    onClick={() => handleRarityChange(r.name)}
-                                    className={`rarity-item ${r.name.toLowerCase()} ${selectedRarity === r.name.toLowerCase() ? 'active' : ''}`}
-                                    style={{"--item-color": r.color}}
-                                >
-                                    {r.name}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                <div className="cards-grid mini" style={{"--user-card-scale": 1, marginTop: '20px'}}>
-                    {filteredCards.map((card) => {
-                        const isLimited = isCardLimited(card);
-                        return (
-                            <div key={card._id} className="card-item" onClick={() => onSelectCard(card)}>
-                                <BaseCard
-                                    name={card.name}
-                                    image={card.imageUrl}
-                                    rarity={card.rarity}
-                                    description={card.flavorText}
-                                    mintNumber={card.mintNumber}
-                                    modifier={card.modifier}
-                                    grade={card.grade}
-                                    slabbed={card.slabbed}
-                                    limited={isLimited}
-                                    miniCard={true}
-                                    inspectOnClick={false}
-                                />
-                            </div>
-                        )
-                    })}
-                </div>
-                {filteredCards.length === 0 && <p style={{textAlign:'center', padding:'20px'}}>No cards found matching filters.</p>}
-            </div>
-        </div>
-    );
-};
-
-const BinderPage = () => {
-    const {username: collectionOwner} = useParams();
-    const [loggedInUser, setLoggedInUser] = useState(null);
-
-    // Initialize with 4 pages (2 spreads)
-    const [pages, setPages] = useState([Array(9).fill(null), Array(9).fill(null), Array(9).fill(null), Array(9).fill(null)]);
-    const [currentSpreadIndex, setCurrentSpreadIndex] = useState(0);
-    const [pickingSlot, setPickingSlot] = useState(null);
-    const [limitedCards, setLimitedCards] = useState([]);
-
-    // Drag and Drop State
-    const [draggedItem, setDraggedItem] = useState(null); // { pageIndex, slotIndex, cardData }
-    const [dragOverSlot, setDragOverSlot] = useState(null); // { pageIndex, slotIndex }
-    const dragTimeoutRef = useRef(null);
-
-    const isMobile = useIsMobile();
-
-    const fetchCatalogue = async () => {
-        try {
-            const response = await fetchCards({limit: 'all'});
-            const fetchedCards = response.cards;
-            setLimitedCards(fetchedCards.filter((c) =>
-                !!c.availableFrom && !!c.availableTo
-            ));
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                const profile = await fetchUserProfile();
-                setLoggedInUser(profile.username);
-            } catch (error) {
-                setLoggedInUser(null);
             }
+        }, 300);
+
+        return () => {
+            if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
         };
-        fetchProfile();
-        fetchCatalogue();
-    }, []);
+    }, [pages, binderReady, binderIdentifier]);
 
     const isCardLimited = (card) => {
         return limitedCards.some((lc) => lc.name === card.name);
@@ -392,8 +132,10 @@ const BinderPage = () => {
     const handleCardSelected = (card) => {
         if (pickingSlot) {
             const updatedPages = [...pages];
+            const cardId = card?._id || card?.cardId || null;
             updatedPages[pickingSlot.pageIndex][pickingSlot.slotIndex] = {
                 ...card,
+                cardId,
                 locked: false
             };
             setPages(updatedPages);
@@ -481,6 +223,8 @@ const BinderPage = () => {
             clearTimeout(dragTimeoutRef.current);
         }
     };
+
+    if (binderLoading) return <LoadingSpinner/>;
 
     return (
         <div className="binder-view page">
@@ -627,3 +371,5 @@ const BinderPage = () => {
 };
 
 export default BinderPage;
+
+
