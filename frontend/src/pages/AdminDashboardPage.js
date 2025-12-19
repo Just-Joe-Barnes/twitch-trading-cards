@@ -132,8 +132,7 @@ const AdminDashboardPage = ({user}) => {
         try {
             const activeMinutesParam = activeFilter === 'active' ? '&activeMinutes=45' : '';
             const data = await fetchWithAuth(`/api/admin/users-activity?${activeMinutesParam}`);
-            const filteredData = (data || []).filter(u => u._id !== '67902369038799d79f21246f');
-            setUsers(filteredData);
+            setUsers(data || []);
         } catch (err) {
             console.error('Error fetching users with activity:', err);
         } finally {

@@ -6,6 +6,9 @@
   /* Remove the border from the very last item */
   /* A more distinct hover/focus state */
 }
+.page.full .top-section {
+  max-width: 100%;
+}
 .page .grid-container {
   display: grid;
   grid-template-columns: 360px 1fr 1fr 1fr;
