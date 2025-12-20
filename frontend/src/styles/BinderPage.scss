@@ -102,7 +102,7 @@ $transition-speed: 0.3s;
   perspective: 1500px;
   transition: transform $transition-speed;
   width: 100%;
-  max-width: 1600px;
+  max-width: 1900px;
 }
 
 /* --- Gutters & Controls (Desktop) --- */
@@ -112,7 +112,7 @@ $transition-speed: 0.3s;
   align-items: center;
   justify-content: center;
   gap: 20px;
-  height: 600px; // Matches binder height approx
+  height: 760px; // Matches binder height approx
   z-index: 10;
 
   .nav-button {
@@ -160,7 +160,7 @@ $transition-speed: 0.3s;
 .binder-book {
   display: flex;
   background: $binder-bg;
-  padding: 15px; // Padding creates the "leather" edge look
+  padding: 20px; // Padding creates the "leather" edge look
   border-radius: 12px;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
   position: relative;
@@ -181,14 +181,14 @@ $transition-speed: 0.3s;
 
 /* --- Individual Pages --- */
 .binder-page {
-  width: 420px; // Desktop Width
-  height: 630px; // Desktop Height (3:2 ratio approx)
+  width: 520px; // Desktop Width
+  height: 780px; // Desktop Height (3:2 ratio approx)
   background: $page-bg;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  gap: 15px;
-  padding: 25px;
+  gap: 18px;
+  padding: 28px;
   position: relative;
 
   &.left-page {
@@ -307,7 +307,7 @@ $transition-speed: 0.3s;
 /* --- Calculation for Scale Factor --- */
 // Desktop: Slot is approx 110px wide. 110 / 300 = ~0.36
 .binder-page {
-  --scale-factor: 0.38;
+  --scale-factor: 0.46;
 }
 
 

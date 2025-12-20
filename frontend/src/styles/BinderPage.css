@@ -81,7 +81,7 @@ h1::after {
   perspective: 1500px;
   transition: transform 0.3s;
   width: 100%;
-  max-width: 1600px;
+  max-width: 1900px;
 }
 
 /* --- Gutters & Controls (Desktop) --- */
@@ -91,7 +91,7 @@ h1::after {
   align-items: center;
   justify-content: center;
   gap: 20px;
-  height: 600px;
+  height: 760px;
   z-index: 10;
 }
 .binder-gutter .nav-button {
@@ -138,7 +138,7 @@ h1::after {
 .binder-book {
   display: flex;
   background: #1a1a1a;
-  padding: 15px;
+  padding: 20px;
   border-radius: 12px;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
   position: relative;
@@ -158,14 +158,14 @@ h1::after {
 
 /* --- Individual Pages --- */
 .binder-page {
-  width: 420px;
-  height: 630px;
+  width: 520px;
+  height: 780px;
   background: #1c1c1c;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  gap: 15px;
-  padding: 25px;
+  gap: 18px;
+  padding: 28px;
   position: relative;
 }
 .binder-page.left-page {
@@ -272,7 +272,7 @@ h1::after {
 
 /* --- Calculation for Scale Factor --- */
 .binder-page {
-  --scale-factor: 0.38;
+  --scale-factor: 0.46;
 }
 
 /* --- Mobile Responsive Overrides --- */
