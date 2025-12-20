@@ -196,6 +196,28 @@ const KitchenSink = () => {
                 />
             </div>
 
+            <button className="sm" style={{float: 'right'}} onClick={() => setToggleSlabbedPreview(!toggleSlabbedPreview)}>Toggle Slabbed</button>
+            <br/>
+            <h2>Card Grades 1-10</h2>
+            <div className="cards-grid">
+                {Array.from({ length: 10 }, (_, index) => {
+                    const grade = index + 1;
+                    return (
+                        <BaseCard
+                            key={`grade-${grade}`}
+                            name={`The Cursed Bristles - Grade ${grade}`}
+                            image="/images/cards/thecursedbristles.jpg"
+                            description="Worn by a long-forgotten pirate lord, this beard carries the whispers of the deep. Each strand is tangled with lost treasure, but those who dare to claim it are doomed to an itch that never fades. -ItchyBeard"
+                            rarity="basic"
+                            mintNumber="666"
+                            modifier={null}
+                            grade={grade}
+                            slabbed={toggleSlabbedPreview}
+                        />
+                    );
+                })}
+            </div>
+
 
             <button className="sm" style={{float: 'right'}} onClick={() => setToggleSlabbedPreview(!toggleSlabbedPreview)}>Toggle Slabbed</button>
             <br/>

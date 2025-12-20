@@ -681,6 +681,99 @@
     background-position: 10%;
   }
 }
+.wear-overlay {
+  --wear-opacity: 0;
+  --wear-edge: 0;
+  --wear-scratch: 0;
+  --wear-dust: 0;
+  --wear-fade: 0;
+  position: absolute;
+  inset: 8px;
+  border-radius: 10px;
+  pointer-events: none;
+  z-index: 3;
+  opacity: var(--wear-opacity);
+  mix-blend-mode: soft-light;
+  background-image:
+    linear-gradient(0deg, rgba(90, 80, 70, var(--wear-fade)), rgba(90, 80, 70, var(--wear-fade))),
+    radial-gradient(closest-side at 50% 50%, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, var(--wear-edge)) 100%),
+    repeating-linear-gradient(-20deg, rgba(255, 255, 255, var(--wear-scratch)) 0 1px, rgba(0, 0, 0, 0) 1px 6px),
+    repeating-linear-gradient(35deg, rgba(0, 0, 0, var(--wear-scratch)) 0 1px, rgba(0, 0, 0, 0) 1px 7px),
+    radial-gradient(circle at 18% 22%, rgba(0, 0, 0, var(--wear-dust)) 0 1px, rgba(0, 0, 0, 0) 2px),
+    radial-gradient(circle at 72% 35%, rgba(0, 0, 0, var(--wear-dust)) 0 1px, rgba(0, 0, 0, 0) 2px),
+    radial-gradient(circle at 40% 70%, rgba(0, 0, 0, var(--wear-dust)) 0 1px, rgba(0, 0, 0, 0) 2px),
+    radial-gradient(circle at 80% 75%, rgba(0, 0, 0, var(--wear-dust)) 0 1px, rgba(0, 0, 0, 0) 2px);
+}
+.wear-overlay.mini {
+  inset: 4px;
+  border-radius: 6px;
+}
+.wear-overlay.wear-10 {
+  --wear-opacity: 0;
+}
+.wear-overlay.wear-9 {
+  --wear-opacity: 0.08;
+  --wear-edge: 0.04;
+  --wear-scratch: 0.04;
+  --wear-dust: 0.03;
+  --wear-fade: 0.02;
+}
+.wear-overlay.wear-8 {
+  --wear-opacity: 0.12;
+  --wear-edge: 0.06;
+  --wear-scratch: 0.06;
+  --wear-dust: 0.04;
+  --wear-fade: 0.04;
+}
+.wear-overlay.wear-7 {
+  --wear-opacity: 0.16;
+  --wear-edge: 0.08;
+  --wear-scratch: 0.08;
+  --wear-dust: 0.05;
+  --wear-fade: 0.06;
+}
+.wear-overlay.wear-6 {
+  --wear-opacity: 0.2;
+  --wear-edge: 0.1;
+  --wear-scratch: 0.1;
+  --wear-dust: 0.06;
+  --wear-fade: 0.08;
+}
+.wear-overlay.wear-5 {
+  --wear-opacity: 0.24;
+  --wear-edge: 0.12;
+  --wear-scratch: 0.12;
+  --wear-dust: 0.07;
+  --wear-fade: 0.1;
+}
+.wear-overlay.wear-4 {
+  --wear-opacity: 0.28;
+  --wear-edge: 0.14;
+  --wear-scratch: 0.14;
+  --wear-dust: 0.08;
+  --wear-fade: 0.12;
+}
+.wear-overlay.wear-3 {
+  --wear-opacity: 0.32;
+  --wear-edge: 0.16;
+  --wear-scratch: 0.16;
+  --wear-dust: 0.1;
+  --wear-fade: 0.14;
+}
+.wear-overlay.wear-2 {
+  --wear-opacity: 0.36;
+  --wear-edge: 0.18;
+  --wear-scratch: 0.18;
+  --wear-dust: 0.12;
+  --wear-fade: 0.16;
+}
+.wear-overlay.wear-1 {
+  --wear-opacity: 0.4;
+  --wear-edge: 0.22;
+  --wear-scratch: 0.22;
+  --wear-dust: 0.14;
+  --wear-fade: 0.18;
+}
 .card-container .negative-overlay {
   position: absolute;
   inset: 2px;

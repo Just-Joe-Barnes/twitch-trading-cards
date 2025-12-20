@@ -74,6 +74,11 @@ const BaseCard = ({
     const cardGlareContainerClass = miniCard ? 'mini-card-glare-container' : 'card-glare-container';
     const cardGlareClass = miniCard ? 'mini-card-glare' : 'card-glare';
     const cardHeaderClass = miniCard ? 'mini-card-header' : 'card-header';
+    const parsedGrade = Number.parseInt(grade, 10);
+    const wearGrade = slabbed && Number.isFinite(parsedGrade)
+        ? Math.max(1, Math.min(10, parsedGrade))
+        : null;
+    const wearClass = wearGrade ? `wear-${wearGrade}` : '';
 
 
     useEffect(() => {
@@ -328,7 +333,7 @@ const BaseCard = ({
 
             <div
                 ref={cardRef}
-                className={`${cardContainerClass} ${rarity.toLowerCase()}${slabbed ? ' slabbed' : ''}`}
+                className={`${cardContainerClass} ${rarity.toLowerCase()}${slabbed ? ' slabbed' : ''}${wearClass ? ` ${wearClass}` : ''}`}
                 onMouseMove={interactive ? handlePointerMove : undefined}
                 onMouseLeave={interactive ? handlePointerLeave : undefined}
                 onTouchStart={interactive ? handlePointerMove : undefined}
@@ -412,6 +417,9 @@ const BaseCard = ({
                                 )}
                             </div>
                         </div>
+                        {wearGrade && (
+                            <div className={`wear-overlay ${miniCard ? 'mini' : ''} ${wearClass}`}/>
+                        )}
                         {modifierData?.name === 'Negative' && ( <div className={`negative-overlay ${miniCard ? 'mini' : ''}`}/> )}
                         {modifierData?.name === 'Glitch' && ( <div className={`glitch-overlay ${miniCard ? 'mini' : ''}`}/> )}
                         {modifierData?.name === 'Prismatic' && ( <div className={`prismatic-overlay ${miniCard ? 'mini' : ''}`}/> )}
