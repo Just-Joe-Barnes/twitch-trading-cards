@@ -28,6 +28,18 @@ const useIsMobile = (breakpoint = 768) => {
 
 const createEmptySlots = () => Array.from({ length: 9 }, () => null);
 const createDefaultPages = () => Array.from({ length: 4 }, () => createEmptySlots());
+const defaultCover = {
+    title: 'My Binder',
+    binderColor: '#262626',
+    titleColor: '#f4f4f4',
+    font: 'Cinzel, "Times New Roman", serif',
+};
+const coverFonts = [
+    { label: 'Cinzel', value: 'Cinzel, "Times New Roman", serif' },
+    { label: 'Cormorant', value: '"Cormorant Garamond", "Times New Roman", serif' },
+    { label: 'Bebas', value: '"Bebas Neue", "Arial Narrow", sans-serif' },
+    { label: 'Libre', value: '"Libre Baskerville", "Times New Roman", serif' },
+];
 
 const CardPickerModal = ({
                              onSelectCard,
@@ -265,11 +277,12 @@ const BinderPage = () => {
 
     // Initialize with 4 pages (2 spreads)
     const [pages, setPages] = useState(createDefaultPages());
-    const [currentSpreadIndex, setCurrentSpreadIndex] = useState(0);
+    const [currentSpreadIndex, setCurrentSpreadIndex] = useState(-1);
     const [pickingSlot, setPickingSlot] = useState(null);
     const [limitedCards, setLimitedCards] = useState([]);
     const [binderLoading, setBinderLoading] = useState(true);
     const [binderReady, setBinderReady] = useState(false);
+    const [coverSettings, setCoverSettings] = useState(defaultCover);
 
     // Drag and Drop State
     const [draggedItem, setDraggedItem] = useState(null); // { pageIndex, slotIndex, cardData }
@@ -280,6 +293,7 @@ const BinderPage = () => {
 
     const isMobile = useIsMobile();
     const binderIdentifier = collectionOwner || loggedInUser;
+    const isCoverView = currentSpreadIndex < 0;
 
     const fetchCatalogue = async () => {
         try {
@@ -317,14 +331,22 @@ const BinderPage = () => {
             const parsed = stored ? JSON.parse(stored) : null;
             if (Array.isArray(parsed) && parsed.length > 0) {
                 setPages(parsed);
+                setCoverSettings(defaultCover);
+            } else if (parsed && typeof parsed === 'object') {
+                setPages(Array.isArray(parsed.pages) && parsed.pages.length > 0
+                    ? parsed.pages
+                    : createDefaultPages());
+                setCoverSettings({ ...defaultCover, ...parsed.cover });
             } else {
                 setPages(createDefaultPages());
+                setCoverSettings(defaultCover);
             }
-            setCurrentSpreadIndex(0);
+            setCurrentSpreadIndex(-1);
         } catch (error) {
             console.error(error);
             setPages(createDefaultPages());
-            setCurrentSpreadIndex(0);
+            setCoverSettings(defaultCover);
+            setCurrentSpreadIndex(-1);
         } finally {
             setBinderLoading(false);
             setBinderReady(true);
@@ -342,7 +364,10 @@ const BinderPage = () => {
 
         saveTimeoutRef.current = setTimeout(() => {
             try {
-                localStorage.setItem(`binder:${binderIdentifier}`, JSON.stringify(pages));
+                localStorage.setItem(
+                    `binder:${binderIdentifier}`,
+                    JSON.stringify({ pages, cover: coverSettings })
+                );
             } catch (error) {
                 console.error(error);
                 if (window.showToast) {
@@ -354,7 +379,7 @@ const BinderPage = () => {
         return () => {
             if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
         };
-    }, [pages, binderReady, binderIdentifier]);
+    }, [pages, coverSettings, binderReady, binderIdentifier]);
 
     const isCardLimited = (card) => {
         return limitedCards.some((lc) => lc.name === card.name);
@@ -363,6 +388,7 @@ const BinderPage = () => {
     // --- Page Management Logic ---
 
     const handleAddPages = (position) => {
+        if (isCoverView) return;
         const newPages = [Array(9).fill(null), Array(9).fill(null)];
         const updatedPages = [...pages];
 
@@ -379,13 +405,21 @@ const BinderPage = () => {
     };
 
     const handleNext = useCallback(() => {
+        if (isCoverView) {
+            setCurrentSpreadIndex(0);
+            return;
+        }
         const increment = isMobile ? 1 : 2;
         if (currentSpreadIndex + increment < pages.length) {
             setCurrentSpreadIndex(prev => prev + increment);
         }
-    }, [currentSpreadIndex, pages.length, isMobile]);
+    }, [currentSpreadIndex, pages.length, isMobile, isCoverView]);
 
     const handlePrev = useCallback(() => {
+        if (currentSpreadIndex <= 0) {
+            setCurrentSpreadIndex(-1);
+            return;
+        }
         const decrement = isMobile ? 1 : 2;
         if (currentSpreadIndex - decrement >= 0) {
             setCurrentSpreadIndex(prev => prev - decrement);
@@ -523,7 +557,7 @@ const BinderPage = () => {
     // --- Edge Navigation Drag Logic ---
 
     const handleEdgeDragEnter = (direction) => {
-        if (!draggedItem) return;
+        if (!draggedItem || isCoverView) return;
 
         if (dragTimeoutRef.current) clearTimeout(dragTimeoutRef.current);
 
@@ -555,6 +589,53 @@ const BinderPage = () => {
                 <div><strong><u>Note - this page is just a test and does not function at all in any way how it should or will in the real feature. This is a test. Repeat, this is a test.</u></strong></div>
             </div>
 
+            {isCoverView && (
+                <div className="binder-cover-controls">
+                    <div className="cover-field">
+                        <label htmlFor="binder-title">Title</label>
+                        <input
+                            id="binder-title"
+                            type="text"
+                            value={coverSettings.title}
+                            onChange={(e) => setCoverSettings(prev => ({ ...prev, title: e.target.value }))}
+                            placeholder="Binder Title"
+                        />
+                    </div>
+                    <div className="cover-field">
+                        <label htmlFor="binder-color">Binder Color</label>
+                        <input
+                            id="binder-color"
+                            type="color"
+                            value={coverSettings.binderColor}
+                            onChange={(e) => setCoverSettings(prev => ({ ...prev, binderColor: e.target.value }))}
+                        />
+                    </div>
+                    <div className="cover-field">
+                        <label htmlFor="title-color">Title Color</label>
+                        <input
+                            id="title-color"
+                            type="color"
+                            value={coverSettings.titleColor}
+                            onChange={(e) => setCoverSettings(prev => ({ ...prev, titleColor: e.target.value }))}
+                        />
+                    </div>
+                    <div className="cover-field">
+                        <label htmlFor="title-font">Font</label>
+                        <select
+                            id="title-font"
+                            value={coverSettings.font}
+                            onChange={(e) => setCoverSettings(prev => ({ ...prev, font: e.target.value }))}
+                        >
+                            {coverFonts.map((font) => (
+                                <option key={font.label} value={font.value}>
+                                    {font.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+            )}
+
 
             <div className="binder-workspace">
 
@@ -563,12 +644,13 @@ const BinderPage = () => {
                         className="insert-btn"
                         onClick={() => handleAddPages('before')}
                         title="Insert Page Before"
+                        disabled={isCoverView}
                     >
                         <i className="fa-solid fa-plus"></i>
                     </button>
 
                     <div
-                        className={`nav-button ${currentSpreadIndex === 0 ? 'disabled' : ''}`}
+                        className={`nav-button ${isCoverView ? 'disabled' : ''}`}
                         onClick={handlePrev}
                         onDragEnter={() => handleEdgeDragEnter('prev')}
                         onDragLeave={handleEdgeDragLeave}
@@ -580,7 +662,26 @@ const BinderPage = () => {
                 <div className="binder-book">
                     <div className="binder-spine"></div>
 
-                    {pages.map((pageData, pageIndex) => {
+                    {isCoverView && (
+                        <div
+                            className="binder-cover-panel"
+                            style={{
+                                background: coverSettings.binderColor,
+                            }}
+                        >
+                            <div
+                                className="binder-cover-title"
+                                style={{
+                                    color: coverSettings.titleColor,
+                                    fontFamily: coverSettings.font,
+                                }}
+                            >
+                                {coverSettings.title || 'My Binder'}
+                            </div>
+                        </div>
+                    )}
+
+                    {!isCoverView && pages.map((pageData, pageIndex) => {
                         let isVisible;
                         if (isMobile) {
                             isVisible = pageIndex === currentSpreadIndex;
@@ -658,7 +759,7 @@ const BinderPage = () => {
 
                 <div className="binder-gutter">
                     <div
-                        className={`nav-button ${currentSpreadIndex >= pages.length - (isMobile ? 1 : 2) ? 'disabled' : ''}`}
+                        className={`nav-button ${!isCoverView && currentSpreadIndex >= pages.length - (isMobile ? 1 : 2) ? 'disabled' : ''}`}
                         onClick={handleNext}
                         onDragEnter={() => handleEdgeDragEnter('next')}
                         onDragLeave={handleEdgeDragLeave}
@@ -670,6 +771,7 @@ const BinderPage = () => {
                         className="insert-btn"
                         onClick={() => handleAddPages('after')}
                         title="Insert Page After"
+                        disabled={isCoverView}
                     >
                         <i className="fa-solid fa-plus"></i>
                     </button>

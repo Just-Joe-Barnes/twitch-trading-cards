@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;600&family=Cormorant+Garamond:wght@400;600&family=Libre+Baskerville:wght@400;700&display=swap");
+
 h1 {
   text-align: center;
   font-size: 2.25rem;
@@ -83,6 +85,43 @@ h1::after {
   width: 100%;
   max-width: 1900px;
 }
+.binder-cover-controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto 24px;
+  padding: 16px 20px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--border-radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+.cover-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-primary);
+}
+.cover-field label {
+  font-size: 0.85rem;
+  color: #888;
+}
+.cover-field input,
+.cover-field select {
+  background: #121212;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: var(--text-primary);
+  padding: 8px 10px;
+}
+.cover-field input[type="color"] {
+  padding: 0;
+  height: 38px;
+  border: none;
+  background: transparent;
+}
 
 /* --- Gutters & Controls (Desktop) --- */
 .binder-gutter {
@@ -133,6 +172,10 @@ h1::after {
   color: white;
   background: #333;
 }
+.binder-gutter .insert-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
 
 /* --- The Binder Book --- */
 .binder-book {
@@ -154,6 +197,33 @@ h1::after {
   z-index: 20;
   box-shadow: inset 0 0 10px black;
   transform: translateX(-50%);
+}
+.binder-cover-panel {
+  width: 520px;
+  height: 780px;
+  border-radius: 12px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.binder-cover-panel::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  opacity: 0.7;
+}
+.binder-cover-title {
+  font-size: 2.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 0 24px;
+  z-index: 1;
 }
 
 /* --- Individual Pages --- */
@@ -227,6 +297,9 @@ h1::after {
   left: 50%;
   width: 300px;
   height: 450px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transform: translate(-50%, -50%) scale(var(--scale-factor));
   transform-origin: center center;
   pointer-events: none;
@@ -280,6 +353,9 @@ h1::after {
 
 /* --- Mobile Responsive Overrides --- */
 @media (max-width: 768px) {
+  .binder-cover-controls {
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+  }
   .binder-workspace {
     flex-direction: column;
     padding: 10px;
@@ -308,6 +384,14 @@ h1::after {
   }
   .binder-book .binder-spine {
     display: none;
+  }
+  .binder-cover-panel {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3/4.2;
+  }
+  .binder-cover-title {
+    font-size: 2rem;
   }
   .binder-page {
     width: 100%;
