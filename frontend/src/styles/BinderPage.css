@@ -272,7 +272,7 @@ h1::after {
 
 /* --- Calculation for Scale Factor --- */
 .binder-page {
-  --scale-factor: 0.46;
+  --scale-factor: 0.44;
 }
 
 /* --- Mobile Responsive Overrides --- */
