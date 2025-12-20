@@ -411,6 +411,30 @@ $transition-speed: 0.3s;
   --scale-factor: 0.44;
 }
 
+.cards-grid.mini .card-item {
+  position: relative;
+}
+
+.cards-grid.mini .card-item.used {
+  cursor: not-allowed;
+  opacity: 0.55;
+  filter: grayscale(0.6);
+}
+
+.cards-grid.mini .card-item .used-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #b02a37;
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  z-index: 5;
+}
+
 
 /* --- Mobile Responsive Overrides --- */
 @media (max-width: 768px) {

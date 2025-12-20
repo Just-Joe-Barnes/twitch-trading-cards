@@ -45,7 +45,8 @@ const CardPickerModal = ({
                              onSelectCard,
                              onClose,
                              collectionOwner,
-                             loggedInUser
+                             loggedInUser,
+                             usedCardIds
                          }) => {
     const [allCards, setAllCards] = useState([]);
     const [filteredCards, setFilteredCards] = useState([]);
@@ -246,8 +247,23 @@ const CardPickerModal = ({
                 <div className="cards-grid mini" style={{"--user-card-scale": 1, marginTop: '20px'}}>
                     {filteredCards.map((card) => {
                         const isLimited = isCardLimited(card);
+                        const cardId = card?._id ? String(card._id) : null;
+                        const isUsed = cardId && usedCardIds?.has(cardId);
                         return (
-                            <div key={card._id} className="card-item" onClick={() => onSelectCard(card)}>
+                            <div
+                                key={card._id}
+                                className={`card-item ${isUsed ? 'used' : ''}`}
+                                onClick={() => {
+                                    if (isUsed) {
+                                        if (window.showToast) {
+                                            window.showToast('That card is already in the binder.', 'info');
+                                        }
+                                        return;
+                                    }
+                                    onSelectCard(card);
+                                }}
+                            >
+                                {isUsed && <div className="used-badge">In Binder</div>}
                                 <BaseCard
                                     name={card.name}
                                     image={card.imageUrl}
@@ -295,6 +311,17 @@ const BinderPage = () => {
     const isMobile = useIsMobile();
     const binderIdentifier = collectionOwner || loggedInUser;
     const isCoverView = currentSpreadIndex < 0;
+    const usedCardIds = useMemo(() => {
+        const ids = new Set();
+        pages.forEach((page) => {
+            page.forEach((slot) => {
+                if (!slot) return;
+                const id = slot.cardId || slot._id;
+                if (id) ids.add(String(id));
+            });
+        });
+        return ids;
+    }, [pages]);
 
     const fetchCatalogue = async () => {
         try {
@@ -486,6 +513,12 @@ const BinderPage = () => {
         if (pickingSlot) {
             const updatedPages = [...pages];
             const cardId = card?._id || card?.cardId || null;
+            if (cardId && usedCardIds.has(String(cardId))) {
+                if (window.showToast) {
+                    window.showToast('That card is already in the binder.', 'info');
+                }
+                return;
+            }
             updatedPages[pickingSlot.pageIndex][pickingSlot.slotIndex] = {
                 ...card,
                 cardId,
@@ -793,6 +826,7 @@ const BinderPage = () => {
                     onSelectCard={handleCardSelected}
                     collectionOwner={collectionOwner}
                     loggedInUser={loggedInUser}
+                    usedCardIds={usedCardIds}
                 />
             )}
         </div>
