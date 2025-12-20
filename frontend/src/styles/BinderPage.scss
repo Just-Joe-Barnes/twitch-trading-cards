@@ -263,6 +263,10 @@ $transition-speed: 0.3s;
     pointer-events: none; // Let clicks pass through to slot
   }
 
+  .card-container {
+    margin: 0;
+  }
+
   // Re-enable pointer events on buttons
   .slot-controls {
     position: absolute;

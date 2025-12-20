@@ -231,6 +231,9 @@ h1::after {
   transform-origin: center center;
   pointer-events: none;
 }
+.binder-slot .card-container {
+  margin: 0;
+}
 .binder-slot .slot-controls {
   position: absolute;
   top: 10px;
