@@ -99,6 +99,27 @@ h1::after {
   width: 100%;
   max-width: 1900px;
 }
+.binder-action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin: 20px auto 10px;
+}
+.binder-action-bar .action-btn {
+  background: #1f1f1f;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: var(--text-primary);
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+.binder-action-bar .action-btn:hover {
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
+}
 .binder-cover-controls {
   display: grid;
   grid-template-columns: repeat(4, minmax(140px, 1fr));

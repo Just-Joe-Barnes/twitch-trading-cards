@@ -300,6 +300,7 @@ const BinderPage = () => {
     const [binderReady, setBinderReady] = useState(false);
     const [coverSettings, setCoverSettings] = useState(defaultCover);
     const [showCoverControls, setShowCoverControls] = useState(true);
+    const [showSlotControls, setShowSlotControls] = useState(true);
 
     // Drag and Drop State
     const [draggedItem, setDraggedItem] = useState(null); // { pageIndex, slotIndex, cardData }
@@ -453,6 +454,22 @@ const BinderPage = () => {
             setCurrentSpreadIndex(prev => prev - decrement);
         }
     }, [currentSpreadIndex, isMobile]);
+
+    const getVisiblePageIndexes = useCallback(() => {
+        if (isCoverView) return [];
+        if (isMobile) return [currentSpreadIndex];
+        return [currentSpreadIndex, currentSpreadIndex + 1].filter((idx) => idx < pages.length);
+    }, [isCoverView, isMobile, currentSpreadIndex, pages.length]);
+
+    const setLockStateForVisiblePages = useCallback((locked) => {
+        const visible = getVisiblePageIndexes();
+        if (visible.length === 0) return;
+        const updatedPages = pages.map((page, pageIndex) => {
+            if (!visible.includes(pageIndex)) return page;
+            return page.map((slot) => (slot ? { ...slot, locked } : slot));
+        });
+        setPages(updatedPages);
+    }, [getVisiblePageIndexes, pages]);
 
     // --- Slot Interaction Logic ---
 
@@ -767,24 +784,26 @@ const BinderPage = () => {
                                                     miniCard={false}
                                                 />
 
-                                                <div className="slot-controls">
-                                                    <button
-                                                        className={`control-btn ${slotData.locked ? 'locked' : ''}`}
-                                                        onClick={(e) => toggleLock(e, pageIndex, slotIndex)}
-                                                        title={slotData.locked ? "Unlock" : "Lock"}
-                                                    >
-                                                        <i className={`fa-solid fa-${slotData.locked ? 'lock' : 'lock-open'}`}></i>
-                                                    </button>
-                                                    {!slotData.locked && (
+                                                {showSlotControls && (
+                                                    <div className="slot-controls">
                                                         <button
-                                                            className="control-btn remove"
-                                                            onClick={(e) => handleRemoveCard(e, pageIndex, slotIndex)}
-                                                            title="Remove Card"
+                                                            className={`control-btn ${slotData.locked ? 'locked' : ''}`}
+                                                            onClick={(e) => toggleLock(e, pageIndex, slotIndex)}
+                                                            title={slotData.locked ? "Unlock" : "Lock"}
                                                         >
-                                                            <i className="fa-solid fa-xmark"></i>
+                                                            <i className={`fa-solid fa-${slotData.locked ? 'lock' : 'lock-open'}`}></i>
                                                         </button>
-                                                    )}
-                                                </div>
+                                                        {!slotData.locked && (
+                                                            <button
+                                                                className="control-btn remove"
+                                                                onClick={(e) => handleRemoveCard(e, pageIndex, slotIndex)}
+                                                                title="Remove Card"
+                                                            >
+                                                                <i className="fa-solid fa-xmark"></i>
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         ) : (
                                             <div className="slot-placeholder">
@@ -819,6 +838,32 @@ const BinderPage = () => {
                     </button>
                 </div>
             </div>
+
+            {!isCoverView && (
+                <div className="binder-action-bar">
+                    <button
+                        type="button"
+                        className="action-btn"
+                        onClick={() => setShowSlotControls(prev => !prev)}
+                    >
+                        {showSlotControls ? 'Hide slot controls' : 'Show slot controls'}
+                    </button>
+                    <button
+                        type="button"
+                        className="action-btn"
+                        onClick={() => setLockStateForVisiblePages(true)}
+                    >
+                        Lock all on page
+                    </button>
+                    <button
+                        type="button"
+                        className="action-btn"
+                        onClick={() => setLockStateForVisiblePages(false)}
+                    >
+                        Unlock all on page
+                    </button>
+                </div>
+            )}
 
             {pickingSlot && (
                 <CardPickerModal
