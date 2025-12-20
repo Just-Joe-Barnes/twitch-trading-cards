@@ -283,6 +283,7 @@ const BinderPage = () => {
     const [binderLoading, setBinderLoading] = useState(true);
     const [binderReady, setBinderReady] = useState(false);
     const [coverSettings, setCoverSettings] = useState(defaultCover);
+    const [showCoverControls, setShowCoverControls] = useState(true);
 
     // Drag and Drop State
     const [draggedItem, setDraggedItem] = useState(null); // { pageIndex, slotIndex, cardData }
@@ -584,56 +585,64 @@ const BinderPage = () => {
 
             <div className="info-section">
                 Drag cards to organize. Hover over side arrows while dragging to flip pages.
-                <br/>
-                <br/>
-                <div><strong><u>Note - this page is just a test and does not function at all in any way how it should or will in the real feature. This is a test. Repeat, this is a test.</u></strong></div>
             </div>
 
             {isCoverView && (
-                <div className="binder-cover-controls">
-                    <div className="cover-field">
-                        <label htmlFor="binder-title">Title</label>
-                        <input
-                            id="binder-title"
-                            type="text"
-                            value={coverSettings.title}
-                            onChange={(e) => setCoverSettings(prev => ({ ...prev, title: e.target.value }))}
-                            placeholder="Binder Title"
-                        />
-                    </div>
-                    <div className="cover-field">
-                        <label htmlFor="binder-color">Binder Color</label>
-                        <input
-                            id="binder-color"
-                            type="color"
-                            value={coverSettings.binderColor}
-                            onChange={(e) => setCoverSettings(prev => ({ ...prev, binderColor: e.target.value }))}
-                        />
-                    </div>
-                    <div className="cover-field">
-                        <label htmlFor="title-color">Title Color</label>
-                        <input
-                            id="title-color"
-                            type="color"
-                            value={coverSettings.titleColor}
-                            onChange={(e) => setCoverSettings(prev => ({ ...prev, titleColor: e.target.value }))}
-                        />
-                    </div>
-                    <div className="cover-field">
-                        <label htmlFor="title-font">Font</label>
-                        <select
-                            id="title-font"
-                            value={coverSettings.font}
-                            onChange={(e) => setCoverSettings(prev => ({ ...prev, font: e.target.value }))}
-                        >
-                            {coverFonts.map((font) => (
-                                <option key={font.label} value={font.value}>
-                                    {font.label}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
+                <>
+                    <button
+                        type="button"
+                        className="cover-toggle"
+                        onClick={() => setShowCoverControls(prev => !prev)}
+                    >
+                        {showCoverControls ? 'Hide cover options' : 'Show cover options'}
+                    </button>
+                    {showCoverControls && (
+                        <div className="binder-cover-controls">
+                            <div className="cover-field">
+                                <label htmlFor="binder-title">Title</label>
+                                <input
+                                    id="binder-title"
+                                    type="text"
+                                    value={coverSettings.title}
+                                    onChange={(e) => setCoverSettings(prev => ({ ...prev, title: e.target.value }))}
+                                    placeholder="Binder Title"
+                                />
+                            </div>
+                            <div className="cover-field">
+                                <label htmlFor="binder-color">Binder Color</label>
+                                <input
+                                    id="binder-color"
+                                    type="color"
+                                    value={coverSettings.binderColor}
+                                    onChange={(e) => setCoverSettings(prev => ({ ...prev, binderColor: e.target.value }))}
+                                />
+                            </div>
+                            <div className="cover-field">
+                                <label htmlFor="title-color">Title Color</label>
+                                <input
+                                    id="title-color"
+                                    type="color"
+                                    value={coverSettings.titleColor}
+                                    onChange={(e) => setCoverSettings(prev => ({ ...prev, titleColor: e.target.value }))}
+                                />
+                            </div>
+                            <div className="cover-field">
+                                <label htmlFor="title-font">Font</label>
+                                <select
+                                    id="title-font"
+                                    value={coverSettings.font}
+                                    onChange={(e) => setCoverSettings(prev => ({ ...prev, font: e.target.value }))}
+                                >
+                                    {coverFonts.map((font) => (
+                                        <option key={font.label} value={font.value}>
+                                            {font.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    )}
+                </>
             )}
 
 
@@ -660,7 +669,7 @@ const BinderPage = () => {
                 </div>
 
                 <div className="binder-book">
-                    <div className="binder-spine"></div>
+                    {!isCoverView && <div className="binder-spine"></div>}
 
                     {isCoverView && (
                         <div
