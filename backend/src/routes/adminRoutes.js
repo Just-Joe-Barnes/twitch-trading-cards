@@ -19,11 +19,13 @@ const Trade = require('../models/tradeModel');
 const MarketListing = require('../models/MarketListing');
 const EventClaim = require('../models/eventClaimModel');
 const Setting = require('../models/settingsModel');
+const PeriodCounter = require('../models/periodCounterModel');
 
 const { protect } = require('../middleware/authMiddleware');
 const { broadcastNotification, sendNotificationToUser} = require('../../notificationService');
 const {getStatus, forceResume, resumeQueue, pauseQueue} = require("../services/queueService");
 const {updateCard} = require("../controllers/adminController");
+const { getWeeklyKey } = require('../scripts/periods');
 
 const tradeController = require('../controllers/tradeController');
 const {createNotification} = require("../helpers/notificationHelper");
@@ -1782,6 +1784,77 @@ router.post('/wipe-database', protect, adminOnly, async (req, res) => {
             message: 'A critical error occurred. Check server logs.',
             error: error.message,
         });
+    }
+});
+
+router.get('/pack-luck', protect, adminOnly, async (req, res) => {
+    try {
+        const wk = getWeeklyKey();
+        const [weeklyDoc, overrideSetting] = await Promise.all([
+            PeriodCounter.findOne({ scope: 'weekly', periodKey: wk.periodKey }).lean(),
+            Setting.findOne({ key: 'packLuckOverride' }).lean()
+        ]);
+
+        const overrideValue = overrideSetting?.value || {};
+        const overrideEnabled = Boolean(overrideValue.enabled);
+        const overrideCount = Number.isFinite(Number(overrideValue.count))
+            ? Number(overrideValue.count)
+            : null;
+
+        res.json({
+            weekly: {
+                periodKey: wk.periodKey,
+                count: weeklyDoc?.count ?? 0
+            },
+            override: {
+                enabled: overrideEnabled,
+                count: overrideCount
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching pack luck status:', error);
+        res.status(500).json({ message: 'Failed to fetch pack luck status.' });
+    }
+});
+
+router.post('/pack-luck/override', protect, adminOnly, async (req, res) => {
+    const count = Number(req.body?.count);
+    if (!Number.isFinite(count) || count < 0) {
+        return res.status(400).json({ message: 'Count must be a non-negative number.' });
+    }
+
+    try {
+        const updated = await Setting.findOneAndUpdate(
+            { key: 'packLuckOverride' },
+            { value: { enabled: true, count } },
+            { new: true, upsert: true }
+        );
+
+        res.json({
+            message: `Pack luck override enabled at ${count}.`,
+            override: updated.value
+        });
+    } catch (error) {
+        console.error('Error enabling pack luck override:', error);
+        res.status(500).json({ message: 'Failed to set pack luck override.' });
+    }
+});
+
+router.post('/pack-luck/clear', protect, adminOnly, async (req, res) => {
+    try {
+        const updated = await Setting.findOneAndUpdate(
+            { key: 'packLuckOverride' },
+            { value: { enabled: false } },
+            { new: true, upsert: true }
+        );
+
+        res.json({
+            message: 'Pack luck override cleared. Using live weekly count.',
+            override: updated.value
+        });
+    } catch (error) {
+        console.error('Error clearing pack luck override:', error);
+        res.status(500).json({ message: 'Failed to clear pack luck override.' });
     }
 });
 

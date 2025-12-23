@@ -58,8 +58,39 @@ const trackUserActivity = async (userId) => {
     }
 };
 
+const ensurePeriodCounters = async () => {
+    const w = getWeeklyKey();
+    const m = getMonthlyKey();
+
+    try {
+        await PeriodCounter.bulkWrite([
+            {
+                updateOne: {
+                    filter: { scope: 'weekly', periodKey: w.periodKey },
+                    update: {
+                        $setOnInsert: { ...w, scope: 'weekly', count: 0 }
+                    },
+                    upsert: true
+                }
+            },
+            {
+                updateOne: {
+                    filter: { scope: 'monthly', periodKey: m.periodKey },
+                    update: {
+                        $setOnInsert: { ...m, scope: 'monthly', count: 0, activeUserIds: [] }
+                    },
+                    upsert: true
+                }
+            }
+        ]);
+    } catch (error) {
+        console.error('Failed to ensure period counters:', error);
+    }
+};
 module.exports = {
     updatePeriodCounters,
-    trackUserActivity
+    trackUserActivity,
+    ensurePeriodCounters
 };
+
 

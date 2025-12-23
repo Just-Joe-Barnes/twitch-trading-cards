@@ -3,6 +3,7 @@ const Modifier = require("../models/modifierModel");
 const Pack = require('../models/packModel');
 const { getCardAvailability } = require("../controllers/cardController");
 const PeriodCounter = require('../models/periodCounterModel');
+const Setting = require('../models/settingsModel');
 const { getWeeklyKey } = require("../scripts/periods");
 
 const rarityProbabilities = [
@@ -653,14 +654,34 @@ const generateCardPreviewFromPool = async (poolIds, options = {}) => {
 const generatePackPreviewFromPool = async (poolIds, packSize = 5, forceModifier = false, live = false) => {
 
     let weeklySubCount = 0;
+    let overrideApplied = false;
+
     try {
-        const w = getWeeklyKey();
-        const weeklyDoc = await PeriodCounter.findOne({ scope: 'weekly', periodKey: w.periodKey }).lean();
-        if (weeklyDoc) {
-            weeklySubCount = weeklyDoc.count;
+        const overrideSetting = await Setting.findOne({ key: 'packLuckOverride' }).lean();
+        const overrideValue = overrideSetting?.value;
+        if (overrideValue?.enabled) {
+            const overrideCount = Number(overrideValue.count);
+            if (Number.isFinite(overrideCount) && overrideCount >= 0) {
+                weeklySubCount = overrideCount;
+                overrideApplied = true;
+            }
         }
     } catch (err) {
-        console.error("Failed to fetch weekly sub count for pack luck:", err);
+        console.error("Failed to fetch pack luck override:", err);
+    }
+
+    if (!overrideApplied) {
+        try {
+            const w = getWeeklyKey();
+            const weeklyDoc = await PeriodCounter.findOne({ scope: 'weekly', periodKey: w.periodKey }).lean();
+            if (weeklyDoc) {
+                weeklySubCount = weeklyDoc.count;
+            }
+        } catch (err) {
+            console.error("Failed to fetch weekly sub count for pack luck:", err);
+        }
+    } else {
+        console.log(`[generatePackPreviewFromPool] Pack luck override active (${weeklySubCount} subs).`);
     }
 
     const profile = getPackLuckProfile(weeklySubCount);

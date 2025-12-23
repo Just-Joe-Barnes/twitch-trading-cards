@@ -33,6 +33,9 @@ const AdminActions = () => {
     const [notificationType, setNotificationType] = useState('General Announcement');
     const [notificationUser, setNotificationUser] = useState('');
     const [isNotificationUserDropdownVisible, setNotificationUserDropdownVisible] = useState(false);
+    const [packLuckStatus, setPackLuckStatus] = useState({ weeklyCount: 0, overrideEnabled: false, overrideCount: 0 });
+    const [packLuckOverrideInput, setPackLuckOverrideInput] = useState('');
+    const [packLuckLoading, setPackLuckLoading] = useState(false);
 
 
     const navigate = useNavigate();
@@ -87,6 +90,7 @@ const AdminActions = () => {
         fetchUsers();
         fetchAchievements();
         fetchMaintenanceStatus();
+        fetchPackLuckStatus();
     }, [navigate]);
 
     const handleToggleMaintenanceMode = async () => {
@@ -283,6 +287,87 @@ const AdminActions = () => {
             window.showToast(errMsg, 'error');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchPackLuckStatus = async () => {
+        try {
+            const data = await fetchWithAuth('/api/admin/pack-luck');
+            const weeklyCount = data?.weekly?.count ?? 0;
+            const overrideEnabled = Boolean(data?.override?.enabled);
+            const overrideCountValue = Number.isFinite(Number(data?.override?.count))
+                ? Number(data.override.count)
+                : null;
+
+            setPackLuckStatus({
+                weeklyCount,
+                overrideEnabled,
+                overrideCount: overrideCountValue ?? 0
+            });
+
+            const inputValue = overrideEnabled && overrideCountValue !== null
+                ? overrideCountValue
+                : weeklyCount;
+            setPackLuckOverrideInput(String(inputValue));
+        } catch (err) {
+            console.error('Failed to fetch pack luck status:', err);
+            if (window.showToast) {
+                window.showToast('Could not load pack rigging status.', 'error');
+            }
+        }
+    };
+
+    const handleSetPackLuckOverride = async () => {
+        if (packLuckOverrideInput === '') {
+            if (window.showToast) {
+                window.showToast('Override count must be a non-negative number.', 'error');
+            }
+            return;
+        }
+
+        const count = Number(packLuckOverrideInput);
+        if (!Number.isFinite(count) || count < 0) {
+            if (window.showToast) {
+                window.showToast('Override count must be a non-negative number.', 'error');
+            }
+            return;
+        }
+
+        setPackLuckLoading(true);
+        try {
+            const res = await fetchWithAuth('/api/admin/pack-luck/override', {
+                method: 'POST',
+                body: JSON.stringify({ count })
+            });
+            if (window.showToast) {
+                window.showToast(res.message || 'Pack luck override enabled.', 'success');
+            }
+            await fetchPackLuckStatus();
+        } catch (err) {
+            if (window.showToast) {
+                window.showToast(err.message || 'Failed to set pack luck override.', 'error');
+            }
+        } finally {
+            setPackLuckLoading(false);
+        }
+    };
+
+    const handleClearPackLuckOverride = async () => {
+        setPackLuckLoading(true);
+        try {
+            const res = await fetchWithAuth('/api/admin/pack-luck/clear', {
+                method: 'POST'
+            });
+            if (window.showToast) {
+                window.showToast(res.message || 'Pack luck override cleared.', 'success');
+            }
+            await fetchPackLuckStatus();
+        } catch (err) {
+            if (window.showToast) {
+                window.showToast(err.message || 'Failed to clear pack luck override.', 'error');
+            }
+        } finally {
+            setPackLuckLoading(false);
         }
     };
 
@@ -503,6 +588,33 @@ const AdminActions = () => {
                     <div className="button-group">
                         <button className="primary-button" onClick={handleManualPayout} disabled={loading}>
                             {loading ? 'Processing...' : 'Trigger Last Month Payout'}
+                        </button>
+                    </div>
+                </section>
+
+                <section className="section-card">
+                    <h2>Pack Rigging Control</h2>
+                    <p style={{marginBottom: '0.5rem', color: '#aaa'}}>
+                        Live weekly count: <strong>{packLuckStatus.weeklyCount}</strong>
+                    </p>
+                    <p style={{marginBottom: '1rem', color: '#aaa'}}>
+                        Override status: <strong>{packLuckStatus.overrideEnabled ? `ON (${packLuckStatus.overrideCount})` : 'OFF'}</strong>
+                    </p>
+                    <div className="aa-form-group">
+                        <label>Override Weekly Count:</label>
+                        <input
+                            type="number"
+                            min="0"
+                            value={packLuckOverrideInput}
+                            onChange={(e) => setPackLuckOverrideInput(e.target.value)}
+                        />
+                    </div>
+                    <div className="button-group">
+                        <button className="primary-button" onClick={handleSetPackLuckOverride} disabled={packLuckLoading}>
+                            {packLuckLoading ? 'Saving...' : 'Set Rig Level'}
+                        </button>
+                        <button className="secondary-button" onClick={handleClearPackLuckOverride} disabled={packLuckLoading}>
+                            Use Live Weekly Count
                         </button>
                     </div>
                 </section>
