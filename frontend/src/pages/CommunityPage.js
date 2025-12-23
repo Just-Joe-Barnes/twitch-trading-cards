@@ -78,13 +78,16 @@ const GoalPackLuckIndicator = ({ goal }) => {
             cards[0] = 'rare';
             cards[1] = 'rare';
             break;
-        case 45: // Tier 3 (45+)
+        case 45: // Tier 3 (45-59)
             cards[0] = 'epic';
             cards[1] = 'rare';
             break;
-        case 60: // Tier 4 (45+)
+        case 60: // Tier 4 (60-99)
             cards[0] = 'epic';
             cards[1] = 'epic';
+            break;
+        case 100: // Tier 5 (100+)
+            cards[0] = 'legendary';
             break;
         default:
             cards[0] = 'rare';
@@ -113,9 +116,11 @@ const CurrentPackLuckIndicator = ({ count }) => {
     } else if (count < 60) {
         cards[0] = 'epic';
         cards[1] = 'rare';
-    } else {
+    } else if (count < 100) {
         cards[0] = 'epic';
         cards[1] = 'epic';
+    } else {
+        cards[0] = 'legendary';
     }
 
     return (
@@ -135,7 +140,7 @@ const CommunityPage = () => {
     const [error, setError] = useState(null);
 
     // Your goals
-    const weeklyGoals = [15, 30, 45, 60];
+    const weeklyGoals = [15, 30, 45, 60, 100];
     const monthlyGoals = [25, 50, 75, 100, 150, 200, 250, 300, 350, 400];
 
     const fetchStats = useCallback(async () => {

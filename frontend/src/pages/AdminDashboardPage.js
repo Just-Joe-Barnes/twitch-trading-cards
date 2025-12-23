@@ -542,9 +542,11 @@ const AdminDashboardPage = ({user}) => {
         } else if (count < 60) {
             cards[0] = 'epic';
             cards[1] = 'rare';
-        } else {
+        } else if (count < 100) {
             cards[0] = 'epic';
             cards[1] = 'epic';
+        } else {
+            cards[0] = 'legendary';
         }
 
         return (

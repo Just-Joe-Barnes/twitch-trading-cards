@@ -36,28 +36,39 @@ const epicRollRarityProbabilities = [
     { rarity: 'Divine', probability: 0.0003 },
 ];
 
+const legendaryRollRarityProbabilities = [
+    { rarity: 'Legendary', probability: 0.85 },
+    { rarity: 'Mythic', probability: 0.10 },
+    { rarity: 'Unique', probability: 0.04 },
+    { rarity: 'Divine', probability: 0.01 },
+];
+
 const MODIFIER_CHANCE = parseFloat(process.env.MODIFIER_CHANCE || '0.03');
 
 const getPackLuckProfile = (weeklySubCount) => {
     // Standard: 0-14 subs
     if (weeklySubCount < 15) {
-        return { epicRolls: 0, rareRolls: 1, standardRolls: 4, profileName: "Standard (1 Rare, 4 Rolls)" };
+        return { legendaryRolls: 0, epicRolls: 0, rareRolls: 1, standardRolls: 4, profileName: "Standard (1 Rare, 4 Rolls)" };
     }
     // Tier 1: 15-29 subs
     else if (weeklySubCount < 30) {
-        return { epicRolls: 1, rareRolls: 0, standardRolls: 4, profileName: "Tier 1 (1 Epic, 4 Rolls)" };
+        return { legendaryRolls: 0, epicRolls: 1, rareRolls: 0, standardRolls: 4, profileName: "Tier 1 (1 Epic, 4 Rolls)" };
     }
     // Tier 2: 30-44 subs
     else if (weeklySubCount < 45) {
-        return { epicRolls: 0, rareRolls: 2, standardRolls: 3, profileName: "Tier 2 (2 Rare, 3 Rolls)" };
+        return { legendaryRolls: 0, epicRolls: 0, rareRolls: 2, standardRolls: 3, profileName: "Tier 2 (2 Rare, 3 Rolls)" };
     }
     // Tier 3: 45-59 subs
     else if (weeklySubCount < 60) {
-        return { epicRolls: 1, rareRolls: 1, standardRolls: 3, profileName: "Tier 3 (1 Epic, 1 Rare, 3 Rolls)" };
+        return { legendaryRolls: 0, epicRolls: 1, rareRolls: 1, standardRolls: 3, profileName: "Tier 3 (1 Epic, 1 Rare, 3 Rolls)" };
     }
-    // Tier 4: 60+ subs
+    // Tier 4: 60-99 subs
+    else if (weeklySubCount < 100) {
+        return { legendaryRolls: 0, epicRolls: 2, rareRolls: 0, standardRolls: 3, profileName: "Tier 4 (2 Epic, 3 Rolls)" };
+    }
+    // Tier 5: 100+ subs
     else {
-        return { epicRolls: 2, rareRolls: 0, standardRolls: 3, profileName: "Tier 4 (2 Epic, 3 Rolls)" };
+        return { legendaryRolls: 1, epicRolls: 0, rareRolls: 0, standardRolls: 4, profileName: "Tier 5 (1 Legendary, 4 Rolls)" };
     }
 };
 
@@ -208,6 +219,15 @@ const generateCardWithProbability = async (highRoll = false) => {
 
 const rareTier = new Set(["Rare", "Epic", "Legendary", "Mythic", "Unique", "Divine"]);
 const isRareOrAbove = (rarity) => rareTier.has(rarity);
+
+const rarityOrder = ["Basic", "Common", "Standard", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Unique", "Divine"];
+const rarityRank = new Map(rarityOrder.map((rarity, index) => [rarity, index]));
+const isRarityAtLeast = (rarity, minimum) => {
+    const rank = rarityRank.get(rarity);
+    const minRank = rarityRank.get(minimum);
+    if (rank === undefined || minRank === undefined) return false;
+    return rank >= minRank;
+};
 
 const generateRareCardWithProbability = async () => {
     while (true) {
@@ -493,7 +513,9 @@ const generateCardPreviewFromPool = async (poolIds, options = {}) => {
             }
 
             let baseProbabilities;
-            if (rarityTier === 'Epic') {
+            if (rarityTier === 'Legendary') {
+                baseProbabilities = legendaryRollRarityProbabilities;
+            } else if (rarityTier === 'Epic') {
                 baseProbabilities = epicRollRarityProbabilities;
             } else if (rarityTier === 'Rare') {
                 baseProbabilities = highRollRarityProbabilities;
@@ -687,23 +709,37 @@ const generatePackPreviewFromPool = async (poolIds, packSize = 5, forceModifier 
     const profile = getPackLuckProfile(weeklySubCount);
     console.log(`[generatePackPreviewFromPool] Generating pack with luck profile: ${profile.profileName} (${weeklySubCount} subs)`);
 
-    const generationJobs = [];
+    const pack = [];
+    const missingRolls = { Legendary: 0, Epic: 0, Rare: 0 };
 
-    for (let i = 0; i < profile.epicRolls; i++) {
-        generationJobs.push(generateCardPreviewFromPool(poolIds, { rarityTier: 'Epic', forceModifier, live }));
+    const generateWithRetry = async (rarityTier, attempts = 5) => {
+        for (let attempt = 0; attempt < attempts; attempt++) {
+            const card = await generateCardPreviewFromPool(poolIds, { rarityTier, forceModifier, live });
+            if (card) {
+                return card;
+            }
+        }
+        return null;
+    };
+
+    const rollPlan = [
+        { tier: 'Legendary', count: profile.legendaryRolls || 0 },
+        { tier: 'Epic', count: profile.epicRolls || 0 },
+        { tier: 'Rare', count: profile.rareRolls || 0 },
+        { tier: 'Standard', count: profile.standardRolls || 0 },
+    ];
+
+    for (const { tier, count } of rollPlan) {
+        for (let i = 0; i < count; i++) {
+            const card = await generateWithRetry(tier);
+            if (card) {
+                pack.push(card);
+            } else if (tier !== 'Standard') {
+                missingRolls[tier] += 1;
+                console.warn(`[generatePackPreviewFromPool] Failed to generate ${tier} roll after retries.`);
+            }
+        }
     }
-
-    for (let i = 0; i < profile.rareRolls; i++) {
-        generationJobs.push(generateCardPreviewFromPool(poolIds, { rarityTier: 'Rare', forceModifier, live }));
-    }
-
-    for (let i = 0; i < profile.standardRolls; i++) {
-        generationJobs.push(generateCardPreviewFromPool(poolIds, { rarityTier: 'Standard', forceModifier, live }));
-    }
-
-    let pack = await Promise.all(generationJobs);
-
-    pack = pack.filter(card => card !== null);
 
     const hasRare = pack.some(card => card && isRareOrAbove(card.rarity));
 
@@ -724,12 +760,56 @@ const generatePackPreviewFromPool = async (poolIds, packSize = 5, forceModifier 
     let fillAttempts = 0;
     while (pack.length < packSize && fillAttempts < 5) {
         console.warn(`[generatePackPreviewFromPool] Pack is short (${pack.length}/${packSize}). Filling remaining slots with Standard rolls.`);
-        const fillCard = await generateCardPreviewFromPool(poolIds, { rarityTier: 'Standard', forceModifier, live });
+        const fillCard = await generateWithRetry('Standard', 3);
         if (fillCard) {
             pack.push(fillCard);
         }
         fillAttempts++;
     }
+
+    const ensureMinimums = async (tier, required) => {
+        if (!required) return;
+        let current = pack.filter(card => card && isRarityAtLeast(card.rarity, tier)).length;
+
+        while (current < required) {
+            const replacement = await generateWithRetry(tier, 5);
+            if (!replacement) {
+                console.error(`[generatePackPreviewFromPool] Unable to satisfy ${tier} minimum after retries.`);
+                break;
+            }
+
+            let replaceIndex = -1;
+            let lowestRank = Infinity;
+            const tierRank = rarityRank.get(tier);
+
+            for (let i = 0; i < pack.length; i++) {
+                const card = pack[i];
+                if (!card) continue;
+                const cardRank = rarityRank.get(card.rarity);
+                if (cardRank === undefined || tierRank === undefined) continue;
+                if (cardRank < tierRank && cardRank < lowestRank) {
+                    lowestRank = cardRank;
+                    replaceIndex = i;
+                }
+            }
+
+            if (replaceIndex === -1) {
+                console.warn(`[generatePackPreviewFromPool] No valid replacement slot found while enforcing ${tier} minimum.`);
+                break;
+            }
+
+            pack[replaceIndex] = replacement;
+            current = pack.filter(card => card && isRarityAtLeast(card.rarity, tier)).length;
+        }
+    };
+
+    if (missingRolls.Legendary || missingRolls.Epic || missingRolls.Rare) {
+        console.warn(`[generatePackPreviewFromPool] Missing rolls after initial generation:`, missingRolls);
+    }
+
+    await ensureMinimums('Legendary', profile.legendaryRolls || 0);
+    await ensureMinimums('Epic', profile.epicRolls || 0);
+    await ensureMinimums('Rare', profile.rareRolls || 0);
 
     if (pack.length < packSize) {
         console.error(`[generatePackPreviewFromPool] CRITICAL: Could not fill pack to size ${packSize}. Final pack size: ${pack.length}`);

@@ -179,6 +179,12 @@
   color: #fff;
 }
 
+.luck-card.legendary, .goal-luck-card.legendary {
+  background: linear-gradient(145deg, #e53935, #b71c1c);
+  border: 1px solid #ff6f60;
+  color: #fff;
+}
+
 .current-reward {
   padding: 0.6rem;
   margin: 1rem 0;
