@@ -207,7 +207,7 @@ const ProfilePage = () => {
         <div className="page">
             <h1>{username}'s Profile</h1>
 
-            <div className="stats">
+            <div className="stats profile-stats">
                 <div className="stat" data-tooltip={`Total number of cards ${isOwnProfile ? 'you own' : username + ' owns'}`}>
                     <div>Total Cards</div>
                     <span>{collectionCount}</span>
@@ -231,8 +231,32 @@ const ProfilePage = () => {
                         <div className="xp-bar-fill" style={{width: `${(xp % 100)}%`}}></div>
                     </div>
                 </div>
+                {isOwnProfile && (
+                    <div className="stat preferred-pack-container">
+                        <div>Preferred Pack</div>
+                        <select
+                            value={preferredPackId}
+                            onChange={async (e) => {
+                                const id = e.target.value;
+                                setPreferredPackId(id);
+                                try {
+                                    await updatePreferredPack(id);
+                                } catch (err) {
+                                    console.error('Error updating preferred pack:', err);
+                                }
+                            }}
+                        >
+                            <option value="">Select a pack</option>
+                            {packOptions.map((p) => (
+                                <option key={p._id} value={p._id}>
+                                    {p.name || p.type || 'Unnamed'}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
 
-                <div className="button-group">
+                <div className="button-group profile-actions">
                     {!isOwnProfile && (
                         <button className="primary-button" onClick={handleInitiateTrade} style={{margin: '0'}}>
                             Trade with {username}
@@ -397,30 +421,6 @@ const ProfilePage = () => {
                         )}
                     </div>
 
-                    {isOwnProfile && (
-                        <div className="preferred-pack-container">
-                            <h2>Preferred Pack</h2>
-                            <select
-                                value={preferredPackId}
-                                onChange={async (e) => {
-                                    const id = e.target.value;
-                                    setPreferredPackId(id);
-                                    try {
-                                        await updatePreferredPack(id);
-                                    } catch (err) {
-                                        console.error('Error updating preferred pack:', err);
-                                    }
-                                }}
-                            >
-                                <option value="">Select a pack</option>
-                                {packOptions.map((p) => (
-                                    <option key={p._id} value={p._id}>
-                                        {p.name || p.type || 'Unnamed'}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>
