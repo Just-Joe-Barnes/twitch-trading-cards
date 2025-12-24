@@ -152,10 +152,21 @@ const AdminDashboardPage = ({user}) => {
 
     const fetchCommunityStats = async () => {
         try {
-            const data = await fetchWithAuth('/api/community/stats');
-            setWeeklySubCount(data?.weekly?.count ?? 0);
+            const data = await fetchWithAuth('/api/admin/pack-luck');
+            const weeklyCount = data?.weekly?.count ?? 0;
+            const overrideEnabled = Boolean(data?.override?.enabled);
+            const overrideCount = Number.isFinite(Number(data?.override?.count))
+                ? Number(data.override.count)
+                : null;
+            setWeeklySubCount(overrideEnabled && overrideCount !== null ? overrideCount : weeklyCount);
         } catch (err) {
-            console.error('Error fetching community stats:', err);
+            console.error('Error fetching pack luck status:', err);
+            try {
+                const data = await fetchWithAuth('/api/community/stats');
+                setWeeklySubCount(data?.weekly?.count ?? 0);
+            } catch (fallbackErr) {
+                console.error('Error fetching community stats:', fallbackErr);
+            }
         }
     };
 
