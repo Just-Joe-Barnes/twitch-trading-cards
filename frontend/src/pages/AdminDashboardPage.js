@@ -52,6 +52,7 @@ const AdminDashboardPage = ({user}) => {
     const [isQueuePaused, setIsQueuePaused] = useState(true);
     const [queueCount, setQueueCount] = useState(0);
     const [weeklySubCount, setWeeklySubCount] = useState(0);
+    const [packLuckOverride, setPackLuckOverride] = useState({ enabled: false, count: null, weeklyCount: 0 });
 
     const [currentVideoUrl, setCurrentVideoUrl] = useState('/animations/packopening.mp4');
 
@@ -158,12 +159,15 @@ const AdminDashboardPage = ({user}) => {
             const overrideCount = Number.isFinite(Number(data?.override?.count))
                 ? Number(data.override.count)
                 : null;
+            setPackLuckOverride({ enabled: overrideEnabled, count: overrideCount, weeklyCount });
             setWeeklySubCount(overrideEnabled && overrideCount !== null ? overrideCount : weeklyCount);
         } catch (err) {
             console.error('Error fetching pack luck status:', err);
             try {
                 const data = await fetchWithAuth('/api/community/stats');
-                setWeeklySubCount(data?.weekly?.count ?? 0);
+                const weeklyCount = data?.weekly?.count ?? 0;
+                setWeeklySubCount(weeklyCount);
+                setPackLuckOverride({ enabled: false, count: null, weeklyCount });
             } catch (fallbackErr) {
                 console.error('Error fetching community stats:', fallbackErr);
             }
@@ -843,12 +847,17 @@ const AdminDashboardPage = ({user}) => {
                                     );
                                 })}
                             </div>
-                            <div className="current-reward">
-                                <h3 className="tiny">
-                                    Current Rigged Pack Luck
-                                </h3>
-                                <CurrentPackLuckIndicator count={weeklySubCount} />
-                            </div>
+                              <div className="current-reward">
+                                  <h3 className="tiny">
+                                      Current Rigged Pack Luck
+                                  </h3>
+                                  <CurrentPackLuckIndicator count={weeklySubCount} />
+                                  <div className={`pack-luck-override ${packLuckOverride.enabled ? 'on' : 'off'}`}>
+                                      {packLuckOverride.enabled
+                                          ? `Override ON (${packLuckOverride.count ?? weeklySubCount})`
+                                          : 'Override OFF'}
+                                  </div>
+                              </div>
                         </div>
                     </div>
                 </div>
