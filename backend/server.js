@@ -30,6 +30,7 @@ const io = socketIo(server, {
 
 const { initializeQueueService, markAsReady, handleOverlayDisconnect } = require('./src/services/queueService');
 const {handleMonthlyPayout} = require("./src/services/payoutService");
+const { expireOldMarketListings, DEFAULT_LISTING_MAX_AGE_DAYS } = require('./src/services/marketCleanupService');
 
 const socketUserMap = new Map();
 const overlaySocketMap = new Map();
@@ -48,6 +49,21 @@ cron.schedule('0 2 1 * *', async () => {
         console.log('[Scheduler] Monthly payout completed successfully.');
     } catch (error) {
         console.error('[Scheduler] Monthly payout FAILED:', error);
+    }
+}, {
+    timezone: "Europe/London"
+});
+
+// --- AUTOMATED MARKET LISTING EXPIRY ---
+// This cron string means: "At 03:00 every day."
+console.log('[Scheduler] Initializing market listing expiry job.');
+cron.schedule('0 3 * * *', async () => {
+    console.log(`[Scheduler] Running market listing expiry (>${DEFAULT_LISTING_MAX_AGE_DAYS} days)...`);
+    try {
+        const { expiredCount } = await expireOldMarketListings();
+        console.log(`[Scheduler] Market listing expiry completed. Expired: ${expiredCount}.`);
+    } catch (error) {
+        console.error('[Scheduler] Market listing expiry FAILED:', error);
     }
 }, {
     timezone: "Europe/London"

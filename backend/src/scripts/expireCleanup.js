@@ -5,6 +5,7 @@ dotenv.config();
 const Trade = require('../models/tradeModel');
 const User = require('../models/userModel');
 const MarketListing = require('../models/MarketListing');
+const { expireOldMarketListings } = require('../services/marketCleanupService');
 
 async function cleanupExpired() {
   await mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -51,6 +52,8 @@ async function cleanupExpired() {
       await listing.save();
     }
   }
+
+  await expireOldMarketListings({ now });
 
   console.log('Expired cleanup complete.');
   await mongoose.disconnect();
