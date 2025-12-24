@@ -7,6 +7,7 @@ const { addToQueue } = require("../services/queueService");
 const { createLogEntry } = require("../utils/logService");
 const PeriodCounter = require('../models/periodCounterModel');
 const { getWeeklyKey, getMonthlyKey } = require("../scripts/periods");
+const { getDefaultPackId } = require('../helpers/packDefaults');
 
 /**
  * NOTE (Streamer.bot integration):
@@ -448,7 +449,13 @@ router.get('/redeem-pack', validateApiKey, async (req, res) => {
             return res.status(404).json({ message: `User with Twitch ID ${userId} not found.` });
         }
 
-        const templateId = redeemer.preferredPack?._id || '67f68591c7560fa1a75f142c';
+        const defaultPackId = await getDefaultPackId();
+        const templateId = redeemer.preferredPack?._id || defaultPackId;
+
+        if (!templateId) {
+            await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', 'Default pack not configured.');
+            return res.status(500).json({ message: 'Default pack not configured.' });
+        }
 
         await addToQueue({
             streamerDbId: streamerId,

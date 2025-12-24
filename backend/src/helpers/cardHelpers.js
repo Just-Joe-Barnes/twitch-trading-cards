@@ -1,6 +1,6 @@
 const Card = require('../models/cardModel');
 const Modifier = require("../models/modifierModel");
-const Pack = require('../models/packModel');
+const { getDefaultPack, DEFAULT_PACK_NAME } = require('./packDefaults');
 const { getCardAvailability } = require("../controllers/cardController");
 const PeriodCounter = require('../models/periodCounterModel');
 const Setting = require('../models/settingsModel');
@@ -86,10 +86,9 @@ const pickRarity = (highRoll = false) => {
 };
 
 const generateCardWithProbability = async (highRoll = false) => {
-    const packId = "67f68591c7560fa1a75f142c";
-    const pack = await Pack.findById(packId);
+    const pack = await getDefaultPack();
     if (!pack || !pack.cardPool || pack.cardPool.length === 0) {
-        console.error(`[generateCardWithProbability] Default pack with ID ${packId} not found or is empty.`);
+        console.error(`[generateCardWithProbability] Default pack '${DEFAULT_PACK_NAME}' not found or is empty.`);
         return null;
     }
     const poolIds = pack.cardPool;
