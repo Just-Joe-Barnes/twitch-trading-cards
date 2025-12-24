@@ -9,6 +9,7 @@ import {
     fetchUserProfileByUsername,
 } from '../utils/api';
 import BaseCard from '../components/BaseCard';
+import UserTitle from '../components/UserTitle';
 import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/CollectionPage.css';
 import {rarities} from '../constants/rarities';
@@ -38,6 +39,7 @@ const CollectionPage = ({
     const {username: collectionOwner} = useParams();
     const navigate = useNavigate();
     const [loggedInUser, setLoggedInUser] = useState(null);
+    const [collectionOwnerProfile, setCollectionOwnerProfile] = useState(null);
     const [allCards, setAllCards] = useState([]);
     const [filteredCards, setFilteredCards] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -181,7 +183,7 @@ const CollectionPage = ({
         const fetchProfile = async () => {
             try {
                 const profile = await fetchUserProfile();
-                setLoggedInUser(profile.username);
+                setLoggedInUser(profile);
             } catch (error) {
                 console.error('Error fetching logged-in user profile:', error);
                 setLoggedInUser(null);
@@ -194,7 +196,7 @@ const CollectionPage = ({
         const fetchCollectionData = async () => {
             try {
                 setLoading(true);
-                const identifier = collectionOwner || loggedInUser;
+                const identifier = collectionOwner || loggedInUser?.username;
                 if (identifier) {
                     const data = await fetchUserCollection(identifier);
                     if (data.cards) {
@@ -218,9 +220,11 @@ const CollectionPage = ({
             try {
                 if (collectionOwner) {
                     const ownerProfile = await fetchUserProfileByUsername(collectionOwner);
+                    setCollectionOwnerProfile(ownerProfile);
                     setFeaturedCards(ownerProfile.featuredCards || []);
                 } else if (loggedInUser) {
                     const response = await fetchFeaturedCards();
+                    setCollectionOwnerProfile(loggedInUser);
                     setFeaturedCards(response.featuredCards || []);
                 }
             } catch (error) {
@@ -454,8 +458,9 @@ const CollectionPage = ({
         setOrder(prevOrder => prevOrder === 'asc' ? 'desc' : 'asc');
     };
 
-    const binderTarget = collectionOwner || loggedInUser;
-    const isOwner = !collectionOwner || loggedInUser === collectionOwner;
+    const binderTarget = collectionOwner || loggedInUser?.username;
+    const isOwner = !collectionOwner || loggedInUser?.username === collectionOwner;
+    const displayProfile = collectionOwnerProfile || loggedInUser;
 
     if (loading) return <LoadingSpinner/>;
 
@@ -463,7 +468,17 @@ const CollectionPage = ({
         <>
             <div className="page">
                 {!hideHeader && (
-                    <h1>{collectionTitle || `${collectionOwner || loggedInUser}'s Collection`}</h1>
+                    <h1>
+                        {collectionTitle || (
+                            <>
+                                <UserTitle
+                                    username={displayProfile?.username || 'User'}
+                                    title={displayProfile?.selectedTitle}
+                                />
+                                {'\'s Collection'}
+                            </>
+                        )}
+                    </h1>
                 )}
 
                 <div className="section-card narrow">

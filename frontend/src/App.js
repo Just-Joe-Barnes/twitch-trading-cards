@@ -40,6 +40,7 @@ const MarketPage = lazy(() => import('./pages/MarketPage'));
 const CreateListingPage = lazy(() => import('./pages/CreateListingPage'));
 const MarketListingDetails = lazy(() => import('./pages/MarketListingDetails'));
 const AdminActions = lazy(() => import('./pages/AdminActions'));
+const AdminTitlesPage = lazy(() => import('./pages/AdminTitlesPage'));
 const CardGradingPage = lazy(() => import('./pages/CardGradingPage'));
 const CardEditor = lazy(() => import('./components/CardEditor'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
@@ -253,6 +254,7 @@ const App = () => {
                             <Route path="cards/:id" element={<CardEditor/>} />
                             <Route path="cardaudit" element={<AdminCardAudit/>} />
                             <Route path="trades" element={<AdminTrades/>} />
+                            <Route path="titles" element={user?.isAdmin ? <AdminTitlesPage /> : <Navigate to="/login"/>} />
                         </Route>
                         <Route path="/stream-overlay/:userId" element={<StreamOverlayPage/>} />
                         <Route path="/" element={<Navigate to="/dashboard"/>} />

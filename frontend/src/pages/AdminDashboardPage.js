@@ -5,6 +5,7 @@ import {useNavigate} from 'react-router-dom';
 import '../styles/AdminDashboardPage.css';
 import moment from 'moment';
 import {getRarityColor, rarities} from "../constants/rarities";
+import UserTitle from '../components/UserTitle';
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -614,7 +615,7 @@ const AdminDashboardPage = ({user}) => {
                         <img src={raffleWinner.twitchProfilePic} alt={raffleWinner.username}/>
                         <p>Ripping a pack for...</p>
                         <h1>
-                            {raffleWinner.username}<br/>
+                            <UserTitle username={raffleWinner.username} title={raffleWinner.selectedTitle} /><br/>
                             <span style={{margin: 0, padding: 0, fontSize: '0.8rem'}}>Packs Remaining ({raffleWinner.packs - 1})</span>
                         </h1>
 
@@ -690,7 +691,9 @@ const AdminDashboardPage = ({user}) => {
                                         <div key={u._id}
                                              className={`raffle-user ${highlightedUserId === u._id ? 'highlighted' : ''} ${sessionCounts[u._id] ? 'has-opened-pack' : ''}`}>
                                             <img src={u.twitchProfilePic} alt={u.username}/>
-                                            <span className="raffle-username">{u.username}</span>
+                                            <span className="raffle-username">
+                                                <UserTitle username={u.username} title={u.selectedTitle} />
+                                            </span>
                                         </div>
                                     ))}
                                 </div>
@@ -748,7 +751,9 @@ const AdminDashboardPage = ({user}) => {
                                                     setFocusedUserIndex(index);
                                                 }}
                                             >
-                                                <td>{u.username}</td>
+                                                <td>
+                                                    <UserTitle username={u.username} title={u.selectedTitle} />
+                                                </td>
                                                 <td>{u.packs}</td>
                                                 <td>{u.preferredPack ? (u.preferredPack.name || u.preferredPack.type || 'Unnamed') : '-'}</td>
                                                 <td>{u.lastActive ? moment(u.lastActive).fromNow() : 'Never'}</td>
@@ -772,7 +777,7 @@ const AdminDashboardPage = ({user}) => {
                                 )}
                                 {activeTab === 'list' && selectedUser && (
                                     <>
-                                        <h2>Open Pack for {selectedUser.username}</h2>
+                                        <h2>Open Pack for <UserTitle username={selectedUser.username} title={selectedUser.selectedTitle} /></h2>
                                         <img src={selectedUser.twitchProfilePic} className="userpic" alt="Profile"/>
                                         <div className="session-counter" style={{
                                             marginBottom: '.4rem',
@@ -869,7 +874,9 @@ const AdminDashboardPage = ({user}) => {
                 {waitingOnPack && (
                     <div className="opened-cards" style={{padding: activeTab === 'raffle' ? '2rem 5rem 5rem 5rem' : '7rem'}}>
                         {activeTab === 'raffle' && selectedUser && (
-                            <h1 style={{marginTop: '0', padding: '0'}}>{selectedUser.username}</h1>
+                            <h1 style={{marginTop: '0', padding: '0'}}>
+                                <UserTitle username={selectedUser.username} title={selectedUser.selectedTitle} />
+                            </h1>
                         )}
                         <div className="cards-container">
                             {openedCards.length === 0 && (

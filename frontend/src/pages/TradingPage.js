@@ -1,7 +1,8 @@
 import React, {useState, useEffect, useRef, useMemo} from "react";
 import {Link, useLocation} from "react-router-dom";
-import {createTrade, searchUsers, fetchWithAuth} from "../utils/api";
+import {createTrade, searchUsers, fetchWithAuth, fetchUserProfileByUsername} from "../utils/api";
 import BaseCard from "../components/BaseCard";
+import UserTitle from "../components/UserTitle";
 import {rarities} from "../constants/rarities";
 
 const TradingPage = ({userId}) => {
@@ -10,6 +11,7 @@ const TradingPage = ({userId}) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [userSuggestions, setUserSuggestions] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
+    const [selectedUserTitle, setSelectedUserTitle] = useState(null);
     const [counterTradeId, setCounterTradeId] = useState(null);
     const [userCollection, setUserCollection] = useState([]);
     const [recipientCollection, setRecipientCollection] = useState([]);
@@ -53,6 +55,7 @@ const TradingPage = ({userId}) => {
         if (counter) {
             setShowTradeForm(true);
             setSelectedUser(counter.selectedUser);
+            setSelectedUserTitle(null);
             setTradeOffer(counter.tradeOffer || []);
             setTradeRequest(counter.tradeRequest || []);
             setOfferedPacks(counter.offeredPPack || 0);
@@ -89,12 +92,26 @@ const TradingPage = ({userId}) => {
     }, [selectedUser, loggedInUser]);
 
     useEffect(() => {
+        const fetchSelectedTitle = async () => {
+            if (!selectedUser || selectedUserTitle) return;
+            try {
+                const profile = await fetchUserProfileByUsername(selectedUser);
+                setSelectedUserTitle(profile.selectedTitle || null);
+            } catch (error) {
+                console.error('Error fetching selected user title:', error);
+            }
+        };
+        fetchSelectedTitle();
+    }, [selectedUser, selectedUserTitle]);
+
+    useEffect(() => {
         const counter = location.state?.counterOffer;
         const bounty = location.state?.bountyTrade;
 
         if (counter) {
             setShowTradeForm(true);
             setSelectedUser(counter.selectedUser);
+            setSelectedUserTitle(null);
             setTradeOffer(counter.tradeOffer || []);
             setTradeRequest(counter.tradeRequest || []);
             setOfferedPacks(counter.offeredPacks || 0);
@@ -103,6 +120,7 @@ const TradingPage = ({userId}) => {
         } else if (bounty) { // <-- NEW LOGIC HERE
             setShowTradeForm(true);
             setSelectedUser(bounty.selectedUser);
+            setSelectedUserTitle(null);
             setTradeOffer(bounty.tradeOffer || []);
             setTradeRequest(bounty.tradeRequest || []);
             setOfferedPacks(0);
@@ -294,11 +312,15 @@ const TradingPage = ({userId}) => {
     };
 
     const handleUserSelect = (username) => {
-        if (loggedInUser && username === loggedInUser.username) {
+        const selectedUsername = typeof username === 'string' ? username : username?.username;
+        const selectedTitle = typeof username === 'string' ? null : username?.selectedTitle || null;
+
+        if (loggedInUser && selectedUsername === loggedInUser.username) {
             window.showToast("You cannot trade with yourself!", "warning");
             return;
         }
-        setSelectedUser(username);
+        setSelectedUser(selectedUsername);
+        setSelectedUserTitle(selectedTitle);
         setSearchQuery("");
         setUserSuggestions([]);
         setActiveIndex(-1);
@@ -320,9 +342,9 @@ const TradingPage = ({userId}) => {
             setActiveIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : 0));
         } else if (e.key === 'Enter') {
             e.preventDefault();
-            if (activeIndex >= 0 && userSuggestions[activeIndex]) {
-                handleUserSelect(userSuggestions[activeIndex].username);
-            }
+                            if (activeIndex >= 0 && userSuggestions[activeIndex]) {
+                                handleUserSelect(userSuggestions[activeIndex]);
+                            }
         } else if (e.key === 'Escape') {
             setSearchQuery('');
             setUserSuggestions([]);
@@ -398,9 +420,9 @@ const TradingPage = ({userId}) => {
                                 {userSuggestions.map((user, index) => (
                                     <li
                                         key={user._id}
-                                        onClick={() => handleUserSelect(user.username)}
+                                        onClick={() => handleUserSelect(user)}
                                         className={`search-result-item ${index === activeIndex ? 'active' : ''}`}>
-                                        {user.username}
+                                        <UserTitle username={user.username} title={user.selectedTitle} />
                                     </li>
                                 ))}
                             </ul>
@@ -544,7 +566,10 @@ const TradingPage = ({userId}) => {
                                     <div className="column-container section-card">
                                         <div className="tp-collection-panel">
                                             <div className="tp-panel-header">
-                                                <h2 className="tp-collection-header">{selectedUser}'s Collection</h2>
+                                            <h2 className="tp-collection-header">
+                                                <UserTitle username={selectedUser} title={selectedUserTitle} />
+                                                {"'s Collection"}
+                                            </h2>
                                             </div>
                                             <div className="stats">
                                                 <div className="stat"

@@ -1,6 +1,7 @@
 import React, {useState, useEffect, useMemo} from 'react';
 import {fetchWithAuth} from '../utils/api';
 import BaseCard from '../components/BaseCard';
+import UserTitle from '../components/UserTitle';
 import LoadingSpinner from '../components/LoadingSpinner';
 import {Link, useNavigate, useParams} from 'react-router-dom';
 import {rarities} from '../constants/rarities';
@@ -179,6 +180,12 @@ const MarketPage = () => {
         navigate(`/market/create`);
     };
 
+    const formatSellerLabel = (seller) => {
+        if (!seller) return '';
+        const titleName = seller.selectedTitle?.name;
+        return titleName ? `${seller.username} ${titleName}` : seller.username;
+    };
+
     if (loading) return <LoadingSpinner/>;
     if (error) return <div className="market-page-error">{error}</div>;
 
@@ -240,7 +247,7 @@ const MarketPage = () => {
                                             <option value="">All Sellers</option>
                                             {sellers.map(seller => (
                                                 <option key={seller._id} value={seller._id}>
-                                                    {seller.username}
+                                                    {formatSellerLabel(seller)}
                                                 </option>
                                             ))}
                                         </select>
@@ -316,7 +323,12 @@ const MarketPage = () => {
                                     limited={!!listing.card.availableFrom && !!listing.card.availableTo}
                                 />
                                 <div className="actions">
-                                    <p className="listing-owner">Listed by: <Link to={`/profile/${listing.owner.username}`}>{listing.owner.username}</Link></p>
+                                    <p className="listing-owner">
+                                        Listed by:{' '}
+                                        <Link to={`/profile/${listing.owner.username}`}>
+                                            <UserTitle username={listing.owner.username} title={listing.owner.selectedTitle} />
+                                        </Link>
+                                    </p>
                                     <p className="offers-count">Offers: {listing.offers ? listing.offers.length : 0}</p>
                                     <Link to={`/market/listing/${listing._id}`}>
                                         <button className="primary-button">View &amp; Make Offer</button>

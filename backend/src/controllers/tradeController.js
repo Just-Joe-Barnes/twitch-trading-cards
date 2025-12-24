@@ -382,6 +382,7 @@ const getPendingTrades = async (req, res) => {
                         {
                             $project: {
                                 username: 1,
+                                selectedTitle: 1,
                                 cards: {
                                     $filter: {
                                         input: '$cards',
@@ -398,6 +399,15 @@ const getPendingTrades = async (req, res) => {
             { $unwind: { path: '$senderInfo', preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
+                    from: 'titles',
+                    localField: 'senderInfo.selectedTitle',
+                    foreignField: '_id',
+                    as: 'senderTitle'
+                }
+            },
+            { $unwind: { path: '$senderTitle', preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
                     from: 'users',
                     let: { recipientId: '$recipient', requested: '$requestedItems' },
                     pipeline: [
@@ -405,6 +415,7 @@ const getPendingTrades = async (req, res) => {
                         {
                             $project: {
                                 username: 1,
+                                selectedTitle: 1,
                                 cards: {
                                     $filter: {
                                         input: '$cards',
@@ -420,11 +431,38 @@ const getPendingTrades = async (req, res) => {
             },
             { $unwind: { path: '$recipientInfo', preserveNullAndEmptyArrays: true } },
             {
+                $lookup: {
+                    from: 'titles',
+                    localField: 'recipientInfo.selectedTitle',
+                    foreignField: '_id',
+                    as: 'recipientTitle'
+                }
+            },
+            { $unwind: { path: '$recipientTitle', preserveNullAndEmptyArrays: true } },
+            {
                 $project: {
                     offeredItems: '$senderInfo.cards',
                     requestedItems: '$recipientInfo.cards',
-                    sender: { username: '$senderInfo.username' },
-                    recipient: { username: '$recipientInfo.username' },
+                    sender: {
+                        username: '$senderInfo.username',
+                        selectedTitle: {
+                            name: '$senderTitle.name',
+                            color: '$senderTitle.color',
+                            gradient: '$senderTitle.gradient',
+                            isAnimated: '$senderTitle.isAnimated',
+                            effect: '$senderTitle.effect'
+                        }
+                    },
+                    recipient: {
+                        username: '$recipientInfo.username',
+                        selectedTitle: {
+                            name: '$recipientTitle.name',
+                            color: '$recipientTitle.color',
+                            gradient: '$recipientTitle.gradient',
+                            isAnimated: '$recipientTitle.isAnimated',
+                            effect: '$recipientTitle.effect'
+                        }
+                    },
                     offeredPacks: 1,
                     requestedPacks: 1,
                     status: 1,
@@ -464,6 +502,7 @@ const getTradesForUser = async (req, res) => {
                         {
                             $project: {
                                 username: 1,
+                                selectedTitle: 1,
                                 cards: {
                                     $filter: {
                                         input: '$cards',
@@ -480,6 +519,15 @@ const getTradesForUser = async (req, res) => {
             { $unwind: { path: '$senderInfo', preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
+                    from: 'titles',
+                    localField: 'senderInfo.selectedTitle',
+                    foreignField: '_id',
+                    as: 'senderTitle'
+                }
+            },
+            { $unwind: { path: '$senderTitle', preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
                     from: 'users',
                     let: { recipientId: '$recipient', requested: '$requestedItems' },
                     pipeline: [
@@ -487,6 +535,7 @@ const getTradesForUser = async (req, res) => {
                         {
                             $project: {
                                 username: 1,
+                                selectedTitle: 1,
                                 cards: {
                                     $filter: {
                                         input: '$cards',
@@ -502,11 +551,38 @@ const getTradesForUser = async (req, res) => {
             },
             { $unwind: { path: '$recipientInfo', preserveNullAndEmptyArrays: true } },
             {
+                $lookup: {
+                    from: 'titles',
+                    localField: 'recipientInfo.selectedTitle',
+                    foreignField: '_id',
+                    as: 'recipientTitle'
+                }
+            },
+            { $unwind: { path: '$recipientTitle', preserveNullAndEmptyArrays: true } },
+            {
                 $project: {
                     offeredItems: '$senderInfo.cards',
                     requestedItems: '$recipientInfo.cards',
-                    sender: { username: '$senderInfo.username' },
-                    recipient: { username: '$recipientInfo.username' },
+                    sender: {
+                        username: '$senderInfo.username',
+                        selectedTitle: {
+                            name: '$senderTitle.name',
+                            color: '$senderTitle.color',
+                            gradient: '$senderTitle.gradient',
+                            isAnimated: '$senderTitle.isAnimated',
+                            effect: '$senderTitle.effect'
+                        }
+                    },
+                    recipient: {
+                        username: '$recipientInfo.username',
+                        selectedTitle: {
+                            name: '$recipientTitle.name',
+                            color: '$recipientTitle.color',
+                            gradient: '$recipientTitle.gradient',
+                            isAnimated: '$recipientTitle.isAnimated',
+                            effect: '$recipientTitle.effect'
+                        }
+                    },
                     offeredPacks: 1,
                     requestedPacks: 1,
                     status: 1,

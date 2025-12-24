@@ -1,12 +1,16 @@
 // controllers/userController.js
+const mongoose = require('mongoose');
 const User = require('../models/userModel');
 const Card = require('../models/cardModel');
+const Title = require('../models/titleModel');
 
 // Get logged-in user's profile (using token)
 const getUserProfile = async (req, res) => {
     const start = process.hrtime();
     try {
-        const user = await User.findById(req.user._id);
+        const user = await User.findById(req.user._id)
+            .populate('selectedTitle', 'name color gradient isAnimated effect')
+            .populate('unlockedTitles', 'name color gradient isAnimated effect');
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -52,17 +56,21 @@ const getProfileByUsername = async (req, res) => {
 
         // Base fields returned for any profile lookup
         const baseFields =
-            'username isAdmin openedPacks loginCount featuredCards favoriteCard preferredPack cards twitchProfilePic xp level achievements featuredAchievements';
+            'username isAdmin openedPacks loginCount featuredCards favoriteCard preferredPack cards twitchProfilePic xp level achievements featuredAchievements selectedTitle';
 
         // Only include the email if the requester is viewing their own profile
         // or has admin privileges
-        const includeEmail = req.username === username || req.isAdmin;
-        const projection = includeEmail ? `${baseFields} email` : baseFields;
+        const includePrivate = req.username === username || req.isAdmin;
+        const projection = includePrivate ? `${baseFields} email unlockedTitles` : baseFields;
 
-        const user = await User.findOne({ username })
+        const userQuery = User.findOne({ username })
             .select(projection)
             .populate('preferredPack', 'name')
-            .lean();
+            .populate('selectedTitle', 'name color gradient isAnimated effect');
+        if (includePrivate) {
+            userQuery.populate('unlockedTitles', 'name color gradient isAnimated effect');
+        }
+        const user = await userQuery.lean();
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -322,6 +330,44 @@ const updatePreferredPack = async (req, res) => {
     }
 };
 
+const updateSelectedTitle = async (req, res) => {
+    try {
+        const { titleId } = req.body || {};
+        const user = await User.findById(req.user._id).select('selectedTitle unlockedTitles');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (!titleId) {
+            user.selectedTitle = null;
+            await user.save();
+            return res.status(200).json({ selectedTitle: null });
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(titleId)) {
+            return res.status(400).json({ message: 'Invalid title ID' });
+        }
+
+        const isUnlocked = (user.unlockedTitles || []).some((id) => id.toString() === titleId);
+        if (!isUnlocked) {
+            return res.status(403).json({ message: 'Title not unlocked' });
+        }
+
+        const title = await Title.findById(titleId).select('name color gradient isAnimated effect');
+        if (!title) {
+            return res.status(404).json({ message: 'Title not found' });
+        }
+
+        user.selectedTitle = title._id;
+        await user.save();
+
+        res.status(200).json({ selectedTitle: title });
+    } catch (error) {
+        console.error('[updateSelectedTitle] Error:', error.message);
+        res.status(500).json({ message: 'Failed to update title' });
+    }
+};
+
 // Search for users by username
 const searchUsers = async (req, res) => {
     const { query } = req.query;
@@ -332,7 +378,10 @@ const searchUsers = async (req, res) => {
         const users = await User.find({
             username: { $regex: query, $options: 'i' },
             _id: { $ne: req.userId }
-        }).select('username').lean();
+        })
+            .select('username selectedTitle')
+            .populate('selectedTitle', 'name color gradient isAnimated effect')
+            .lean();
         res.status(200).json(users);
     } catch (error) {
         console.error('[User Search] Error:', error.message);
@@ -351,5 +400,6 @@ module.exports = {
     updateFavoriteCard,
     getPreferredPack,
     updatePreferredPack,
+    updateSelectedTitle,
     searchUsers,
 };

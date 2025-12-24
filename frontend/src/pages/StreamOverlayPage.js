@@ -3,6 +3,7 @@ import {useParams} from 'react-router-dom';
 import io from 'socket.io-client';
 import BaseCard from '../components/BaseCard';
 import {getRarityColor, rarities} from '../constants/rarities';
+import UserTitle from '../components/UserTitle';
 import '../styles/StreamOverlayPage.css';
 
 const packMessages = [
@@ -70,10 +71,10 @@ const StreamOverlayPage = () => {
             console.error('Socket connection error:', err.message);
         });
 
-        socket.on('new-pack-opening', ({cards, username}) => {
+        socket.on('new-pack-opening', ({cards, username, title}) => {
             const randomMessage = packMessages[Math.floor(Math.random() * packMessages.length)];
             const parts = randomMessage.split('{username}');
-            setPackMessageParts({ pre: parts[0], username: username, post: parts[1] || '' });
+            setPackMessageParts({ pre: parts[0], username: username, title: title || null, post: parts[1] || '' });
 
             setOpenedCards(cards);
             setRevealedCards(Array(cards.length).fill(false));
@@ -164,7 +165,9 @@ const StreamOverlayPage = () => {
                     {packMessageParts && (
                         <div className="pack-ripping-message">
                             {packMessageParts.pre}
-                            <b>{packMessageParts.username}</b>
+                            <b>
+                                <UserTitle username={packMessageParts.username} title={packMessageParts.title} />
+                            </b>
                             {packMessageParts.post}
                         </div>
                     )}

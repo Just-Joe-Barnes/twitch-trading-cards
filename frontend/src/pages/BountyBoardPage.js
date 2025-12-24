@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchWithAuth, fetchUserCollection } from '../utils/api';
 import BaseCard from '../components/BaseCard';
+import UserTitle from '../components/UserTitle';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { rarities } from '../constants/rarities';
 import '../styles/MarketPage.css';
@@ -135,7 +136,12 @@ const BountyBoardPage = ({ userId, username }) => {
                     loreAuthor={bounty.wantedCard.loreAuthor}
                 />
                 <div className="actions">
-                    <p className="listing-owner" style={{textAlign: 'center'}}>Wanted by <br /> <Link to={`/profile/${bounty.user.username}`}>{bounty.user.username}</Link></p>
+                    <p className="listing-owner" style={{textAlign: 'center'}}>
+                        Wanted by <br />{' '}
+                        <Link to={`/profile/${bounty.user.username}`}>
+                            <UserTitle username={bounty.user.username} title={bounty.user.selectedTitle} />
+                        </Link>
+                    </p>
                     {bounty.user.username === username ? (
                         <button className="primary-button" disabled>
                             You set this bounty

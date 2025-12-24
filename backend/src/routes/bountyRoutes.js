@@ -12,7 +12,9 @@ router.get('/wanted', protect, async (req, res) => {
             'favoriteCard.name': { $ne: null },
             'favoriteCard.rarity': { $ne: null }
         })
-            .select('username favoriteCard');
+            .select('username favoriteCard selectedTitle')
+            .populate('selectedTitle', 'name color gradient isAnimated effect')
+            .lean();
 
         // For each user, find a matching card to get its details (like imageUrl)
         const bountiesWithDetails = await Promise.all(bounties.map(async (bounty) => {
@@ -28,7 +30,8 @@ router.get('/wanted', protect, async (req, res) => {
             return {
                 user: {
                     username: bounty.username,
-                    _id: bounty._id
+                    _id: bounty._id,
+                    selectedTitle: bounty.selectedTitle || null
                 },
                 wantedCard: {
                     name: bounty.favoriteCard.name,

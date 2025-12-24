@@ -5,6 +5,7 @@ import {searchUsers, fetchUserProfile} from '../utils/api';
 // Make sure you've created these two new component files
 import UserDropdown from './UserDropdown';
 import NotificationBell from './NotificationBell';
+import UserTitle from './UserTitle';
 
 const Navbar = ({isAdmin, isMaintenanceMode}) => {
     const navigate = useNavigate();
@@ -182,7 +183,7 @@ const Navbar = ({isAdmin, isMaintenanceMode}) => {
                                             onClick={() => handleSearchSelect(user.username)}
                                             className={`search-result-item ${index === activeIndex ? 'active' : ''}`}
                                         >
-                                            {user.username}
+                                            <UserTitle username={user.username} title={user.selectedTitle} />
                                         </li>
                                     ))
                                 ) : (
@@ -238,7 +239,7 @@ const Navbar = ({isAdmin, isMaintenanceMode}) => {
                                                 }}
                                                 className={`search-result-item ${index === activeIndex ? 'active' : ''}`}
                                             >
-                                                {user.username}
+                                                <UserTitle username={user.username} title={user.selectedTitle} />
                                             </li>
                                         ))
                                     ) : (
@@ -263,6 +264,7 @@ const Navbar = ({isAdmin, isMaintenanceMode}) => {
                         <UserDropdown
                             profilePic={loggedInUser.twitchProfilePic || '/images/defaultProfile.png'}
                             username={loggedInUser.username}
+                            selectedTitle={loggedInUser.selectedTitle}
                             onLogout={handleLogout}
                             isAdmin={isAdmin}
                             isOpen={activeDropdown === 'user'}

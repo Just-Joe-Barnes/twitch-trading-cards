@@ -10,6 +10,7 @@ import {
 } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import BaseCard from '../components/BaseCard';
+import UserTitle from '../components/UserTitle';
 import '../styles/PendingTrades.css';
 import {rarities} from '../constants/rarities';
 
@@ -268,7 +269,11 @@ const PendingTrades = () => {
             <div className="preview">
                 <div className="box">
                     <div className="sender">
-                        {trade.sender?.username === user.username ? 'You' : trade.sender?.username}
+                        {trade.sender?.username === user.username ? (
+                            'You'
+                        ) : (
+                            <UserTitle username={trade.sender?.username || 'Unknown'} title={trade.sender?.selectedTitle} />
+                        )}
                     </div>
                     {trade.offeredItemsSnapshot?.length > 0 ? (
                         offerSummary(trade.offeredItemsSnapshot, trade.offeredPacks)
@@ -279,7 +284,13 @@ const PendingTrades = () => {
                 <span className="arrow">↓</span>
                 <div className="box">
                     <div
-                        className="recipient">{trade.recipient?.username === user.username ? 'You' : trade.recipient?.username}</div>
+                        className="recipient">
+                        {trade.recipient?.username === user.username ? (
+                            'You'
+                        ) : (
+                            <UserTitle username={trade.recipient?.username || 'Unknown'} title={trade.recipient?.selectedTitle} />
+                        )}
+                    </div>
                     {trade.requestedItemsSnapshot ? (
                         offerSummary(trade.requestedItemsSnapshot, trade.requestedPacks)
                     ) : (
@@ -317,7 +328,12 @@ const PendingTrades = () => {
                 <button className="close-button" onClick={() => setPanelOpen(false)} aria-label="Close panel">✕</button>
                 <div className="detail-body">
                     <section>
-                        <h3>Offered by {isOutgoing ? 'you' : senderName(trade)}</h3>
+                        <h3>
+                            Offered by{' '}
+                            {isOutgoing ? 'you' : (
+                                <UserTitle username={senderName(trade)} title={trade.sender?.selectedTitle} />
+                            )}
+                        </h3>
                         {trade.offeredPacks > 0 && (
                             <p className="pack-count">{trade.offeredPacks} packs offered</p>
                         )}
@@ -344,7 +360,14 @@ const PendingTrades = () => {
                     </section>
                     <hr/>
                     <section>
-                        <h3>Requested from {isOutgoing ? recipientName(trade) : 'you'}</h3>
+                        <h3>
+                            Requested from{' '}
+                            {isOutgoing ? (
+                                <UserTitle username={recipientName(trade)} title={trade.recipient?.selectedTitle} />
+                            ) : (
+                                'you'
+                            )}
+                        </h3>
                         {trade.requestedPacks > 0 && (
                             <p className="pack-count">{trade.requestedPacks} packs requested</p>
                         )}

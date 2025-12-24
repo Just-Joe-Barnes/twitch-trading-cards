@@ -228,6 +228,19 @@ export const updatePreferredPack = async (packId) => {
     }
 };
 
+export const updateSelectedTitle = async (titleId) => {
+    try {
+        const response = await fetchWithAuth('/api/users/title', {
+            method: 'PUT',
+            body: JSON.stringify({ titleId: titleId || null }),
+        });
+        return response;
+    } catch (error) {
+        console.error('[API] Error updating title:', error.message);
+        throw error;
+    }
+};
+
 export const fetchAllPacks = async () => {
     try {
         const res = await fetchWithAuth('/api/admin/packs', {method: 'GET'});

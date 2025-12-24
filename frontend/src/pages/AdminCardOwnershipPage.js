@@ -3,6 +3,7 @@ import { fetchWithAuth } from '../utils/api';
 import { rarities, getRarityColor } from '../constants/rarities';
 import BaseCard from '../components/BaseCard';
 import RarityQuickNav from '../components/RarityQuickNav';
+import UserTitle from '../components/UserTitle';
 import { Link } from 'react-router-dom';
 import useIsMobile from '../hooks/useIsMobile';
 import '../styles/AdminDashboardPage.css';
@@ -214,14 +215,14 @@ const AdminCardOwnershipPage = () => {
                                         >
                                             <h3 style={{ color: getRarityColor(rarity) }}>{rarity}</h3>
                                             {sortedOwners.length > 0 ? (
-                                                sortedOwners.map(({ userId, username, count, cards }) => {
+                                                sortedOwners.map(({ userId, username, selectedTitle, count, cards }) => {
                                                     const expansionKey = `${rarity}-${username}`;
                                                     const isExpanded = expandedDetails[expansionKey];
                                                     return (
                                                         <div className="owner-details" key={username}>
                                                             <div className="owner-header">
                                                                 <span className="username-toggle" onClick={() => toggleUserExpansion(rarity, username)}>
-                                                                    {username} ({count}) {isExpanded ? '▼' : '▶'}
+                                                                    <UserTitle username={username} title={selectedTitle} /> ({count}) {isExpanded ? '▼' : '▶'}
                                                                 </span>
                                                                 <Link className="button primary-button sm" to={`/profile/${username}`}>View Full Collection</Link>
                                                             </div>
@@ -276,3 +277,4 @@ const AdminCardOwnershipPage = () => {
 };
 
 export default AdminCardOwnershipPage;
+

@@ -1,0 +1,49 @@
+.user-title {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.user-title-name {
+  font-weight: 600;
+}
+
+.user-title-badge {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.user-title-sep {
+  opacity: 0.6;
+  white-space: pre;
+}
+
+.user-title-text {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.user-title-text.gradient {
+  background-image: var(--title-gradient);
+  background-size: 200% 200%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.user-title-text.animated {
+  animation: title-gradient-shift 5s ease infinite;
+}
+
+@keyframes title-gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}

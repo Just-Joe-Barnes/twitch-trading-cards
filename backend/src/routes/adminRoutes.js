@@ -14,6 +14,7 @@ const Card = require('../models/cardModel');
 const Pack = require('../models/packModel');
 const Notification = require('../models/notificationModel');
 const Achievement = require('../models/achievementModel');
+const Title = require('../models/titleModel');
 const Modifier = require('../models/modifierModel');
 const Trade = require('../models/tradeModel');
 const MarketListing = require('../models/MarketListing');
@@ -64,6 +65,8 @@ const slugify = (text) => {
         .replace(/[^\w\-]+/g, '')
         .replace(/\-\-+/g, '-');
 };
+
+const TITLE_SELECT = 'name slug description color gradient isAnimated effect';
 
 router.post('/clear-cards', protect, adminOnly, async (req, res) => {
     const { userId } = req.body;
@@ -163,8 +166,9 @@ router.get('/users', protect, adminOnly, async (req, res) => {
     const start = process.hrtime();
     try {
         const dbStart = process.hrtime();
-        const users = await User.find({}, 'username packs preferredPack')
+        const users = await User.find({}, 'username packs preferredPack selectedTitle')
             .populate('preferredPack', 'name')
+            .populate('selectedTitle', TITLE_SELECT)
             .lean();
         const dbEnd = process.hrtime(dbStart);
         console.log(`[PERF] [admin/users] DB query took ${dbEnd[0] * 1000 + dbEnd[1] / 1e6} ms`);
@@ -221,6 +225,7 @@ router.get('/users-activity', protect, adminOnly, async (req, res) => {
                 username: 1,
                 packs: 1,
                 preferredPack: 1,
+                selectedTitle: 1,
                 twitchProfilePic: 1,
                 lastActive: '$activityInfo.lastActive'
             }
@@ -228,10 +233,10 @@ router.get('/users-activity', protect, adminOnly, async (req, res) => {
 
         const users = await User.aggregate(pipeline);
 
-        await User.populate(users, {
-            path: 'preferredPack',
-            select: 'name'
-        });
+        await User.populate(users, [
+            { path: 'preferredPack', select: 'name' },
+            { path: 'selectedTitle', select: TITLE_SELECT }
+        ]);
 
         res.json(users);
     } catch (err) {
@@ -244,8 +249,16 @@ router.get('/trades', protect, adminOnly, async (req, res) => {
     try {
         const trades = await Trade.find({})
             .sort({ createdAt: -1 })
-            .populate('sender', 'username')
-            .populate('recipient', 'username')
+            .populate({
+                path: 'sender',
+                select: 'username selectedTitle',
+                populate: { path: 'selectedTitle', select: TITLE_SELECT }
+            })
+            .populate({
+                path: 'recipient',
+                select: 'username selectedTitle',
+                populate: { path: 'selectedTitle', select: TITLE_SELECT }
+            })
             .lean();
 
         res.json(trades);
@@ -629,6 +642,177 @@ router.delete('/achievements/:id', protect, adminOnly, async (req, res) => {
     } catch (err) {
         console.error('Error deleting achievement:', err);
         res.status(500).json({ message: 'Failed to delete achievement' });
+    }
+});
+
+router.get('/titles', protect, adminOnly, async (req, res) => {
+    try {
+        const titles = await Title.find().select(TITLE_SELECT).sort({ createdAt: -1 }).lean();
+        res.json({ titles });
+    } catch (err) {
+        console.error('Error fetching titles:', err);
+        res.status(500).json({ message: 'Failed to fetch titles' });
+    }
+});
+
+router.post('/titles', protect, adminOnly, async (req, res) => {
+    try {
+        const { name, slug, description, color, gradient, isAnimated, effect } = req.body;
+        if (!name) {
+            return res.status(400).json({ message: 'Title name is required' });
+        }
+
+        const resolvedSlug = slugify(slug || name);
+        if (!resolvedSlug) {
+            return res.status(400).json({ message: 'Title slug is invalid' });
+        }
+
+        const existing = await Title.findOne({ slug: resolvedSlug });
+        if (existing) {
+            return res.status(400).json({ message: 'Title slug already exists' });
+        }
+
+        const title = await Title.create({
+            name,
+            slug: resolvedSlug,
+            description: description || '',
+            color: color || '',
+            gradient: gradient || '',
+            isAnimated: Boolean(isAnimated),
+            effect: effect || ''
+        });
+
+        res.json({ title });
+    } catch (err) {
+        console.error('Error creating title:', err);
+        res.status(500).json({ message: 'Failed to create title' });
+    }
+});
+
+router.put('/titles/:id', protect, adminOnly, async (req, res) => {
+    try {
+        const { name, slug, description, color, gradient, isAnimated, effect } = req.body;
+        const title = await Title.findById(req.params.id);
+        if (!title) {
+            return res.status(404).json({ message: 'Title not found' });
+        }
+
+        if (name !== undefined) {
+            title.name = name;
+        }
+        if (slug !== undefined || name !== undefined) {
+            const resolvedSlug = slugify(slug || title.name);
+            if (!resolvedSlug) {
+                return res.status(400).json({ message: 'Title slug is invalid' });
+            }
+            const existing = await Title.findOne({ slug: resolvedSlug, _id: { $ne: title._id } });
+            if (existing) {
+                return res.status(400).json({ message: 'Title slug already exists' });
+            }
+            title.slug = resolvedSlug;
+        }
+        if (description !== undefined) {
+            title.description = description;
+        }
+        if (color !== undefined) {
+            title.color = color;
+        }
+        if (gradient !== undefined) {
+            title.gradient = gradient;
+        }
+        if (isAnimated !== undefined) {
+            title.isAnimated = Boolean(isAnimated);
+        }
+        if (effect !== undefined) {
+            title.effect = effect;
+        }
+
+        await title.save();
+        res.json({ title });
+    } catch (err) {
+        console.error('Error updating title:', err);
+        res.status(500).json({ message: 'Failed to update title' });
+    }
+});
+
+router.delete('/titles/:id', protect, adminOnly, async (req, res) => {
+    try {
+        const title = await Title.findById(req.params.id);
+        if (!title) {
+            return res.status(404).json({ message: 'Title not found' });
+        }
+
+        await Promise.all([
+            User.updateMany({ selectedTitle: title._id }, { $set: { selectedTitle: null } }),
+            User.updateMany({ unlockedTitles: title._id }, { $pull: { unlockedTitles: title._id } }),
+            title.deleteOne()
+        ]);
+
+        res.json({ message: 'Title deleted' });
+    } catch (err) {
+        console.error('Error deleting title:', err);
+        res.status(500).json({ message: 'Failed to delete title' });
+    }
+});
+
+router.post('/titles/grant', protect, adminOnly, async (req, res) => {
+    try {
+        const { userId, titleId, setActive } = req.body;
+        if (!userId || !titleId) {
+            return res.status(400).json({ message: 'userId and titleId are required' });
+        }
+
+        const [user, title] = await Promise.all([
+            User.findById(userId),
+            Title.findById(titleId)
+        ]);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        if (!title) {
+            return res.status(404).json({ message: 'Title not found' });
+        }
+
+        const update = { $addToSet: { unlockedTitles: title._id } };
+        if (setActive) {
+            update.$set = { selectedTitle: title._id };
+        }
+
+        await User.updateOne({ _id: user._id }, update);
+
+        res.json({ message: `Granted title to ${user.username}` });
+    } catch (err) {
+        console.error('Error granting title:', err);
+        res.status(500).json({ message: 'Failed to grant title' });
+    }
+});
+
+router.post('/titles/revoke', protect, adminOnly, async (req, res) => {
+    try {
+        const { userId, titleId } = req.body;
+        if (!userId || !titleId) {
+            return res.status(400).json({ message: 'userId and titleId are required' });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const updates = {
+            $pull: { unlockedTitles: titleId }
+        };
+        if (user.selectedTitle && user.selectedTitle.toString() === titleId) {
+            updates.$set = { selectedTitle: null };
+        }
+
+        await User.updateOne({ _id: user._id }, updates);
+
+        res.json({ message: `Revoked title from ${user.username}` });
+    } catch (err) {
+        console.error('Error revoking title:', err);
+        res.status(500).json({ message: 'Failed to revoke title' });
     }
 });
 
@@ -1456,12 +1640,22 @@ router.get('/card-ownership/:cardId', protect, adminOnly, async (req, res) => {
                     _id: {
                         rarity: '$cards.rarity',
                         userId: '$_id',
-                        username: '$username'
+                        username: '$username',
+                        selectedTitle: '$selectedTitle'
                     },
                     count: { $sum: 1 },
                     cards: { $push: '$cards' }
                 }
             },
+            {
+                $lookup: {
+                    from: 'titles',
+                    localField: '_id.selectedTitle',
+                    foreignField: '_id',
+                    as: 'titleDoc'
+                }
+            },
+            { $unwind: { path: '$titleDoc', preserveNullAndEmptyArrays: true } },
             {
                 $group: {
                     _id: '$_id.rarity',
@@ -1469,6 +1663,13 @@ router.get('/card-ownership/:cardId', protect, adminOnly, async (req, res) => {
                         $push: {
                             userId: '$_id.userId',
                             username: '$_id.username',
+                            selectedTitle: {
+                                name: '$titleDoc.name',
+                                color: '$titleDoc.color',
+                                gradient: '$titleDoc.gradient',
+                                isAnimated: '$titleDoc.isAnimated',
+                                effect: '$titleDoc.effect'
+                            },
                             count: '$count',
                             cards: '$cards'
                         }

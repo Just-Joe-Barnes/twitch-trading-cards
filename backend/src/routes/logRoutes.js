@@ -11,7 +11,14 @@ router.get('/', protect, adminOnly, async (req, res) => {
     try {
         const logs = await Log.find({})
             .sort({ createdAt: -1 })
-            .populate('user', 'username') // Populate the user field with just the username
+            .populate({
+                path: 'user',
+                select: 'username selectedTitle',
+                populate: {
+                    path: 'selectedTitle',
+                    select: 'name color gradient isAnimated effect'
+                }
+            })
             .lean(); // Use lean() for faster read performance
 
         res.status(200).json(logs);

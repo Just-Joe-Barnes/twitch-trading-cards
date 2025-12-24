@@ -12,6 +12,7 @@ const marketService = require('../services/marketService');
 const MarketListing = require('../models/MarketListing');
 const {createNotification} = require("../helpers/notificationHelper");
 
+const TITLE_FIELDS = 'name color gradient isAnimated effect';
 router.post('/listings', protect, sensitiveLimiter, async (req, res) => {
     try {
         const cardSchema = Joi.object({
@@ -123,8 +124,16 @@ router.get('/listings', protect, async (req, res) => {
         }
 
         const listingsPromise = MarketListing.find(query)
-            .populate('owner', 'username')
-            .populate('offers.offerer', 'username')
+            .populate({
+                path: 'owner',
+                select: 'username selectedTitle',
+                populate: { path: 'selectedTitle', select: TITLE_FIELDS }
+            })
+            .populate({
+                path: 'offers.offerer',
+                select: 'username selectedTitle',
+                populate: { path: 'selectedTitle', select: TITLE_FIELDS }
+            })
             .skip(skip)
             .limit(limit);
 
@@ -145,7 +154,10 @@ router.get('/listings', protect, async (req, res) => {
 router.get('/sellers', protect, async (req, res) => {
     try {
         const ownerIds = await MarketListing.distinct('owner', { status: 'active' });
-        const sellers = await User.find({ '_id': { $in: ownerIds } }).select('username _id').lean();
+        const sellers = await User.find({ '_id': { $in: ownerIds } })
+            .select('username selectedTitle')
+            .populate('selectedTitle', TITLE_FIELDS)
+            .lean();
         res.status(200).json(sellers);
     } catch (error) {
         console.error('Error fetching market sellers:', error);
@@ -160,8 +172,16 @@ router.get('/user/:userId/listings', protect, async (req, res) => {
 
         const [listings, total] = await Promise.all([
             MarketListing.find(query)
-                .populate('owner', 'username')
-                .populate('offers.offerer', 'username')
+                .populate({
+                    path: 'owner',
+                    select: 'username selectedTitle',
+                    populate: { path: 'selectedTitle', select: TITLE_FIELDS }
+                })
+                .populate({
+                    path: 'offers.offerer',
+                    select: 'username selectedTitle',
+                    populate: { path: 'selectedTitle', select: TITLE_FIELDS }
+                })
                 .sort({ createdAt: -1 })
                 .limit(limit),
             MarketListing.countDocuments(query),
@@ -178,8 +198,16 @@ router.get('/user/:userId/listings', protect, async (req, res) => {
 router.get('/listings/:id', protect, async (req, res) => {
     try {
         const listing = await MarketListing.findById(req.params.id)
-            .populate('owner', 'username')
-            .populate('offers.offerer', 'username');
+            .populate({
+                path: 'owner',
+                select: 'username selectedTitle',
+                populate: { path: 'selectedTitle', select: TITLE_FIELDS }
+            })
+            .populate({
+                path: 'offers.offerer',
+                select: 'username selectedTitle',
+                populate: { path: 'selectedTitle', select: TITLE_FIELDS }
+            });
         if (!listing) {
             return res.status(404).json({ message: 'Listing not found' });
         }

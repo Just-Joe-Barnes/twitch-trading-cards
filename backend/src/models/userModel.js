@@ -46,6 +46,11 @@ const userSchema = new mongoose.Schema({
         name: String,
         rarity: String,
     },
+    selectedTitle: { type: mongoose.Schema.Types.ObjectId, ref: 'Title', default: null },
+    unlockedTitles: {
+        type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Title' }],
+        default: []
+    },
 
     preferredPack: { type: mongoose.Schema.Types.ObjectId, ref: 'Pack', default: null },
     firstLogin: { type: Boolean, default: false },

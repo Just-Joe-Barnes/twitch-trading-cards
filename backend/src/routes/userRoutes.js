@@ -11,6 +11,7 @@ const {
     updateFavoriteCard,
     getPreferredPack,
     updatePreferredPack,
+    updateSelectedTitle,
     searchUsers,
 } = require('../controllers/userController');
 const { protect } = require('../middleware/authMiddleware');
@@ -42,6 +43,9 @@ router.put('/favorite-card', protect, updateFavoriteCard);
 // Preferred pack routes
 router.get('/preferred-pack', protect, getPreferredPack);
 router.put('/preferred-pack', protect, updatePreferredPack);
+
+// Title selection route
+router.put('/title', protect, updateSelectedTitle);
 
 // Route to fetch all cards in the user's collection
 router.get('/:userId/collection', protect, async (req, res) => {

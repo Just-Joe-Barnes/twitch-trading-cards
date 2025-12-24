@@ -12,8 +12,10 @@ import {
     fetchAllPacks,
     fetchPreferredPack,
     updatePreferredPack,
+    updateSelectedTitle,
 } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner';
+import UserTitle from '../components/UserTitle';
 import '../styles/ProfilePage.css';
 import '../styles/MarketPage.css';
 
@@ -35,6 +37,8 @@ const ProfilePage = () => {
     const [username, setUsername] = useState('');
     const [profileId, setProfileId] = useState(null);
     const [userListings, setUserListings] = useState([]);
+    const [selectedTitle, setSelectedTitle] = useState(null);
+    const [unlockedTitles, setUnlockedTitles] = useState([]);
     const navigate = useNavigate();
     const {username: routeUsername} = useParams();
 
@@ -69,9 +73,11 @@ const ProfilePage = () => {
                 setXp(profile.xp || 0);
                 setLevel(profile.level || 1);
                 setPreferredPackId(profile.preferredPack?._id || '');
+                setSelectedTitle(profile.selectedTitle || null);
 
                 const ownProfile = me && profile && me.username === profile.username;
                 setIsOwnProfile(ownProfile);
+                setUnlockedTitles(ownProfile ? (profile.unlockedTitles || []) : []);
 
                 let tempFeatured = profile.featuredCards || [];
                 if (ownProfile) {
@@ -197,7 +203,18 @@ const ProfilePage = () => {
         }
     };
 
-
+    const handleTitleChange = async (titleId) => {
+        const selectedId = titleId || '';
+        try {
+            const res = await updateSelectedTitle(selectedId);
+            setSelectedTitle(res.selectedTitle || null);
+        } catch (err) {
+            console.error('Error updating title:', err);
+            if (window.showToast) {
+                window.showToast('Error updating title.', 'error');
+            }
+        }
+    };
 
     if (loading) {
         return <LoadingSpinner/>;
@@ -205,7 +222,7 @@ const ProfilePage = () => {
 
     return (
         <div className="page">
-            <h1>{username}'s Profile</h1>
+            <h1><UserTitle username={username} title={selectedTitle} />'s Profile</h1>
 
             <div className="stats profile-stats">
                 <div className="stat" data-tooltip={`Total number of cards ${isOwnProfile ? 'you own' : username + ' owns'}`}>
@@ -255,11 +272,27 @@ const ProfilePage = () => {
                         </select>
                     </div>
                 )}
+                {isOwnProfile && (
+                    <div className="stat preferred-pack-container">
+                        <div>Title</div>
+                        <select
+                            value={selectedTitle?._id || ''}
+                            onChange={(e) => handleTitleChange(e.target.value)}
+                        >
+                            <option value="">No title</option>
+                            {unlockedTitles.map((t) => (
+                                <option key={t._id} value={t._id}>
+                                    {t.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
 
                 <div className="button-group profile-actions">
                     {!isOwnProfile && (
                         <button className="primary-button" onClick={handleInitiateTrade} style={{margin: '0'}}>
-                            Trade with {username}
+                            Trade with <UserTitle username={username} title={selectedTitle} />
                         </button>
                     )}
                     <button className="secondary-button" onClick={handleViewCollection} style={{margin: '0'}}>
@@ -308,7 +341,17 @@ const ProfilePage = () => {
 
                     {userListings.length > 0 && (
                         <div className="section-card">
-                            <h2>{isOwnProfile ? 'Your' : username + '\'s'} Market Listing{userListings.length > 1 ? 's' : ''}</h2>
+                            <h2>
+                                {isOwnProfile ? (
+                                    'Your'
+                                ) : (
+                                    <>
+                                        <UserTitle username={username} title={selectedTitle} />
+                                        {'\'s'}
+                                    </>
+                                )}{' '}
+                                Market Listing{userListings.length > 1 ? 's' : ''}
+                            </h2>
                             {userListings.length > 0 && (
                                 <Link to={`/market/user/${username}`} className="button primary-button" style={{float: 'right', marginTop: '-6rem'}}>View all listings</Link>
                             )}

@@ -2,6 +2,7 @@
 import React, {useState, useEffect} from 'react';
 import {fetchUserProfile} from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner';
+import UserTitle from '../components/UserTitle';
 import '../styles/DashboardPage.css';
 
 const CHANNEL_POINTS_COST = parseInt(
@@ -52,7 +53,9 @@ const DashboardPage = () => {
             <h1>Dashboard</h1>
             <div className="dashboard-grid">
                 <div className="info-section section-card">
-                    <h2>Welcome, {userData?.username || 'User'}!</h2>
+                    <h2>
+                        Welcome, <UserTitle username={userData?.username || 'User'} title={userData?.selectedTitle} />!
+                    </h2>
                     <h3>Your Packs: {packCount}</h3>
 
                     <p className="app-info">

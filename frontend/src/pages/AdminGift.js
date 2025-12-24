@@ -5,6 +5,7 @@ import CardSearchInput from "../components/CardSearchInput";
 import { fetchWithAuth } from "../utils/api";
 import '../styles/AdminEventsPage.css';
 import '../styles/AdminActions.css';
+import UserTitle from '../components/UserTitle';
 
 const rarities = [
     'Basic', 'Common', 'Standard', 'Uncommon', 'Rare',
@@ -59,7 +60,7 @@ const GiftForm = ({
                                         className="search-result-item"
                                         onMouseDown={() => handleUserSelect(user.username)}
                                     >
-                                        {user.username}
+                                        <UserTitle username={user.username} title={user.selectedTitle} />
                                     </li>
                                 ))}
                             </ul>

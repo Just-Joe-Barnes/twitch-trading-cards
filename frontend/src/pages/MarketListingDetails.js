@@ -3,6 +3,7 @@ import {useParams, useNavigate, Link} from 'react-router-dom';
 import {fetchWithAuth, fetchUserProfile, fetchUserCollection} from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import UserTitle from '../components/UserTitle';
 import '../styles/MarketListingDetails.css';
 import {rarities} from '../constants/rarities';
 
@@ -257,7 +258,12 @@ const MarketListingDetails = () => {
         <div className="page">
             <h1>
                 {listing.card.name} <br/>
-                <small>Listed by: <Link to={`/profile/${listing.owner.username}`}>{listing.owner.username}</Link></small>
+                <small>
+                    Listed by:{' '}
+                    <Link to={`/profile/${listing.owner.username}`}>
+                        <UserTitle username={listing.owner.username} title={listing.owner.selectedTitle} />
+                    </Link>
+                </small>
             </h1>
 
             <div className={`card-tile ${listing.card.slabbed ? 'slabbed' : ''}`}>
@@ -285,7 +291,9 @@ const MarketListingDetails = () => {
                                  className={`section-card offer-item ${isMyOffer ? 'my-offer' : ''}`} style={{position: 'relative'}}>
                                 <p>
                                     <strong>Offer by:</strong> <Link
-                                    to={`/profile/${offer.offerer.username}`}>{offer.offerer.username}</Link>
+                                    to={`/profile/${offer.offerer.username}`}>
+                                    <UserTitle username={offer.offerer.username} title={offer.offerer.selectedTitle} />
+                                </Link>
                                     {isMyOffer && <span className="my-offer-tag"> (Your Offer)</span>}
                                 </p>
                                 {offer.message && (
@@ -348,7 +356,9 @@ const MarketListingDetails = () => {
                                              className={`section-card offer-item ${isMyOffer ? 'my-offer' : ''}`} style={{position: 'relative'}}>
                                             <p>
                                                 <strong>Offer by:</strong> <Link
-                                                to={`/profile/${offer.offerer.username}`}>{offer.offerer.username}</Link>
+                                                to={`/profile/${offer.offerer.username}`}>
+                                                <UserTitle username={offer.offerer.username} title={offer.offerer.selectedTitle} />
+                                            </Link>
                                                 {isMyOffer && <span className="my-offer-tag"> (Your Offer)</span>}
                                             </p>
                                             {offer.message && (

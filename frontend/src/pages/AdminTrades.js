@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Pagination from '../components/Pagination';
 import '../styles/AdminTradesPage.css';
 import {getRarityColor} from "../constants/rarities";
+import UserTitle from '../components/UserTitle';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
@@ -115,8 +116,20 @@ const AdminTrades = () => {
                 <tr key={trade._id} className={`status-${trade.status} ${isUpdating ? 'updating' : ''}`}>
                     <td>{trade._id}</td>
                     <td>{new Date(trade.createdAt).toLocaleString()}</td>
-                    <td>{trade.sender?.username || 'N/A'}</td>
-                    <td>{trade.recipient?.username || 'N/A'}</td>
+                    <td>
+                        {trade.sender?.username ? (
+                            <UserTitle username={trade.sender.username} title={trade.sender.selectedTitle} />
+                        ) : (
+                            'N/A'
+                        )}
+                    </td>
+                    <td>
+                        {trade.recipient?.username ? (
+                            <UserTitle username={trade.recipient.username} title={trade.recipient.selectedTitle} />
+                        ) : (
+                            'N/A'
+                        )}
+                    </td>
 
                     {/* --- UPDATED Items Column --- */}
                     <td className="items-cell">

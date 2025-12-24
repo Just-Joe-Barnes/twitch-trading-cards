@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import NavAdmin from "../components/NavAdmin";
 import '../styles/AdminEventsPage.css';
 import SearchableSelect from "../components/SearchableSelect";
+import UserTitle from '../components/UserTitle';
 
 export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://192.168.0.136:5000';
 
@@ -139,7 +140,13 @@ const AdminLogPage = () => {
                             filteredLogs.map(log => (
                                 <tr key={log._id}>
                                     <td>{formatTimestamp(log.createdAt)}</td>
-                                    <td>{log.user?.username || 'Unknown User'}</td>
+                                    <td>
+                                        {log.user?.username ? (
+                                            <UserTitle username={log.user.username} title={log.user.selectedTitle} />
+                                        ) : (
+                                            'Unknown User'
+                                        )}
+                                    </td>
                                     <td>{log.event}</td>
                                     <td>{log.message || '—'}</td>
                                 </tr>

@@ -43,7 +43,11 @@ const processQueue = async () => {
 
     const nextJob = await QueuedPack.findOne({ streamerDbId: { $in: connectedStreamerIds } })
         .sort({ createdAt: 'asc' })
-        .populate('redeemer');
+        .populate({
+            path: 'redeemer',
+            select: 'username selectedTitle',
+            populate: { path: 'selectedTitle', select: 'name color gradient isAnimated effect' }
+        });
 
     if (!nextJob) {
         console.log('[QueueService] No jobs in DB queue for any connected streamers.');
@@ -83,7 +87,8 @@ const processQueue = async () => {
 
         ioInstance.to(streamerDbId).emit('new-pack-opening', {
             cards: newCards,
-            username: redeemer.username
+            username: redeemer.username,
+            title: redeemer.selectedTitle || null
         });
 
         await QueuedPack.findByIdAndDelete(nextJob._id);

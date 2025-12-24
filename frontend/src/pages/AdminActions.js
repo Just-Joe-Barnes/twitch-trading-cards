@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {fetchUserProfile, fetchWithAuth, searchCardsByName} from '../utils/api';
+import UserTitle from '../components/UserTitle';
 import '../styles/AdminActions.css';
 
 const AdminActions = () => {
@@ -544,7 +545,7 @@ const AdminActions = () => {
                                             className="search-result-item"
                                             onMouseDown={() => setNotificationUser(u.username)}
                                         >
-                                            {u.username}
+                                            <UserTitle username={u.username} title={u.selectedTitle} />
                                         </li>
                                     ))}
                                 </ul>
@@ -642,7 +643,7 @@ const AdminActions = () => {
                                             className="search-result-item"
                                             onMouseDown={() => setSelectedUser(u.username)}
                                         >
-                                            {u.username}
+                                            <UserTitle username={u.username} title={u.selectedTitle} />
                                         </li>
                                     ))}
                                 </ul>
@@ -711,20 +712,20 @@ const AdminActions = () => {
                         {isUserDropdownVisible && selectedUser && filteredUsers.length > 0 && (
                             <ul className="search-dropdown">
                                 {filteredUsers.map(u => (
-                                    <li
-                                        key={u._id}
-                                        className="search-result-item"
-                                        onMouseDown={() => setSelectedUser(u.username)}
-                                    >
-                                        {u.username}
-                                    </li>
+                                        <li
+                                            key={u._id}
+                                            className="search-result-item"
+                                            onMouseDown={() => setSelectedUser(u.username)}
+                                        >
+                                            <UserTitle username={u.username} title={u.selectedTitle} />
+                                        </li>
                                 ))}
                             </ul>
                         )}
                     </div>
                     {selectedUserObj && (
                         <div className="user-profile-info">
-                            <p><strong>Username:</strong> {selectedUserObj.username}</p>
+                            <p><strong>Username:</strong> <UserTitle username={selectedUserObj.username} title={selectedUserObj.selectedTitle} /></p>
                             <p><strong>Packs:</strong> {selectedUserObj.packs}</p>
                             <p><strong>XP:</strong> {selectedUserObj.xp || 0}</p>
                             <p><strong>Level:</strong> {selectedUserObj.level || 1}</p>
