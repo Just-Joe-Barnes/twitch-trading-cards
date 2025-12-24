@@ -53,7 +53,8 @@ const CardPickerModal = ({
                              onClose,
                              collectionOwner,
                              loggedInUser,
-                             usedCardIds
+                             usedCardIds,
+                             isMobile
                          }) => {
     const [allCards, setAllCards] = useState([]);
     const [filteredCards, setFilteredCards] = useState([]);
@@ -180,21 +181,21 @@ const CardPickerModal = ({
     if (loading) return <LoadingSpinner/>;
 
     return (
-        <div className="modal-overlay" style={{
+        <div className="modal-overlay binder-modal" style={{
             position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
             backgroundColor: 'rgba(10, 10, 10, 0.95)', zIndex: 2000, display: 'flex',
-            flexDirection: 'column', padding: '20px', overflowY: 'auto', backdropFilter: 'blur(5px)'
+            flexDirection: 'column', padding: isMobile ? '12px' : '20px', overflowY: 'auto', backdropFilter: 'blur(5px)'
         }}>
             <div className="modal-content" style={{
-                backgroundColor: '#1e1e1e', borderRadius: '12px',
-                padding: '25px', margin: 'auto', maxWidth: '1200px', width: '100%',
-                maxHeight: '90vh', overflowY: 'scroll',
+                backgroundColor: '#1e1e1e', borderRadius: isMobile ? '16px' : '12px',
+                padding: isMobile ? '16px' : '25px', margin: isMobile ? '0' : 'auto', maxWidth: isMobile ? '100%' : '1200px', width: '100%',
+                maxHeight: isMobile ? '88vh' : '90vh', overflowY: 'scroll',
                 border: '1px solid #333',
                 boxShadow: '0 20px 50px rgba(0,0,0,0.8)'
             }}>
-                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #333', paddingBottom:'15px'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '10px' : '0', marginBottom: '20px', borderBottom: '1px solid #333', paddingBottom:'15px'}}>
                     <h2>Select a Card to Insert</h2>
-                    <button onClick={onClose} className="secondary-button">
+                    <button onClick={onClose} className="secondary-button" style={{width: isMobile ? '100%' : 'auto'}}>
                         <i className="fa-solid fa-xmark"></i> Close
                     </button>
                 </div>
@@ -283,6 +284,7 @@ const CardPickerModal = ({
                                     limited={isLimited}
                                     miniCard={true}
                                     inspectOnClick={false}
+                                    interactive={!isMobile}
                                 />
                             </div>
                         );
@@ -315,6 +317,7 @@ const BinderPage = () => {
     const dragTimeoutRef = useRef(null);
     const saveTimeoutRef = useRef(null);
     const initialLoadRef = useRef(true);
+    const touchStartRef = useRef(null);
 
     const isMobile = useIsMobile();
     const binderIdentifier = collectionOwner || loggedInUser;
@@ -331,6 +334,15 @@ const BinderPage = () => {
         });
         return ids;
     }, [pages]);
+
+    const totalPages = pages.length;
+    const infoText = isOwner
+        ? (isMobile
+            ? 'Swipe left or right to flip pages. Tap a slot to add a card.'
+            : 'Drag cards to organize. Hover over side arrows while dragging to flip pages.')
+        : (isMobile ? 'Swipe left or right to flip pages.' : 'Viewing binder layout.');
+    const isNextDisabled = !isCoverView && currentSpreadIndex >= totalPages - 1;
+    const isPrevDisabled = isCoverView;
 
     const fetchCatalogue = async () => {
         try {
@@ -363,6 +375,12 @@ const BinderPage = () => {
             setShowSlotControls(false);
         }
     }, [isOwner]);
+
+    useEffect(() => {
+        if (!isMobile) return;
+        setShowCoverControls(false);
+        setShowSlotControls(false);
+    }, [isMobile]);
 
     useEffect(() => {
         if (!binderIdentifier) return;
@@ -507,6 +525,33 @@ const BinderPage = () => {
             setCurrentSpreadIndex(prev => prev - decrement);
         }
     }, [currentSpreadIndex, isMobile]);
+
+    const handleTouchStart = (e) => {
+        if (!isMobile) return;
+        if (!e.touches || e.touches.length === 0) return;
+        const touch = e.touches[0];
+        touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    };
+
+    const handleTouchEnd = (e) => {
+        if (!isMobile || !touchStartRef.current) return;
+        const touch = e.changedTouches && e.changedTouches[0];
+        if (!touch) return;
+        const { x, y } = touchStartRef.current;
+        touchStartRef.current = null;
+        const dx = touch.clientX - x;
+        const dy = touch.clientY - y;
+        if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+        if (dx < 0) {
+            handleNext();
+        } else {
+            handlePrev();
+        }
+    };
+
+    const handleTouchCancel = () => {
+        touchStartRef.current = null;
+    };
 
     const getVisiblePageIndexes = useCallback(() => {
         if (isCoverView) return [];
@@ -698,11 +743,7 @@ const BinderPage = () => {
         <div className="binder-view page">
             <h1>Binder View</h1>
 
-            <div className="info-section">
-                {isOwner
-                    ? 'Drag cards to organize. Hover over side arrows while dragging to flip pages.'
-                    : 'Viewing binder layout.'}
-            </div>
+            <div className="info-section">{infoText}</div>
 
             {isCoverView && isOwner && (
                 <>
@@ -785,7 +826,7 @@ const BinderPage = () => {
                     </div>
                 </div>
 
-                <div className="binder-book">
+                <div className="binder-book" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} onTouchCancel={handleTouchCancel}>
                     {!isCoverView && <div className="binder-spine"></div>}
 
                     {isCoverView && (
@@ -833,7 +874,7 @@ const BinderPage = () => {
                                     <div
                                         key={slotIndex}
                                         className={`binder-slot ${dragOverSlot?.pageIndex === pageIndex && dragOverSlot?.slotIndex === slotIndex ? 'drag-over' : ''} ${!slotData ? '' : 'hasCard'}`}
-                                        draggable={!!slotData && !slotData.locked && isOwner}
+                                        draggable={!!slotData && !slotData.locked && isOwner && !isMobile}
                                         onDragStart={(e) => handleDragStart(e, pageIndex, slotIndex)}
                                         onDragOver={(e) => handleDragOver(e, pageIndex, slotIndex)}
                                         onDrop={(e) => handleDrop(e, pageIndex, slotIndex)}
@@ -906,6 +947,58 @@ const BinderPage = () => {
                 </div>
             </div>
 
+            {isMobile && (
+                <div className="binder-mobile-toolbar">
+                    <div className="nav-row">
+                        <button
+                            type="button"
+                            className="nav-btn"
+                            onClick={handlePrev}
+                            disabled={isPrevDisabled}
+                            aria-label="Previous page"
+                        >
+                            <i className="fa-solid fa-chevron-left"></i>
+                            <span>Prev</span>
+                        </button>
+                        <div className="page-indicator">
+                            {isCoverView ? 'Cover' : `Page ${currentSpreadIndex + 1} of ${totalPages}`}
+                        </div>
+                        <button
+                            type="button"
+                            className="nav-btn"
+                            onClick={handleNext}
+                            disabled={isNextDisabled}
+                            aria-label="Next page"
+                        >
+                            <span>Next</span>
+                            <i className="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    {isOwner && (
+                        <div className="insert-row">
+                            <button
+                                type="button"
+                                className="insert-btn-mobile"
+                                onClick={() => handleAddPages('before')}
+                                disabled={isCoverView}
+                            >
+                                <i className="fa-solid fa-plus"></i>
+                                <span>Insert Before</span>
+                            </button>
+                            <button
+                                type="button"
+                                className="insert-btn-mobile"
+                                onClick={() => handleAddPages('after')}
+                                disabled={isCoverView}
+                            >
+                                <i className="fa-solid fa-plus"></i>
+                                <span>Insert After</span>
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {!isCoverView && isOwner && (
                 <div className="binder-action-bar">
                     <button
@@ -939,6 +1032,7 @@ const BinderPage = () => {
                     collectionOwner={collectionOwner}
                     loggedInUser={loggedInUser}
                     usedCardIds={usedCardIds}
+                    isMobile={isMobile}
                 />
             )}
         </div>
