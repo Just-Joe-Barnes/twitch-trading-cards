@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef, useMemo, useCallback} from 'react';
-import {useParams} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import {
     fetchUserCollection,
     fetchUserProfile,
@@ -36,6 +36,7 @@ const CollectionPage = ({
                             collectionTitle,
                         }) => {
     const {username: collectionOwner} = useParams();
+    const navigate = useNavigate();
     const [loggedInUser, setLoggedInUser] = useState(null);
     const [allCards, setAllCards] = useState([]);
     const [filteredCards, setFilteredCards] = useState([]);
@@ -453,6 +454,7 @@ const CollectionPage = ({
         setOrder(prevOrder => prevOrder === 'asc' ? 'desc' : 'asc');
     };
 
+    const binderTarget = collectionOwner || loggedInUser;
     const isOwner = !collectionOwner || loggedInUser === collectionOwner;
 
     if (loading) return <LoadingSpinner/>;
@@ -494,6 +496,17 @@ const CollectionPage = ({
                                 <i className="fa-regular fa-filter" />
                             </>
                         )}
+                    </button>
+                    <button
+                        className="stat"
+                        onClick={() => {
+                            if (!binderTarget) return;
+                            navigate(`/collection/${encodeURIComponent(binderTarget)}/binder`);
+                        }}
+                        disabled={!binderTarget}
+                    >
+                        <div>View Binder</div>
+                        <i className="fa-regular fa-book-open" />
                     </button>
                 </div>
 

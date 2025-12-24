@@ -227,7 +227,7 @@ const App = () => {
                         <Route path="/dashboard" element={user ? <DashboardPage user={user}/> : <Navigate to="/login"/>} />
                         <Route path="/community" element={user ? <CommunityPage user={user}/> : <Navigate to="/login"/>} />
                         <Route path="/collection/:username" element={user? <CollectionPage/> : <Navigate to="/login"/>} />
-                        <Route path="/collection/:username/binder" element={user?.isAdmin ? <BinderPage/> : <Navigate to="/dashboard"/>} />
+                        <Route path="/collection/:username/binder" element={user ? <BinderPage/> : <Navigate to="/login"/>} />
                         <Route path="/collection" element={user ? <CollectionPage user={user}/> : <Navigate to="/login"/>} />
                         <Route path="/profile/:username" element={<ProfilePage/>} />
                         <Route path="/trading" element={user ? <TradingPage userId={user._id}/> : <Navigate to="/login"/>} />

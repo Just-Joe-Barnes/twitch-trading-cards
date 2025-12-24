@@ -73,6 +73,27 @@ export const fetchUserCollection = async (userId) => {
     }
 };
 
+export const fetchBinder = async (identifier) => {
+    try {
+        return await fetchWithAuth(`/api/binders/${encodeURIComponent(identifier)}`, { method: "GET" });
+    } catch (error) {
+        console.error("[API] Error fetching binder:", error.message);
+        throw error;
+    }
+};
+
+export const updateBinder = async (identifier, binder) => {
+    try {
+        return await fetchWithAuth(`/api/binders/${encodeURIComponent(identifier)}`, {
+            method: "PUT",
+            body: JSON.stringify(binder),
+        });
+    } catch (error) {
+        console.error("[API] Error updating binder:", error.message);
+        throw error;
+    }
+};
+
 export const fetchCards = async ({search = "", rarity = "", sort = "", page = 1, limit = 50, isAdmin = false}) => {
     const queryParams = new URLSearchParams({search, rarity, sort, page, limit});
 

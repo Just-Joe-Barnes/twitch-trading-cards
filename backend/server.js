@@ -147,6 +147,7 @@ app.use('/api/packs', require('./src/routes/packRoutes'));
 app.use('/api/users', require('./src/routes/collectionRoutes'));
 app.use('/api/cards', require('./src/routes/cardRoutes'));
 app.use('/api/users', require('./src/routes/userRoutes'));
+app.use('/api/binders', require('./src/routes/binderRoutes'));
 app.use('/api/trades', require('./src/routes/tradeRoutes'));
 app.use('/api/market', require('./src/routes/MarketRoutes'));
 app.use('/api/notifications', require('./src/routes/notificationRoutes'));

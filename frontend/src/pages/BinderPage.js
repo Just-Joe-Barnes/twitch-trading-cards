@@ -4,6 +4,8 @@ import {
     fetchUserCollection,
     fetchUserProfile,
     fetchCards,
+    fetchBinder,
+    updateBinder,
 } from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import '../styles/BinderPage.css';
@@ -39,6 +41,11 @@ const coverFonts = [
     { label: 'Cormorant', value: '"Cormorant Garamond", "Times New Roman", serif' },
     { label: 'Bebas', value: '"Bebas Neue", "Arial Narrow", sans-serif' },
     { label: 'Libre', value: '"Libre Baskerville", "Times New Roman", serif' },
+    { label: 'Playfair', value: '"Playfair Display", "Times New Roman", serif' },
+    { label: 'Abril', value: '"Abril Fatface", "Times New Roman", serif' },
+    { label: 'Oswald', value: '"Oswald", "Arial Narrow", sans-serif' },
+    { label: 'Unica One', value: '"Unica One", "Arial Narrow", sans-serif' },
+    { label: 'IM Fell', value: '"IM Fell English", "Times New Roman", serif' },
 ];
 
 const CardPickerModal = ({
@@ -311,6 +318,7 @@ const BinderPage = () => {
 
     const isMobile = useIsMobile();
     const binderIdentifier = collectionOwner || loggedInUser;
+    const isOwner = !collectionOwner || loggedInUser === collectionOwner;
     const isCoverView = currentSpreadIndex < 0;
     const usedCardIds = useMemo(() => {
         const ids = new Set();
@@ -350,40 +358,87 @@ const BinderPage = () => {
     }, []);
 
     useEffect(() => {
-        if (!binderIdentifier) return;
-        setBinderLoading(true);
-        setBinderReady(false);
-        initialLoadRef.current = true;
-
-        try {
-            const stored = localStorage.getItem(`binder:${binderIdentifier}`);
-            const parsed = stored ? JSON.parse(stored) : null;
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                setPages(parsed);
-                setCoverSettings(defaultCover);
-            } else if (parsed && typeof parsed === 'object') {
-                setPages(Array.isArray(parsed.pages) && parsed.pages.length > 0
-                    ? parsed.pages
-                    : createDefaultPages());
-                setCoverSettings({ ...defaultCover, ...parsed.cover });
-            } else {
-                setPages(createDefaultPages());
-                setCoverSettings(defaultCover);
-            }
-            setCurrentSpreadIndex(-1);
-        } catch (error) {
-            console.error(error);
-            setPages(createDefaultPages());
-            setCoverSettings(defaultCover);
-            setCurrentSpreadIndex(-1);
-        } finally {
-            setBinderLoading(false);
-            setBinderReady(true);
+        if (!isOwner) {
+            setShowCoverControls(false);
+            setShowSlotControls(false);
         }
-    }, [binderIdentifier]);
+    }, [isOwner]);
 
     useEffect(() => {
-        if (!binderReady || !binderIdentifier) return;
+        if (!binderIdentifier) return;
+        let isMounted = true;
+
+        const loadBinder = async () => {
+            setBinderLoading(true);
+            setBinderReady(false);
+            initialLoadRef.current = true;
+
+            try {
+                const response = await fetchBinder(binderIdentifier);
+                let pagesData = response?.binder?.pages;
+                let coverData = response?.binder?.cover;
+                let migratedLocal = false;
+
+                if (isOwner && response?.isNew) {
+                    const stored = localStorage.getItem(`binder:${binderIdentifier}`);
+                    const parsed = stored ? JSON.parse(stored) : null;
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        pagesData = parsed;
+                        coverData = defaultCover;
+                        migratedLocal = true;
+                    } else if (parsed && typeof parsed === 'object') {
+                        pagesData = Array.isArray(parsed.pages) ? parsed.pages : createDefaultPages();
+                        coverData = { ...defaultCover, ...parsed.cover };
+                        migratedLocal = true;
+                    }
+
+                    if (migratedLocal) {
+                        localStorage.removeItem(`binder:${binderIdentifier}`);
+                    }
+                }
+
+                const resolvedPages = Array.isArray(pagesData) && pagesData.length > 0
+                    ? pagesData
+                    : createDefaultPages();
+                const resolvedCover = { ...defaultCover, ...(coverData || {}) };
+
+                if (!isMounted) return;
+                setPages(resolvedPages);
+                setCoverSettings(resolvedCover);
+                setCurrentSpreadIndex(-1);
+
+                if (migratedLocal) {
+                    try {
+                        await updateBinder(binderIdentifier, {
+                            pages: resolvedPages,
+                            cover: resolvedCover,
+                        });
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                if (!isMounted) return;
+                setPages(createDefaultPages());
+                setCoverSettings(defaultCover);
+                setCurrentSpreadIndex(-1);
+            } finally {
+                if (isMounted) {
+                    setBinderLoading(false);
+                    setBinderReady(true);
+                }
+            }
+        };
+
+        loadBinder();
+        return () => {
+            isMounted = false;
+        };
+    }, [binderIdentifier, isOwner]);
+
+    useEffect(() => {
+        if (!binderReady || !binderIdentifier || !isOwner) return;
         if (initialLoadRef.current) {
             initialLoadRef.current = false;
             return;
@@ -392,23 +447,21 @@ const BinderPage = () => {
         if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
         saveTimeoutRef.current = setTimeout(() => {
-            try {
-                localStorage.setItem(
-                    `binder:${binderIdentifier}`,
-                    JSON.stringify({ pages, cover: coverSettings })
-                );
-            } catch (error) {
+            updateBinder(binderIdentifier, {
+                pages,
+                cover: coverSettings,
+            }).catch((error) => {
                 console.error(error);
                 if (window.showToast) {
                     window.showToast('Failed to auto-save binder.', 'error');
                 }
-            }
+            });
         }, 300);
 
         return () => {
             if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
         };
-    }, [pages, coverSettings, binderReady, binderIdentifier]);
+    }, [pages, coverSettings, binderReady, binderIdentifier, isOwner]);
 
     const isCardLimited = (card) => {
         return limitedCards.some((lc) => lc.name === card.name);
@@ -417,7 +470,7 @@ const BinderPage = () => {
     // --- Page Management Logic ---
 
     const handleAddPages = (position) => {
-        if (isCoverView) return;
+        if (isCoverView || !isOwner) return;
         const newPages = [Array(9).fill(null), Array(9).fill(null)];
         const updatedPages = [...pages];
 
@@ -495,6 +548,7 @@ const BinderPage = () => {
         const slotData = pages[pageIndex][slotIndex];
 
         if (!slotData) {
+            if (!isOwner) return;
             setPickingSlot({ pageIndex: pageIndex, slotIndex });
         } else {
             handleInspect(slotData);
@@ -503,6 +557,7 @@ const BinderPage = () => {
 
     const toggleLock = (e, pageIndex, slotIndex) => {
         e.stopPropagation();
+        if (!isOwner) return;
         const updatedPages = [...pages];
         const slotData = updatedPages[pageIndex][slotIndex];
 
@@ -517,6 +572,7 @@ const BinderPage = () => {
 
     const handleRemoveCard = (e, pageIndex, slotIndex) => {
         e.stopPropagation();
+        if (!isOwner) return;
         const slotData = pages[pageIndex][slotIndex];
 
         if (slotData && slotData.locked) return;
@@ -527,6 +583,7 @@ const BinderPage = () => {
     };
 
     const handleCardSelected = (card) => {
+        if (!isOwner) return;
         if (pickingSlot) {
             const updatedPages = [...pages];
             const cardId = card?._id || card?.cardId || null;
@@ -549,6 +606,10 @@ const BinderPage = () => {
     // --- Drag and Drop Handlers ---
 
     const handleDragStart = (e, pageIndex, slotIndex) => {
+        if (!isOwner) {
+            e.preventDefault();
+            return;
+        }
         const slotData = pages[pageIndex][slotIndex];
 
         if (!slotData || slotData.locked) {
@@ -576,6 +637,10 @@ const BinderPage = () => {
 
     const handleDrop = (e, targetPageIndex, targetSlotIndex) => {
         e.preventDefault();
+        if (!isOwner) {
+            setDraggedItem(null);
+            return;
+        }
         setDragOverSlot(null);
 
         if (!draggedItem) return;
@@ -608,7 +673,7 @@ const BinderPage = () => {
     // --- Edge Navigation Drag Logic ---
 
     const handleEdgeDragEnter = (direction) => {
-        if (!draggedItem || isCoverView) return;
+        if (!isOwner || !draggedItem || isCoverView) return;
 
         if (dragTimeoutRef.current) clearTimeout(dragTimeoutRef.current);
 
@@ -634,10 +699,12 @@ const BinderPage = () => {
             <h1>Binder View</h1>
 
             <div className="info-section">
-                Drag cards to organize. Hover over side arrows while dragging to flip pages.
+                {isOwner
+                    ? 'Drag cards to organize. Hover over side arrows while dragging to flip pages.'
+                    : 'Viewing binder layout.'}
             </div>
 
-            {isCoverView && (
+            {isCoverView && isOwner && (
                 <>
                     <button
                         type="button"
@@ -703,7 +770,7 @@ const BinderPage = () => {
                         className="insert-btn"
                         onClick={() => handleAddPages('before')}
                         title="Insert Page Before"
-                        disabled={isCoverView}
+                        disabled={isCoverView || !isOwner}
                     >
                         <i className="fa-solid fa-plus"></i>
                     </button>
@@ -766,7 +833,7 @@ const BinderPage = () => {
                                     <div
                                         key={slotIndex}
                                         className={`binder-slot ${dragOverSlot?.pageIndex === pageIndex && dragOverSlot?.slotIndex === slotIndex ? 'drag-over' : ''} ${!slotData ? '' : 'hasCard'}`}
-                                        draggable={!!slotData && !slotData.locked}
+                                        draggable={!!slotData && !slotData.locked && isOwner}
                                         onDragStart={(e) => handleDragStart(e, pageIndex, slotIndex)}
                                         onDragOver={(e) => handleDragOver(e, pageIndex, slotIndex)}
                                         onDrop={(e) => handleDrop(e, pageIndex, slotIndex)}
@@ -784,7 +851,7 @@ const BinderPage = () => {
                                                     miniCard={false}
                                                 />
 
-                                                {showSlotControls && (
+                                                {isOwner && showSlotControls && (
                                                     <div className="slot-controls">
                                                         <button
                                                             className={`control-btn ${slotData.locked ? 'locked' : ''}`}
@@ -832,14 +899,14 @@ const BinderPage = () => {
                         className="insert-btn"
                         onClick={() => handleAddPages('after')}
                         title="Insert Page After"
-                        disabled={isCoverView}
+                        disabled={isCoverView || !isOwner}
                     >
                         <i className="fa-solid fa-plus"></i>
                     </button>
                 </div>
             </div>
 
-            {!isCoverView && (
+            {!isCoverView && isOwner && (
                 <div className="binder-action-bar">
                     <button
                         type="button"
@@ -865,7 +932,7 @@ const BinderPage = () => {
                 </div>
             )}
 
-            {pickingSlot && (
+            {pickingSlot && isOwner && (
                 <CardPickerModal
                     onClose={() => setPickingSlot(null)}
                     onSelectCard={handleCardSelected}
