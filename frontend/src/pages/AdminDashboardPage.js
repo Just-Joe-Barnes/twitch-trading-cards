@@ -847,17 +847,19 @@ const AdminDashboardPage = ({user}) => {
                                     );
                                 })}
                             </div>
-                              <div className="current-reward">
-                                  <h3 className="tiny">
-                                      Current Rigged Pack Luck
-                                  </h3>
-                                  <CurrentPackLuckIndicator count={weeklySubCount} />
-                                  <div className={`pack-luck-override ${packLuckOverride.enabled ? 'on' : 'off'}`}>
-                                      {packLuckOverride.enabled
-                                          ? `Override ON (${packLuckOverride.count ?? weeklySubCount})`
-                                          : 'Override OFF'}
-                                  </div>
-                              </div>
+                                <div className="current-reward">
+                                    <h3 className="tiny">
+                                        Current Rigged Pack Luck
+                                    </h3>
+                                    <CurrentPackLuckIndicator count={weeklySubCount} />
+                                    {showDebugControls && (
+                                        <div className={`pack-luck-override ${packLuckOverride.enabled ? 'on' : 'off'}`}>
+                                            {packLuckOverride.enabled
+                                                ? `Override ON (${packLuckOverride.count ?? weeklySubCount})`
+                                                : 'Override OFF'}
+                                        </div>
+                                    )}
+                                </div>
                         </div>
                     </div>
                 </div>
