@@ -107,7 +107,9 @@ describe('Achievement Routes', () => {
             expect(response.body.success).toBe(true);
 
             // The user started with 0 packs and the reward is 5 packs
-            expect(response.body.packs).toBe(5);
+            expect(response.body.pendingRewards).toHaveLength(1);
+            expect(response.body.pendingRewards[0].type).toBe('PACK');
+            expect(response.body.pendingRewards[0].data.amount).toBe(5);
 
             const updatedUser = await User.findById(testUser._id);
             const claimedAch = updatedUser.achievements.find(a => a.name === 'Master Trader');

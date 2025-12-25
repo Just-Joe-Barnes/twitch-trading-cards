@@ -1,38 +1,67 @@
 const User = require('../models/userModel');
-const Trade = require('../models/tradeModel');
-const MarketListing = require('../models/MarketListing');
+const Title = require('../models/titleModel');
 const ACHIEVEMENTS = require('../../../config/achievements');
-const {generateCardWithProbability} = require('../helpers/cardHelpers');
-const {createLogEntry} = require("../utils/logService");
-const ALL_RARITIES = ['Basic', 'Common', 'Standard', 'Uncommon', 'Rare', 'Epic', 'Legendary', 'Mythic', 'Unique', 'Divine'];
+const { generateCardWithProbability } = require('../helpers/cardHelpers');
+const { createLogEntry } = require('../utils/logService');
+const { buildAchievementProgressMap } = require('../helpers/achievementProgress');
 
 const getAchievements = async (req, res) => {
     try {
         const userDoc = await User.findById(req.user._id);
         if (!userDoc) return res.status(404).json({message: 'User not found'});
-        const {checkAndGrantAchievements} = require('../helpers/achievementHelper');
-        await checkAndGrantAchievements(userDoc);
+        const { checkAndGrantAchievements } = require('../helpers/achievementHelper');
+        const { progressMap } = await buildAchievementProgressMap(userDoc, ACHIEVEMENTS);
+        await checkAndGrantAchievements(userDoc, progressMap);
         const user = userDoc.toObject();
-        const [tradeCount, listingCount] = await Promise.all([
-            Trade.countDocuments({ $or: [{sender: user._id}, {recipient: user._id}], status: 'accepted' }),
-            MarketListing.countDocuments({owner: user._id, status: 'sold'})
-        ]);
-        const uniqueCards = new Set((user.cards || []).map(c => c.name)).size;
-        const byName = {}; (user.cards || []).forEach(c => { if (!byName[c.name]) byName[c.name] = new Set(); byName[c.name].add(c.rarity); });
-        let fullSets = 0; for (const rarities of Object.values(byName)) { if (ALL_RARITIES.every(r => rarities.has(r))) fullSets += 1; }
-        const featuredCount = (user.featuredCards || []).length; const modifierCards = (user.cards || []).filter(c => c.modifier).length; const raritiesOwned = new Set((user.cards || []).map(c => c.rarity)).size;
-        const hasModifierCard = (user.cards || []).some(c => c.modifier); const hasLegendaryCard = (user.cards || []).some(c => ['Legendary', 'Mythic', 'Unique', 'Divine'].includes(c.rarity));
-        const achievements = ACHIEVEMENTS.map(a => {
-            let current = 0;
-            if (a.field === 'completedTrades') current = tradeCount; else if (a.field === 'completedListings') current = listingCount; else if (a.field === 'uniqueCards') current = uniqueCards; else if (a.field === 'fullSets') current = fullSets;
-            else if (a.field === 'hasModifierCard') current = hasModifierCard ? 1 : 0; else if (a.field === 'hasLegendaryCard') current = hasLegendaryCard ? 1 : 0; else if (a.field === 'favoriteCard') current = user.favoriteCard ? 1 : 0;
-            else if (a.field === 'featuredCardsCount') current = featuredCount; else if (a.field === 'modifierCards') current = modifierCards; else if (a.field === 'raritiesOwned') current = raritiesOwned; else current = user[a.field] || 0;
-            const achieved = current >= a.threshold; const userAch = user.achievements?.find(ua => ua.name === a.name);
-            return { name: a.name, description: a.description, requirement: a.threshold, current: Math.min(current, a.threshold), achieved, reward: a.reward || {}, ...(userAch ? {dateEarned: userAch.dateEarned, claimed: userAch.claimed} : {claimed: false}) };
+
+        const achievements = ACHIEVEMENTS.map((a) => {
+            const key = a.key || a.name;
+            const progress = progressMap[key] || {
+                current: user[a.field] || 0,
+                threshold: a.threshold,
+                unlocked: false,
+            };
+            const achieved = progress.unlocked;
+            const current = progress.current || 0;
+            const userAch = user.achievements?.find((ua) => ua.name === a.name);
+            return {
+                key,
+                name: a.name,
+                description: a.description,
+                category: a.category || 'General',
+                tier: Number.isFinite(a.tier) ? a.tier : null,
+                requirement: a.threshold,
+                current: Math.min(current, a.threshold),
+                achieved,
+                reward: a.reward || {},
+                ...(userAch ? {dateEarned: userAch.dateEarned, claimed: userAch.claimed} : {claimed: false}),
+            };
         });
         if (user.isAdmin) {
-            achievements.push({ name: 'Debug: Free Pack', description: 'Admin only - grants one pack', requirement: 1, current: 1, achieved: true, reward: {packs: 1}, claimed: false, });
-            achievements.push({ name: 'Debug: Random Card', description: 'Admin only - grants a random card', requirement: 1, current: 1, achieved: true, reward: {card: true}, claimed: false, });
+            achievements.push({
+                key: 'DEBUG_FREE_PACK',
+                name: 'Debug: Free Pack',
+                description: 'Admin only - grants one pack',
+                category: 'Admin',
+                tier: null,
+                requirement: 1,
+                current: 1,
+                achieved: true,
+                reward: {packs: 1},
+                claimed: false,
+            });
+            achievements.push({
+                key: 'DEBUG_RANDOM_CARD',
+                name: 'Debug: Random Card',
+                description: 'Admin only - grants a random card',
+                category: 'Admin',
+                tier: null,
+                requirement: 1,
+                current: 1,
+                achieved: true,
+                reward: {card: true},
+                claimed: false,
+            });
         }
         res.json({achievements});
     } catch (err) { console.error('Error fetching achievements:', err.message); res.status(500).json({message: 'Failed to fetch achievements'}); }
@@ -75,29 +104,72 @@ const claimAchievementReward = async (req, res) => {
         if (ach.claimed) return res.status(400).json({message: 'Reward already claimed'});
 
         const reward = ach.reward || {};
-        let rewardPayload = null; let message = '';
+        const rewardPayloads = [];
+        const messageParts = [];
+
         if (reward.packs) {
             user.packs = (user.packs || 0) + reward.packs;
-            message = `Added ${reward.packs} pack${reward.packs > 1 ? 's' : ''}`;
-            rewardPayload = { type: 'PACK', data: { amount: reward.packs }, message: `From Achievement: ${name}` };
+            messageParts.push(`Added ${reward.packs} pack${reward.packs > 1 ? 's' : ''}`);
+            rewardPayloads.push({ type: 'PACK', data: { amount: reward.packs }, message: `From Achievement: ${name}` });
         }
         if (reward.card) {
             const rewardCard = await generateCardWithProbability();
             if (!rewardCard) return res.status(500).json({message: 'Failed to generate card reward: no cards available'});
             rewardCard.acquiredAt = new Date();
-            message = `${rewardCard.name} (#${rewardCard.mintNumber}) [${rewardCard.rarity}]`;
+            messageParts.push(`${rewardCard.name} (#${rewardCard.mintNumber}) [${rewardCard.rarity}]`);
             user.cards.push(rewardCard);
-            rewardPayload = { type: 'CARD', data: rewardCard, message: `From Achievement: ${name}` };
+            rewardPayloads.push({ type: 'CARD', data: rewardCard, message: `From Achievement: ${name}` });
+        }
+
+        let titleUnlocked = null;
+        const titleReward = reward.title || (reward.titleSlug ? { slug: reward.titleSlug } : null);
+        if (titleReward && titleReward.slug) {
+            const slug = String(titleReward.slug).trim().toLowerCase();
+            if (slug) {
+                let titleDoc = await Title.findOne({ slug });
+                if (!titleDoc && titleReward.name) {
+                    titleDoc = await Title.create({
+                        name: titleReward.name,
+                        slug,
+                        description: titleReward.description || '',
+                        color: titleReward.color || '',
+                        gradient: titleReward.gradient || '',
+                        isAnimated: Boolean(titleReward.isAnimated),
+                        effect: titleReward.effect || '',
+                    });
+                }
+
+                if (titleDoc) {
+                    const alreadyUnlocked = (user.unlockedTitles || []).some(
+                        (id) => id.toString() === titleDoc._id.toString()
+                    );
+                    if (!alreadyUnlocked) {
+                        user.unlockedTitles.push(titleDoc._id);
+                    }
+                    titleUnlocked = {
+                        _id: titleDoc._id,
+                        name: titleDoc.name,
+                        slug: titleDoc.slug,
+                        description: titleDoc.description,
+                        color: titleDoc.color,
+                        gradient: titleDoc.gradient,
+                        isAnimated: titleDoc.isAnimated,
+                        effect: titleDoc.effect,
+                    };
+                    messageParts.push(`Unlocked title "${titleDoc.name}"`);
+                }
+            }
         }
 
         const achToUpdate = user.achievements.find(a => a.name === name);
         if (achToUpdate) achToUpdate.claimed = true;
 
+        const message = messageParts.length ? messageParts.join(' | ') : 'Achievement reward claimed';
         await createLogEntry(user, 'ACHIEVEMENT_AWARDED', `${name} - ${message}`);
 
         await user.save();
 
-        res.json({success: true, pendingRewards: rewardPayload ? [rewardPayload] : []});
+        res.json({success: true, pendingRewards: rewardPayloads, titleUnlocked});
 
     } catch (err) {
         console.error('Error claiming achievement:', err.message);

@@ -72,12 +72,21 @@ const userSchema = new mongoose.Schema({
         {
             name: String,
             description: String,
-            reward: {
-                packs: { type: Number, default: 0 },
-                card: { type: Boolean, default: false },
+        reward: {
+            packs: { type: Number, default: 0 },
+            card: { type: Boolean, default: false },
+            title: {
+                name: { type: String, default: '' },
+                slug: { type: String, default: '' },
+                description: { type: String, default: '' },
+                color: { type: String, default: '' },
+                gradient: { type: String, default: '' },
+                isAnimated: { type: Boolean, default: false },
+                effect: { type: String, default: '' },
             },
-            claimed: { type: Boolean, default: false },
-            dateEarned: { type: Date, default: Date.now }
+        },
+        claimed: { type: Boolean, default: false },
+        dateEarned: { type: Date, default: Date.now }
         }
     ],
     // Achievements selected to display on profile
@@ -85,12 +94,21 @@ const userSchema = new mongoose.Schema({
         {
             name: String,
             description: String,
-            reward: {
-                packs: { type: Number, default: 0 },
-                card: { type: Boolean, default: false },
+        reward: {
+            packs: { type: Number, default: 0 },
+            card: { type: Boolean, default: false },
+            title: {
+                name: { type: String, default: '' },
+                slug: { type: String, default: '' },
+                description: { type: String, default: '' },
+                color: { type: String, default: '' },
+                gradient: { type: String, default: '' },
+                isAnimated: { type: Boolean, default: false },
+                effect: { type: String, default: '' },
             },
-            claimed: { type: Boolean, default: false },
-            dateEarned: { type: Date, default: Date.now }
+        },
+        claimed: { type: Boolean, default: false },
+        dateEarned: { type: Date, default: Date.now }
         }
     ],
     pendingEventReward: {
