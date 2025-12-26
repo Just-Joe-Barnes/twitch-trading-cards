@@ -19,6 +19,7 @@ const cardSchema = new mongoose.Schema({
     gradingRequestedAt: Date,
     lore: { type: String },
     loreAuthor: { type: String },
+    gameTags: { type: [String], default: [] },
 });
 
 // Index nested card id for faster $elemMatch queries

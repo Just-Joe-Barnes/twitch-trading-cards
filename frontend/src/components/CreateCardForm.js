@@ -16,6 +16,7 @@ const CreateCardForm = ({ onClose, onSubmit }) => {
     const [loading, setLoading] = useState(false);
     const [eventCard, setEventCard] = useState(false);
     const [isHidden, setIsHidden] = useState(false);
+    const [gameTags, setGameTags] = useState('');
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
@@ -57,6 +58,10 @@ const CreateCardForm = ({ onClose, onSubmit }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         setLoading(true);
+        const parsedTags = gameTags
+            .split(',')
+            .map((tag) => tag.trim())
+            .filter((tag) => tag.length > 0);
         onSubmit({
             name,
             flavorText,
@@ -67,6 +72,7 @@ const CreateCardForm = ({ onClose, onSubmit }) => {
             availableTo: alwaysAvailable ? null : availableTo || null,
             eventCard,
             isHidden,
+            gameTags: parsedTags,
         }).finally(() => setLoading(false));
     };
 
@@ -95,6 +101,16 @@ const CreateCardForm = ({ onClose, onSubmit }) => {
                         <input id="loreAuthor" type="text" value={loreAuthor}
                                onChange={(e) => setLoreAuthor(e.target.value)}
                                placeholder="e.g., The Just Joe Show"/>
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="gameTags">Game Tags (comma separated)</label>
+                        <input
+                            id="gameTags"
+                            type="text"
+                            value={gameTags}
+                            onChange={(e) => setGameTags(e.target.value)}
+                            placeholder="Elden Ring, Cyberpunk 2077"
+                        />
                     </div>
                     <div className="form-group">
                         <label htmlFor="image">Upload Image</label>

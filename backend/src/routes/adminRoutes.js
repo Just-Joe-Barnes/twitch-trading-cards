@@ -56,6 +56,15 @@ const stripCardNameModifiers = (cardName) => {
     return cardName;
 };
 
+const normalizeGameTags = (value) => {
+    if (!value) return [];
+    const list = Array.isArray(value) ? value : String(value).split(',');
+    const cleaned = list
+        .map((tag) => String(tag).trim())
+        .filter((tag) => tag.length > 0);
+    return Array.from(new Set(cleaned));
+};
+
 const slugify = (text) => {
     return text
         .toString()
@@ -352,7 +361,7 @@ const storage = multer.diskStorage({
 
 router.post('/cards', protect, adminOnly, async (req, res) => {
     try {
-        const { name, flavorText, imageUrl, lore, loreAuthor, availableFrom, availableTo, rarities, isHidden } = req.body;
+        const { name, flavorText, imageUrl, lore, loreAuthor, availableFrom, availableTo, rarities, isHidden, gameTags } = req.body;
 
         const newCard = new Card({
             name,
@@ -364,6 +373,7 @@ router.post('/cards', protect, adminOnly, async (req, res) => {
             availableTo: availableTo ? new Date(availableTo) : null,
             rarities: rarities || [],
             isHidden: isHidden || false,
+            gameTags: normalizeGameTags(gameTags),
         });
 
         await newCard.save();
@@ -468,15 +478,16 @@ router.post('/grant-card', protect, adminOnly, async (req, res) => {
         rarityObj.remainingCopies -= 1;
         await cardDoc.save();
 
-        user.cards.push({
-            name: cardDoc.name,
-            imageUrl: cardDoc.imageUrl,
-            flavorText: cardDoc.flavorText,
-            rarity,
-            mintNumber,
-            acquiredAt: new Date(),
-            status: 'available',
-        });
+          user.cards.push({
+              name: cardDoc.name,
+              imageUrl: cardDoc.imageUrl,
+              flavorText: cardDoc.flavorText,
+              rarity,
+              mintNumber,
+              acquiredAt: new Date(),
+              status: 'available',
+              gameTags: Array.isArray(cardDoc.gameTags) ? cardDoc.gameTags : [],
+          });
         await user.save();
 
         res.json({ message: 'Card granted successfully' });

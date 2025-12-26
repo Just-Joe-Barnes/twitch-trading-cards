@@ -130,6 +130,7 @@ const grantCardReward = async (user, details) => {
                 mintNumber: mintNumber,
                 acquiredAt: new Date(),
                 modifier: null,
+                gameTags: Array.isArray(cardDoc.gameTags) ? cardDoc.gameTags : [],
             };
 
             // Add the new card to the user's `cards` array

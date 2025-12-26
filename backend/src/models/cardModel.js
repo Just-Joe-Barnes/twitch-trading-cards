@@ -19,11 +19,13 @@ const cardSchema = new mongoose.Schema({
     availableTo: { type: Date, default: null },
     series: { type: String, default: 'Base' },
     isHidden: { type: Boolean, default: false },
+    gameTags: { type: [String], default: [] },
 });
 
 // Helpful indexes for frequent queries
 cardSchema.index({ name: 1 });
 cardSchema.index({ 'rarities.rarity': 1 });
+cardSchema.index({ gameTags: 1 });
 
 const Card = mongoose.model('Card', cardSchema);
 

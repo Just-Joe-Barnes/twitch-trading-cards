@@ -21,6 +21,7 @@ const seedDatabase = async () => {
             name: 'Glintstone Guardian',
             imageUrl: '/images/cards/glintstoneguardian.jpg',
             flavorText: 'The only thing between you and the academy.',
+            gameTags: ['Elden Ring'],
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,
@@ -164,6 +165,7 @@ const seedDatabase = async () => {
             name: 'Helm Of A Hero',
             imageUrl: '/images/cards/helmofahero.jpg',
             flavorText: 'The head piece of choice for a soon to be, Elden Lord.',
+            gameTags: ['Elden Ring'],
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,
@@ -208,6 +210,7 @@ const seedDatabase = async () => {
             name: 'The Lord Of Blood',
             imageUrl: '/images/cards/lordofblood.jpg',
             flavorText: 'Honored guest, welcome to the birthplace of our dynasty.',
+            gameTags: ['Elden Ring'],
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,
@@ -318,6 +321,7 @@ const seedDatabase = async () => {
             name: 'Sip From The Erdtree',
             imageUrl: '/images/cards/sipfromtheerdtree.jpg',
             flavorText: 'Take a sip, right in their face, no respect.',
+            gameTags: ['Elden Ring'],
             rarities: rarities.map((rarity) => ({
                 rarity: rarity.name,
                 totalCopies: rarity.totalCopies,

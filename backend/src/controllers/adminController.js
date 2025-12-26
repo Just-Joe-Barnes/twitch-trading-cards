@@ -1,6 +1,15 @@
 const Card = require('../models/cardModel');
 const User = require('../models/userModel');
 
+const normalizeGameTags = (value) => {
+    if (!value) return [];
+    const list = Array.isArray(value) ? value : String(value).split(',');
+    const cleaned = list
+        .map((tag) => String(tag).trim())
+        .filter((tag) => tag.length > 0);
+    return Array.from(new Set(cleaned));
+};
+
 const getAdminDashboardData = async (req, res) => {
     // Placeholder for admin dashboard data logic
     res.json({ message: 'Admin dashboard data' });
@@ -20,7 +29,8 @@ const updateCard = async (req, res) => {
             loreAuthor,
             availableFrom,
             availableTo,
-            isHidden
+            isHidden,
+            gameTags,
         } = req.body;
 
         const card = await Card.findById(cardId);
@@ -39,10 +49,18 @@ const updateCard = async (req, res) => {
         card.availableFrom = availableFrom;
         card.availableTo = availableTo;
         card.isHidden = isHidden;
+        if (gameTags !== undefined) {
+            card.gameTags = normalizeGameTags(gameTags);
+        }
 
         // IMPORTANT: Check for modifications *before* saving the document.
         // This is when Mongoose knows the document is "dirty".
-        const hasCascadingChanges = card.isModified('name') || card.isModified('imageUrl') || card.isModified('flavorText') || card.isModified('lore') || card.isModified('loreAuthor');
+        const hasCascadingChanges = card.isModified('name')
+            || card.isModified('imageUrl')
+            || card.isModified('flavorText')
+            || card.isModified('lore')
+            || card.isModified('loreAuthor')
+            || card.isModified('gameTags');
 
         // Now, save the main card to the database
         const updatedCard = await card.save();
@@ -51,6 +69,9 @@ const updateCard = async (req, res) => {
         if (hasCascadingChanges) {
             const updatePayload = {};
             const fieldsToCascade = { name, imageUrl, flavorText, lore, loreAuthor };
+            if (gameTags !== undefined) {
+                fieldsToCascade.gameTags = normalizeGameTags(gameTags);
+            }
 
             for (const [key, value] of Object.entries(fieldsToCascade)) {
                 if (value !== undefined) {

@@ -206,7 +206,8 @@ const generateCardWithProbability = async (highRoll = false) => {
                 imageUrl: selectedCard.imageUrl,
                 flavorText: selectedCard.flavorText || 'No flavor text available',
                 lore: selectedCard.lore,
-                loreAuthor: selectedCard.loreAuthor
+                loreAuthor: selectedCard.loreAuthor,
+                gameTags: Array.isArray(selectedCard.gameTags) ? selectedCard.gameTags : [],
             };
 
         } catch (err) {
@@ -330,7 +331,8 @@ const generateCardFromPool = async (poolIds) => {
                 imageUrl: selectedCard.imageUrl,
                 flavorText: selectedCard.flavorText || 'No flavor text available',
                 lore: selectedCard.lore,
-                loreAuthor: selectedCard.loreAuthor
+                loreAuthor: selectedCard.loreAuthor,
+                gameTags: Array.isArray(selectedCard.gameTags) ? selectedCard.gameTags : [],
             };
         } catch (error) {
             console.error('[generateCardFromPool] Error:', error.message);
@@ -409,7 +411,8 @@ const generateCardPreview = async () => {
                 imageUrl: selectedCard.imageUrl,
                 flavorText: selectedCard.flavorText || 'No flavor text available',
                 lore: selectedCard.lore,
-                loreAuthor: selectedCard.loreAuthor
+                loreAuthor: selectedCard.loreAuthor,
+                gameTags: Array.isArray(selectedCard.gameTags) ? selectedCard.gameTags : [],
             };
         } catch (err) {
             console.error('[generateCardPreview] Error:', err.message);
@@ -478,7 +481,8 @@ const generateCardPreviewFromPool = async (poolIds, options = {}) => {
                         flavorText: singleCard.flavorText || 'No flavor text available',
                         cardId: singleCard._id.toString(),
                         lore: singleCard.lore,
-                        loreAuthor: singleCard.loreAuthor
+                        loreAuthor: singleCard.loreAuthor,
+                        gameTags: Array.isArray(singleCard.gameTags) ? singleCard.gameTags : [],
                     };
                 }
             }
@@ -641,6 +645,8 @@ const generateCardPreviewFromPool = async (poolIds, options = {}) => {
                 }
             }
 
+            const gameTags = Array.isArray(selectedCard.gameTags) ? selectedCard.gameTags : [];
+
             if ((Math.random() < MODIFIER_CHANCE) || forceModifier) {
                 const modifiers = await Modifier.find().lean();
                 if (modifiers.length > 0) {
@@ -660,7 +666,8 @@ const generateCardPreviewFromPool = async (poolIds, options = {}) => {
                 flavorText: selectedCard.flavorText || 'No flavor text available',
                 cardId: selectedCard._id.toString(),
                 lore: selectedCard.lore,
-                loreAuthor: selectedCard.loreAuthor
+                loreAuthor: selectedCard.loreAuthor,
+                gameTags,
             };
         } catch (err) {
             console.error('[generateCardPreviewFromPool] Unexpected Error:', err.message, err.stack);

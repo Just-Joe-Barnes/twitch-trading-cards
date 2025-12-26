@@ -47,6 +47,7 @@ const AdminCardManagement = () => {
                     availableTo: cardData.availableTo,
                     rarities: availabilityRarities,
                     isHidden: cardData.isHidden, // New field
+                    gameTags: cardData.gameTags,
                 }),
             });
             window.showToast('Card created successfully!', 'success');
@@ -70,6 +71,7 @@ const AdminCardManagement = () => {
                     availableFrom: cardData.alwaysAvailable ? null : cardData.availableFrom || null,
                     availableTo: cardData.alwaysAvailable ? null : cardData.availableTo || null,
                     isHidden: cardData.isHidden, // New field
+                    gameTags: cardData.gameTags,
                 }),
             });
             window.showToast('Card updated successfully!', 'success');

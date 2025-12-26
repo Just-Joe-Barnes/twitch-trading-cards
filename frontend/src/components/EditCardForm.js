@@ -23,6 +23,7 @@ const EditCardForm = ({ onClose, onSubmit }) => {
                 availableFrom: selectedCard.availableFrom ? new Date(selectedCard.availableFrom).toISOString().slice(0, 10) : '',
                 availableTo: selectedCard.availableTo ? new Date(selectedCard.availableTo).toISOString().slice(0, 10) : '',
                 isHidden: selectedCard.isHidden || false,
+                gameTags: Array.isArray(selectedCard.gameTags) ? selectedCard.gameTags.join(', ') : '',
             });
             setPreviewRarity('Basic');
         } else {
@@ -63,7 +64,10 @@ const EditCardForm = ({ onClose, onSubmit }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         setLoading(true);
-        onSubmit(editData).finally(() => setLoading(false));
+        const parsedTags = editData.gameTags
+            ? editData.gameTags.split(',').map((tag) => tag.trim()).filter((tag) => tag.length > 0)
+            : [];
+        onSubmit({ ...editData, gameTags: parsedTags }).finally(() => setLoading(false));
     };
 
     return (
@@ -100,6 +104,17 @@ const EditCardForm = ({ onClose, onSubmit }) => {
                             <label htmlFor="image-edit">Change Image</label>
                             <input id="image-edit" type="file" accept="image/*,.gif" onChange={handleImageUpload} />
                             {editData.imageUrl && <p className="image-url-preview">Current URL: <a href={editData.imageUrl} target="_blank" rel="noopener noreferrer">View Image</a></p>}
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="gameTags-edit">Game Tags (comma separated)</label>
+                            <input
+                                id="gameTags-edit"
+                                name="gameTags"
+                                type="text"
+                                value={editData.gameTags}
+                                onChange={handleFieldChange}
+                                placeholder="Elden Ring, Cyberpunk 2077"
+                            />
                         </div>
                         <div className="form-group checkbox-group">
                             <input id="alwaysAvailable-edit" name="alwaysAvailable" type="checkbox" checked={editData.alwaysAvailable} onChange={handleFieldChange} />
