@@ -31,12 +31,18 @@ const getAchievementContext = async (user) => {
     }, {});
     const cardNameSet = new Set(baseNames);
     const cardTagNameSets = {};
+    const taggedCardNameSet = new Set();
+    const tagSet = new Set();
     cards.forEach((card) => {
         const cardNameKey = normalizeBaseName(card.name);
         const tags = Array.isArray(card.gameTags) ? card.gameTags : [];
+        if (tags.length > 0 && cardNameKey) {
+            taggedCardNameSet.add(cardNameKey);
+        }
         tags.forEach((tag) => {
             const tagKey = normalizeName(tag);
             if (!tagKey || !cardNameKey) return;
+            tagSet.add(tagKey);
             if (!cardTagNameSets[tagKey]) cardTagNameSets[tagKey] = new Set();
             cardTagNameSets[tagKey].add(cardNameKey);
         });
@@ -89,6 +95,8 @@ const getAchievementContext = async (user) => {
         cardNameCounts,
         cardNameSet,
         cardTagNameSets,
+        taggedCards: taggedCardNameSet.size,
+        tagsDiscovered: tagSet.size,
     };
 };
 
@@ -157,6 +165,10 @@ const getAchievementCurrent = (achievement, context, user, packCardNamesByKey = 
             const tagSet = context.cardTagNameSets[tagKey];
             return tagSet ? tagSet.size : 0;
         }
+        case 'taggedCards':
+            return context.taggedCards;
+        case 'tagsDiscovered':
+            return context.tagsDiscovered;
         default:
             return user[achievement.field] || 0;
     }

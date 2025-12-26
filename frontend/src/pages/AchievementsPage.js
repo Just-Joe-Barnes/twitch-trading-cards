@@ -9,6 +9,7 @@ const CATEGORY_ORDER = [
     'Market',
     'Packs',
     'Collection',
+    'Tags',
     'Login',
     'Profile',
     'Titles',
