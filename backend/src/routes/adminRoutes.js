@@ -57,6 +57,11 @@ const stripCardNameModifiers = (cardName) => {
     return cardName;
 };
 
+const normalizeCardName = (cardName) => {
+    if (!cardName) return '';
+    return stripCardNameModifiers(String(cardName)).trim().toLowerCase();
+};
+
 const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const buildCardNameRegex = (name) => {
@@ -464,6 +469,118 @@ router.post('/cards/backfill-hidden-field', protect, adminOnly, async (req, res)
     } catch (error) {
         console.error('Error backfilling isHidden field:', error);
         res.status(500).json({ message: 'Server error during backfill process.' });
+    }
+});
+
+router.post('/cards/backfill-tags', protect, adminOnly, async (req, res) => {
+    const { dryRun = false, overwrite = true } = req.body || {};
+
+    try {
+        const cardDocs = await Card.find().select('name gameTags').lean();
+        if (cardDocs.length === 0) {
+            return res.json({ message: 'No card definitions found.', updatedUsers: 0, updatedCards: 0 });
+        }
+
+        const cardTagMap = new Map();
+        cardDocs.forEach((card) => {
+            const key = normalizeCardName(card.name);
+            if (!key) return;
+            const tags = Array.isArray(card.gameTags) ? card.gameTags : [];
+            cardTagMap.set(key, tags);
+        });
+
+        const normalizeTags = (tags) => (Array.isArray(tags) ? tags : [])
+            .map((tag) => String(tag).trim().toLowerCase())
+            .filter((tag) => tag.length > 0)
+            .sort();
+
+        const tagsEqual = (a, b) => {
+            const aNorm = normalizeTags(a);
+            const bNorm = normalizeTags(b);
+            if (aNorm.length !== bNorm.length) return false;
+            return aNorm.every((tag, idx) => tag === bNorm[idx]);
+        };
+
+        const processCardArray = (cards = []) => {
+            let updatedCount = 0;
+            const updatedCards = cards.map((card) => {
+                const key = normalizeCardName(card.name);
+                if (!key) return card;
+                const tags = cardTagMap.get(key);
+                if (!tags) return card;
+                const existingTags = Array.isArray(card.gameTags) ? card.gameTags : [];
+                if (!overwrite && existingTags.length > 0) {
+                    return card;
+                }
+                if (tagsEqual(existingTags, tags)) {
+                    return card;
+                }
+                updatedCount += 1;
+                return { ...card, gameTags: tags };
+            });
+
+            return { updatedCards, updatedCount };
+        };
+
+        let updatedUsers = 0;
+        let updatedCards = 0;
+        let scannedUsers = 0;
+        const bulkOps = [];
+        const cursor = User.find({}, 'cards openedCards featuredCards').lean().cursor();
+
+        for await (const user of cursor) {
+            scannedUsers += 1;
+            const updates = {};
+
+            const cardsResult = processCardArray(user.cards || []);
+            if (cardsResult.updatedCount > 0) {
+                updates.cards = cardsResult.updatedCards;
+            }
+
+            const openedResult = processCardArray(user.openedCards || []);
+            if (openedResult.updatedCount > 0) {
+                updates.openedCards = openedResult.updatedCards;
+            }
+
+            const featuredResult = processCardArray(user.featuredCards || []);
+            if (featuredResult.updatedCount > 0) {
+                updates.featuredCards = featuredResult.updatedCards;
+            }
+
+            const totalUpdatesForUser = cardsResult.updatedCount + openedResult.updatedCount + featuredResult.updatedCount;
+            if (totalUpdatesForUser > 0) {
+                updatedUsers += 1;
+                updatedCards += totalUpdatesForUser;
+                if (!dryRun) {
+                    bulkOps.push({
+                        updateOne: {
+                            filter: { _id: user._id },
+                            update: { $set: updates },
+                        }
+                    });
+                    if (bulkOps.length >= 200) {
+                        await User.bulkWrite(bulkOps);
+                        bulkOps.length = 0;
+                    }
+                }
+            }
+        }
+
+        if (!dryRun && bulkOps.length > 0) {
+            await User.bulkWrite(bulkOps);
+        }
+
+        res.json({
+            message: dryRun ? 'Dry run complete.' : 'Tag backfill complete.',
+            dryRun: Boolean(dryRun),
+            overwrite: Boolean(overwrite),
+            scannedUsers,
+            updatedUsers,
+            updatedCards,
+        });
+    } catch (error) {
+        console.error('Error backfilling card tags:', error);
+        res.status(500).json({ message: 'Failed to backfill card tags.' });
     }
 });
 

@@ -9,7 +9,8 @@ import {
     fixMissingModifierPrefixes, fixLegacyGlitchNames,
     backfillTradeSnapshots,
     wipeDatabase,
-    searchCardsByName
+    searchCardsByName,
+    backfillCardTags
 } from '../utils/api';
 
 const AdminCardAudit = () => {
@@ -23,6 +24,7 @@ const AdminCardAudit = () => {
     const [duplicateFixStatus, setDuplicateFixStatus] = useState(null);
     const [mismatchFixStatus, setMismatchFixStatus] = useState(null);
     const [tradeFixStatus, setTradeFixStatus] = useState(null);
+    const [tagBackfillStatus, setTagBackfillStatus] = useState(null);
     const [showDetails, setShowDetails] = useState({
         malformedUserCards: false,
         missingParentCardDefinitions: false,
@@ -79,6 +81,7 @@ const AdminCardAudit = () => {
         setPrefixFixStatus(null);
         setLegacyGlitchFixStatus(null);
         setTradeFixStatus(null);
+        setTagBackfillStatus(null);
         try {
             const data = await fetchAdminCardAudit();
             setAuditData(data);
@@ -176,6 +179,32 @@ const AdminCardAudit = () => {
             }
         } catch (err) {
             setLegacyGlitchFixStatus({ status: 'error', message: `Operation failed: ${err.message || 'Unknown error.'}` });
+        }
+    };
+
+    const handleBackfillCardTags = async (performActualFix = false) => {
+        const confirmationMessage = performActualFix
+            ? "Are you absolutely sure you want to backfill tags into all user card collections?\n\n" +
+            "This will overwrite user card tags to match the master card definitions."
+            : "Initiating a DRY RUN to backfill tags into user card collections.\n\n" +
+            "This will show how many cards would be updated without changing the database. Proceed?";
+
+        if (!window.confirm(confirmationMessage)) {
+            setTagBackfillStatus({ status: 'info', message: 'Operation cancelled by user.' });
+            return;
+        }
+
+        setTagBackfillStatus({ status: 'pending', message: `Performing ${performActualFix ? 'actual backfill' : 'dry run'}... Please wait...` });
+
+        try {
+            const result = await backfillCardTags({ dryRun: !performActualFix, overwrite: true });
+            setTagBackfillStatus({ ...result, status: 'success' });
+
+            if (!result.dryRun) {
+                await loadAuditData();
+            }
+        } catch (err) {
+            setTagBackfillStatus({ status: 'error', message: `Operation failed: ${err.message || 'Unknown error.'}` });
         }
     };
 
@@ -542,6 +571,25 @@ const AdminCardAudit = () => {
                             {duplicateFixStatus.failed && (duplicateFixStatus.failed.removeMint0.length > 0 || duplicateFixStatus.failed.rerollDuplicates.length > 0) &&
                                 <div className="failed-fixes"><strong>Failed Fixes:</strong><ul>{duplicateFixStatus.failed.removeMint0.map((f, i) => <li key={i}>Failed to remove mint 0 for {f.card.username}: {f.reason}</li>)}{duplicateFixStatus.failed.rerollDuplicates.map((f, i) => <li key={i}>Failed to reroll for {f.owner.username}: {f.reason}</li>)}</ul></div>
                             }
+                        </div>
+                    )}
+                </div>
+
+                <div className="fix-section">
+                    <h4>Backfill Card Tags into Collections</h4>
+                    <p className="fix-description">Sync tags from the master card definitions into every user's card collection so tag-based achievements track correctly.</p>
+                    <div>
+                        <button onClick={() => handleBackfillCardTags(false)} className="action-button" style={{ backgroundColor: '#6c757d' }} disabled={tagBackfillStatus?.status === 'pending'}>Dry Run Backfill</button>
+                        {tagBackfillStatus && tagBackfillStatus.dryRun && tagBackfillStatus.updatedCards > 0 && (
+                            <button onClick={() => handleBackfillCardTags(true)} className="action-button" style={{ backgroundColor: '#dc3545' }} disabled={tagBackfillStatus?.status === 'pending'}>Confirm Backfill</button>
+                        )}
+                    </div>
+                    {tagBackfillStatus && (
+                        <div className={`status-box ${tagBackfillStatus.status}`}>
+                            <strong>Tag Backfill Status:</strong> {tagBackfillStatus.message}
+                            {typeof tagBackfillStatus.scannedUsers !== 'undefined' && (
+                                <p>Users scanned: {tagBackfillStatus.scannedUsers}, Users updated: {tagBackfillStatus.updatedUsers}, Cards updated: {tagBackfillStatus.updatedCards}</p>
+                            )}
                         </div>
                     )}
                 </div>

@@ -489,6 +489,16 @@ export const backfillTradeSnapshots = async (payload) => {
     return response.json();
 };
 
+export const backfillCardTags = async (options = { dryRun: true, overwrite: true }) => {
+    return await fetchWithAuth('/api/admin/cards/backfill-tags', {
+        method: 'POST',
+        body: JSON.stringify({
+            dryRun: options.dryRun !== false,
+            overwrite: options.overwrite !== false,
+        }),
+    });
+};
+
 export const fixLegacyGlitchNames = async (options = { dryRun: true }) => {
     const token = localStorage.getItem('token');
     const res = await fetch('/api/admin/fix-legacy-glitch-names', {
