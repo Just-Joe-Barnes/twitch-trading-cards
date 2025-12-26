@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import BaseCard from './BaseCard';
 import { rarities } from "../constants/rarities";
 import { fetchWithAuth } from "../utils/api";
@@ -9,6 +9,13 @@ const EditCardForm = ({ onClose, onSubmit }) => {
     const [editData, setEditData] = useState(null);
     const [previewRarity, setPreviewRarity] = useState('Basic');
     const [loading, setLoading] = useState(false);
+    const [allCards, setAllCards] = useState([]);
+    const [cardsLoading, setCardsLoading] = useState(false);
+    const [cardsError, setCardsError] = useState('');
+    const [cardSearch, setCardSearch] = useState('');
+    const [sortOrder, setSortOrder] = useState('asc');
+
+    const getNameForSort = (name) => name.toLowerCase().startsWith('the ') ? name.substring(4) : name;
 
     useEffect(() => {
         if (selectedCard) {
@@ -30,6 +37,37 @@ const EditCardForm = ({ onClose, onSubmit }) => {
             setEditData(null);
         }
     }, [selectedCard]);
+
+    useEffect(() => {
+        let isMounted = true;
+        const fetchCards = async () => {
+            try {
+                setCardsLoading(true);
+                const res = await fetchWithAuth('/api/admin/cards');
+                const all = [];
+                Object.values(res.groupedCards || {}).forEach(cards => all.push(...cards));
+                const uniqueCards = Array.from(new Map(all.map(card => [card.name, card])).values());
+                uniqueCards.sort((a, b) => getNameForSort(a.name).localeCompare(getNameForSort(b.name)));
+                if (isMounted) {
+                    setAllCards(uniqueCards);
+                    setCardsError('');
+                }
+            } catch (error) {
+                console.error('Error fetching cards for quick edit:', error);
+                if (isMounted) {
+                    setCardsError('Failed to load cards.');
+                }
+            } finally {
+                if (isMounted) {
+                    setCardsLoading(false);
+                }
+            }
+        };
+        fetchCards();
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     const handleFieldChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -69,6 +107,19 @@ const EditCardForm = ({ onClose, onSubmit }) => {
             : [];
         onSubmit({ ...editData, gameTags: parsedTags }).finally(() => setLoading(false));
     };
+
+    const filteredCards = useMemo(() => {
+        const term = cardSearch.trim().toLowerCase();
+        const filtered = term
+            ? allCards.filter(card => card.name.toLowerCase().includes(term))
+            : allCards.slice();
+        filtered.sort((a, b) => {
+            const nameA = getNameForSort(a.name);
+            const nameB = getNameForSort(b.name);
+            return sortOrder === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+        });
+        return filtered;
+    }, [allCards, cardSearch, sortOrder]);
 
     return (
         <div className="section-card">
@@ -176,6 +227,64 @@ const EditCardForm = ({ onClose, onSubmit }) => {
                     </div>
                 </form>
             )}
+            <div className="section-card" style={{ marginTop: '2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                    <h3>Quick Edit Library</h3>
+                    <div className="button-group" style={{ margin: 0 }}>
+                        <button
+                            type="button"
+                            className="secondary-button"
+                            onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                        >
+                            Sort: {sortOrder === 'asc' ? 'A-Z' : 'Z-A'}
+                        </button>
+                    </div>
+                </div>
+                <div className="form-group" style={{ marginTop: '1rem' }}>
+                    <label htmlFor="quick-edit-search">Search cards</label>
+                    <input
+                        id="quick-edit-search"
+                        type="search"
+                        value={cardSearch}
+                        onChange={(e) => setCardSearch(e.target.value)}
+                        placeholder="Type a card name..."
+                    />
+                </div>
+                {cardsLoading && <p>Loading cards...</p>}
+                {cardsError && <p>{cardsError}</p>}
+                {!cardsLoading && !cardsError && (
+                    <div className="cards-grid mini" style={{ marginTop: '1rem' }}>
+                        {filteredCards.length > 0 ? (
+                            filteredCards.map((card) => {
+                                const isEventCard = card.rarities && card.rarities.some(r => r.rarity === 'Event');
+                                const displayRarity = isEventCard ? 'Event' : 'Basic';
+                                const isSelected = selectedCard && selectedCard._id === card._id;
+                                return (
+                                    <div key={card._id} style={{ textAlign: 'center' }}>
+                                        <BaseCard
+                                            name={card.name}
+                                            description={card.flavorText}
+                                            image={card.imageUrl}
+                                            rarity={displayRarity}
+                                            miniCard={true}
+                                        />
+                                        <button
+                                            type="button"
+                                            className={isSelected ? 'success-button' : 'primary-button'}
+                                            style={{ marginTop: '0.5rem' }}
+                                            onClick={() => setSelectedCard(card)}
+                                        >
+                                            {isSelected ? 'Editing' : 'Edit'}
+                                        </button>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <p>No cards match your search.</p>
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
