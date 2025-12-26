@@ -25,6 +25,10 @@ const AdminCardAudit = () => {
     const [mismatchFixStatus, setMismatchFixStatus] = useState(null);
     const [tradeFixStatus, setTradeFixStatus] = useState(null);
     const [tagBackfillStatus, setTagBackfillStatus] = useState(null);
+    const [nameLookupInput, setNameLookupInput] = useState('');
+    const [nameLookupStatus, setNameLookupStatus] = useState(null);
+    const [nameLookupResults, setNameLookupResults] = useState([]);
+    const [nameLookupBusy, setNameLookupBusy] = useState(false);
     const [showDetails, setShowDetails] = useState({
         malformedUserCards: false,
         missingParentCardDefinitions: false,
@@ -82,6 +86,8 @@ const AdminCardAudit = () => {
         setLegacyGlitchFixStatus(null);
         setTradeFixStatus(null);
         setTagBackfillStatus(null);
+        setNameLookupStatus(null);
+        setNameLookupResults([]);
         try {
             const data = await fetchAdminCardAudit();
             setAuditData(data);
@@ -179,6 +185,59 @@ const AdminCardAudit = () => {
             }
         } catch (err) {
             setLegacyGlitchFixStatus({ status: 'error', message: `Operation failed: ${err.message || 'Unknown error.'}` });
+        }
+    };
+
+    const parseNameLookupInput = (value) => {
+        return Array.from(
+            new Set(
+                value
+                    .split(/[\n,]+/)
+                    .map((item) => item.trim())
+                    .filter((item) => item.length > 0)
+            )
+        );
+    };
+
+    const handleNameLookup = async () => {
+        const queries = parseNameLookupInput(nameLookupInput);
+        if (queries.length === 0) {
+            setNameLookupStatus({ status: 'info', message: 'Enter one or more card names to search.' });
+            setNameLookupResults([]);
+            return;
+        }
+
+        setNameLookupBusy(true);
+        setNameLookupStatus({ status: 'pending', message: 'Searching card names...' });
+
+        try {
+            const results = await Promise.all(
+                queries.map(async (query) => {
+                    const cards = await searchCardsByName(query);
+                    const matches = Array.isArray(cards) ? cards.map((card) => ({
+                        id: card._id,
+                        name: card.name,
+                        tags: Array.isArray(card.gameTags) ? card.gameTags : []
+                    })) : [];
+
+                    const exactMatch = matches.find(
+                        (match) => match.name.trim().toLowerCase() === query.trim().toLowerCase()
+                    );
+
+                    return {
+                        query,
+                        matches,
+                        exact: exactMatch ? exactMatch.name : ''
+                    };
+                })
+            );
+
+            setNameLookupResults(results);
+            setNameLookupStatus({ status: 'success', message: 'Search complete.' });
+        } catch (err) {
+            setNameLookupStatus({ status: 'error', message: `Search failed: ${err.message || 'Unknown error.'}` });
+        } finally {
+            setNameLookupBusy(false);
         }
     };
 
@@ -466,6 +525,50 @@ const AdminCardAudit = () => {
                 <hr style={{ borderColor: '#333', margin: '1.5rem 0' }} />
 
                 <h2>Fixable Issues & Maintenance</h2>
+
+                <div className="fix-section">
+                    <h4>Card Name Lookup</h4>
+                    <p className="fix-description">Paste card names (one per line or comma-separated) to confirm the exact database names.</p>
+                    <textarea
+                        value={nameLookupInput}
+                        onChange={(e) => setNameLookupInput(e.target.value)}
+                        placeholder={`Example:\nNight City Vibes\nSilverhand\nCyberpunk Sweetheart`}
+                        rows="4"
+                        style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.9em' }}
+                    />
+                    <div style={{ marginTop: '0.75rem' }}>
+                        <button onClick={handleNameLookup} className="action-button" style={{ backgroundColor: '#6c757d' }} disabled={nameLookupBusy}>
+                            {nameLookupBusy ? 'Searching...' : 'Check Names'}
+                        </button>
+                    </div>
+                    {nameLookupStatus && (
+                        <div className={`status-box ${nameLookupStatus.status}`}>
+                            <strong>Name Lookup:</strong> {nameLookupStatus.message}
+                        </div>
+                    )}
+                    {nameLookupResults.length > 0 && (
+                        <div style={{ marginTop: '1rem' }}>
+                            {nameLookupResults.map((result) => (
+                                <div key={result.query} className="section-card detail-item" style={{ marginBottom: '0.75rem' }}>
+                                    <p><strong>Query:</strong> {result.query}</p>
+                                    {result.exact && <p><strong>Exact match:</strong> {result.exact}</p>}
+                                    {result.matches.length > 0 ? (
+                                        <ul>
+                                            {result.matches.map((match) => (
+                                                <li key={match.id}>
+                                                    {match.name}
+                                                    {match.tags.length > 0 ? ` (tags: ${match.tags.join(', ')})` : ''}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p>No matches found.</p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
                 <div className="fix-section">
                     <h4>Legacy "Glitch " Name Issues: <strong>{legacyGlitchCount}</strong></h4>
