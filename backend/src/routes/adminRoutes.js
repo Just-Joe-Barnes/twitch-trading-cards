@@ -56,6 +56,16 @@ const stripCardNameModifiers = (cardName) => {
     return cardName;
 };
 
+const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const buildCardNameRegex = (name) => {
+    const prefixes = Object.values(MODIFIER_NAME_TO_PREFIX_MAP).map(escapeRegex);
+    const prefixPattern = prefixes.length ? `(?:${prefixes.join('|')})` : '';
+    const base = escapeRegex(name);
+    const pattern = prefixPattern ? `^(?:${prefixPattern})?${base}$` : `^${base}$`;
+    return new RegExp(pattern, 'i');
+};
+
 const normalizeGameTags = (value) => {
     if (!value) return [];
     const list = Array.isArray(value) ? value : String(value).split(',');
@@ -413,6 +423,99 @@ router.post('/cards/backfill-hidden-field', protect, adminOnly, async (req, res)
     } catch (error) {
         console.error('Error backfilling isHidden field:', error);
         res.status(500).json({ message: 'Server error during backfill process.' });
+    }
+});
+
+router.post('/cards/bulk-tags', protect, adminOnly, async (req, res) => {
+    try {
+        const { cardIds, addTags, removeTags } = req.body || {};
+        if (!Array.isArray(cardIds) || cardIds.length === 0) {
+            return res.status(400).json({ message: 'cardIds must be a non-empty array.' });
+        }
+
+        const tagsToAdd = normalizeGameTags(addTags);
+        const tagsToRemove = normalizeGameTags(removeTags);
+        if (tagsToAdd.length === 0 && tagsToRemove.length === 0) {
+            return res.status(400).json({ message: 'Provide addTags and/or removeTags.' });
+        }
+
+        const cards = await Card.find({ _id: { $in: cardIds } })
+            .select('name gameTags')
+            .lean();
+        if (cards.length === 0) {
+            return res.status(404).json({ message: 'No cards found for the provided cardIds.' });
+        }
+
+        const normalizeKey = (tag) => String(tag).trim().toLowerCase();
+        const buildTagMap = (tags) => {
+            const map = new Map();
+            (tags || []).forEach((tag) => {
+                const trimmed = String(tag).trim();
+                if (!trimmed) return;
+                const key = normalizeKey(trimmed);
+                if (!map.has(key)) {
+                    map.set(key, trimmed);
+                }
+            });
+            return map;
+        };
+
+        const addMap = buildTagMap(tagsToAdd);
+        const removeKeys = new Set(tagsToRemove.map(normalizeKey));
+        const updatedCards = [];
+        const bulkOps = [];
+
+        cards.forEach((card) => {
+            const tagMap = buildTagMap(card.gameTags);
+            addMap.forEach((value, key) => {
+                if (!removeKeys.has(key)) {
+                    tagMap.set(key, value);
+                }
+            });
+            removeKeys.forEach((key) => tagMap.delete(key));
+            const updatedTags = Array.from(tagMap.values());
+
+            bulkOps.push({
+                updateOne: {
+                    filter: { _id: card._id },
+                    update: { $set: { gameTags: updatedTags } },
+                },
+            });
+            updatedCards.push({ _id: card._id.toString(), name: card.name, gameTags: updatedTags });
+        });
+
+        if (bulkOps.length > 0) {
+            await Card.bulkWrite(bulkOps);
+        }
+
+        const updateUserCardTags = async (cardName, updatedTags) => {
+            const regex = buildCardNameRegex(cardName);
+            const arrays = ['cards', 'featuredCards', 'openedCards'];
+            await Promise.all(
+                arrays.map((arrayName) =>
+                    User.updateMany(
+                        { [`${arrayName}.name`]: { $regex: regex } },
+                        { $set: { [`${arrayName}.$[elem].gameTags`]: updatedTags } },
+                        { arrayFilters: [{ 'elem.name': { $regex: regex } }] }
+                    )
+                )
+            );
+        };
+
+        await Promise.all(
+            updatedCards.map((card) => updateUserCardTags(card.name, card.gameTags))
+        );
+
+        return res.json({
+            message: 'Tags updated successfully.',
+            updatedCount: updatedCards.length,
+            tagsAdded: tagsToAdd,
+            tagsRemoved: tagsToRemove,
+            updatedCards,
+        });
+    } catch (error) {
+        console.error('Error bulk updating card tags:', error);
+        res.status(500).json({ message: 'Failed to bulk update card tags.' });
     }
 });
 

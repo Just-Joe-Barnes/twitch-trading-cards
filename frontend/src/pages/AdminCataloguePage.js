@@ -27,6 +27,10 @@ const AdminCataloguePage = ({ onClose }) => {
     const [sortOrder, setSortOrder] = useState('asc');
     const [setRandomRaritySeed] = useState(0);
     const [showOnlyNotInPacks, setShowOnlyNotInPacks] = useState(false);
+    const [selectedCardIds, setSelectedCardIds] = useState(() => new Set());
+    const [tagInput, setTagInput] = useState('');
+    const [bulkTagBusy, setBulkTagBusy] = useState(false);
+    const [bulkTagError, setBulkTagError] = useState('');
 
     const isMobile = useIsMobile();
     const defaultCardScale = 1;
@@ -128,6 +132,103 @@ const AdminCataloguePage = ({ onClose }) => {
         return currentCards;
     }, [cards, searchQuery, sortOrder, showOnlyNotInPacks, allCardIdsInPacks]);
 
+    const parseTagsInput = useCallback((value) => {
+        if (!value) return [];
+        const tags = value
+            .split(',')
+            .map((tag) => tag.trim())
+            .filter((tag) => tag.length > 0);
+        return Array.from(new Set(tags));
+    }, []);
+
+    const visibleSelectedCount = useMemo(() => {
+        if (selectedCardIds.size === 0) return 0;
+        return filteredAndSortedCards.reduce((count, card) => {
+            const cardId = card._id.toString();
+            return count + (selectedCardIds.has(cardId) ? 1 : 0);
+        }, 0);
+    }, [filteredAndSortedCards, selectedCardIds]);
+
+    const toggleCardSelection = useCallback((cardId) => {
+        setSelectedCardIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(cardId)) {
+                next.delete(cardId);
+            } else {
+                next.add(cardId);
+            }
+            return next;
+        });
+    }, []);
+
+    const handleSelectVisible = useCallback(() => {
+        setSelectedCardIds((prev) => {
+            const next = new Set(prev);
+            filteredAndSortedCards.forEach((card) => {
+                next.add(card._id.toString());
+            });
+            return next;
+        });
+    }, [filteredAndSortedCards]);
+
+    const handleClearSelection = useCallback(() => {
+        setSelectedCardIds(new Set());
+    }, []);
+
+    const handleBulkTagUpdate = async (mode) => {
+        const cardIds = Array.from(selectedCardIds);
+        const tags = parseTagsInput(tagInput);
+
+        if (cardIds.length === 0) {
+            window.showToast('Select at least one card.', 'error');
+            return;
+        }
+
+        if (tags.length === 0) {
+            window.showToast('Enter at least one tag to apply.', 'error');
+            return;
+        }
+
+        setBulkTagBusy(true);
+        setBulkTagError('');
+
+        try {
+            const payload = { cardIds };
+            if (mode === 'add') {
+                payload.addTags = tags;
+            } else {
+                payload.removeTags = tags;
+            }
+
+            const response = await fetchWithAuth('/api/admin/cards/bulk-tags', {
+                method: 'POST',
+                body: JSON.stringify(payload),
+            });
+
+            const updatedById = new Map(
+                (response.updatedCards || []).map((card) => [card._id.toString(), card.gameTags || []])
+            );
+
+            if (updatedById.size > 0) {
+                setCards((prev) =>
+                    prev.map((card) => {
+                        const update = updatedById.get(card._id.toString());
+                        if (!update) return card;
+                        return { ...card, gameTags: update };
+                    })
+                );
+            }
+
+            window.showToast(response.message || 'Tags updated successfully.', 'success');
+        } catch (err) {
+            const message = err?.message || 'Failed to update tags.';
+            setBulkTagError(message);
+            window.showToast(message, 'error');
+        } finally {
+            setBulkTagBusy(false);
+        }
+    };
+
     if (loading) return <LoadingSpinner />;
     if (error) return <div className="cata-page">{error}</div>;
 
@@ -141,24 +242,68 @@ const AdminCataloguePage = ({ onClose }) => {
             </div>
             <hr className="separator" />
             <div className="filters">
-                <input
-                    type="text"
-                    placeholder="Search by name..."
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                    className="filter-input"
-                />
-                <button onClick={handleSortOrderChange} className="primary-button">
-                    Sort: {sortOrder === 'asc' ? 'A-Z' : 'Z-A'}
-                </button>
-                <label className="checkbox-label">
+                <div className="filter-card" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
                     <input
-                        type="checkbox"
-                        checked={showOnlyNotInPacks}
-                        onChange={(e) => setShowOnlyNotInPacks(e.target.checked)}
+                        type="text"
+                        placeholder="Search by name..."
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        className="filter-input"
                     />
-                    Show only cards not in packs
-                </label>
+                    <button onClick={handleSortOrderChange} className="primary-button">
+                        Sort: {sortOrder === 'asc' ? 'A-Z' : 'Z-A'}
+                    </button>
+                    <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <input
+                            type="checkbox"
+                            checked={showOnlyNotInPacks}
+                            onChange={(e) => setShowOnlyNotInPacks(e.target.checked)}
+                        />
+                        Show only cards not in packs
+                    </label>
+                </div>
+                <div className="filter-card" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
+                    <input
+                        type="text"
+                        placeholder="Tags (comma-separated)"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        className="filter-input"
+                    />
+                    <button
+                        onClick={() => handleBulkTagUpdate('add')}
+                        className="primary-button"
+                        disabled={bulkTagBusy}
+                    >
+                        Add Tags
+                    </button>
+                    <button
+                        onClick={() => handleBulkTagUpdate('remove')}
+                        className="secondary-button"
+                        disabled={bulkTagBusy}
+                    >
+                        Remove Tags
+                    </button>
+                </div>
+                <div className="filter-card" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ fontWeight: 600, minWidth: '160px' }}>
+                        Selected: {selectedCardIds.size}
+                        {selectedCardIds.size > 0 && selectedCardIds.size !== visibleSelectedCount
+                            ? ` (visible ${visibleSelectedCount})`
+                            : ''}
+                    </div>
+                    <button onClick={handleSelectVisible} className="secondary-button">
+                        Select Visible ({filteredAndSortedCards.length})
+                    </button>
+                    <button onClick={handleClearSelection} className="secondary-button" disabled={selectedCardIds.size === 0}>
+                        Clear Selection
+                    </button>
+                </div>
+                {bulkTagError ? (
+                    <div style={{ color: '#f19999', fontWeight: 600 }}>
+                        {bulkTagError}
+                    </div>
+                ) : null}
             </div>
             <div className="slidecontainer">
                 <label>Card Scale: </label>
@@ -197,18 +342,45 @@ const AdminCataloguePage = ({ onClose }) => {
                             : selectedRarityFilter === 'random'
                                 ? getRandomRarityName()
                                 : selectedRarityFilter;
+                        const cardId = card._id.toString();
+                        const isSelected = selectedCardIds.has(cardId);
+                        const tagList = Array.isArray(card.gameTags) ? card.gameTags : [];
 
                         return (
-                            <BaseCard
+                            <div
                                 key={card._id}
-                                name={card.name}
-                                image={card.imageUrl}
-                                description={card.flavorText}
-                                rarity={displayRarity}
-                                modifier={selectedModifier === 'None' ? null : selectedModifier}
-                                lore={card.lore}
-                                miniCard={cardScale === 0.35}
-                            />
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    padding: '0.5rem',
+                                    borderRadius: '12px',
+                                    border: isSelected ? '2px solid var(--brand-secondary)' : '2px solid transparent',
+                                    background: isSelected ? 'rgba(126, 181, 188, 0.12)' : 'transparent'
+                                }}
+                            >
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        onChange={() => toggleCardSelection(cardId)}
+                                    />
+                                    Select
+                                </label>
+                                <BaseCard
+                                    name={card.name}
+                                    image={card.imageUrl}
+                                    description={card.flavorText}
+                                    rarity={displayRarity}
+                                    modifier={selectedModifier === 'None' ? null : selectedModifier}
+                                    lore={card.lore}
+                                    miniCard={cardScale === 0.35}
+                                />
+                                <div style={{ fontSize: '0.75rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                                    {tagList.length > 0 ? `Tags: ${tagList.join(', ')}` : 'Tags: none'}
+                                </div>
+                            </div>
                         );
                     })
                 ) : (
