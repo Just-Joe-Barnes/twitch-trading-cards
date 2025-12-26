@@ -22,6 +22,11 @@ const AdminTitlesPage = () => {
     const [setActiveOnGrant, setSetActiveOnGrant] = useState(true);
     const [isUserDropdownVisible, setUserDropdownVisible] = useState(false);
 
+    const grantableTitles = useMemo(
+        () => titles.filter((title) => !title.isVirtual),
+        [titles]
+    );
+
     const loadData = async () => {
         try {
             const [titleRes, userRes] = await Promise.all([
@@ -100,6 +105,32 @@ const AdminTitlesPage = () => {
             console.error('Error creating title:', err);
             if (window.showToast) {
                 window.showToast(err.message || 'Failed to create title.', 'error');
+            }
+        }
+    };
+
+    const handleCreateFromPreset = async (title) => {
+        try {
+            await fetchWithAuth('/api/admin/titles', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: title.name,
+                    slug: title.slug,
+                    description: title.description || '',
+                    color: title.color || '',
+                    gradient: title.gradient || '',
+                    isAnimated: Boolean(title.isAnimated),
+                    effect: title.effect || ''
+                })
+            });
+            if (window.showToast) {
+                window.showToast('Title created from achievement preset.', 'success');
+            }
+            await loadData();
+        } catch (err) {
+            console.error('Error creating title from preset:', err);
+            if (window.showToast) {
+                window.showToast(err.message || 'Failed to create title from preset.', 'error');
             }
         }
     };
@@ -188,42 +219,53 @@ const AdminTitlesPage = () => {
                         <div key={title._id} style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-dark)', paddingBottom: '1rem' }}>
                             <div style={{ marginBottom: '0.75rem' }}>
                                 <UserTitle username="Preview" title={title} />
+                                {title.isVirtual && (
+                                    <div style={{ marginTop: '0.35rem', color: 'var(--brand-secondary)', fontSize: '0.85rem' }}>
+                                        Achievement preset (not yet created)
+                                    </div>
+                                )}
                             </div>
                             <input
                                 type="text"
                                 value={title.name}
                                 onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, name: e.target.value } : t))}
                                 placeholder="Title name"
+                                disabled={title.isVirtual}
                             />
                             <input
                                 type="text"
                                 value={title.slug || ''}
                                 onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, slug: e.target.value } : t))}
                                 placeholder="Slug (auto if empty)"
+                                disabled={title.isVirtual}
                             />
                             <input
                                 type="text"
                                 value={title.description || ''}
                                 onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, description: e.target.value } : t))}
                                 placeholder="Description"
+                                disabled={title.isVirtual}
                             />
                             <input
                                 type="text"
                                 value={title.color || ''}
                                 onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, color: e.target.value } : t))}
                                 placeholder="Color (hex or css color)"
+                                disabled={title.isVirtual}
                             />
                             <input
                                 type="text"
                                 value={title.gradient || ''}
                                 onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, gradient: e.target.value } : t))}
                                 placeholder="Gradient (ex: linear-gradient(...))"
+                                disabled={title.isVirtual}
                             />
                             <input
                                 type="text"
                                 value={title.effect || ''}
                                 onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, effect: e.target.value } : t))}
                                 placeholder="Effect (future use)"
+                                disabled={title.isVirtual}
                             />
                             <div className="button-group">
                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -231,13 +273,20 @@ const AdminTitlesPage = () => {
                                         type="checkbox"
                                         checked={Boolean(title.isAnimated)}
                                         onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, isAnimated: e.target.checked } : t))}
+                                        disabled={title.isVirtual}
                                     />
                                     Animated Gradient
                                 </label>
                             </div>
                             <div className="button-group">
-                                <button className="success-button" onClick={() => handleUpdateTitle(title)}>Save</button>
-                                <button className="reject-button" onClick={() => handleDeleteTitle(title._id)}>Delete</button>
+                                {title.isVirtual ? (
+                                    <button className="success-button" onClick={() => handleCreateFromPreset(title)}>Create Title</button>
+                                ) : (
+                                    <>
+                                        <button className="success-button" onClick={() => handleUpdateTitle(title)}>Save</button>
+                                        <button className="reject-button" onClick={() => handleDeleteTitle(title._id)}>Delete</button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     ))}
@@ -332,7 +381,7 @@ const AdminTitlesPage = () => {
                         <label>Title</label>
                         <select value={selectedTitleId} onChange={(e) => setSelectedTitleId(e.target.value)}>
                             <option value="">Select a title</option>
-                            {titles.map((t) => (
+                            {grantableTitles.map((t) => (
                                 <option key={t._id} value={t._id}>
                                     {t.name}
                                 </option>

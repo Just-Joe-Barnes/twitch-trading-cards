@@ -27,6 +27,7 @@ const { broadcastNotification, sendNotificationToUser} = require('../../notifica
 const {getStatus, forceResume, resumeQueue, pauseQueue} = require("../services/queueService");
 const {updateCard} = require("../controllers/adminController");
 const { getWeeklyKey } = require('../scripts/periods');
+const ACHIEVEMENTS = require('../../../config/achievements');
 
 const tradeController = require('../controllers/tradeController');
 const {createNotification} = require("../helpers/notificationHelper");
@@ -86,6 +87,46 @@ const slugify = (text) => {
 };
 
 const TITLE_SELECT = 'name slug description color gradient isAnimated effect';
+
+const buildAchievementTitleMap = () => {
+    const map = new Map();
+    ACHIEVEMENTS.forEach((achievement) => {
+        const reward = achievement.reward || {};
+        const rewardTitle = reward.title;
+        const rewardTitleSlug = reward.titleSlug;
+        let titleData = null;
+
+        if (rewardTitle && typeof rewardTitle === 'object') {
+            const name = String(rewardTitle.name || rewardTitle.slug || '').trim();
+            const slug = slugify(rewardTitle.slug || rewardTitle.name || rewardTitleSlug || name);
+            if (!slug) return;
+            titleData = {
+                name: name || slug,
+                slug,
+                description: rewardTitle.description || '',
+                color: rewardTitle.color || '',
+                gradient: rewardTitle.gradient || '',
+                isAnimated: Boolean(rewardTitle.isAnimated),
+                effect: rewardTitle.effect || ''
+            };
+        } else if (typeof rewardTitle === 'string') {
+            const name = rewardTitle.trim();
+            const slug = slugify(rewardTitle);
+            if (!slug) return;
+            titleData = { name: name || slug, slug, description: '', color: '', gradient: '', isAnimated: false, effect: '' };
+        } else if (rewardTitleSlug) {
+            const slug = slugify(rewardTitleSlug);
+            if (!slug) return;
+            titleData = { name: String(rewardTitleSlug).trim() || slug, slug, description: '', color: '', gradient: '', isAnimated: false, effect: '' };
+        }
+
+        if (!titleData || !titleData.slug) return;
+        if (!map.has(titleData.slug)) {
+            map.set(titleData.slug, titleData);
+        }
+    });
+    return map;
+};
 
 router.post('/clear-cards', protect, adminOnly, async (req, res) => {
     const { userId } = req.body;
@@ -762,7 +803,24 @@ router.delete('/achievements/:id', protect, adminOnly, async (req, res) => {
 router.get('/titles', protect, adminOnly, async (req, res) => {
     try {
         const titles = await Title.find().select(TITLE_SELECT).sort({ createdAt: -1 }).lean();
-        res.json({ titles });
+        const titlesBySlug = new Map(
+            titles
+                .filter((title) => title.slug)
+                .map((title) => [title.slug, title])
+        );
+
+        const achievementTitleMap = buildAchievementTitleMap();
+        const missingAchievementTitles = Array.from(achievementTitleMap.values())
+            .filter((title) => !titlesBySlug.has(title.slug))
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((title) => ({
+                ...title,
+                _id: `config:${title.slug}`,
+                isVirtual: true,
+                source: 'achievement'
+            }));
+
+        res.json({ titles: [...titles, ...missingAchievementTitles] });
     } catch (err) {
         console.error('Error fetching titles:', err);
         res.status(500).json({ message: 'Failed to fetch titles' });
