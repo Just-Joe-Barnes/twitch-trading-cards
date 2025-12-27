@@ -147,7 +147,7 @@ const AchievementsPage = () => {
             : { color: title.color || 'inherit' };
         const titleClassName = `reward-title-text${hasGradient ? ' gradient' : ''}${title.isAnimated ? ' animated' : ''}`;
         return (
-            <span className={titleClassName} style={titleStyle}>
+            <span className={titleClassName} style={titleStyle} title={titleName}>
                 {titleName}
             </span>
         );

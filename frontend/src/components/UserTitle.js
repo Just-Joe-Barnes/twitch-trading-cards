@@ -18,6 +18,7 @@ const UserTitle = ({ username, title, className = '', separator = ' ' }) => {
                     <span
                         className={`user-title-text${hasGradient ? ' gradient' : ''}${title?.isAnimated ? ' animated' : ''}`}
                         style={titleStyle}
+                        title={titleName}
                     >
                         {titleName}
                     </span>
