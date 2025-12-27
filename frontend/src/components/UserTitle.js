@@ -15,12 +15,21 @@ const UserTitle = ({ username, title, className = '', separator = ' ' }) => {
             {titleName && (
                 <span className="user-title-badge">
                     <span className="user-title-sep">{separator}</span>
-                    <span
-                        className={`user-title-text${hasGradient ? ' gradient' : ''}${title?.isAnimated ? ' animated' : ''}`}
-                        style={titleStyle}
-                        title={titleName}
-                    >
-                        {titleName}
+                    <span className="user-title-tooltip">
+                        <span
+                            className={`user-title-text${hasGradient ? ' gradient' : ''}${title?.isAnimated ? ' animated' : ''}`}
+                            style={titleStyle}
+                        >
+                            {titleName}
+                        </span>
+                        <span className="user-title-hover">
+                            <span
+                                className={`user-title-text${hasGradient ? ' gradient' : ''}${title?.isAnimated ? ' animated' : ''}`}
+                                style={titleStyle}
+                            >
+                                {titleName}
+                            </span>
+                        </span>
                     </span>
                 </span>
             )}

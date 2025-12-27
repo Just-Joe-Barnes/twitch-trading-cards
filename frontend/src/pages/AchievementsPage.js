@@ -147,8 +147,15 @@ const AchievementsPage = () => {
             : { color: title.color || 'inherit' };
         const titleClassName = `reward-title-text${hasGradient ? ' gradient' : ''}${title.isAnimated ? ' animated' : ''}`;
         return (
-            <span className={titleClassName} style={titleStyle} title={titleName}>
-                {titleName}
+            <span className="reward-title-tooltip">
+                <span className={titleClassName} style={titleStyle}>
+                    {titleName}
+                </span>
+                <span className="reward-title-hover">
+                    <span className={titleClassName} style={titleStyle}>
+                        {titleName}
+                    </span>
+                </span>
             </span>
         );
     };
