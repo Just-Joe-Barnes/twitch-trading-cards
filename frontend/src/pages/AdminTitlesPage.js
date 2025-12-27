@@ -24,9 +24,14 @@ const AdminTitlesPage = () => {
     const [titleSearch, setTitleSearch] = useState('');
     const [titleFilter, setTitleFilter] = useState('all');
     const [expandedTitleIds, setExpandedTitleIds] = useState(() => new Set());
+    const [presetCreateBusy, setPresetCreateBusy] = useState(false);
 
     const grantableTitles = useMemo(
         () => titles.filter((title) => !title.isVirtual),
+        [titles]
+    );
+    const presetTitles = useMemo(
+        () => titles.filter((title) => title.isVirtual),
         [titles]
     );
     const filteredTitles = useMemo(() => {
@@ -160,6 +165,49 @@ const AdminTitlesPage = () => {
         }
     };
 
+    const handleCreateAllPresets = async () => {
+        if (presetTitles.length === 0) {
+            if (window.showToast) {
+                window.showToast('No preset titles to create.', 'info');
+            }
+            return;
+        }
+        if (!window.confirm(`Create ${presetTitles.length} preset titles?`)) {
+            return;
+        }
+
+        setPresetCreateBusy(true);
+        let created = 0;
+        let failed = 0;
+
+        for (const title of presetTitles) {
+            try {
+                await fetchWithAuth('/api/admin/titles', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        name: title.name,
+                        slug: title.slug,
+                        description: title.description || '',
+                        color: title.color || '',
+                        gradient: title.gradient || '',
+                        isAnimated: Boolean(title.isAnimated),
+                        effect: title.effect || ''
+                    })
+                });
+                created += 1;
+            } catch {
+                failed += 1;
+            }
+        }
+
+        if (window.showToast) {
+            window.showToast(`Created ${created} titles. ${failed ? `${failed} failed.` : ''}`.trim(), failed ? 'error' : 'success');
+        }
+
+        await loadData();
+        setPresetCreateBusy(false);
+    };
+
     const filteredUsers = useMemo(() => {
         if (!selectedUser) return [];
         const lower = selectedUser.toLowerCase();
@@ -253,6 +301,13 @@ const AdminTitlesPage = () => {
                                 <option value="created">Created</option>
                                 <option value="presets">Achievement Presets</option>
                             </select>
+                            <button
+                                className="success-button sm"
+                                onClick={handleCreateAllPresets}
+                                disabled={presetCreateBusy || presetTitles.length === 0}
+                            >
+                                {presetCreateBusy ? 'Creating...' : `Create All Presets (${presetTitles.length})`}
+                            </button>
                         </div>
                         <div style={{ marginTop: '0.5rem', opacity: 0.7 }}>
                             Showing {filteredTitles.length} of {titles.length}
