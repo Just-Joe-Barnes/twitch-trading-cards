@@ -21,11 +21,24 @@ const AdminTitlesPage = () => {
     const [selectedTitleId, setSelectedTitleId] = useState('');
     const [setActiveOnGrant, setSetActiveOnGrant] = useState(true);
     const [isUserDropdownVisible, setUserDropdownVisible] = useState(false);
+    const [titleSearch, setTitleSearch] = useState('');
+    const [titleFilter, setTitleFilter] = useState('all');
+    const [expandedTitleIds, setExpandedTitleIds] = useState(() => new Set());
 
     const grantableTitles = useMemo(
         () => titles.filter((title) => !title.isVirtual),
         [titles]
     );
+    const filteredTitles = useMemo(() => {
+        const term = titleSearch.trim().toLowerCase();
+        return titles.filter((title) => {
+            if (titleFilter === 'created' && title.isVirtual) return false;
+            if (titleFilter === 'presets' && !title.isVirtual) return false;
+            if (!term) return true;
+            const haystack = `${title.name || ''} ${title.slug || ''} ${title.description || ''}`.toLowerCase();
+            return haystack.includes(term);
+        });
+    }, [titleFilter, titleSearch, titles]);
 
     const loadData = async () => {
         try {
@@ -82,6 +95,18 @@ const AdminTitlesPage = () => {
                 window.showToast(err.message || 'Failed to delete title.', 'error');
             }
         }
+    };
+
+    const toggleTitleExpanded = (titleId) => {
+        setExpandedTitleIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(titleId)) {
+                next.delete(titleId);
+            } else {
+                next.add(titleId);
+            }
+            return next;
+        });
     };
 
     const handleCreateTitle = async () => {
@@ -214,82 +239,117 @@ const AdminTitlesPage = () => {
             <div className="admin-panel-grid">
                 <section className="section-card">
                     <h2>Titles</h2>
+                    <div className="aa-form-group" style={{ marginBottom: '1rem' }}>
+                        <label>Search / Filter</label>
+                        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                            <input
+                                type="text"
+                                value={titleSearch}
+                                onChange={(e) => setTitleSearch(e.target.value)}
+                                placeholder="Search titles..."
+                            />
+                            <select value={titleFilter} onChange={(e) => setTitleFilter(e.target.value)}>
+                                <option value="all">All</option>
+                                <option value="created">Created</option>
+                                <option value="presets">Achievement Presets</option>
+                            </select>
+                        </div>
+                        <div style={{ marginTop: '0.5rem', opacity: 0.7 }}>
+                            Showing {filteredTitles.length} of {titles.length}
+                        </div>
+                    </div>
                     {titles.length === 0 && <p>No titles yet.</p>}
-                    {titles.map((title) => (
-                        <div key={title._id} style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-dark)', paddingBottom: '1rem' }}>
-                            <div style={{ marginBottom: '0.75rem' }}>
-                                <UserTitle username="Preview" title={title} />
-                                {title.isVirtual && (
-                                    <div style={{ marginTop: '0.35rem', color: 'var(--brand-secondary)', fontSize: '0.85rem' }}>
-                                        Achievement preset (not yet created)
+                    {titles.length > 0 && filteredTitles.length === 0 && <p>No titles match your filter.</p>}
+                    {filteredTitles.map((title) => {
+                        const isExpanded = expandedTitleIds.has(title._id);
+                        return (
+                            <div key={title._id} style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-dark)', paddingBottom: '1rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                                    <div>
+                                        <UserTitle username="Preview" title={title} />
+                                        {title.isVirtual && (
+                                            <div style={{ marginTop: '0.35rem', color: 'var(--brand-secondary)', fontSize: '0.85rem' }}>
+                                                Achievement preset (not yet created)
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                        {title.isVirtual && (
+                                            <button className="success-button sm" onClick={() => handleCreateFromPreset(title)}>
+                                                Create Title
+                                            </button>
+                                        )}
+                                        <button className="secondary-button sm" onClick={() => toggleTitleExpanded(title._id)}>
+                                            {isExpanded ? 'Hide' : 'Edit'}
+                                        </button>
+                                    </div>
+                                </div>
+                                {isExpanded && (
+                                    <div style={{ marginTop: '0.75rem' }}>
+                                        <input
+                                            type="text"
+                                            value={title.name}
+                                            onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, name: e.target.value } : t))}
+                                            placeholder="Title name"
+                                            disabled={title.isVirtual}
+                                        />
+                                        <input
+                                            type="text"
+                                            value={title.slug || ''}
+                                            onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, slug: e.target.value } : t))}
+                                            placeholder="Slug (auto if empty)"
+                                            disabled={title.isVirtual}
+                                        />
+                                        <input
+                                            type="text"
+                                            value={title.description || ''}
+                                            onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, description: e.target.value } : t))}
+                                            placeholder="Description"
+                                            disabled={title.isVirtual}
+                                        />
+                                        <input
+                                            type="text"
+                                            value={title.color || ''}
+                                            onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, color: e.target.value } : t))}
+                                            placeholder="Color (hex or css color)"
+                                            disabled={title.isVirtual}
+                                        />
+                                        <input
+                                            type="text"
+                                            value={title.gradient || ''}
+                                            onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, gradient: e.target.value } : t))}
+                                            placeholder="Gradient (ex: linear-gradient(...))"
+                                            disabled={title.isVirtual}
+                                        />
+                                        <input
+                                            type="text"
+                                            value={title.effect || ''}
+                                            onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, effect: e.target.value } : t))}
+                                            placeholder="Effect (future use)"
+                                            disabled={title.isVirtual}
+                                        />
+                                        <div className="button-group">
+                                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={Boolean(title.isAnimated)}
+                                                    onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, isAnimated: e.target.checked } : t))}
+                                                    disabled={title.isVirtual}
+                                                />
+                                                Animated Gradient
+                                            </label>
+                                        </div>
+                                        {!title.isVirtual && (
+                                            <div className="button-group">
+                                                <button className="success-button" onClick={() => handleUpdateTitle(title)}>Save</button>
+                                                <button className="reject-button" onClick={() => handleDeleteTitle(title._id)}>Delete</button>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
-                            <input
-                                type="text"
-                                value={title.name}
-                                onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, name: e.target.value } : t))}
-                                placeholder="Title name"
-                                disabled={title.isVirtual}
-                            />
-                            <input
-                                type="text"
-                                value={title.slug || ''}
-                                onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, slug: e.target.value } : t))}
-                                placeholder="Slug (auto if empty)"
-                                disabled={title.isVirtual}
-                            />
-                            <input
-                                type="text"
-                                value={title.description || ''}
-                                onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, description: e.target.value } : t))}
-                                placeholder="Description"
-                                disabled={title.isVirtual}
-                            />
-                            <input
-                                type="text"
-                                value={title.color || ''}
-                                onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, color: e.target.value } : t))}
-                                placeholder="Color (hex or css color)"
-                                disabled={title.isVirtual}
-                            />
-                            <input
-                                type="text"
-                                value={title.gradient || ''}
-                                onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, gradient: e.target.value } : t))}
-                                placeholder="Gradient (ex: linear-gradient(...))"
-                                disabled={title.isVirtual}
-                            />
-                            <input
-                                type="text"
-                                value={title.effect || ''}
-                                onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, effect: e.target.value } : t))}
-                                placeholder="Effect (future use)"
-                                disabled={title.isVirtual}
-                            />
-                            <div className="button-group">
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <input
-                                        type="checkbox"
-                                        checked={Boolean(title.isAnimated)}
-                                        onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, isAnimated: e.target.checked } : t))}
-                                        disabled={title.isVirtual}
-                                    />
-                                    Animated Gradient
-                                </label>
-                            </div>
-                            <div className="button-group">
-                                {title.isVirtual ? (
-                                    <button className="success-button" onClick={() => handleCreateFromPreset(title)}>Create Title</button>
-                                ) : (
-                                    <>
-                                        <button className="success-button" onClick={() => handleUpdateTitle(title)}>Save</button>
-                                        <button className="reject-button" onClick={() => handleDeleteTitle(title._id)}>Delete</button>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </section>
 
                 <section className="section-card">
