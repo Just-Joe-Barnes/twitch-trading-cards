@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect} from 'react';
 import {useNavigate, useParams, Link} from 'react-router-dom';
 import BaseCard from '../components/BaseCard';
 import {
@@ -41,8 +41,7 @@ const ProfilePage = () => {
     const [unlockedTitles, setUnlockedTitles] = useState([]);
     const navigate = useNavigate();
     const {username: routeUsername} = useParams();
-    const titleSelectRef = useRef(null);
-    const [isTitleMenuOpen, setIsTitleMenuOpen] = useState(false);
+    const [isTitleModalOpen, setIsTitleModalOpen] = useState(false);
 
     const [xp, setXp] = useState(0);
     const [level, setLevel] = useState(1);
@@ -219,16 +218,18 @@ const ProfilePage = () => {
     };
 
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (titleSelectRef.current && !titleSelectRef.current.contains(event.target)) {
-                setIsTitleMenuOpen(false);
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                setIsTitleModalOpen(false);
             }
         };
-        document.addEventListener('mousedown', handleClickOutside);
+        if (isTitleModalOpen) {
+            document.addEventListener('keydown', handleKeyDown);
+        }
         return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleKeyDown);
         };
-    }, []);
+    }, [isTitleModalOpen]);
 
     const renderTitleLabel = (title) => {
         if (!title) {
@@ -309,54 +310,16 @@ const ProfilePage = () => {
                 {isOwnProfile && (
                     <div className="stat preferred-pack-container">
                         <div>Title</div>
-                        <div className="title-select" ref={titleSelectRef}>
-                            <button
-                                type="button"
-                                className="title-select-toggle"
-                                onClick={() => setIsTitleMenuOpen((prev) => !prev)}
-                                aria-haspopup="listbox"
-                                aria-expanded={isTitleMenuOpen}
-                            >
-                                <span className="title-select-value">
-                                    {renderTitleLabel(selectedTitle)}
-                                </span>
-                                <i className={`fa-solid fa-chevron-${isTitleMenuOpen ? 'up' : 'down'}`}></i>
-                            </button>
-                            {isTitleMenuOpen && (
-                                <div className="title-select-menu" role="listbox">
-                                    <button
-                                        type="button"
-                                        className={`title-select-option${selectedTitle ? '' : ' selected'}`}
-                                        role="option"
-                                        aria-selected={!selectedTitle}
-                                        onClick={() => {
-                                            setIsTitleMenuOpen(false);
-                                            handleTitleChange('');
-                                        }}
-                                    >
-                                        {renderTitleLabel(null)}
-                                    </button>
-                                    {unlockedTitles.map((t) => (
-                                        <button
-                                            key={t._id}
-                                            type="button"
-                                            className={`title-select-option${selectedTitle?._id === t._id ? ' selected' : ''}`}
-                                            role="option"
-                                            aria-selected={selectedTitle?._id === t._id}
-                                            onClick={() => {
-                                                setIsTitleMenuOpen(false);
-                                                handleTitleChange(t._id);
-                                            }}
-                                        >
-                                            {renderTitleLabel(t)}
-                                        </button>
-                                    ))}
-                                    {unlockedTitles.length === 0 && (
-                                        <div className="title-select-empty">No titles unlocked yet.</div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
+                        <button
+                            type="button"
+                            className="title-select-toggle"
+                            onClick={() => setIsTitleModalOpen(true)}
+                        >
+                            <span className="title-select-value">
+                                {renderTitleLabel(selectedTitle)}
+                            </span>
+                            <i className="fa-solid fa-list"></i>
+                        </button>
                     </div>
                 )}
 
@@ -537,6 +500,53 @@ const ProfilePage = () => {
 
                 </div>
             </div>
+
+            {isTitleModalOpen && isOwnProfile && (
+                <div className="title-modal-overlay" onClick={() => setIsTitleModalOpen(false)}>
+                    <div className="title-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="title-modal-header">
+                            <div>
+                                <h2>Choose your title</h2>
+                                <p>These are the titles you have unlocked.</p>
+                            </div>
+                            <button className="secondary-button" onClick={() => setIsTitleModalOpen(false)}>
+                                <i className="fa-solid fa-xmark"></i> Close
+                            </button>
+                        </div>
+
+                        <div className="title-modal-grid">
+                            <button
+                                type="button"
+                                className={`title-modal-option${selectedTitle ? '' : ' selected'}`}
+                                onClick={() => {
+                                    handleTitleChange('');
+                                    setIsTitleModalOpen(false);
+                                }}
+                            >
+                                <div className="title-modal-label">{renderTitleLabel(null)}</div>
+                                <div className="title-modal-desc">Show no title.</div>
+                            </button>
+                            {unlockedTitles.map((t) => (
+                                <button
+                                    key={t._id}
+                                    type="button"
+                                    className={`title-modal-option${selectedTitle?._id === t._id ? ' selected' : ''}`}
+                                    onClick={() => {
+                                        handleTitleChange(t._id);
+                                        setIsTitleModalOpen(false);
+                                    }}
+                                >
+                                    <div className="title-modal-label">{renderTitleLabel(t)}</div>
+                                    {t.description && <div className="title-modal-desc">{t.description}</div>}
+                                </button>
+                            ))}
+                            {unlockedTitles.length === 0 && (
+                                <div className="title-modal-empty">No titles unlocked yet.</div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
