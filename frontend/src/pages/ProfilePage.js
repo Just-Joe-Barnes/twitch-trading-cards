@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {useNavigate, useParams, Link} from 'react-router-dom';
 import BaseCard from '../components/BaseCard';
 import {
@@ -41,6 +41,8 @@ const ProfilePage = () => {
     const [unlockedTitles, setUnlockedTitles] = useState([]);
     const navigate = useNavigate();
     const {username: routeUsername} = useParams();
+    const titleSelectRef = useRef(null);
+    const [isTitleMenuOpen, setIsTitleMenuOpen] = useState(false);
 
     const [xp, setXp] = useState(0);
     const [level, setLevel] = useState(1);
@@ -216,6 +218,38 @@ const ProfilePage = () => {
         }
     };
 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (titleSelectRef.current && !titleSelectRef.current.contains(event.target)) {
+                setIsTitleMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    const renderTitleLabel = (title) => {
+        if (!title) {
+            return <span className="title-select-placeholder">No title</span>;
+        }
+        const titleName = title?.name || title?.slug;
+        if (!titleName) {
+            return <span className="title-select-placeholder">Untitled</span>;
+        }
+        const hasGradient = Boolean(title?.gradient && String(title.gradient).trim());
+        const titleStyle = hasGradient
+            ? { '--title-gradient': title.gradient }
+            : { color: title?.color || 'inherit' };
+        const titleClassName = `title-select-text user-title-text${hasGradient ? ' gradient' : ''}${title?.isAnimated ? ' animated' : ''}`;
+        return (
+            <span className={titleClassName} style={titleStyle}>
+                {titleName}
+            </span>
+        );
+    };
+
     if (loading) {
         return <LoadingSpinner/>;
     }
@@ -275,17 +309,54 @@ const ProfilePage = () => {
                 {isOwnProfile && (
                     <div className="stat preferred-pack-container">
                         <div>Title</div>
-                        <select
-                            value={selectedTitle?._id || ''}
-                            onChange={(e) => handleTitleChange(e.target.value)}
-                        >
-                            <option value="">No title</option>
-                            {unlockedTitles.map((t) => (
-                                <option key={t._id} value={t._id}>
-                                    {t.name}
-                                </option>
-                            ))}
-                        </select>
+                        <div className="title-select" ref={titleSelectRef}>
+                            <button
+                                type="button"
+                                className="title-select-toggle"
+                                onClick={() => setIsTitleMenuOpen((prev) => !prev)}
+                                aria-haspopup="listbox"
+                                aria-expanded={isTitleMenuOpen}
+                            >
+                                <span className="title-select-value">
+                                    {renderTitleLabel(selectedTitle)}
+                                </span>
+                                <i className={`fa-solid fa-chevron-${isTitleMenuOpen ? 'up' : 'down'}`}></i>
+                            </button>
+                            {isTitleMenuOpen && (
+                                <div className="title-select-menu" role="listbox">
+                                    <button
+                                        type="button"
+                                        className={`title-select-option${selectedTitle ? '' : ' selected'}`}
+                                        role="option"
+                                        aria-selected={!selectedTitle}
+                                        onClick={() => {
+                                            setIsTitleMenuOpen(false);
+                                            handleTitleChange('');
+                                        }}
+                                    >
+                                        {renderTitleLabel(null)}
+                                    </button>
+                                    {unlockedTitles.map((t) => (
+                                        <button
+                                            key={t._id}
+                                            type="button"
+                                            className={`title-select-option${selectedTitle?._id === t._id ? ' selected' : ''}`}
+                                            role="option"
+                                            aria-selected={selectedTitle?._id === t._id}
+                                            onClick={() => {
+                                                setIsTitleMenuOpen(false);
+                                                handleTitleChange(t._id);
+                                            }}
+                                        >
+                                            {renderTitleLabel(t)}
+                                        </button>
+                                    ))}
+                                    {unlockedTitles.length === 0 && (
+                                        <div className="title-select-empty">No titles unlocked yet.</div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
 

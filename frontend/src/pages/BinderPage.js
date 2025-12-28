@@ -227,6 +227,7 @@ const CardPickerModal = ({
                                     <option value="acquiredAt">Recent</option>
                                     <option value="name">Name</option>
                                     <option value="rarity">Rarity</option>
+                                    <option value="mintNumber">Mint #</option>
                                 </select>
                                 <div className="checkbox-group button-row">
                                     <div className="checkbox-wrapper" style={{padding:'10px', cursor:'pointer'}}>
@@ -296,6 +297,175 @@ const CardPickerModal = ({
     );
 };
 
+const BulkFillModal = ({
+    onConfirm,
+    onClose,
+    collectionOwner,
+    loggedInUser,
+    usedCardIds,
+    isMobile,
+}) => {
+    const [allCards, setAllCards] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
+    const [orderMode, setOrderMode] = useState('mint');
+    const [selectedName, setSelectedName] = useState('');
+
+    useEffect(() => {
+        const fetchCollectionData = async () => {
+            try {
+                setLoading(true);
+                const identifier = collectionOwner || loggedInUser;
+                if (identifier) {
+                    const data = await fetchUserCollection(identifier);
+                    if (data.cards) {
+                        setAllCards(data.cards);
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCollectionData();
+    }, [collectionOwner, loggedInUser]);
+
+    const groupedCards = useMemo(() => {
+        const grouped = new Map();
+        allCards.forEach((card) => {
+            const name = card?.name ? String(card.name).trim() : '';
+            if (!name) return;
+            const entry = grouped.get(name) || {
+                name,
+                cards: [],
+                availableCards: [],
+                previewCard: card,
+            };
+            const cardId = card?._id ? String(card._id) : null;
+            entry.cards.push(card);
+            if (cardId && !usedCardIds?.has(cardId)) {
+                entry.availableCards.push(card);
+            }
+            if (!entry.previewCard) {
+                entry.previewCard = card;
+            }
+            grouped.set(name, entry);
+        });
+        return Array.from(grouped.values()).sort((a, b) => a.name.localeCompare(b.name));
+    }, [allCards, usedCardIds]);
+
+    const filteredGroups = useMemo(() => {
+        if (!search) return groupedCards;
+        const term = search.toLowerCase();
+        return groupedCards.filter((group) => group.name.toLowerCase().includes(term));
+    }, [groupedCards, search]);
+
+    useEffect(() => {
+        if (selectedName && !groupedCards.some((group) => group.name === selectedName)) {
+            setSelectedName('');
+        }
+    }, [groupedCards, selectedName]);
+
+    const selectedGroup = useMemo(
+        () => groupedCards.find((group) => group.name === selectedName) || null,
+        [groupedCards, selectedName]
+    );
+
+    if (loading) return <LoadingSpinner/>;
+
+    return (
+        <div className="modal-overlay binder-modal" style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(10, 10, 10, 0.95)', zIndex: 2000, display: 'flex',
+            flexDirection: 'column', padding: isMobile ? '12px' : '20px', overflowY: 'auto', backdropFilter: 'blur(5px)'
+        }}>
+            <div className="modal-content bulk-fill-content" style={{
+                backgroundColor: '#1e1e1e', borderRadius: isMobile ? '16px' : '12px',
+                padding: isMobile ? '16px' : '25px', margin: isMobile ? '0' : 'auto', maxWidth: isMobile ? '100%' : '1200px', width: '100%',
+                maxHeight: isMobile ? '88vh' : '90vh', overflowY: 'scroll',
+                border: '1px solid #333',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.8)'
+            }}>
+                <div className="bulk-fill-header">
+                    <h2>Bulk Fill Binder</h2>
+                    <button onClick={onClose} className="secondary-button" style={{width: isMobile ? '100%' : 'auto'}}>
+                        <i className="fa-solid fa-xmark"></i> Close
+                    </button>
+                </div>
+
+                <p className="bulk-fill-help">
+                    Pick a card and we will fill every empty slot in your binder using available copies.
+                </p>
+
+                <div className="bulk-fill-controls">
+                    <input
+                        type="text"
+                        placeholder="Search cards..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="filter-input"
+                    />
+                    <select value={orderMode} onChange={(e) => setOrderMode(e.target.value)} className="filter-select">
+                        <option value="mint">Mint order</option>
+                        <option value="rarity">Rarity order</option>
+                    </select>
+                </div>
+
+                <div className="cards-grid mini bulk-fill-grid">
+                    {filteredGroups.map((group) => (
+                        <div
+                            key={group.name}
+                            className={`card-item bulk-fill-item${selectedName === group.name ? ' selected' : ''}`}
+                            onClick={() => setSelectedName(group.name)}
+                        >
+                            <BaseCard
+                                name={group.previewCard?.name}
+                                image={group.previewCard?.imageUrl}
+                                rarity={group.previewCard?.rarity}
+                                description={group.previewCard?.flavorText}
+                                mintNumber={group.previewCard?.mintNumber}
+                                modifier={group.previewCard?.modifier}
+                                grade={group.previewCard?.grade}
+                                slabbed={group.previewCard?.slabbed}
+                                miniCard={true}
+                                inspectOnClick={false}
+                                interactive={!isMobile}
+                            />
+                            <div className="bulk-fill-meta">
+                                <div className="bulk-fill-name">{group.name}</div>
+                                <div className={`bulk-fill-count${group.availableCards.length === 0 ? ' empty' : ''}`}>
+                                    {group.availableCards.length} available
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                {filteredGroups.length === 0 && <p style={{textAlign:'center', padding:'20px'}}>No cards found.</p>}
+
+                <div className="bulk-fill-footer">
+                    <div className="bulk-fill-summary">
+                        {selectedGroup
+                            ? `${selectedGroup.availableCards.length} copies available`
+                            : 'Select a card to continue.'}
+                    </div>
+                    <button
+                        type="button"
+                        className="primary-button"
+                        disabled={!selectedGroup || selectedGroup.availableCards.length === 0}
+                        onClick={() => {
+                            if (!selectedGroup) return;
+                            onConfirm(selectedGroup, orderMode);
+                        }}
+                    >
+                        Fill binder
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const BinderPage = () => {
     const {username: collectionOwner} = useParams();
     const [loggedInUser, setLoggedInUser] = useState(null);
@@ -304,6 +474,7 @@ const BinderPage = () => {
     const [pages, setPages] = useState(createDefaultPages());
     const [currentSpreadIndex, setCurrentSpreadIndex] = useState(-1);
     const [pickingSlot, setPickingSlot] = useState(null);
+    const [bulkFillOpen, setBulkFillOpen] = useState(false);
     const [limitedCards, setLimitedCards] = useState([]);
     const [binderLoading, setBinderLoading] = useState(true);
     const [binderReady, setBinderReady] = useState(false);
@@ -568,6 +739,78 @@ const BinderPage = () => {
         });
         setPages(updatedPages);
     }, [getVisiblePageIndexes, pages]);
+
+    const handleBulkFill = (group, orderMode) => {
+        if (!isOwner || !group) return;
+        const availableCards = (group.cards || []).filter((card) => {
+            const cardId = card?._id || card?.cardId;
+            if (!cardId) return false;
+            return !usedCardIds.has(String(cardId));
+        });
+
+        if (availableCards.length === 0) {
+            if (window.showToast) {
+                window.showToast(`No available copies of ${group.name} to fill.`, 'info');
+            }
+            return;
+        }
+
+        const emptySlots = [];
+        pages.forEach((page, pageIndex) => {
+            page.forEach((slot, slotIndex) => {
+                if (!slot) emptySlots.push({ pageIndex, slotIndex });
+            });
+        });
+
+        if (emptySlots.length === 0) {
+            if (window.showToast) {
+                window.showToast('No empty slots to fill.', 'info');
+            }
+            return;
+        }
+
+        const getMintValue = (value) => {
+            const parsed = Number.parseInt(value, 10);
+            return Number.isFinite(parsed) ? parsed : Number.MAX_SAFE_INTEGER;
+        };
+        const getRarityIndex = (rarity) => {
+            const index = rarities.findIndex((r) => r.name.toLowerCase() === String(rarity).toLowerCase());
+            return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+        };
+
+        const sortedCards = [...availableCards].sort((a, b) => {
+            if (orderMode === 'rarity') {
+                const rarityDelta = getRarityIndex(a.rarity) - getRarityIndex(b.rarity);
+                if (rarityDelta !== 0) return rarityDelta;
+            }
+            return getMintValue(a.mintNumber) - getMintValue(b.mintNumber);
+        });
+
+        const fillCount = Math.min(sortedCards.length, emptySlots.length);
+        const updatedPages = pages.map((page) => page.map((slot) => (slot ? { ...slot } : null)));
+
+        for (let i = 0; i < fillCount; i += 1) {
+            const { pageIndex, slotIndex } = emptySlots[i];
+            const card = sortedCards[i];
+            const cardId = card?._id || card?.cardId || null;
+            updatedPages[pageIndex][slotIndex] = {
+                ...card,
+                cardId,
+                locked: false,
+            };
+        }
+
+        setPages(updatedPages);
+        setBulkFillOpen(false);
+
+        if (window.showToast) {
+            const remaining = emptySlots.length - fillCount;
+            const message = remaining > 0
+                ? `Filled ${fillCount} slots with ${group.name}. ${remaining} slots left empty.`
+                : `Filled ${fillCount} slots with ${group.name}.`;
+            window.showToast(message, remaining > 0 ? 'info' : 'success');
+        }
+    };
 
     // --- Slot Interaction Logic ---
 
@@ -1011,6 +1254,16 @@ const BinderPage = () => {
                     <button
                         type="button"
                         className="action-btn"
+                        onClick={() => {
+                            setPickingSlot(null);
+                            setBulkFillOpen(true);
+                        }}
+                    >
+                        Bulk fill
+                    </button>
+                    <button
+                        type="button"
+                        className="action-btn"
                         onClick={() => setLockStateForVisiblePages(true)}
                     >
                         Lock all on page
@@ -1029,6 +1282,17 @@ const BinderPage = () => {
                 <CardPickerModal
                     onClose={() => setPickingSlot(null)}
                     onSelectCard={handleCardSelected}
+                    collectionOwner={collectionOwner}
+                    loggedInUser={loggedInUser}
+                    usedCardIds={usedCardIds}
+                    isMobile={isMobile}
+                />
+            )}
+
+            {bulkFillOpen && isOwner && (
+                <BulkFillModal
+                    onClose={() => setBulkFillOpen(false)}
+                    onConfirm={handleBulkFill}
                     collectionOwner={collectionOwner}
                     loggedInUser={loggedInUser}
                     usedCardIds={usedCardIds}
