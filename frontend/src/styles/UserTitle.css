@@ -42,6 +42,103 @@
   animation: title-gradient-shift 5s ease infinite;
 }
 
+:is(.user-title-text, .reward-title-text).title-effect {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+:is(.user-title-text, .reward-title-text).title-effect-bronze {
+  background-image:
+    linear-gradient(135deg, #2b1507 0%, #6b3415 20%, #b2652c 38%, #f1b16d 52%, #b06025 68%, #5b2a0d 84%, #241005 100%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0 2px, rgba(0, 0, 0, 0.2) 2px 4px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(0, 0, 0, 0.25));
+  background-size: 220% 220%, 8px 8px, 100% 100%;
+  background-blend-mode: screen, overlay, multiply;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55), 0 -1px 2px rgba(255, 220, 170, 0.45);
+}
+
+:is(.user-title-text, .reward-title-text).title-effect-silver {
+  background-image:
+    linear-gradient(120deg, #1f2328 0%, #5f646a 22%, #cfd4da 45%, #f8fbff 55%, #9ca3ac 72%, #32373d 100%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.28) 0 1px, rgba(0, 0, 0, 0.2) 1px 2px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(0, 0, 0, 0.15));
+  background-size: 240% 240%, 6px 6px, 100% 100%;
+  background-blend-mode: screen, overlay, soft-light;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 0 8px rgba(255, 255, 255, 0.35);
+}
+
+:is(.user-title-text, .reward-title-text).title-effect-gold {
+  background-image:
+    linear-gradient(110deg, #2b1600 0%, #7c4d00 18%, #d6a12a 40%, #fff0a3 55%, #d09307 70%, #5a3200 100%),
+    repeating-linear-gradient(100deg, rgba(255, 255, 255, 0.22) 0 2px, rgba(0, 0, 0, 0.18) 2px 4px),
+    radial-gradient(circle at 25% 30%, rgba(255, 255, 255, 0.7), transparent 45%);
+  background-size: 240% 240%, 10px 10px, 160% 160%;
+  background-blend-mode: screen, overlay, screen;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 0 10px rgba(255, 205, 72, 0.35);
+}
+
+:is(.user-title-text, .reward-title-text).title-effect-platinum {
+  background-image:
+    linear-gradient(120deg, #171b22 0%, #4f5a66 22%, #c2ccd6 45%, #f5f8fb 56%, #9aa7b7 72%, #313a45 100%),
+    linear-gradient(45deg, rgba(255, 255, 255, 0.25), rgba(60, 100, 140, 0.12)),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.2) 0 3px, rgba(0, 0, 0, 0.2) 3px 6px);
+  background-size: 240% 240%, 200% 200%, 10px 10px;
+  background-blend-mode: screen, soft-light, overlay;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4), 0 0 8px rgba(140, 200, 255, 0.35);
+}
+
+:is(.user-title-text, .reward-title-text).title-effect-fire {
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(255, 230, 170, 0.95), transparent 40%),
+    radial-gradient(circle at 80% 20%, rgba(255, 90, 0, 0.85), transparent 45%),
+    linear-gradient(180deg, #240000 0%, #6b1600 25%, #c73a00 55%, #ff8a00 75%, #ffd27a 100%);
+  background-size: 200% 200%, 200% 200%, 100% 100%;
+  background-blend-mode: screen, screen, normal;
+  text-shadow: 0 0 6px rgba(255, 120, 0, 0.6), 0 0 14px rgba(255, 60, 0, 0.45);
+  filter: drop-shadow(0 0 8px rgba(255, 130, 0, 0.45));
+}
+
+:is(.user-title-text, .reward-title-text).title-effect-opal {
+  background-image:
+    conic-gradient(from 0deg, #ffe4f7, #b7f0ff, #c3ffd1, #fff3b2, #d7c5ff, #ffe4f7),
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.85), transparent 45%),
+    radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.6), transparent 50%);
+  background-size: 260% 260%, 200% 200%, 200% 200%;
+  background-blend-mode: screen, soft-light, screen;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3), 0 0 12px rgba(255, 255, 255, 0.35);
+}
+
+:is(.user-title-text, .reward-title-text).title-effect-emerald {
+  background-image:
+    linear-gradient(135deg, #02140a 0%, #0d3d25 22%, #1b7f4c 45%, #35db83 62%, #1b7f4c 78%, #062314 100%),
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.55), transparent 45%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.18) 0 2px, rgba(0, 0, 0, 0.2) 2px 4px);
+  background-size: 220% 220%, 200% 200%, 8px 8px;
+  background-blend-mode: screen, soft-light, overlay;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5), 0 0 10px rgba(64, 255, 180, 0.35);
+}
+
+:is(.user-title-text, .reward-title-text).animated.title-effect-bronze,
+:is(.user-title-text, .reward-title-text).animated.title-effect-silver,
+:is(.user-title-text, .reward-title-text).animated.title-effect-gold,
+:is(.user-title-text, .reward-title-text).animated.title-effect-platinum {
+  animation: title-metal-sheen 4.8s linear infinite;
+}
+
+:is(.user-title-text, .reward-title-text).animated.title-effect-fire {
+  animation: title-fire-flicker 2.2s ease-in-out infinite;
+}
+
+:is(.user-title-text, .reward-title-text).animated.title-effect-opal {
+  animation: title-opal-shift 5.5s ease-in-out infinite;
+}
+
+:is(.user-title-text, .reward-title-text).animated.title-effect-emerald {
+  animation: title-emerald-glint 4.6s ease-in-out infinite;
+}
+
 .user-title-tooltip {
   position: relative;
   display: inline-flex;
@@ -86,5 +183,71 @@
   }
   100% {
     background-position: 0% 50%;
+  }
+}
+
+@keyframes title-metal-sheen {
+  0% {
+    background-position: 0% 40%, 0 0, 0 0;
+  }
+  50% {
+    background-position: 100% 60%, 0 0, 0 0;
+  }
+  100% {
+    background-position: 0% 40%, 0 0, 0 0;
+  }
+}
+
+@keyframes title-fire-flicker {
+  0% {
+    background-position: 0% 60%, 100% 40%, 0 0;
+    filter: drop-shadow(0 0 8px rgba(255, 130, 0, 0.45));
+  }
+  50% {
+    background-position: 100% 40%, 0% 60%, 0 0;
+    filter: drop-shadow(0 0 14px rgba(255, 170, 0, 0.55));
+  }
+  100% {
+    background-position: 0% 60%, 100% 40%, 0 0;
+    filter: drop-shadow(0 0 8px rgba(255, 130, 0, 0.45));
+  }
+}
+
+@keyframes title-opal-shift {
+  0% {
+    background-position: 0% 50%, 30% 30%, 70% 70%;
+    filter: hue-rotate(0deg) saturate(1.05);
+  }
+  50% {
+    background-position: 100% 50%, 70% 30%, 30% 70%;
+    filter: hue-rotate(14deg) saturate(1.2);
+  }
+  100% {
+    background-position: 0% 50%, 30% 30%, 70% 70%;
+    filter: hue-rotate(0deg) saturate(1.05);
+  }
+}
+
+@keyframes title-emerald-glint {
+  0% {
+    background-position: 0% 50%, 20% 20%, 0 0;
+  }
+  50% {
+    background-position: 100% 50%, 80% 20%, 0 0;
+  }
+  100% {
+    background-position: 0% 50%, 20% 20%, 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.user-title-text, .reward-title-text).animated.title-effect-bronze,
+  :is(.user-title-text, .reward-title-text).animated.title-effect-silver,
+  :is(.user-title-text, .reward-title-text).animated.title-effect-gold,
+  :is(.user-title-text, .reward-title-text).animated.title-effect-platinum,
+  :is(.user-title-text, .reward-title-text).animated.title-effect-fire,
+  :is(.user-title-text, .reward-title-text).animated.title-effect-opal,
+  :is(.user-title-text, .reward-title-text).animated.title-effect-emerald {
+    animation: none;
   }
 }

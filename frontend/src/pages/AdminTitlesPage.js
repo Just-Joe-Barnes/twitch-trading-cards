@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { fetchWithAuth } from '../utils/api';
+import { TITLE_EFFECT_OPTIONS } from '../utils/titleEffects';
 import UserTitle from '../components/UserTitle';
 import '../styles/AdminActions.css';
 
@@ -380,13 +381,17 @@ const AdminTitlesPage = () => {
                                             placeholder="Gradient (ex: linear-gradient(...))"
                                             disabled={title.isVirtual}
                                         />
-                                        <input
-                                            type="text"
+                                        <select
                                             value={title.effect || ''}
                                             onChange={(e) => setTitles((prev) => prev.map((t) => t._id === title._id ? { ...t, effect: e.target.value } : t))}
-                                            placeholder="Effect (future use)"
                                             disabled={title.isVirtual}
-                                        />
+                                        >
+                                            {TITLE_EFFECT_OPTIONS.map((option) => (
+                                                <option key={option.value || 'none'} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
                                         <div className="button-group">
                                             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 <input
@@ -447,12 +452,16 @@ const AdminTitlesPage = () => {
                         onChange={(e) => setNewTitle({ ...newTitle, gradient: e.target.value })}
                         placeholder="Gradient (ex: linear-gradient(...))"
                     />
-                    <input
-                        type="text"
+                    <select
                         value={newTitle.effect}
                         onChange={(e) => setNewTitle({ ...newTitle, effect: e.target.value })}
-                        placeholder="Effect (future use)"
-                    />
+                    >
+                        {TITLE_EFFECT_OPTIONS.map((option) => (
+                            <option key={option.value || 'none'} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
                     <div className="button-group">
                         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <input

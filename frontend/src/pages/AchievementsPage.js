@@ -1,5 +1,6 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {fetchAchievements, claimAchievement, fetchFeaturedAchievements, updateFeaturedAchievements} from '../utils/api';
+import { normalizeTitleEffect } from '../utils/titleEffects';
 import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/AchievementsPage.css';
 
@@ -142,10 +143,12 @@ const AchievementsPage = () => {
         const titleName = title.name || title.slug;
         if (!titleName) return null;
         const hasGradient = Boolean(title.gradient && String(title.gradient).trim());
+        const effectSlug = normalizeTitleEffect(title?.effect);
+        const effectClass = effectSlug ? ` title-effect title-effect-${effectSlug}` : '';
         const titleStyle = hasGradient
             ? { '--title-gradient': title.gradient }
             : { color: title.color || 'inherit' };
-        const titleClassName = `reward-title-text${hasGradient ? ' gradient' : ''}${title.isAnimated ? ' animated' : ''}`;
+        const titleClassName = `reward-title-text${hasGradient ? ' gradient' : ''}${title.isAnimated ? ' animated' : ''}${effectClass}`;
         return (
             <span className="reward-title-tooltip">
                 <span className={titleClassName} style={titleStyle}>

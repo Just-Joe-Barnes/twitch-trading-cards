@@ -14,6 +14,7 @@ import {
     updatePreferredPack,
     updateSelectedTitle,
 } from '../utils/api';
+import { normalizeTitleEffect } from '../utils/titleEffects';
 import LoadingSpinner from '../components/LoadingSpinner';
 import UserTitle from '../components/UserTitle';
 import '../styles/ProfilePage.css';
@@ -240,10 +241,12 @@ const ProfilePage = () => {
             return <span className="title-select-placeholder">Untitled</span>;
         }
         const hasGradient = Boolean(title?.gradient && String(title.gradient).trim());
+        const effectSlug = normalizeTitleEffect(title?.effect);
+        const effectClass = effectSlug ? ` title-effect title-effect-${effectSlug}` : '';
         const titleStyle = hasGradient
             ? { '--title-gradient': title.gradient }
             : { color: title?.color || 'inherit' };
-        const titleClassName = `title-select-text user-title-text${hasGradient ? ' gradient' : ''}${title?.isAnimated ? ' animated' : ''}`;
+        const titleClassName = `title-select-text user-title-text${hasGradient ? ' gradient' : ''}${title?.isAnimated ? ' animated' : ''}${effectClass}`;
         return (
             <span className={titleClassName} style={titleStyle}>
                 {titleName}
