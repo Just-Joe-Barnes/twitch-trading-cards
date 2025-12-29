@@ -12,7 +12,8 @@ const offerSchema = new mongoose.Schema({
     slabbed: { type: Boolean, default: false },
     flavorText: { type: String },
     // Optional modifier information for the offered card
-    modifier: { type: mongoose.Schema.Types.Mixed, default: null }
+    modifier: { type: mongoose.Schema.Types.Mixed, default: null },
+    gameTags: { type: [String], default: [] }
   }],
   offeredPacks: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
@@ -30,7 +31,8 @@ const marketListingSchema = new mongoose.Schema({
     slabbed: { type: Boolean, default: false },
     flavorText: { type: String },
     // Include modifier details if present on the card being listed
-    modifier: { type: mongoose.Schema.Types.Mixed, default: null }
+    modifier: { type: mongoose.Schema.Types.Mixed, default: null },
+    gameTags: { type: [String], default: [] }
   },
   createdAt: { type: Date, default: Date.now },
   status: {

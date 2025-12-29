@@ -27,6 +27,7 @@ router.post('/listings', protect, sensitiveLimiter, async (req, res) => {
             modifier: Joi.any().optional(),
             lore: Joi.string().allow('', null),
             loreAuthor: Joi.string().allow('', null),
+            gameTags: Joi.array().items(Joi.string()).optional(),
         });
 
         const { error } = cardSchema.validate(req.body.card);
@@ -235,6 +236,7 @@ router.post('/listings/:id/offers', protect, sensitiveLimiter, async (req, res) 
                     modifier: Joi.any().optional(),
                     lore: Joi.string().allow('', null),
                     loreAuthor: Joi.string().allow('', null),
+                    gameTags: Joi.array().items(Joi.string()).optional(),
                 })
             ).required(),
             offeredPacks: Joi.number().min(0).required()
