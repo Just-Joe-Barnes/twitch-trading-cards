@@ -25,6 +25,10 @@ const AdminTitlesPage = () => {
     const [titleFilter, setTitleFilter] = useState('all');
     const [expandedTitleIds, setExpandedTitleIds] = useState(() => new Set());
     const [presetCreateBusy, setPresetCreateBusy] = useState(false);
+    const previewTitle = {
+        ...newTitle,
+        name: newTitle.name.trim() || newTitle.slug.trim() || 'Untitled'
+    };
 
     const grantableTitles = useMemo(
         () => titles.filter((title) => !title.isVirtual),
@@ -409,6 +413,10 @@ const AdminTitlesPage = () => {
 
                 <section className="section-card">
                     <h2>Add Title</h2>
+                    <div style={{ marginBottom: '0.75rem' }}>
+                        <div style={{ opacity: 0.7, fontSize: '0.85rem', marginBottom: '0.35rem' }}>Preview</div>
+                        <UserTitle username="Preview" title={previewTitle} />
+                    </div>
                     <input
                         type="text"
                         value={newTitle.name}
