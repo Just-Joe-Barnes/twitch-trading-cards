@@ -488,4 +488,79 @@ router.get('/redeem-pack', validateApiKey, async (req, res) => {
     }
 });
 
+router.post('/webhook', validateApiKey, async (req, res) => {
+    let streamerUser;
+    try {
+        const { streamerid } = req.headers;
+        const payload = req.body;
+
+        if (streamerid) {
+            streamerUser = await User.findOne({ twitchId: streamerid });
+
+            if (!streamerUser && /^[0-9a-fA-F]{24}$/.test(streamerid)) {
+                streamerUser = await User.findOne({ _id: streamerid });
+            }
+        }
+
+        await createLogEntry(streamerUser, 'EVENTFLOW_ROUTE_LOG', JSON.stringify(payload, null, 2));
+
+        const { eventType } = payload;
+
+        if (eventType === 'subscribe') {
+            const { twitchUserId, tier, isGift } = payload;
+            const packsToAward = getPacksPerTier(tier);
+            // const subscriber = await addPacksToUser(twitchUserId, packsToAward);
+            // await updatePeriodCounters(1, twitchUserId);
+
+            if (subscriber) {
+                await createLogEntry(streamerUser, 'EVENTFLOW_ROUTE_REDEMPTION', `User ${subscriber.username} (ID: ${twitchUserId}) subscribed (Tier ${tier}) and received ${packsToAward} pack(s).`);
+            } else {
+                await createLogEntry(streamerUser, 'ERROR_EVENTFLOW_ROUTE_REDEMPTION', `User with Twitch ID ${twitchUserId} not found for subscription award. They would have been rewarded ${packsToAward} for tier ${tier}.`);
+            }
+        } else if (eventType === 'gift_sub') {
+            const { twitchUserId, quantity, tier, isAnonymous } = payload;
+            const packsPerTier = getPacksPerTier(tier);
+            const totalPacks = packsPerTier * quantity;
+
+            // const gifter = await addPacksToUser(twitchUserId, totalPacks);
+
+            if (gifter) {
+                await createLogEntry(streamerUser, 'EVENTFLOW_ROUTE_REDEMPTION', `User ${gifter.username} (ID: ${twitchUserId}) gifted ${quantity} subs (Tier ${tier}) and received ${totalPacks} pack(s).`);
+            } else {
+                 await createLogEntry(streamerUser, 'EVENTFLOW_ROUTE_REDEMPTION', `Anonymous/Unknown user (ID: ${twitchUserId}) gifted ${quantity} subs. No packs awarded to gifter. They would have been rewarded ${packsToAward} for tier ${tier}.`);
+            }
+        } else if (eventType === 'redeem') {
+             if (payload.rewardTitle === "Rush Pack") {
+                const userId = payload.twitchUserId;
+                const redeemer = await User.findOne({ twitchId: userId }).populate('preferredPack');
+
+                if (redeemer) {
+                    const defaultPackId = await getDefaultPackId();
+                    const templateId = redeemer.preferredPack?._id || defaultPackId;
+
+                    if (templateId) {
+                        // await addToQueue({
+                        //     streamerDbId: streamerUser ? streamerUser._id : null,
+                        //     redeemer: redeemer,
+                        //     templateId: templateId
+                        // });
+                        await createLogEntry(streamerUser, 'EVENTFLOW_ROUTE_REDEMPTION', `User ${redeemer.username} redeemed a Rush Pack.`);
+                    } else {
+                         await createLogEntry(streamerUser, 'ERROR_EVENTFLOW_ROUTE_REDEMPTION', 'Default pack not configured for Rush Pack redemption.');
+                    }
+                } else {
+                    await createLogEntry(streamerUser, 'ERROR_EVENTFLOW_ROUTE_REDEMPTION', `User with Twitch ID ${userId} not found for Rush Pack redemption.`);
+                }
+            }
+        } else if (eventType === 'cheer') {
+             await createLogEntry(streamerUser, 'EVENTFLOW_ROUTE_LOG', `Cheer received from ${payload.twitchUserName}: ${payload.bits} bits.`);
+        }
+
+        return res.status(200).json({ success: true, message: 'Payload received and processed.' });
+    } catch (error) {
+        console.error('Error in /webhook:', error);
+        return res.status(500).json({ message: 'An internal error occurred.' });
+    }
+});
+
 module.exports = router;
