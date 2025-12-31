@@ -66,6 +66,7 @@ const CardPickerModal = ({
     const [sortOption, setSortOption] = useState('acquiredAt');
     const [order, setOrder] = useState('desc');
     const [selectedRarity, setSelectedRarity] = useState('');
+    const [showModifiedOnly, setShowModifiedOnly] = useState(false);
 
     const modifierNames = useMemo(() =>
             modifiers.filter(m => m.name !== 'None').map(m => m.name.toLowerCase())
@@ -146,6 +147,10 @@ const CardPickerModal = ({
             );
         }
 
+        if (showModifiedOnly) {
+            currentFilteredCards = currentFilteredCards.filter((card) => Boolean(card.modifier));
+        }
+
         if (sortOption) {
             currentFilteredCards.sort((a, b) => {
                 let result = 0;
@@ -169,7 +174,7 @@ const CardPickerModal = ({
         }
 
         setFilteredCards(currentFilteredCards);
-    }, [allCards, search, selectedRarity, limitedCards, sortOption, order, getNameForSort]);
+    }, [allCards, search, selectedRarity, showModifiedOnly, limitedCards, sortOption, order, getNameForSort]);
 
     const handleRarityChange = (rarityName) => {
         const normalizedRarityName = rarityName.toLowerCase();
@@ -233,6 +238,11 @@ const CardPickerModal = ({
                                     <div className="checkbox-wrapper" style={{padding:'10px', cursor:'pointer'}}>
                                         <label onClick={() => setOrder(prev => prev === 'asc' ? 'desc' : 'asc')} style={{cursor:'pointer'}}>
                                             <i className={`fa-regular fa-arrow-${order === 'asc' ? 'down' : 'up'}-a-z`}></i> {order === 'asc' ? 'Asc' : 'Desc'}
+                                        </label>
+                                    </div>
+                                    <div className="checkbox-wrapper" style={{padding:'10px', cursor:'pointer'}}>
+                                        <label onClick={() => setShowModifiedOnly(prev => !prev)} style={{cursor:'pointer'}} title="Show only modified cards">
+                                            <i className={showModifiedOnly ? 'fa-solid fa-square-check' : 'fa-regular fa-square'}></i> Modified
                                         </label>
                                     </div>
                                 </div>
@@ -486,6 +496,7 @@ const BinderPage = () => {
     const [draggedItem, setDraggedItem] = useState(null); // { pageIndex, slotIndex, cardData }
     const [dragOverSlot, setDragOverSlot] = useState(null); // { pageIndex, slotIndex }
     const dragTimeoutRef = useRef(null);
+    const dragEdgeRef = useRef({ direction: null, triggered: false });
     const saveTimeoutRef = useRef(null);
     const initialLoadRef = useRef(true);
     const touchStartRef = useRef(null);
@@ -893,6 +904,14 @@ const BinderPage = () => {
 
     // --- Drag and Drop Handlers ---
 
+    const clearEdgeDrag = () => {
+        if (dragTimeoutRef.current) {
+            clearTimeout(dragTimeoutRef.current);
+            dragTimeoutRef.current = null;
+        }
+        dragEdgeRef.current = { direction: null, triggered: false };
+    };
+
     const handleDragStart = (e, pageIndex, slotIndex) => {
         if (!isOwner) {
             e.preventDefault();
@@ -918,6 +937,12 @@ const BinderPage = () => {
         e.dataTransfer.setDragImage(img, 0, 0);
     };
 
+    const handleDragEnd = () => {
+        clearEdgeDrag();
+        setDragOverSlot(null);
+        setDraggedItem(null);
+    };
+
     const handleDragOver = (e, pageIndex, slotIndex) => {
         e.preventDefault();
         setDragOverSlot({ pageIndex: pageIndex, slotIndex });
@@ -925,6 +950,7 @@ const BinderPage = () => {
 
     const handleDrop = (e, targetPageIndex, targetSlotIndex) => {
         e.preventDefault();
+        clearEdgeDrag();
         if (!isOwner) {
             setDraggedItem(null);
             return;
@@ -961,9 +987,19 @@ const BinderPage = () => {
     // --- Edge Navigation Drag Logic ---
 
     const handleEdgeDragEnter = (direction) => {
-        if (!isOwner || !draggedItem || isCoverView) return;
+        if (!isOwner || !draggedItem) return;
+        const pageIncrement = isMobile ? 1 : 2;
+        const canGoNext = isCoverView || currentSpreadIndex + pageIncrement < pages.length;
+        const canGoPrev = !isCoverView;
+        if (direction === 'next' && !canGoNext) return;
+        if (direction === 'prev' && !canGoPrev) return;
 
-        if (dragTimeoutRef.current) clearTimeout(dragTimeoutRef.current);
+        if (dragEdgeRef.current.direction !== direction) {
+            clearEdgeDrag();
+            dragEdgeRef.current.direction = direction;
+        }
+
+        if (dragEdgeRef.current.triggered || dragTimeoutRef.current) return;
 
         dragTimeoutRef.current = setTimeout(() => {
             if (direction === 'next') {
@@ -971,13 +1007,13 @@ const BinderPage = () => {
             } else {
                 handlePrev();
             }
+            dragTimeoutRef.current = null;
+            dragEdgeRef.current.triggered = true;
         }, 600);
     };
 
     const handleEdgeDragLeave = () => {
-        if (dragTimeoutRef.current) {
-            clearTimeout(dragTimeoutRef.current);
-        }
+        clearEdgeDrag();
     };
 
     if (binderLoading) return <LoadingSpinner/>;
@@ -1063,6 +1099,10 @@ const BinderPage = () => {
                         className={`nav-button ${isCoverView ? 'disabled' : ''}`}
                         onClick={handlePrev}
                         onDragEnter={() => handleEdgeDragEnter('prev')}
+                        onDragOver={(e) => {
+                            e.preventDefault();
+                            handleEdgeDragEnter('prev');
+                        }}
                         onDragLeave={handleEdgeDragLeave}
                     >
                         <i className="fa-solid fa-chevron-left fa-2x"></i>
@@ -1121,7 +1161,7 @@ const BinderPage = () => {
                                         onDragStart={(e) => handleDragStart(e, pageIndex, slotIndex)}
                                         onDragOver={(e) => handleDragOver(e, pageIndex, slotIndex)}
                                         onDrop={(e) => handleDrop(e, pageIndex, slotIndex)}
-                                        onDragEnd={() => setDraggedItem(null)}
+                                        onDragEnd={handleDragEnd}
                                         onClick={() => handleSlotClick(pageIndex, slotIndex)}
                                     >
                                         {slotData ? (
@@ -1174,6 +1214,10 @@ const BinderPage = () => {
                         className={`nav-button ${!isCoverView && currentSpreadIndex >= pages.length - (isMobile ? 1 : 2) ? 'disabled' : ''}`}
                         onClick={handleNext}
                         onDragEnter={() => handleEdgeDragEnter('next')}
+                        onDragOver={(e) => {
+                            e.preventDefault();
+                            handleEdgeDragEnter('next');
+                        }}
                         onDragLeave={handleEdgeDragLeave}
                     >
                         <i className="fa-solid fa-chevron-right fa-2x"></i>
