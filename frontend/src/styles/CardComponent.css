@@ -1074,6 +1074,9 @@
   flex: 1 1 auto;
   text-align: center;
   white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mini-card-container {
