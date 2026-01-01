@@ -512,6 +512,8 @@ router.post('/webhook', validateApiKey, async (req, res) => {
             // const subscriber = await addPacksToUser(twitchUserId, packsToAward);
             // await updatePeriodCounters(1, twitchUserId);
 
+            const subscriber = await User.findOne({ twitchId: String(twitchUserId).trim() });
+
             if (subscriber) {
                 await createLogEntry(streamerUser, 'EVENTFLOW_ROUTE_REDEMPTION', `User ${subscriber.username} (ID: ${twitchUserId}) subscribed (Tier ${tier}) and received ${packsToAward} pack(s).`);
             } else {
@@ -523,6 +525,8 @@ router.post('/webhook', validateApiKey, async (req, res) => {
             const totalPacks = packsPerTier * quantity;
 
             // const gifter = await addPacksToUser(twitchUserId, totalPacks);
+
+            const gifter = await User.findOne({ twitchId: String(twitchUserId).trim() });
 
             if (gifter) {
                 await createLogEntry(streamerUser, 'EVENTFLOW_ROUTE_REDEMPTION', `User ${gifter.username} (ID: ${twitchUserId}) gifted ${quantity} subs (Tier ${tier}) and received ${totalPacks} pack(s).`);
