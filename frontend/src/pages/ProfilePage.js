@@ -17,6 +17,7 @@ import {
 import { normalizeTitleEffect } from '../utils/titleEffects';
 import LoadingSpinner from '../components/LoadingSpinner';
 import UserTitle from '../components/UserTitle';
+import HiddenTwitchEmbed from '../components/HiddenTwitchEmbed';
 import '../styles/ProfilePage.css';
 import '../styles/MarketPage.css';
 
@@ -259,7 +260,9 @@ const ProfilePage = () => {
     }
 
     return (
-        <div className="page">
+        <>
+            <HiddenTwitchEmbed />
+            <div className="page">
             <h1><UserTitle username={username} title={selectedTitle} />'s Profile</h1>
 
             <div className="stats profile-stats">
@@ -550,7 +553,8 @@ const ProfilePage = () => {
                     </div>
                 </div>
             )}
-        </div>
+            </div>
+        </>
     );
 };
 

@@ -11,6 +11,7 @@ import {
 import BaseCard from '../components/BaseCard';
 import UserTitle from '../components/UserTitle';
 import LoadingSpinner from '../components/LoadingSpinner';
+import HiddenTwitchEmbed from '../components/HiddenTwitchEmbed';
 import '../styles/CollectionPage.css';
 import {rarities} from '../constants/rarities';
 import {modifiers} from '../constants/modifiers';
@@ -466,6 +467,7 @@ const CollectionPage = ({
 
     return (
         <>
+            <HiddenTwitchEmbed />
             <div className="page">
                 {!hideHeader && (
                     <h1>
