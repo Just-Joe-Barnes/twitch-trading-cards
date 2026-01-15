@@ -3,6 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/userModel');
+const ExternalAccount = require('../models/externalAccountModel');
 const { addToQueue } = require("../services/queueService");
 const { createLogEntry } = require("../utils/logService");
 const PeriodCounter = require('../models/periodCounterModel');
@@ -31,6 +32,33 @@ const validateApiKey = (req, res, next) => {
     } else {
         res.status(401).json({ message: 'Unauthorized: Invalid API Key' });
     }
+};
+
+const validateRelaySecret = (req, res, next) => {
+    const relaySecret = req.headers['x-relay-secret'];
+    if (!process.env.RELAY_SECRET) {
+        return res.status(500).json({ message: 'Relay secret not configured.' });
+    }
+
+    if (relaySecret && relaySecret === process.env.RELAY_SECRET) {
+        return next();
+    }
+
+    return res.status(401).json({ message: 'Unauthorized: Invalid relay secret' });
+};
+
+const TIKTOK_COINS_PER_PACK = parseInt(process.env.TIKTOK_COINS_PER_PACK || '1000', 10);
+
+const toPositiveInt = (value) => {
+    const numberValue = Number(value);
+    if (!Number.isFinite(numberValue)) return null;
+    const intValue = Math.floor(numberValue);
+    return intValue > 0 ? intValue : null;
+};
+
+const normalizeProviderId = (value) => {
+    if (!value && value !== 0) return '';
+    return String(value).trim();
 };
 
 const subType = {
@@ -563,6 +591,95 @@ router.post('/webhook', validateApiKey, async (req, res) => {
         return res.status(200).json({ success: true, message: 'Payload received and processed.' });
     } catch (error) {
         console.error('Error in /webhook:', error);
+        return res.status(500).json({ message: 'An internal error occurred.' });
+    }
+});
+
+router.post('/event', validateRelaySecret, async (req, res) => {
+    const payload = req.body || {};
+    const platform = String(payload.platform || '').trim().toLowerCase();
+    const eventType = String(payload.eventType || '').trim().toLowerCase();
+
+    if (!platform || !eventType) {
+        return res.status(400).json({ message: 'Missing platform or eventType.' });
+    }
+
+    if (platform !== 'tiktok' || eventType !== 'gift') {
+        return res.status(400).json({ message: 'Unsupported platform or eventType.' });
+    }
+
+    if (!Number.isFinite(TIKTOK_COINS_PER_PACK) || TIKTOK_COINS_PER_PACK <= 0) {
+        return res.status(500).json({ message: 'TikTok coin conversion not configured.' });
+    }
+
+    const providerUserId = normalizeProviderId(payload.userId);
+    const username = payload.username ? String(payload.username).trim() : null;
+    const coins = toPositiveInt(payload.coins);
+
+    if (!providerUserId) {
+        return res.status(400).json({ message: 'Missing userId for TikTok event.' });
+    }
+
+    if (!coins) {
+        return res.status(400).json({ message: 'Missing or invalid coins value.' });
+    }
+
+    try {
+        let account = await ExternalAccount.findOne({ provider: platform, providerUserId });
+        if (!account) {
+            account = await ExternalAccount.create({
+                provider: platform,
+                providerUserId,
+                username: username || null,
+            });
+        } else if (username && username !== account.username) {
+            account.username = username;
+        }
+
+        const coinBalance = Number(account.coinBalance || 0);
+        const pendingPacks = Number(account.pendingPacks || 0);
+        const combinedCoins = coinBalance + coins;
+        const packsFromCoins = Math.floor(combinedCoins / TIKTOK_COINS_PER_PACK);
+        const newCoinBalance = combinedCoins % TIKTOK_COINS_PER_PACK;
+
+        let linkedUser = null;
+        if (account.userId) {
+            linkedUser = await User.findById(account.userId);
+        }
+
+        let packsAwarded = 0;
+        let pendingPacksAfter = pendingPacks;
+
+        if (linkedUser) {
+            packsAwarded = packsFromCoins + pendingPacks;
+            pendingPacksAfter = 0;
+            if (packsAwarded > 0) {
+                await User.updateOne({ _id: linkedUser._id }, { $inc: { packs: packsAwarded } });
+            }
+        } else {
+            pendingPacksAfter = pendingPacks + packsFromCoins;
+        }
+
+        account.coinBalance = newCoinBalance;
+        account.pendingPacks = pendingPacksAfter;
+        account.totalCoins = (account.totalCoins || 0) + coins;
+        if (linkedUser && packsAwarded > 0) {
+            account.totalPacksAwarded = (account.totalPacksAwarded || 0) + packsAwarded;
+        }
+        account.lastEventAt = new Date();
+
+        await account.save();
+
+        return res.status(200).json({
+            success: true,
+            linked: Boolean(linkedUser),
+            packsAwarded,
+            pendingPacks: pendingPacksAfter,
+            coinBalance: newCoinBalance,
+            coinsToNextPack: newCoinBalance ? TIKTOK_COINS_PER_PACK - newCoinBalance : 0,
+        });
+    } catch (error) {
+        console.error('Error handling external event:', error);
         return res.status(500).json({ message: 'An internal error occurred.' });
     }
 });

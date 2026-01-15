@@ -58,5 +58,10 @@
 .login-container .login-box button:active {
   transform: scale(0.95);
 }
+.login-container .login-box .login-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
 /*# sourceMappingURL=LoginPage.css.map */

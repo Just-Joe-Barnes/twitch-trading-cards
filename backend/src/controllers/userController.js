@@ -3,6 +3,9 @@ const mongoose = require('mongoose');
 const User = require('../models/userModel');
 const Card = require('../models/cardModel');
 const Title = require('../models/titleModel');
+const ExternalAccount = require('../models/externalAccountModel');
+
+const TIKTOK_COINS_PER_PACK = parseInt(process.env.TIKTOK_COINS_PER_PACK || '1000', 10);
 
 // Get logged-in user's profile (using token)
 const getUserProfile = async (req, res) => {
@@ -21,6 +24,27 @@ const getUserProfile = async (req, res) => {
         if (user.pendingEventReward && user.pendingEventReward.length > 0) {
             userProfile.pendingEventReward = user.pendingEventReward;
             await User.updateOne({ _id: user._id }, { $set: { pendingEventReward: [] } });
+        }
+
+        const externalAccounts = await ExternalAccount.find({ userId: user._id })
+            .select('provider username coinBalance pendingPacks totalCoins totalPacksAwarded lastEventAt')
+            .lean();
+        if (externalAccounts.length > 0) {
+            userProfile.externalAccounts = externalAccounts.map((account) => {
+                const coinsToNextPack = account.provider === 'tiktok' && account.coinBalance
+                    ? TIKTOK_COINS_PER_PACK - account.coinBalance
+                    : 0;
+                return {
+                    provider: account.provider,
+                    username: account.username,
+                    coinBalance: account.coinBalance,
+                    coinsToNextPack: coinsToNextPack,
+                    pendingPacks: account.pendingPacks,
+                    totalCoins: account.totalCoins,
+                    totalPacksAwarded: account.totalPacksAwarded,
+                    lastEventAt: account.lastEventAt,
+                };
+            });
         }
 
         let dbStart = process.hrtime();

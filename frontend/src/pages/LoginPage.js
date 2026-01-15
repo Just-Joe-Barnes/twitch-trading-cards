@@ -2,9 +2,10 @@ import React, { useEffect } from 'react';
 import '../styles/LoginPage.css';
 
 const LoginPage = () => {
-    // Redirect to Twitch authentication endpoint using environment variable
-    const handleLogin = () => {
-        window.location.href = `${process.env.REACT_APP_API_BASE_URL}/api/auth/twitch`;
+    const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+
+    const handleLogin = (provider) => () => {
+        window.location.href = `${apiBaseUrl}/api/auth/${provider}`;
     };
 
     // Check if a token is present in the URL; if so, save it and redirect to the dashboard
@@ -37,12 +38,15 @@ const LoginPage = () => {
                 </p>
                 <p className="cta-text">
                     <span className="blue-text">
-                        Login with Twitch to start collecting and building your deck today!
+                        Login with Twitch, YouTube, or TikTok to start collecting and building your deck today!
                     </span>
                 </p>
 
-                <br/>
-                <button onClick={handleLogin}>Login with Twitch</button>
+                <div className="login-buttons">
+                    <button onClick={handleLogin('twitch')}>Login with Twitch</button>
+                    <button onClick={handleLogin('youtube')}>Login with YouTube</button>
+                    <button onClick={handleLogin('tiktok')}>Login with TikTok</button>
+                </div>
             </div>
         </div>
     );

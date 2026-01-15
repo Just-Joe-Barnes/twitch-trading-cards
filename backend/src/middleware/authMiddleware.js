@@ -1,6 +1,25 @@
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const User = require('../models/userModel');
 const UserActivity = require('../models/UserActivity');
+
+const findUserByTokenId = async (tokenId) => {
+    if (mongoose.Types.ObjectId.isValid(tokenId)) {
+        return User.findById(tokenId)
+            .select(
+                'username email isAdmin packs openedPacks loginCount featuredCards favoriteCard preferredPack twitchProfilePic xp level achievements featuredAchievements twitchId'
+            )
+            .populate('preferredPack', 'name')
+            .lean();
+    }
+
+    return User.findOne({ twitchId: tokenId })
+        .select(
+            'username email isAdmin packs openedPacks loginCount featuredCards favoriteCard preferredPack twitchProfilePic xp level achievements featuredAchievements twitchId'
+        )
+        .populate('preferredPack', 'name')
+        .lean();
+};
 
 const protect = async (req, res, next) => {
     let token;
@@ -16,12 +35,7 @@ const protect = async (req, res, next) => {
             // console.log('[AUTH VALIDATE] Decoded token:', decoded);
 
             // Find the user by `twitchId` or `_id` based on the token payload
-            req.user = await User.findOne({ twitchId: decoded.id })
-                .select(
-                    'username email isAdmin packs openedPacks loginCount featuredCards favoriteCard preferredPack twitchProfilePic xp level achievements featuredAchievements twitchId'
-                )
-                .populate('preferredPack', 'name')
-                .lean();
+            req.user = await findUserByTokenId(decoded.id);
             if (!req.user) {
                 console.error('[AUTH VALIDATE] User not found for Twitch ID:', decoded.id);
                 return res.status(401).json({ message: 'User not found' });
@@ -34,7 +48,7 @@ const protect = async (req, res, next) => {
             req.user.id = req.user._id.toString();
             req.userId = req.user.id;
             req.username = req.user.username; // Attach username to the request
-            req.twitchId = req.user.twitchId; // Attach Twitch ID to the request
+            req.twitchId = req.user.twitchId || null; // Attach Twitch ID to the request
             req.isAdmin = req.user.isAdmin; // Attach admin status
             console.log('[AUTH VALIDATE] User validated:', req.user.username);
 
@@ -79,19 +93,14 @@ const optionalProtect = async (req, res, next) => {
             token = req.headers.authorization.split(' ')[1];
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-            const user = await User.findOne({ twitchId: decoded.id })
-                .select(
-                    'username email isAdmin packs openedPacks loginCount featuredCards favoriteCard preferredPack twitchProfilePic xp level achievements featuredAchievements twitchId'
-                )
-                .populate('preferredPack', 'name')
-                .lean();
+            const user = await findUserByTokenId(decoded.id);
 
             if (user) {
                 req.user = user;
                 req.user.id = req.user._id.toString();
                 req.userId = req.user.id;
                 req.username = req.user.username;
-                req.twitchId = req.user.twitchId;
+                req.twitchId = req.user.twitchId || null;
                 req.isAdmin = req.user.isAdmin;
                 console.log('[AUTH OPTIONAL] User validated:', req.user.username);
                 // We can also update activity here
