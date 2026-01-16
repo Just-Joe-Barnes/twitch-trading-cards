@@ -2,6 +2,8 @@ const express = require("express");
 const passport = require("../utils/passport");
 const jwt = require("jsonwebtoken");
 const mongoose = require('mongoose');
+const axios = require('axios');
+const crypto = require('crypto');
 const User = require("../models/userModel");
 const ExternalAccount = require('../models/externalAccountModel');
 const { checkAndAwardLoginEvents } = require('../services/eventService');
@@ -11,6 +13,15 @@ const {trackUserActivity} = require("../services/periodCounterService");
 const router = express.Router();
 
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://192.168.0.136:3000";
+const TIKTOK_CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY;
+const TIKTOK_CLIENT_SECRET = process.env.TIKTOK_CLIENT_SECRET;
+const TIKTOK_REDIRECT_URI = process.env.TIKTOK_REDIRECT_URI;
+const TIKTOK_AUTHORIZE_URL = process.env.TIKTOK_AUTHORIZE_URL || "https://www.tiktok.com/v2/auth/authorize/";
+const TIKTOK_TOKEN_URL = process.env.TIKTOK_TOKEN_URL || "https://open.tiktokapis.com/v2/oauth/token/";
+const TIKTOK_USERINFO_URL = process.env.TIKTOK_USERINFO_URL || "https://open.tiktokapis.com/v2/user/info/";
+const TIKTOK_USERINFO_FIELDS = process.env.TIKTOK_USERINFO_FIELDS || "open_id,union_id,display_name,avatar_url";
+const TIKTOK_SCOPES = process.env.TIKTOK_SCOPES || "user.info.basic";
+const TIKTOK_ENABLED = Boolean(TIKTOK_CLIENT_KEY && TIKTOK_CLIENT_SECRET && TIKTOK_REDIRECT_URI);
 
 const buildFirstLoginReward = () => ({
     type: 'PACK',
@@ -240,26 +251,80 @@ module.exports = function(io) {
         }
     );
 
-    router.get("/tiktok", (req, res, next) => {
-        if (!passport.isTikTokEnabled) {
+    router.get("/tiktok", (req, res) => {
+        if (!TIKTOK_ENABLED) {
             return res.status(501).json({ message: 'TikTok login not configured.' });
         }
-        return passport.authenticate('tiktok')(req, res, next);
+
+        const state = crypto.randomBytes(16).toString('hex');
+        if (req.session) {
+            req.session.tiktokState = state;
+        }
+
+        const params = new URLSearchParams({
+            client_key: TIKTOK_CLIENT_KEY,
+            redirect_uri: TIKTOK_REDIRECT_URI,
+            response_type: 'code',
+            scope: TIKTOK_SCOPES,
+            state: state,
+        });
+
+        return res.redirect(`${TIKTOK_AUTHORIZE_URL}?${params.toString()}`);
     });
 
-    router.get(
-        "/tiktok/callback",
-        (req, res, next) => {
-            if (!passport.isTikTokEnabled) {
-                return res.status(501).json({ message: 'TikTok login not configured.' });
+    router.get("/tiktok/callback", async (req, res) => {
+        if (!TIKTOK_ENABLED) {
+            return res.status(501).json({ message: 'TikTok login not configured.' });
+        }
+
+        const { code, state } = req.query;
+        if (!code) {
+            return res.redirect(FRONTEND_URL);
+        }
+
+        if (req.session && req.session.tiktokState && state !== req.session.tiktokState) {
+            return res.status(401).json({ message: 'Invalid TikTok state.' });
+        }
+
+        if (req.session) {
+            req.session.tiktokState = null;
+        }
+
+        try {
+            const tokenParams = new URLSearchParams({
+                client_key: TIKTOK_CLIENT_KEY,
+                client_secret: TIKTOK_CLIENT_SECRET,
+                code: String(code),
+                grant_type: 'authorization_code',
+                redirect_uri: TIKTOK_REDIRECT_URI,
+            });
+
+            const tokenResponse = await axios.post(TIKTOK_TOKEN_URL, tokenParams.toString(), {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            });
+
+            const tokenData = tokenResponse.data?.data || tokenResponse.data || {};
+            const accessToken = tokenData.access_token;
+
+            if (!accessToken) {
+                console.error('[TikTok OAuth] Missing access token:', tokenResponse.data);
+                return res.redirect(FRONTEND_URL);
             }
-            return passport.authenticate('tiktok', { failureRedirect: FRONTEND_URL })(req, res, next);
-        },
-        async (req, res) => {
-            const profile = req.user || {};
-            const providerUserId = profile.id;
-            const displayName = profile.displayName || profile.username || 'TikTok User';
-            const avatarUrl = profile.photos && profile.photos.length ? profile.photos[0].value : null;
+
+            const userResponse = await axios.get(TIKTOK_USERINFO_URL, {
+                headers: { Authorization: `Bearer ${accessToken}` },
+                params: { fields: TIKTOK_USERINFO_FIELDS },
+            });
+
+            const userData = userResponse.data?.data?.user || userResponse.data?.data || {};
+            const providerUserId = userData.open_id || tokenData.open_id || userData.union_id || tokenData.union_id;
+            const displayName = userData.display_name || userData.nickname || 'TikTok User';
+            const avatarUrl = userData.avatar_url || null;
+
+            if (!providerUserId) {
+                console.error('[TikTok OAuth] Missing user id:', userResponse.data);
+                return res.redirect(FRONTEND_URL);
+            }
 
             let dbUser = null;
             let isNewUser = false;
@@ -299,8 +364,11 @@ module.exports = function(io) {
             const token = await finalizeLogin(dbUser, isNewUser);
             const redirectUrl = `${FRONTEND_URL}/login?token=${token}`;
             res.redirect(redirectUrl);
+        } catch (error) {
+            console.error('[TikTok OAuth] Failed:', error.response?.data || error.message);
+            return res.redirect(FRONTEND_URL);
         }
-    );
+    });
 
     router.post("/validate", async (req, res) => {
         const token = req.headers.authorization?.split(" ")[1];
