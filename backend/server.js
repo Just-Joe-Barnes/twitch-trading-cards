@@ -31,6 +31,7 @@ const io = socketIo(server, {
 const { initializeQueueService, markAsReady, handleOverlayDisconnect } = require('./src/services/queueService');
 const {handleMonthlyPayout} = require("./src/services/payoutService");
 const { expireOldMarketListings, DEFAULT_LISTING_MAX_AGE_DAYS } = require('./src/services/marketCleanupService');
+const { startYouTubeRelay } = require('./src/services/youtubeRelayService');
 
 const socketUserMap = new Map();
 const overlaySocketMap = new Map();
@@ -146,6 +147,7 @@ if (require.main === module) {
     const PORT = process.env.PORT || 5000;
     server.listen(PORT, '0.0.0.0', () => {
         console.log(`Server running on port ${PORT}`);
+        startYouTubeRelay();
     });
 }
 
