@@ -6,6 +6,7 @@ const axios = require('axios');
 const crypto = require('crypto');
 const User = require("../models/userModel");
 const ExternalAccount = require('../models/externalAccountModel');
+const { protect } = require('../middleware/authMiddleware');
 const { checkAndAwardLoginEvents } = require('../services/eventService');
 const Setting = require('../models/settingsModel');
 const {trackUserActivity} = require("../services/periodCounterService");
@@ -22,12 +23,30 @@ const TIKTOK_USERINFO_URL = process.env.TIKTOK_USERINFO_URL || "https://open.tik
 const TIKTOK_USERINFO_FIELDS = process.env.TIKTOK_USERINFO_FIELDS || "open_id,union_id,display_name,avatar_url";
 const TIKTOK_SCOPES = process.env.TIKTOK_SCOPES || "user.info.basic";
 const TIKTOK_ENABLED = Boolean(TIKTOK_CLIENT_KEY && TIKTOK_CLIENT_SECRET && TIKTOK_REDIRECT_URI);
+const LINK_INTENT_TTL_MS = 10 * 60 * 1000;
 
 const buildFirstLoginReward = () => ({
     type: 'PACK',
     data: { amount: 1 },
     message: 'Welcome to Neds Decks! Here is your first pack to get you started.'
 });
+
+const normalizeEmail = (value) => {
+    if (!value) return null;
+    const trimmed = String(value).trim();
+    return trimmed ? trimmed.toLowerCase() : null;
+};
+
+const normalizeProviderId = (value) => {
+    if (!value && value !== 0) return '';
+    return String(value).trim();
+};
+
+const findUserByEmail = async (email) => {
+    const normalized = normalizeEmail(email);
+    if (!normalized) return null;
+    return User.findOne({ email: normalized });
+};
 
 const ensureUniqueUsername = async (preferredName) => {
     const base = (preferredName || 'new-user').trim() || 'new-user';
@@ -42,13 +61,17 @@ const ensureUniqueUsername = async (preferredName) => {
     return candidate;
 };
 
-const updateLoginStats = async (user, { displayName, profilePic } = {}) => {
-    if (displayName && user.username !== displayName) {
+const updateLoginStats = async (user, { displayName, profilePic, provider, allowUsernameUpdate = true } = {}) => {
+    if (displayName && allowUsernameUpdate && user.username !== displayName) {
         user.username = displayName;
     }
 
     if (profilePic) {
         user.twitchProfilePic = profilePic;
+    }
+
+    if (provider) {
+        user.lastLoginProvider = provider;
     }
 
     const now = new Date();
@@ -79,6 +102,78 @@ const updateLoginStats = async (user, { displayName, profilePic } = {}) => {
 
     user.lastLogin = now;
     await user.save();
+};
+
+const consumeLinkIntent = (req, provider, state) => {
+    const intent = req.session?.linkIntent;
+    if (!intent) {
+        return { intent: null };
+    }
+
+    if (intent.provider !== provider) {
+        return { intent: null };
+    }
+
+    const createdAt = Number(intent.createdAt || 0);
+    if (!createdAt || Date.now() - createdAt > LINK_INTENT_TTL_MS) {
+        req.session.linkIntent = null;
+        return { intent: null };
+    }
+
+    if (intent.state && !state) {
+        req.session.linkIntent = null;
+        return { intent: null };
+    }
+
+    if (intent.state && String(state) !== String(intent.state)) {
+        req.session.linkIntent = null;
+        return { intent: null, error: 'state' };
+    }
+
+    req.session.linkIntent = null;
+    return { intent };
+};
+
+const linkExternalAccountToUser = async ({ provider, providerUserId, username, userId }) => {
+    const normalizedProvider = String(provider || '').trim().toLowerCase();
+    const normalizedProviderUserId = normalizeProviderId(providerUserId);
+
+    if (!normalizedProvider || !normalizedProviderUserId) {
+        return { error: 'missing_provider' };
+    }
+
+    let account = await ExternalAccount.findOne({
+        provider: normalizedProvider,
+        providerUserId: normalizedProviderUserId
+    });
+
+    if (account && account.userId && account.userId.toString() !== userId.toString()) {
+        return { conflict: true, account };
+    }
+
+    if (!account) {
+        account = new ExternalAccount({
+            provider: normalizedProvider,
+            providerUserId: normalizedProviderUserId,
+        });
+    }
+
+    account.userId = userId;
+    if (username) {
+        account.username = String(username).trim();
+    }
+
+    const pendingPacks = Number(account.pendingPacks || 0);
+    if (pendingPacks > 0) {
+        await User.updateOne({ _id: userId }, { $inc: { packs: pendingPacks } });
+        account.totalPacksAwarded = (account.totalPacksAwarded || 0) + pendingPacks;
+        account.pendingPacks = 0;
+    }
+
+    account.lastEventAt = new Date();
+    await account.save();
+
+    return { account, pendingPacksApplied: pendingPacks };
 };
 
 const finalizeLogin = async (dbUser, isNewUser) => {
@@ -130,6 +225,84 @@ const getUserForExternalAccount = async (provider, providerUserId) => {
 };
 
 module.exports = function(io) {
+    router.post('/link/:provider/start', protect, (req, res) => {
+        const provider = String(req.params.provider || '').trim().toLowerCase();
+        const supported = ['twitch', 'youtube', 'tiktok'];
+
+        if (!supported.includes(provider)) {
+            return res.status(400).json({ message: 'Unsupported provider.' });
+        }
+
+        if (provider === 'youtube' && !passport.isYouTubeEnabled) {
+            return res.status(501).json({ message: 'YouTube login not configured.' });
+        }
+
+        if (provider === 'tiktok' && !TIKTOK_ENABLED) {
+            return res.status(501).json({ message: 'TikTok login not configured.' });
+        }
+
+        if (!req.session) {
+            return res.status(500).json({ message: 'Session not available.' });
+        }
+
+        req.session.linkIntent = {
+            userId: req.user._id.toString(),
+            provider,
+            createdAt: Date.now(),
+            state: crypto.randomBytes(16).toString('hex')
+        };
+
+        return res.json({ success: true });
+    });
+
+    router.get('/link/:provider', (req, res, next) => {
+        const provider = String(req.params.provider || '').trim().toLowerCase();
+        const intent = req.session?.linkIntent;
+
+        if (!intent || intent.provider !== provider) {
+            return res.redirect(FRONTEND_URL);
+        }
+
+        const createdAt = Number(intent.createdAt || 0);
+        if (!createdAt || Date.now() - createdAt > LINK_INTENT_TTL_MS) {
+            req.session.linkIntent = null;
+            return res.redirect(FRONTEND_URL);
+        }
+
+        if (provider === 'twitch') {
+            return passport.authenticate('twitch', { state: intent.state })(req, res, next);
+        }
+
+        if (provider === 'youtube') {
+            if (!passport.isYouTubeEnabled) {
+                return res.status(501).json({ message: 'YouTube login not configured.' });
+            }
+            return passport.authenticate('google', {
+                scope: ['profile', 'email'],
+                state: intent.state,
+                prompt: 'consent',
+            })(req, res, next);
+        }
+
+        if (provider === 'tiktok') {
+            if (!TIKTOK_ENABLED) {
+                return res.status(501).json({ message: 'TikTok login not configured.' });
+            }
+
+            const params = new URLSearchParams({
+                client_key: TIKTOK_CLIENT_KEY,
+                redirect_uri: TIKTOK_REDIRECT_URI,
+                response_type: 'code',
+                scope: TIKTOK_SCOPES,
+                state: intent.state,
+            });
+
+            return res.redirect(`${TIKTOK_AUTHORIZE_URL}?${params.toString()}`);
+        }
+
+        return res.status(400).json({ message: 'Unsupported provider.' });
+    });
+
     router.get("/twitch", async (req, res, next) => {
         return passport.authenticate('twitch')(req, res, next);
     });
@@ -139,28 +312,74 @@ module.exports = function(io) {
         passport.authenticate("twitch", { failureRedirect: FRONTEND_URL }),
         async (req, res) => {
             const user = req.user;
+            const linkCheck = consumeLinkIntent(req, 'twitch', req.query.state);
+
+            if (linkCheck.error) {
+                return res.redirect(`${FRONTEND_URL}/profile?linkError=state`);
+            }
+
+            if (linkCheck.intent) {
+                const linkUser = await User.findById(linkCheck.intent.userId);
+                if (!linkUser) {
+                    return res.redirect(`${FRONTEND_URL}/profile?linkError=user`);
+                }
+
+                const result = await linkExternalAccountToUser({
+                    provider: 'twitch',
+                    providerUserId: user.id,
+                    username: user.display_name,
+                    userId: linkUser._id,
+                });
+
+                if (result.conflict) {
+                    return res.redirect(`${FRONTEND_URL}/profile/${linkUser.username}?linkError=conflict`);
+                }
+
+                return res.redirect(`${FRONTEND_URL}/profile/${linkUser.username}?linked=twitch`);
+            }
 
             let dbUser = await User.findOne({ twitchId: user.id });
             let isNewUser = false;
+            const email = user.email || user._json?.email || null;
+            let linkedByEmail = false;
 
             if (!dbUser) {
-                isNewUser = true;
+                dbUser = await findUserByEmail(email);
+                if (dbUser) {
+                    isNewUser = false;
+                    linkedByEmail = true;
+                } else {
+                    isNewUser = true;
+                    dbUser = await User.create({
+                        twitchId: user.id,
+                        username: await ensureUniqueUsername(user.display_name),
+                        email: normalizeEmail(email) || undefined,
+                        packs: 1,
+                        firstLogin: true,
+                        pendingEventReward: [buildFirstLoginReward()],
+                        loginCount: 1,
+                        loginStreak: 1,
+                        lastLogin: new Date(),
+                        lastLoginProvider: 'twitch',
+                        twitchProfilePic: user.profile_image_url
+                    });
+                }
+            }
 
-                dbUser = await User.create({
-                    twitchId: user.id,
-                    username: await ensureUniqueUsername(user.display_name),
-                    packs: 1,
-                    firstLogin: true,
-                    pendingEventReward: [buildFirstLoginReward()],
-                    loginCount: 1,
-                    loginStreak: 1,
-                    lastLogin: new Date(),
-                    twitchProfilePic: user.profile_image_url
-                });
-            } else {
+            if (dbUser && dbUser.twitchId !== user.id) {
+                dbUser.twitchId = user.id;
+            }
+
+            if (dbUser && email && !dbUser.email) {
+                dbUser.email = normalizeEmail(email);
+            }
+
+            if (dbUser && !isNewUser) {
                 await updateLoginStats(dbUser, {
                     displayName: user.display_name,
-                    profilePic: user.profile_image_url
+                    profilePic: user.profile_image_url,
+                    provider: 'twitch',
+                    allowUsernameUpdate: !linkedByEmail
                 });
             }
 
@@ -179,7 +398,7 @@ module.exports = function(io) {
 
             const token = await finalizeLogin(dbUser, isNewUser);
 
-            const redirectUrl = `${FRONTEND_URL}/login?token=${token}`;
+            const redirectUrl = `${FRONTEND_URL}/login?token=${token}&provider=twitch`;
             res.redirect(redirectUrl);
         }
     );
@@ -207,29 +426,73 @@ module.exports = function(io) {
             const displayName = profile.displayName || profile.username || 'YouTube User';
             const avatarUrl = profile.photos && profile.photos.length ? profile.photos[0].value : null;
             const email = profile.emails && profile.emails.length ? profile.emails[0].value : null;
+            const linkCheck = consumeLinkIntent(req, 'youtube', req.query.state);
+
+            if (linkCheck.error) {
+                return res.redirect(`${FRONTEND_URL}/profile?linkError=state`);
+            }
+
+            if (linkCheck.intent) {
+                const linkUser = await User.findById(linkCheck.intent.userId);
+                if (!linkUser) {
+                    return res.redirect(`${FRONTEND_URL}/profile?linkError=user`);
+                }
+
+                const result = await linkExternalAccountToUser({
+                    provider: 'youtube',
+                    providerUserId,
+                    username: displayName,
+                    userId: linkUser._id,
+                });
+
+                if (result.conflict) {
+                    return res.redirect(`${FRONTEND_URL}/profile/${linkUser.username}?linkError=conflict`);
+                }
+
+                return res.redirect(`${FRONTEND_URL}/profile/${linkUser.username}?linked=youtube`);
+            }
 
             let dbUser = null;
             let isNewUser = false;
 
             const lookup = await getUserForExternalAccount('youtube', providerUserId);
             dbUser = lookup.user;
+            let linkedByEmail = false;
+
             if (!dbUser) {
-                isNewUser = true;
-                const username = await ensureUniqueUsername(displayName);
-                const emailExists = email ? await User.exists({ email: email.toLowerCase() }) : false;
-                dbUser = await User.create({
-                    username,
-                    email: emailExists ? undefined : (email ? email.toLowerCase() : undefined),
-                    packs: 1,
-                    firstLogin: true,
-                    pendingEventReward: [buildFirstLoginReward()],
-                    loginCount: 1,
-                    loginStreak: 1,
-                    lastLogin: new Date(),
-                    twitchProfilePic: avatarUrl || undefined
+                dbUser = await findUserByEmail(email);
+                if (dbUser) {
+                    isNewUser = false;
+                    linkedByEmail = true;
+                } else {
+                    isNewUser = true;
+                    const username = await ensureUniqueUsername(displayName);
+                    dbUser = await User.create({
+                        username,
+                        email: normalizeEmail(email) || undefined,
+                        packs: 1,
+                        firstLogin: true,
+                        pendingEventReward: [buildFirstLoginReward()],
+                        loginCount: 1,
+                        loginStreak: 1,
+                        lastLogin: new Date(),
+                        lastLoginProvider: 'youtube',
+                        twitchProfilePic: avatarUrl || undefined
+                    });
+                }
+            }
+
+            if (dbUser && email && !dbUser.email) {
+                dbUser.email = normalizeEmail(email);
+            }
+
+            if (dbUser && !isNewUser) {
+                await updateLoginStats(dbUser, {
+                    displayName,
+                    profilePic: avatarUrl,
+                    provider: 'youtube',
+                    allowUsernameUpdate: !linkedByEmail
                 });
-            } else {
-                await updateLoginStats(dbUser, { displayName, profilePic: avatarUrl });
             }
 
             await ExternalAccount.findOneAndUpdate(
@@ -246,7 +509,7 @@ module.exports = function(io) {
             );
 
             const token = await finalizeLogin(dbUser, isNewUser);
-            const redirectUrl = `${FRONTEND_URL}/login?token=${token}`;
+            const redirectUrl = `${FRONTEND_URL}/login?token=${token}&provider=youtube`;
             res.redirect(redirectUrl);
         }
     );
@@ -320,6 +583,31 @@ module.exports = function(io) {
             const providerUserId = userData.open_id || tokenData.open_id || userData.union_id || tokenData.union_id;
             const displayName = userData.display_name || userData.nickname || 'TikTok User';
             const avatarUrl = userData.avatar_url || null;
+            const linkCheck = consumeLinkIntent(req, 'tiktok', state);
+
+            if (linkCheck.error) {
+                return res.redirect(`${FRONTEND_URL}/profile?linkError=state`);
+            }
+
+            if (linkCheck.intent) {
+                const linkUser = await User.findById(linkCheck.intent.userId);
+                if (!linkUser) {
+                    return res.redirect(`${FRONTEND_URL}/profile?linkError=user`);
+                }
+
+                const result = await linkExternalAccountToUser({
+                    provider: 'tiktok',
+                    providerUserId,
+                    username: displayName,
+                    userId: linkUser._id,
+                });
+
+                if (result.conflict) {
+                    return res.redirect(`${FRONTEND_URL}/profile/${linkUser.username}?linkError=conflict`);
+                }
+
+                return res.redirect(`${FRONTEND_URL}/profile/${linkUser.username}?linked=tiktok`);
+            }
 
             if (!providerUserId) {
                 console.error('[TikTok OAuth] Missing user id:', userResponse.data);
@@ -342,10 +630,11 @@ module.exports = function(io) {
                     loginCount: 1,
                     loginStreak: 1,
                     lastLogin: new Date(),
+                    lastLoginProvider: 'tiktok',
                     twitchProfilePic: avatarUrl || undefined
                 });
             } else {
-                await updateLoginStats(dbUser, { displayName, profilePic: avatarUrl });
+                await updateLoginStats(dbUser, { displayName, profilePic: avatarUrl, provider: 'tiktok' });
             }
 
             await ExternalAccount.findOneAndUpdate(
@@ -362,7 +651,7 @@ module.exports = function(io) {
             );
 
             const token = await finalizeLogin(dbUser, isNewUser);
-            const redirectUrl = `${FRONTEND_URL}/login?token=${token}`;
+            const redirectUrl = `${FRONTEND_URL}/login?token=${token}&provider=tiktok`;
             res.redirect(redirectUrl);
         } catch (error) {
             console.error('[TikTok OAuth] Failed:', error.response?.data || error.message);
@@ -381,12 +670,12 @@ module.exports = function(io) {
 
             if (mongoose.Types.ObjectId.isValid(decoded.id)) {
                 user = await User.findById(decoded.id)
-                    .select("username email isAdmin packs loginCount xp level twitchProfilePic pendingEventReward");
+                    .select("username email isAdmin packs loginCount xp level twitchProfilePic pendingEventReward lastLoginProvider");
             }
 
             if (!user) {
                 user = await User.findOne({ twitchId: decoded.id })
-                    .select("username email isAdmin packs loginCount xp level twitchProfilePic pendingEventReward");
+                    .select("username email isAdmin packs loginCount xp level twitchProfilePic pendingEventReward lastLoginProvider");
             }
 
             if (!user) {

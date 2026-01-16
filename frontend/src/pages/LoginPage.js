@@ -1,8 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../styles/LoginPage.css';
 
 const LoginPage = () => {
     const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+    const [lastProvider, setLastProvider] = useState(() => {
+        return localStorage.getItem('lastLoginProvider') || '';
+    });
+
+    const providerLabels = {
+        twitch: 'Twitch',
+        youtube: 'YouTube',
+        tiktok: 'TikTok',
+    };
 
     const handleLogin = (provider) => () => {
         window.location.href = `${apiBaseUrl}/api/auth/${provider}`;
@@ -12,6 +21,12 @@ const LoginPage = () => {
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
+        const provider = urlParams.get('provider');
+
+        if (provider) {
+            localStorage.setItem('lastLoginProvider', provider);
+            setLastProvider(provider);
+        }
 
         if (token) {
             localStorage.setItem('token', token);
@@ -42,10 +57,25 @@ const LoginPage = () => {
                     </span>
                 </p>
 
+                {lastProvider && (
+                    <div className="last-login">
+                        Last login:{' '}
+                        <span className={`last-login-badge last-login-${lastProvider}`}>
+                            {providerLabels[lastProvider] || 'Unknown'}
+                        </span>
+                    </div>
+                )}
+
                 <div className="login-buttons">
-                    <button onClick={handleLogin('twitch')}>Login with Twitch</button>
-                    <button onClick={handleLogin('youtube')}>Login with YouTube</button>
-                    <button onClick={handleLogin('tiktok')}>Login with TikTok</button>
+                    <button className="login-button login-button-twitch" onClick={handleLogin('twitch')}>
+                        Login with Twitch
+                    </button>
+                    <button className="login-button login-button-youtube" onClick={handleLogin('youtube')}>
+                        Login with YouTube
+                    </button>
+                    <button className="login-button login-button-tiktok" onClick={handleLogin('tiktok')}>
+                        Login with TikTok
+                    </button>
                 </div>
             </div>
         </div>

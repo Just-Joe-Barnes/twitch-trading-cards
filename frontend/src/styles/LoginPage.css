@@ -42,7 +42,7 @@
 .login-container .login-box .blue-text {
   color: #81b4c9;
 }
-.login-container .login-box button {
+.login-container .login-box .login-button {
   background-color: var(--brand-primary);
   color: var(--text-primary);
   border: none;
@@ -52,16 +52,69 @@
   cursor: pointer;
   transition: transform 0.2s ease, background-color 0.3s ease;
 }
-.login-container .login-box button:hover {
+.login-container .login-box .login-button:hover {
   background-color: #9146ff;
 }
-.login-container .login-box button:active {
+.login-container .login-box .login-button:active {
   transform: scale(0.95);
 }
 .login-container .login-box .login-buttons {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.login-container .login-box .login-button-twitch {
+  background-color: #9146ff;
+  color: #ffffff;
+}
+.login-container .login-box .login-button-twitch:hover {
+  background-color: #7c35e8;
+}
+
+.login-container .login-box .login-button-youtube {
+  background-color: #ff0033;
+  color: #ffffff;
+}
+.login-container .login-box .login-button-youtube:hover {
+  background-color: #cc0028;
+}
+
+.login-container .login-box .login-button-tiktok {
+  background: linear-gradient(120deg, #25f4ee 0%, #101010 45%, #101010 55%, #fe2c55 100%);
+  color: #ffffff;
+  border: 1px solid #1f1f1f;
+}
+.login-container .login-box .login-button-tiktok:hover {
+  background: linear-gradient(120deg, #20d9d4 0%, #0c0c0c 45%, #0c0c0c 55%, #e02249 100%);
+}
+
+.login-container .login-box .last-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 16px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.login-container .login-box .last-login-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #ffffff;
+}
+
+.login-container .login-box .last-login-twitch {
+  background-color: #9146ff;
+}
+.login-container .login-box .last-login-youtube {
+  background-color: #ff0033;
+}
+.login-container .login-box .last-login-tiktok {
+  background-color: #111111;
+  border: 1px solid #2b2b2b;
 }
 
 /*# sourceMappingURL=LoginPage.css.map */

@@ -53,6 +53,15 @@ export const fetchUserProfile = async () => {
     return fetchWithAuth("/api/users/me", {method: "GET"});
 };
 
+export const startLinkProvider = async (provider) => {
+    const normalized = String(provider || '').trim().toLowerCase();
+    if (!normalized) {
+        throw new Error('Provider is required.');
+    }
+    await fetchWithAuth(`/api/auth/link/${normalized}/start`, { method: "POST" });
+    return `${API_BASE_URL}/api/auth/link/${normalized}`;
+};
+
 export const fetchUserProfileByUsername = async (username) => {
     try {
         return fetchWithAuth(`/api/users/profile/${username}`, {method: "GET"});

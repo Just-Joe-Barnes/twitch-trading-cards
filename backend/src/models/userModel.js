@@ -60,6 +60,7 @@ const userSchema = new mongoose.Schema({
     loginCount: { type: Number, default: 0 },
     loginStreak: { type: Number, default: 0 },
     lastLogin: { type: Date },
+    lastLoginProvider: { type: String },
 
     completedPurchases: { type: Number, default: 0 },
 
