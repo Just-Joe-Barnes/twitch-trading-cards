@@ -21,6 +21,7 @@ const MarketListing = require('../models/MarketListing');
 const EventClaim = require('../models/eventClaimModel');
 const Setting = require('../models/settingsModel');
 const PeriodCounter = require('../models/periodCounterModel');
+const ExternalAccount = require('../models/externalAccountModel');
 
 const { protect } = require('../middleware/authMiddleware');
 const { broadcastNotification, sendNotificationToUser} = require('../../notificationService');
@@ -225,6 +226,74 @@ router.post('/give-packs', protect, adminOnly, async (req, res) => {
     } catch {
         res.status(500).json({ error: 'Failed to give packs.' });
     }
+});
+
+router.post('/link-external', protect, adminOnly, async (req, res) => {
+    const { provider, providerUserId, userId, targetUsername, externalUsername, force } = req.body;
+    const normalizedProvider = String(provider || '').trim().toLowerCase();
+    const normalizedProviderUserId = String(providerUserId || '').trim();
+    const lookupUsername = targetUsername || req.body.username;
+
+    if (!normalizedProvider || !normalizedProviderUserId) {
+        return res.status(400).json({ error: 'Provider and providerUserId are required.' });
+    }
+
+    if (!userId && !lookupUsername) {
+        return res.status(400).json({ error: 'User ID or username is required.' });
+    }
+
+    let targetUser = null;
+    if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+        targetUser = await User.findById(userId);
+    }
+    if (!targetUser && lookupUsername) {
+        targetUser = await User.findOne({ username: lookupUsername });
+    }
+
+    if (!targetUser) {
+        return res.status(404).json({ error: 'Target user not found.' });
+    }
+
+    let account = await ExternalAccount.findOne({
+        provider: normalizedProvider,
+        providerUserId: normalizedProviderUserId
+    });
+
+    if (account && account.userId && account.userId.toString() !== targetUser._id.toString() && !force) {
+        return res.status(409).json({
+            error: 'External account already linked to another user. Set force=true to override.'
+        });
+    }
+
+    if (!account) {
+        account = new ExternalAccount({
+            provider: normalizedProvider,
+            providerUserId: normalizedProviderUserId,
+        });
+    }
+
+    account.userId = targetUser._id;
+    if (externalUsername) {
+        account.username = String(externalUsername).trim();
+    }
+
+    const pendingPacks = Number(account.pendingPacks || 0);
+    if (pendingPacks > 0) {
+        await User.updateOne({ _id: targetUser._id }, { $inc: { packs: pendingPacks } });
+        account.totalPacksAwarded = (account.totalPacksAwarded || 0) + pendingPacks;
+        account.pendingPacks = 0;
+    }
+
+    account.lastEventAt = new Date();
+    await account.save();
+
+    return res.json({
+        success: true,
+        provider: normalizedProvider,
+        providerUserId: normalizedProviderUserId,
+        user: { id: targetUser._id, username: targetUser.username },
+        pendingPacksApplied: pendingPacks
+    });
 });
 
 router.get('/users', protect, adminOnly, async (req, res) => {
