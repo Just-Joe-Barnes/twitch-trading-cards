@@ -48,6 +48,16 @@ const validateRelaySecret = (req, res, next) => {
 };
 
 const TIKTOK_COINS_PER_PACK = parseInt(process.env.TIKTOK_COINS_PER_PACK || '1000', 10);
+const YOUTUBE_SUPERCHAT_PACK_USD = parseFloat(process.env.YOUTUBE_SUPERCHAT_PACK_USD || '5');
+
+const YOUTUBE_TIER_PACKS = {
+    '1': 3,
+    '2': 6,
+    '3': 12,
+    '4.99': 3,
+    '9.99': 6,
+    '19.99': 12,
+};
 
 const toPositiveInt = (value) => {
     const numberValue = Number(value);
@@ -56,9 +66,21 @@ const toPositiveInt = (value) => {
     return intValue > 0 ? intValue : null;
 };
 
+const toPositiveNumber = (value) => {
+    const numberValue = Number(value);
+    if (!Number.isFinite(numberValue)) return null;
+    return numberValue > 0 ? numberValue : null;
+};
+
 const normalizeProviderId = (value) => {
     if (!value && value !== 0) return '';
     return String(value).trim();
+};
+
+const getYouTubePacksForTier = (tierValue) => {
+    if (tierValue === null || tierValue === undefined) return null;
+    const key = String(tierValue).trim().toLowerCase();
+    return YOUTUBE_TIER_PACKS[key] || null;
 };
 
 const subType = {
@@ -604,84 +626,172 @@ router.post('/event', validateRelaySecret, async (req, res) => {
         return res.status(400).json({ message: 'Missing platform or eventType.' });
     }
 
-    if (platform !== 'tiktok' || eventType !== 'gift') {
-        return res.status(400).json({ message: 'Unsupported platform or eventType.' });
-    }
+    const normalizedPlatform = platform === 'yt' ? 'youtube' : platform;
 
-    if (!Number.isFinite(TIKTOK_COINS_PER_PACK) || TIKTOK_COINS_PER_PACK <= 0) {
-        return res.status(500).json({ message: 'TikTok coin conversion not configured.' });
-    }
-
-    const providerUserId = normalizeProviderId(payload.userId);
-    const username = payload.username ? String(payload.username).trim() : null;
-    const coins = toPositiveInt(payload.coins);
-
-    if (!providerUserId) {
-        return res.status(400).json({ message: 'Missing userId for TikTok event.' });
-    }
-
-    if (!coins) {
-        return res.status(400).json({ message: 'Missing or invalid coins value.' });
-    }
-
-    try {
-        let account = await ExternalAccount.findOne({ provider: platform, providerUserId });
-        if (!account) {
-            account = await ExternalAccount.create({
-                provider: platform,
-                providerUserId,
-                username: username || null,
-            });
-        } else if (username && username !== account.username) {
-            account.username = username;
+    if (normalizedPlatform === 'tiktok' && eventType === 'gift') {
+        if (!Number.isFinite(TIKTOK_COINS_PER_PACK) || TIKTOK_COINS_PER_PACK <= 0) {
+            return res.status(500).json({ message: 'TikTok coin conversion not configured.' });
         }
 
-        const coinBalance = Number(account.coinBalance || 0);
-        const pendingPacks = Number(account.pendingPacks || 0);
-        const combinedCoins = coinBalance + coins;
-        const packsFromCoins = Math.floor(combinedCoins / TIKTOK_COINS_PER_PACK);
-        const newCoinBalance = combinedCoins % TIKTOK_COINS_PER_PACK;
+        const providerUserId = normalizeProviderId(payload.userId);
+        const username = payload.username ? String(payload.username).trim() : null;
+        const coins = toPositiveInt(payload.coins);
 
-        let linkedUser = null;
-        if (account.userId) {
-            linkedUser = await User.findById(account.userId);
+        if (!providerUserId) {
+            return res.status(400).json({ message: 'Missing userId for TikTok event.' });
         }
 
-        let packsAwarded = 0;
-        let pendingPacksAfter = pendingPacks;
+        if (!coins) {
+            return res.status(400).json({ message: 'Missing or invalid coins value.' });
+        }
 
-        if (linkedUser) {
-            packsAwarded = packsFromCoins + pendingPacks;
-            pendingPacksAfter = 0;
-            if (packsAwarded > 0) {
-                await User.updateOne({ _id: linkedUser._id }, { $inc: { packs: packsAwarded } });
+        try {
+            let account = await ExternalAccount.findOne({ provider: normalizedPlatform, providerUserId });
+            if (!account) {
+                account = await ExternalAccount.create({
+                    provider: normalizedPlatform,
+                    providerUserId,
+                    username: username || null,
+                });
+            } else if (username && username !== account.username) {
+                account.username = username;
             }
-        } else {
-            pendingPacksAfter = pendingPacks + packsFromCoins;
+
+            const coinBalance = Number(account.coinBalance || 0);
+            const pendingPacks = Number(account.pendingPacks || 0);
+            const combinedCoins = coinBalance + coins;
+            const packsFromCoins = Math.floor(combinedCoins / TIKTOK_COINS_PER_PACK);
+            const newCoinBalance = combinedCoins % TIKTOK_COINS_PER_PACK;
+
+            let linkedUser = null;
+            if (account.userId) {
+                linkedUser = await User.findById(account.userId);
+            }
+
+            let packsAwarded = 0;
+            let pendingPacksAfter = pendingPacks;
+
+            if (linkedUser) {
+                packsAwarded = packsFromCoins + pendingPacks;
+                pendingPacksAfter = 0;
+                if (packsAwarded > 0) {
+                    await User.updateOne({ _id: linkedUser._id }, { $inc: { packs: packsAwarded } });
+                }
+            } else {
+                pendingPacksAfter = pendingPacks + packsFromCoins;
+            }
+
+            account.coinBalance = newCoinBalance;
+            account.pendingPacks = pendingPacksAfter;
+            account.totalCoins = (account.totalCoins || 0) + coins;
+            if (linkedUser && packsAwarded > 0) {
+                account.totalPacksAwarded = (account.totalPacksAwarded || 0) + packsAwarded;
+            }
+            account.lastEventAt = new Date();
+
+            await account.save();
+
+            return res.status(200).json({
+                success: true,
+                linked: Boolean(linkedUser),
+                packsAwarded,
+                pendingPacks: pendingPacksAfter,
+                coinBalance: newCoinBalance,
+                coinsToNextPack: newCoinBalance ? TIKTOK_COINS_PER_PACK - newCoinBalance : 0,
+            });
+        } catch (error) {
+            console.error('Error handling external event:', error);
+            return res.status(500).json({ message: 'An internal error occurred.' });
         }
-
-        account.coinBalance = newCoinBalance;
-        account.pendingPacks = pendingPacksAfter;
-        account.totalCoins = (account.totalCoins || 0) + coins;
-        if (linkedUser && packsAwarded > 0) {
-            account.totalPacksAwarded = (account.totalPacksAwarded || 0) + packsAwarded;
-        }
-        account.lastEventAt = new Date();
-
-        await account.save();
-
-        return res.status(200).json({
-            success: true,
-            linked: Boolean(linkedUser),
-            packsAwarded,
-            pendingPacks: pendingPacksAfter,
-            coinBalance: newCoinBalance,
-            coinsToNextPack: newCoinBalance ? TIKTOK_COINS_PER_PACK - newCoinBalance : 0,
-        });
-    } catch (error) {
-        console.error('Error handling external event:', error);
-        return res.status(500).json({ message: 'An internal error occurred.' });
     }
+
+    if (normalizedPlatform === 'youtube' && (eventType === 'membership' || eventType === 'superchat')) {
+        const providerUserId = normalizeProviderId(payload.userId);
+        const username = payload.username ? String(payload.username).trim() : null;
+
+        if (!providerUserId) {
+            return res.status(400).json({ message: 'Missing userId for YouTube event.' });
+        }
+
+        let packsToAward = 0;
+        let totalAmount = null;
+
+        if (eventType === 'membership') {
+            const tier = payload.tier || payload.tierName || payload.price;
+            const tierPacks = getYouTubePacksForTier(tier);
+            if (!tierPacks) {
+                return res.status(400).json({ message: 'Missing or invalid membership tier.' });
+            }
+            packsToAward = tierPacks;
+        }
+
+        if (eventType === 'superchat') {
+            if (!Number.isFinite(YOUTUBE_SUPERCHAT_PACK_USD) || YOUTUBE_SUPERCHAT_PACK_USD <= 0) {
+                return res.status(500).json({ message: 'YouTube super chat pack conversion not configured.' });
+            }
+            const amountUsd = toPositiveNumber(payload.amountUsd || payload.amount || payload.amountUSD);
+            if (!amountUsd) {
+                return res.status(400).json({ message: 'Missing or invalid super chat amount.' });
+            }
+            totalAmount = amountUsd;
+            packsToAward = Math.floor(amountUsd / YOUTUBE_SUPERCHAT_PACK_USD);
+        }
+
+        if (packsToAward <= 0) {
+            return res.status(200).json({ success: true, packsAwarded: 0, message: 'No packs awarded for this event.' });
+        }
+
+        try {
+            let account = await ExternalAccount.findOne({ provider: normalizedPlatform, providerUserId });
+            if (!account) {
+                account = await ExternalAccount.create({
+                    provider: normalizedPlatform,
+                    providerUserId,
+                    username: username || null,
+                });
+            } else if (username && username !== account.username) {
+                account.username = username;
+            }
+
+            const pendingPacks = Number(account.pendingPacks || 0);
+            let linkedUser = null;
+            if (account.userId) {
+                linkedUser = await User.findById(account.userId);
+            }
+
+            let packsAwarded = 0;
+            let pendingPacksAfter = pendingPacks;
+
+            if (linkedUser) {
+                packsAwarded = packsToAward + pendingPacks;
+                pendingPacksAfter = 0;
+                await User.updateOne({ _id: linkedUser._id }, { $inc: { packs: packsAwarded } });
+                account.totalPacksAwarded = (account.totalPacksAwarded || 0) + packsAwarded;
+            } else {
+                pendingPacksAfter = pendingPacks + packsToAward;
+            }
+
+            account.pendingPacks = pendingPacksAfter;
+            if (totalAmount) {
+                account.totalCoins = (account.totalCoins || 0) + totalAmount;
+            }
+            account.lastEventAt = new Date();
+
+            await account.save();
+
+            return res.status(200).json({
+                success: true,
+                linked: Boolean(linkedUser),
+                packsAwarded: linkedUser ? packsAwarded : 0,
+                pendingPacks: pendingPacksAfter,
+            });
+        } catch (error) {
+            console.error('Error handling YouTube event:', error);
+            return res.status(500).json({ message: 'An internal error occurred.' });
+        }
+    }
+
+    return res.status(400).json({ message: 'Unsupported platform or eventType.' });
 });
 
 module.exports = router;
