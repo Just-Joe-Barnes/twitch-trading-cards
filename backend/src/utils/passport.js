@@ -78,6 +78,14 @@ if (passport.isTikTokEnabled) {
         }
     );
 
+    tiktokStrategy.authorizationParams = () => ({
+        client_key: TIKTOK_CLIENT_KEY,
+    });
+
+    tiktokStrategy.tokenParams = () => ({
+        client_key: TIKTOK_CLIENT_KEY,
+    });
+
     tiktokStrategy.userProfile = async (accessToken, done) => {
         try {
             const response = await axios.get(TIKTOK_USERINFO_URL, {
