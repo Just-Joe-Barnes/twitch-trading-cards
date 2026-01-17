@@ -176,6 +176,22 @@ const linkExternalAccountToUser = async ({ provider, providerUserId, username, u
     return { account, pendingPacksApplied: pendingPacks };
 };
 
+const createUserWithFallback = async (userData, email) => {
+    try {
+        const created = await User.create(userData);
+        return { user: created, wasExisting: false };
+    } catch (error) {
+        const isDuplicateEmail = error?.code === 11000 && error?.keyPattern?.email;
+        if (isDuplicateEmail && email) {
+            const existing = await findUserByEmail(email);
+            if (existing) {
+                return { user: existing, wasExisting: true };
+            }
+        }
+        throw error;
+    }
+};
+
 const finalizeLogin = async (dbUser, isNewUser) => {
     const maintenanceSetting = await Setting.findOne({ key: 'maintenanceMode' });
     const isMaintenanceMode = maintenanceSetting ? maintenanceSetting.value : false;
@@ -350,7 +366,7 @@ module.exports = function(io) {
                     linkedByEmail = true;
                 } else {
                     isNewUser = true;
-                    dbUser = await User.create({
+                    const creationResult = await createUserWithFallback({
                         twitchId: user.id,
                         username: await ensureUniqueUsername(user.display_name),
                         email: normalizeEmail(email) || undefined,
@@ -362,7 +378,15 @@ module.exports = function(io) {
                         lastLogin: new Date(),
                         lastLoginProvider: 'twitch',
                         twitchProfilePic: user.profile_image_url
-                    });
+                    }, email);
+
+                    if (creationResult?.user) {
+                        dbUser = creationResult.user;
+                        if (creationResult.wasExisting) {
+                            linkedByEmail = true;
+                            isNewUser = false;
+                        }
+                    }
                 }
             }
 
@@ -467,7 +491,7 @@ module.exports = function(io) {
                 } else {
                     isNewUser = true;
                     const username = await ensureUniqueUsername(displayName);
-                    dbUser = await User.create({
+                    const creationResult = await createUserWithFallback({
                         username,
                         email: normalizeEmail(email) || undefined,
                         packs: 1,
@@ -478,7 +502,15 @@ module.exports = function(io) {
                         lastLogin: new Date(),
                         lastLoginProvider: 'youtube',
                         twitchProfilePic: avatarUrl || undefined
-                    });
+                    }, email);
+
+                    if (creationResult?.user) {
+                        dbUser = creationResult.user;
+                        if (creationResult.wasExisting) {
+                            linkedByEmail = true;
+                            isNewUser = false;
+                        }
+                    }
                 }
             }
 
