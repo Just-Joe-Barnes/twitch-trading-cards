@@ -3,7 +3,6 @@ import {fetchWithAuth} from '../utils/api';
 import BaseCard from '../components/BaseCard';
 import UserTitle from '../components/UserTitle';
 import LoadingSpinner from '../components/LoadingSpinner';
-import HiddenTwitchEmbed from '../components/HiddenTwitchEmbed';
 import {Link, useNavigate, useParams} from 'react-router-dom';
 import {rarities} from '../constants/rarities';
 import '../styles/MarketPage.css';
@@ -192,7 +191,6 @@ const MarketPage = () => {
 
     return (
         <>
-            <HiddenTwitchEmbed />
             <div className="page" style={{paddingBottom: '0'}}>
                 <h1>Market</h1>
                 <div className="info-section section-card narrow">

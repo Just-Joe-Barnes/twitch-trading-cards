@@ -74,7 +74,7 @@ export const updateUsernameFromLinkedAccount = async (username) => {
 
 export const fetchUserProfileByUsername = async (username) => {
     try {
-        return fetchWithAuth(`/api/users/profile/${username}`, {method: "GET"});
+        return fetchWithAuth(`/api/users/profile/${encodeURIComponent(username)}`, {method: "GET"});
     } catch (error) {
         console.error("[API] Error fetching profile by username:", error.message);
         throw error;

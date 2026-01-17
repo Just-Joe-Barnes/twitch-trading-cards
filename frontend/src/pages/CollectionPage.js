@@ -11,7 +11,6 @@ import {
 import BaseCard from '../components/BaseCard';
 import UserTitle from '../components/UserTitle';
 import LoadingSpinner from '../components/LoadingSpinner';
-import HiddenTwitchEmbed from '../components/HiddenTwitchEmbed';
 import '../styles/CollectionPage.css';
 import {rarities} from '../constants/rarities';
 import {modifiers} from '../constants/modifiers';
@@ -197,9 +196,17 @@ const CollectionPage = ({
         const fetchCollectionData = async () => {
             try {
                 setLoading(true);
-                const identifier = collectionOwner || loggedInUser?.username;
-                if (identifier) {
-                    const data = await fetchUserCollection(identifier);
+                let ownerProfile = null;
+
+                if (collectionOwner) {
+                    ownerProfile = await fetchUserProfileByUsername(collectionOwner);
+                    setCollectionOwnerProfile(ownerProfile);
+                } else if (loggedInUser) {
+                    ownerProfile = loggedInUser;
+                }
+
+                if (ownerProfile?._id) {
+                    const data = await fetchUserCollection(ownerProfile._id);
                     if (data.cards) {
                         setAllCards(data.cards);
                         setTotalPacks(data.packs || 0);
@@ -467,7 +474,6 @@ const CollectionPage = ({
 
     return (
         <>
-            <HiddenTwitchEmbed />
             <div className="page">
                 {!hideHeader && (
                     <h1>
