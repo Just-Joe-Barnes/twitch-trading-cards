@@ -199,8 +199,15 @@ const CollectionPage = ({
                 let ownerProfile = null;
 
                 if (collectionOwner) {
-                    ownerProfile = await fetchUserProfileByUsername(collectionOwner);
-                    setCollectionOwnerProfile(ownerProfile);
+                    try {
+                        ownerProfile = await fetchUserProfileByUsername(collectionOwner);
+                        setCollectionOwnerProfile(ownerProfile);
+                    } catch (error) {
+                        console.error('Error fetching collection owner profile:', error);
+                        if (loggedInUser) {
+                            ownerProfile = loggedInUser;
+                        }
+                    }
                 } else if (loggedInUser) {
                     ownerProfile = loggedInUser;
                 }

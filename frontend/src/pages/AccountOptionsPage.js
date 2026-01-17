@@ -74,6 +74,7 @@ const AccountOptionsPage = () => {
             setSavingUsername(true);
             const response = await updateUsernameFromLinkedAccount(selectedUsername);
             setProfile((prev) => ({ ...prev, username: response.username }));
+            window.dispatchEvent(new CustomEvent('profile-updated'));
             if (window.showToast) {
                 window.showToast('Username updated.', 'success');
             }

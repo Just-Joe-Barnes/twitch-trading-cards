@@ -32,6 +32,14 @@ const Navbar = ({isAdmin, isMaintenanceMode}) => {
             }
         };
         fetchUsername();
+
+        const handleProfileUpdated = () => {
+            fetchUsername();
+        };
+        window.addEventListener('profile-updated', handleProfileUpdated);
+        return () => {
+            window.removeEventListener('profile-updated', handleProfileUpdated);
+        };
     }, []);
 
     useEffect(() => {
