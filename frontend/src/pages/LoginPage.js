@@ -13,6 +13,12 @@ const LoginPage = () => {
         tiktok: 'TikTok',
     };
 
+    const providerAvailability = {
+        twitch: true,
+        youtube: true,
+        tiktok: false,
+    };
+
     const handleLogin = (provider) => () => {
         window.location.href = `${apiBaseUrl}/api/auth/${provider}`;
     };
@@ -73,8 +79,13 @@ const LoginPage = () => {
                     <button className="login-button login-button-youtube" onClick={handleLogin('youtube')}>
                         Login with YouTube
                     </button>
-                    <button className="login-button login-button-tiktok" onClick={handleLogin('tiktok')}>
-                        Login with TikTok
+                    <button
+                        className="login-button login-button-tiktok"
+                        onClick={handleLogin('tiktok')}
+                        disabled={!providerAvailability.tiktok}
+                        aria-disabled={!providerAvailability.tiktok}
+                    >
+                        TikTok (Coming soon)
                     </button>
                 </div>
             </div>

@@ -62,7 +62,7 @@ const ProfilePage = () => {
     const linkProviders = [
         { key: 'twitch', label: 'Twitch' },
         { key: 'youtube', label: 'YouTube' },
-        { key: 'tiktok', label: 'TikTok' },
+        { key: 'tiktok', label: 'TikTok', disabled: true },
     ];
 
     useEffect(() => {
@@ -631,9 +631,9 @@ const ProfilePage = () => {
                                             <button
                                                 className="secondary-button"
                                                 onClick={() => handleLinkProvider(provider.key)}
-                                                disabled={linkingProvider === provider.key}
+                                                disabled={linkingProvider === provider.key || provider.disabled}
                                             >
-                                                {linkingProvider === provider.key ? 'Linking...' : 'Link'}
+                                                {provider.disabled ? 'Coming soon' : (linkingProvider === provider.key ? 'Linking...' : 'Link')}
                                             </button>
                                         )}
                                     </div>
