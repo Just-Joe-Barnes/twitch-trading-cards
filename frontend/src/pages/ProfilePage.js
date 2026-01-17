@@ -385,51 +385,6 @@ const ProfilePage = () => {
                     </button>
                 </div>
             </div>
-            {isOwnProfile && (
-                <div className="section-card linked-accounts">
-                    <h2>Linked Accounts</h2>
-                    <div className="linked-accounts-list">
-                        {linkProviders.map((provider) => {
-                            const linkedAccount = externalAccounts.find(
-                                (account) => account.provider === provider.key
-                            );
-                            const isLinked = Boolean(linkedAccount);
-                            const usernameLabel = linkedAccount?.username ? `@${linkedAccount.username}` : '';
-
-                            return (
-                                <div key={provider.key} className={`linked-account-row linked-account-${provider.key}`}>
-                                    <div className="linked-account-meta">
-                                        <span className={`linked-account-badge linked-account-badge-${provider.key}`}>
-                                            {provider.label}
-                                        </span>
-                                        <div className="linked-account-details">
-                                            <div className="linked-account-status">
-                                                {isLinked ? 'Linked' : 'Not linked'}
-                                            </div>
-                                            {usernameLabel && (
-                                                <div className="linked-account-username">{usernameLabel}</div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="linked-account-actions">
-                                        {isLinked ? (
-                                            <span className="linked-account-linked">Connected</span>
-                                        ) : (
-                                            <button
-                                                className="secondary-button"
-                                                onClick={() => handleLinkProvider(provider.key)}
-                                                disabled={linkingProvider === provider.key}
-                                            >
-                                                {linkingProvider === provider.key ? 'Linking...' : 'Link'}
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            )}
             <div className="section-card">
                 <h2>Featured Cards</h2>
                 {featuredCards.length > 0 ? (
@@ -640,6 +595,51 @@ const ProfilePage = () => {
                                 <div className="title-modal-empty">No titles unlocked yet.</div>
                             )}
                         </div>
+                    </div>
+                </div>
+            )}
+            {isOwnProfile && (
+                <div className="section-card linked-accounts">
+                    <h2>Linked Accounts</h2>
+                    <div className="linked-accounts-list">
+                        {linkProviders.map((provider) => {
+                            const linkedAccount = externalAccounts.find(
+                                (account) => account.provider === provider.key
+                            );
+                            const isLinked = Boolean(linkedAccount);
+                            const usernameLabel = linkedAccount?.username ? `@${linkedAccount.username}` : '';
+
+                            return (
+                                <div key={provider.key} className={`linked-account-row linked-account-${provider.key}`}>
+                                    <div className="linked-account-meta">
+                                        <span className={`linked-account-badge linked-account-badge-${provider.key}`}>
+                                            {provider.label}
+                                        </span>
+                                        <div className="linked-account-details">
+                                            <div className="linked-account-status">
+                                                {isLinked ? 'Linked' : 'Not linked'}
+                                            </div>
+                                            {usernameLabel && (
+                                                <div className="linked-account-username">{usernameLabel}</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="linked-account-actions">
+                                        {isLinked ? (
+                                            <span className="linked-account-linked">Connected</span>
+                                        ) : (
+                                            <button
+                                                className="secondary-button"
+                                                onClick={() => handleLinkProvider(provider.key)}
+                                                disabled={linkingProvider === provider.key}
+                                            >
+                                                {linkingProvider === provider.key ? 'Linking...' : 'Link'}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             )}

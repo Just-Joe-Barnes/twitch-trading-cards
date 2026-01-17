@@ -58,7 +58,10 @@ export const startLinkProvider = async (provider) => {
     if (!normalized) {
         throw new Error('Provider is required.');
     }
-    await fetchWithAuth(`/api/auth/link/${normalized}/start`, { method: "POST" });
+    const response = await fetchWithAuth(`/api/auth/link/${normalized}/start`, { method: "POST" });
+    if (response?.linkUrl) {
+        return response.linkUrl;
+    }
     return `${API_BASE_URL}/api/auth/link/${normalized}`;
 };
 

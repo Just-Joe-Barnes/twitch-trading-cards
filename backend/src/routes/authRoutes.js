@@ -24,6 +24,7 @@ const TIKTOK_USERINFO_FIELDS = process.env.TIKTOK_USERINFO_FIELDS || "open_id,un
 const TIKTOK_SCOPES = process.env.TIKTOK_SCOPES || "user.info.basic";
 const TIKTOK_ENABLED = Boolean(TIKTOK_CLIENT_KEY && TIKTOK_CLIENT_SECRET && TIKTOK_REDIRECT_URI);
 const LINK_INTENT_TTL_MS = 10 * 60 * 1000;
+const LINK_TOKEN_TTL = '10m';
 
 const buildFirstLoginReward = () => ({
     type: 'PACK',
@@ -186,6 +187,38 @@ const linkExternalAccountToUser = async ({ provider, providerUserId, username, u
     return { account, pendingPacksApplied: pendingPacks };
 };
 
+const createLinkStateToken = (userId, provider) => {
+    return jwt.sign(
+        { type: 'link', userId: String(userId), provider },
+        process.env.JWT_SECRET,
+        { expiresIn: LINK_TOKEN_TTL }
+    );
+};
+
+const parseLinkStateToken = (token) => {
+    if (!token) return null;
+    try {
+        const payload = jwt.verify(token, process.env.JWT_SECRET);
+        if (payload?.type === 'link' && payload?.userId && payload?.provider) {
+            return payload;
+        }
+    } catch (error) {
+        return null;
+    }
+    return null;
+};
+
+const resolveLinkIntent = (req, provider, state) => {
+    if (state) {
+        const tokenPayload = parseLinkStateToken(state);
+        if (tokenPayload && tokenPayload.provider === provider) {
+            return { intent: { userId: tokenPayload.userId }, fromToken: true };
+        }
+    }
+
+    return consumeLinkIntent(req, provider, state);
+};
+
 const createUserWithFallback = async (userData, email) => {
     try {
         const created = await User.create(userData);
@@ -267,23 +300,34 @@ module.exports = function(io) {
             return res.status(501).json({ message: 'TikTok login not configured.' });
         }
 
-        if (!req.session) {
-            return res.status(500).json({ message: 'Session not available.' });
+        const linkToken = createLinkStateToken(req.user._id.toString(), provider);
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const linkUrl = `${baseUrl}/api/auth/link/${provider}?link=${encodeURIComponent(linkToken)}`;
+
+        if (req.session) {
+            req.session.linkIntent = {
+                userId: req.user._id.toString(),
+                provider,
+                createdAt: Date.now(),
+                state: linkToken,
+            };
         }
 
-        req.session.linkIntent = {
-            userId: req.user._id.toString(),
-            provider,
-            createdAt: Date.now(),
-            state: crypto.randomBytes(16).toString('hex')
-        };
-
-        return res.json({ success: true });
+        return res.json({ success: true, linkUrl });
     });
 
     router.get('/link/:provider', (req, res, next) => {
         const provider = String(req.params.provider || '').trim().toLowerCase();
-        const intent = req.session?.linkIntent;
+        const linkToken = req.query.link ? String(req.query.link) : null;
+        const tokenPayload = linkToken ? parseLinkStateToken(linkToken) : null;
+        const intent = tokenPayload && tokenPayload.provider === provider
+            ? {
+                userId: tokenPayload.userId,
+                provider,
+                createdAt: Date.now(),
+                state: linkToken,
+            }
+            : req.session?.linkIntent;
 
         if (!intent || intent.provider !== provider) {
             return res.redirect(FRONTEND_URL);
@@ -338,7 +382,7 @@ module.exports = function(io) {
         passport.authenticate("twitch", { failureRedirect: FRONTEND_URL }),
         async (req, res) => {
             const user = req.user;
-            const linkCheck = consumeLinkIntent(req, 'twitch', req.query.state);
+            const linkCheck = resolveLinkIntent(req, 'twitch', req.query.state);
 
             if (linkCheck.error) {
                 return res.redirect(`${FRONTEND_URL}/profile?linkError=state`);
@@ -463,7 +507,7 @@ module.exports = function(io) {
             const displayName = profile.displayName || profile.username || 'YouTube User';
             const avatarUrl = profile.photos && profile.photos.length ? profile.photos[0].value : null;
             const email = profile.emails && profile.emails.length ? profile.emails[0].value : null;
-            const linkCheck = consumeLinkIntent(req, 'youtube', req.query.state);
+            const linkCheck = resolveLinkIntent(req, 'youtube', req.query.state);
 
             if (linkCheck.error) {
                 return res.redirect(`${FRONTEND_URL}/profile?linkError=state`);
@@ -631,7 +675,7 @@ module.exports = function(io) {
             const providerUserId = userData.open_id || tokenData.open_id || userData.union_id || tokenData.union_id;
             const displayName = userData.display_name || userData.nickname || 'TikTok User';
             const avatarUrl = userData.avatar_url || null;
-            const linkCheck = consumeLinkIntent(req, 'tiktok', state);
+            const linkCheck = resolveLinkIntent(req, 'tiktok', state);
 
             if (linkCheck.error) {
                 return res.redirect(`${FRONTEND_URL}/profile?linkError=state`);
