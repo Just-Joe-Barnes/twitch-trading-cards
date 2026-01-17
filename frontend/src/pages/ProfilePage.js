@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {useNavigate, useParams, Link, useLocation} from 'react-router-dom';
+import {useNavigate, useParams, Link} from 'react-router-dom';
 import BaseCard from '../components/BaseCard';
 import {
     fetchUserProfile,
@@ -13,7 +13,6 @@ import {
     fetchPreferredPack,
     updatePreferredPack,
     updateSelectedTitle,
-    startLinkProvider,
 } from '../utils/api';
 import { normalizeTitleEffect } from '../utils/titleEffects';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -43,27 +42,12 @@ const ProfilePage = () => {
     const [selectedTitle, setSelectedTitle] = useState(null);
     const [unlockedTitles, setUnlockedTitles] = useState([]);
     const navigate = useNavigate();
-    const location = useLocation();
     const {username: routeUsername} = useParams();
     const [isTitleModalOpen, setIsTitleModalOpen] = useState(false);
 
     const [xp, setXp] = useState(0);
     const [level, setLevel] = useState(1);
     const [achievements, setAchievements] = useState([]);
-    const [externalAccounts, setExternalAccounts] = useState([]);
-    const [linkingProvider, setLinkingProvider] = useState('');
-
-    const providerLabels = {
-        twitch: 'Twitch',
-        youtube: 'YouTube',
-        tiktok: 'TikTok',
-    };
-
-    const linkProviders = [
-        { key: 'twitch', label: 'Twitch' },
-        { key: 'youtube', label: 'YouTube' },
-        { key: 'tiktok', label: 'TikTok', disabled: true },
-    ];
 
     useEffect(() => {
         const fetchProfileData = async () => {
@@ -97,8 +81,6 @@ const ProfilePage = () => {
                 const ownProfile = me && profile && me.username === profile.username;
                 setIsOwnProfile(ownProfile);
                 setUnlockedTitles(ownProfile ? (profile.unlockedTitles || []) : []);
-                const linkedAccounts = ownProfile && me && me.externalAccounts ? me.externalAccounts : (profile.externalAccounts || []);
-                setExternalAccounts(linkedAccounts || []);
 
                 let tempFeatured = profile.featuredCards || [];
                 if (ownProfile) {
@@ -134,33 +116,6 @@ const ProfilePage = () => {
         };
         fetchProfileData();
     }, [routeUsername]);
-
-    useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        const linked = params.get('linked');
-        const linkError = params.get('linkError');
-        if (linked && window.showToast) {
-            window.showToast(`Linked ${providerLabels[linked] || linked}.`, 'success');
-        }
-        if (linkError && window.showToast) {
-            window.showToast('Unable to link that account. Please contact support if this persists.', 'error');
-        }
-    }, [location.search]);
-
-    const handleLinkProvider = async (provider) => {
-        try {
-            setLinkingProvider(provider);
-            const redirectUrl = await startLinkProvider(provider);
-            window.location.href = redirectUrl;
-        } catch (err) {
-            console.error('Error starting link flow:', err);
-            if (window.showToast) {
-                window.showToast('Failed to start link flow. Try again.', 'error');
-            }
-        } finally {
-            setLinkingProvider('');
-        }
-    };
 
 
     useEffect(() => {
@@ -595,51 +550,6 @@ const ProfilePage = () => {
                                 <div className="title-modal-empty">No titles unlocked yet.</div>
                             )}
                         </div>
-                    </div>
-                </div>
-            )}
-            {isOwnProfile && (
-                <div className="section-card linked-accounts">
-                    <h2>Linked Accounts</h2>
-                    <div className="linked-accounts-list">
-                        {linkProviders.map((provider) => {
-                            const linkedAccount = externalAccounts.find(
-                                (account) => account.provider === provider.key
-                            );
-                            const isLinked = Boolean(linkedAccount);
-                            const usernameLabel = linkedAccount?.username ? `@${linkedAccount.username}` : '';
-
-                            return (
-                                <div key={provider.key} className={`linked-account-row linked-account-${provider.key}`}>
-                                    <div className="linked-account-meta">
-                                        <span className={`linked-account-badge linked-account-badge-${provider.key}`}>
-                                            {provider.label}
-                                        </span>
-                                        <div className="linked-account-details">
-                                            <div className="linked-account-status">
-                                                {isLinked ? 'Linked' : 'Not linked'}
-                                            </div>
-                                            {usernameLabel && (
-                                                <div className="linked-account-username">{usernameLabel}</div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="linked-account-actions">
-                                        {isLinked ? (
-                                            <span className="linked-account-linked">Connected</span>
-                                        ) : (
-                                            <button
-                                                className="secondary-button"
-                                                onClick={() => handleLinkProvider(provider.key)}
-                                                disabled={linkingProvider === provider.key || provider.disabled}
-                                            >
-                                                {provider.disabled ? 'Coming soon' : (linkingProvider === provider.key ? 'Linking...' : 'Link')}
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
                     </div>
                 </div>
             )}

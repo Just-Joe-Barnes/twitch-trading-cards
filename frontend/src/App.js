@@ -38,6 +38,7 @@ const PendingTrades = lazy(() => import('./pages/PendingTrades'));
 const CataloguePage = lazy(() => import('./pages/CataloguePage'));
 const MarketPage = lazy(() => import('./pages/MarketPage'));
 const CreateListingPage = lazy(() => import('./pages/CreateListingPage'));
+const AccountOptionsPage = lazy(() => import('./pages/AccountOptionsPage'));
 const MarketListingDetails = lazy(() => import('./pages/MarketListingDetails'));
 const AdminActions = lazy(() => import('./pages/AdminActions'));
 const AdminTitlesPage = lazy(() => import('./pages/AdminTitlesPage'));
@@ -231,6 +232,7 @@ const App = () => {
                         <Route path="/collection/:username/binder" element={user ? <BinderPage/> : <Navigate to="/login"/>} />
                         <Route path="/collection" element={user ? <CollectionPage user={user}/> : <Navigate to="/login"/>} />
                         <Route path="/profile/:username" element={<ProfilePage/>} />
+                        <Route path="/account" element={user ? <AccountOptionsPage/> : <Navigate to="/login"/>} />
                         <Route path="/trading" element={user ? <TradingPage userId={user._id}/> : <Navigate to="/login"/>} />
                         <Route path="/trades/pending" element={user ? <PendingTrades userId={user._id}/> : <Navigate to="/login"/>} />
                         <Route path="/bounty" element={user ? <BountyBoardPage userId={user._id} username={user.username}/> : <Navigate to="/login"/>} />

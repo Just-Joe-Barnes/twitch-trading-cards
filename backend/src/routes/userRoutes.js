@@ -13,6 +13,7 @@ const {
     updatePreferredPack,
     updateSelectedTitle,
     searchUsers,
+    updateUsernameFromLinkedAccount,
 } = require('../controllers/userController');
 const { protect } = require('../middleware/authMiddleware');
 const User = require('../models/userModel');
@@ -46,6 +47,9 @@ router.put('/preferred-pack', protect, updatePreferredPack);
 
 // Title selection route
 router.put('/title', protect, updateSelectedTitle);
+
+// Account options
+router.put('/account/username', protect, updateUsernameFromLinkedAccount);
 
 // Route to fetch all cards in the user's collection
 router.get('/:userId/collection', protect, async (req, res) => {

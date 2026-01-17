@@ -72,7 +72,7 @@ const ensureUniqueUsername = async (preferredName) => {
     return candidate;
 };
 
-const updateLoginStats = async (user, { displayName, profilePic, provider, allowUsernameUpdate = true } = {}) => {
+const updateLoginStats = async (user, { displayName, profilePic, provider, allowUsernameUpdate = false } = {}) => {
     if (displayName && allowUsernameUpdate && user.username !== displayName) {
         user.username = displayName;
     }
@@ -385,13 +385,13 @@ module.exports = function(io) {
             const linkCheck = resolveLinkIntent(req, 'twitch', req.query.state);
 
             if (linkCheck.error) {
-                return res.redirect(`${FRONTEND_URL}/profile?linkError=state`);
+                return res.redirect(`${FRONTEND_URL}/account?linkError=state`);
             }
 
             if (linkCheck.intent) {
                 const linkUser = await User.findById(linkCheck.intent.userId);
                 if (!linkUser) {
-                    return res.redirect(`${FRONTEND_URL}/profile?linkError=user`);
+                    return res.redirect(`${FRONTEND_URL}/account?linkError=user`);
                 }
 
                 const result = await linkExternalAccountToUser({
@@ -402,10 +402,10 @@ module.exports = function(io) {
                 });
 
                 if (result.conflict) {
-                    return res.redirect(`${FRONTEND_URL}/profile/${linkUser.username}?linkError=conflict`);
+                    return res.redirect(`${FRONTEND_URL}/account?linkError=conflict`);
                 }
 
-                return res.redirect(`${FRONTEND_URL}/profile/${linkUser.username}?linked=twitch`);
+                return res.redirect(`${FRONTEND_URL}/account?linked=twitch`);
             }
 
             let dbUser = await User.findOne({ twitchId: user.id });
@@ -460,7 +460,7 @@ module.exports = function(io) {
                     displayName: user.display_name,
                     profilePic: user.profile_image_url,
                     provider: 'twitch',
-                    allowUsernameUpdate: !linkedByEmail
+                    allowUsernameUpdate: false
                 });
             }
 
@@ -510,13 +510,13 @@ module.exports = function(io) {
             const linkCheck = resolveLinkIntent(req, 'youtube', req.query.state);
 
             if (linkCheck.error) {
-                return res.redirect(`${FRONTEND_URL}/profile?linkError=state`);
+                return res.redirect(`${FRONTEND_URL}/account?linkError=state`);
             }
 
             if (linkCheck.intent) {
                 const linkUser = await User.findById(linkCheck.intent.userId);
                 if (!linkUser) {
-                    return res.redirect(`${FRONTEND_URL}/profile?linkError=user`);
+                    return res.redirect(`${FRONTEND_URL}/account?linkError=user`);
                 }
 
                 const result = await linkExternalAccountToUser({
@@ -527,10 +527,10 @@ module.exports = function(io) {
                 });
 
                 if (result.conflict) {
-                    return res.redirect(`${FRONTEND_URL}/profile/${linkUser.username}?linkError=conflict`);
+                    return res.redirect(`${FRONTEND_URL}/account?linkError=conflict`);
                 }
 
-                return res.redirect(`${FRONTEND_URL}/profile/${linkUser.username}?linked=youtube`);
+                return res.redirect(`${FRONTEND_URL}/account?linked=youtube`);
             }
 
             let dbUser = null;
@@ -583,7 +583,7 @@ module.exports = function(io) {
                     displayName,
                     profilePic: avatarUrl,
                     provider: 'youtube',
-                    allowUsernameUpdate: !linkedByEmail
+                    allowUsernameUpdate: false
                 });
             }
 
@@ -678,13 +678,13 @@ module.exports = function(io) {
             const linkCheck = resolveLinkIntent(req, 'tiktok', state);
 
             if (linkCheck.error) {
-                return res.redirect(`${FRONTEND_URL}/profile?linkError=state`);
+                return res.redirect(`${FRONTEND_URL}/account?linkError=state`);
             }
 
             if (linkCheck.intent) {
                 const linkUser = await User.findById(linkCheck.intent.userId);
                 if (!linkUser) {
-                    return res.redirect(`${FRONTEND_URL}/profile?linkError=user`);
+                    return res.redirect(`${FRONTEND_URL}/account?linkError=user`);
                 }
 
                 const result = await linkExternalAccountToUser({
@@ -695,10 +695,10 @@ module.exports = function(io) {
                 });
 
                 if (result.conflict) {
-                    return res.redirect(`${FRONTEND_URL}/profile/${linkUser.username}?linkError=conflict`);
+                    return res.redirect(`${FRONTEND_URL}/account?linkError=conflict`);
                 }
 
-                return res.redirect(`${FRONTEND_URL}/profile/${linkUser.username}?linked=tiktok`);
+                return res.redirect(`${FRONTEND_URL}/account?linked=tiktok`);
             }
 
             if (!providerUserId) {
@@ -726,7 +726,7 @@ module.exports = function(io) {
                     twitchProfilePic: avatarUrl || undefined
                 });
             } else {
-                await updateLoginStats(dbUser, { displayName, profilePic: avatarUrl, provider: 'tiktok' });
+                await updateLoginStats(dbUser, { displayName, profilePic: avatarUrl, provider: 'tiktok', allowUsernameUpdate: false });
             }
 
             await ExternalAccount.findOneAndUpdate(

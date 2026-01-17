@@ -33,6 +33,7 @@ const UserDropdown = ({ profilePic, username, selectedTitle, onLogout, isAdmin, 
             {isOpen && (
                 <div className="user-menu">
                     <Link to={`/profile/${username}`} onClick={onToggle} className="menu-item">My Profile</Link>
+                    <Link to="/account" onClick={onToggle} className="menu-item">Account Options</Link>
                     {isAdmin && (
                         <>
                             <Link to="/admin-dashboard" onClick={onToggle} className="menu-item">Admin Dashboard</Link>

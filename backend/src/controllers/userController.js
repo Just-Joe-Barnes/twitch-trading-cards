@@ -6,6 +6,10 @@ const Title = require('../models/titleModel');
 const ExternalAccount = require('../models/externalAccountModel');
 
 const TIKTOK_COINS_PER_PACK = parseInt(process.env.TIKTOK_COINS_PER_PACK || '1000', 10);
+const normalizeUsername = (value) => {
+    if (!value) return '';
+    return String(value).trim();
+};
 
 // Get logged-in user's profile (using token)
 const getUserProfile = async (req, res) => {
@@ -354,6 +358,53 @@ const updatePreferredPack = async (req, res) => {
     }
 };
 
+const updateUsernameFromLinkedAccount = async (req, res) => {
+    try {
+        const desired = normalizeUsername(req.body?.username);
+        if (!desired) {
+            return res.status(400).json({ message: 'Username is required.' });
+        }
+
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (desired === user.username) {
+            return res.status(200).json({ username: user.username });
+        }
+
+        const externalAccounts = await ExternalAccount.find({ userId: user._id })
+            .select('username')
+            .lean();
+
+        const allowedNames = new Set([
+            user.username,
+            ...externalAccounts.map((account) => normalizeUsername(account.username)).filter(Boolean),
+        ]);
+
+        if (!allowedNames.has(desired)) {
+            return res.status(400).json({ message: 'Username must match a linked account.' });
+        }
+
+        const existing = await User.exists({
+            username: desired,
+            _id: { $ne: user._id },
+        });
+        if (existing) {
+            return res.status(409).json({ message: 'That username is already taken.' });
+        }
+
+        user.username = desired;
+        await user.save();
+
+        return res.status(200).json({ username: user.username });
+    } catch (error) {
+        console.error('Error updating username:', error.message);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
+
 const updateSelectedTitle = async (req, res) => {
     try {
         const { titleId } = req.body || {};
@@ -426,4 +477,5 @@ module.exports = {
     updatePreferredPack,
     updateSelectedTitle,
     searchUsers,
+    updateUsernameFromLinkedAccount,
 };

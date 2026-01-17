@@ -65,6 +65,13 @@ export const startLinkProvider = async (provider) => {
     return `${API_BASE_URL}/api/auth/link/${normalized}`;
 };
 
+export const updateUsernameFromLinkedAccount = async (username) => {
+    return fetchWithAuth('/api/users/account/username', {
+        method: 'PUT',
+        body: JSON.stringify({ username }),
+    });
+};
+
 export const fetchUserProfileByUsername = async (username) => {
     try {
         return fetchWithAuth(`/api/users/profile/${username}`, {method: "GET"});
