@@ -48,6 +48,16 @@ const findUserByEmail = async (email) => {
     return User.findOne({ email: normalized });
 };
 
+const isEmailAvailableForUser = async (email, userId) => {
+    const normalized = normalizeEmail(email);
+    if (!normalized || !userId) return false;
+    const existing = await User.findOne({
+        email: normalized,
+        _id: { $ne: userId },
+    }).select('_id');
+    return !existing;
+};
+
 const ensureUniqueUsername = async (preferredName) => {
     const base = (preferredName || 'new-user').trim() || 'new-user';
     let candidate = base;
@@ -395,7 +405,10 @@ module.exports = function(io) {
             }
 
             if (dbUser && email && !dbUser.email) {
-                dbUser.email = normalizeEmail(email);
+                const emailAvailable = await isEmailAvailableForUser(email, dbUser._id);
+                if (emailAvailable) {
+                    dbUser.email = normalizeEmail(email);
+                }
             }
 
             if (dbUser && !isNewUser) {
@@ -515,7 +528,10 @@ module.exports = function(io) {
             }
 
             if (dbUser && email && !dbUser.email) {
-                dbUser.email = normalizeEmail(email);
+                const emailAvailable = await isEmailAvailableForUser(email, dbUser._id);
+                if (emailAvailable) {
+                    dbUser.email = normalizeEmail(email);
+                }
             }
 
             if (dbUser && !isNewUser) {
