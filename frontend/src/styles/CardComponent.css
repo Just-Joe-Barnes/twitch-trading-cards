@@ -695,22 +695,24 @@
 }
 .card-container .cosmic-overlay {
   background-image:
+    linear-gradient(125deg, rgba(40, 255, 200, 0) 10%, rgba(40, 255, 200, 0.35) 45%, rgba(140, 80, 255, 0.25) 65%, rgba(0, 0, 0, 0) 85%),
+    linear-gradient(210deg, rgba(0, 180, 255, 0) 15%, rgba(0, 180, 255, 0.25) 45%, rgba(120, 40, 255, 0.22) 70%, rgba(0, 0, 0, 0) 90%),
     url("../assets/textures/cosmic-stars.png"),
-    url("../assets/textures/foil-lines.png"),
     url("../assets/textures/grain-fine.png");
-  background-size: 180% 180%, 240% 240%, 200% 200%;
+  background-size: 260% 260%, 300% 300%, 180% 180%, 200% 200%;
   background-position:
     var(--cosmic-x, 50%) var(--cosmic-y, 50%),
     calc(100% - var(--cosmic-x, 50%)) calc(100% - var(--cosmic-y, 50%)),
-    var(--cosmic-x, 50%) var(--cosmic-y, 50%);
-  background-blend-mode: screen, color-dodge, soft-light;
+    50% 50%,
+    50% 50%;
+  background-blend-mode: screen, screen, soft-light, overlay;
   mix-blend-mode: screen;
-  opacity: 0.55;
-  filter: saturate(1.35) contrast(1.1) brightness(1.1);
-  animation: cosmicDrift 12s linear infinite;
+  opacity: 0.5;
+  filter: saturate(1.4) contrast(1.1) brightness(1.05) blur(0.3px);
+  animation: auroraShift 10s linear infinite;
 }
 .card-container:hover .cosmic-overlay {
-  opacity: 0.7;
+  opacity: 0.65;
 }
 .card-container .cosmic-shine {
   background-image:
@@ -730,27 +732,29 @@
 .card-container .veilled-overlay {
   background-image:
     url("../assets/textures/veil-smoke.png"),
-    url("../assets/textures/foil-lines.png"),
+    repeating-linear-gradient(130deg, rgba(255, 255, 255, 0.08) 0 2px, rgba(0, 0, 0, 0) 2px 14px),
+    linear-gradient(160deg, rgba(5, 5, 18, 0.78) 0%, rgba(0, 0, 0, 0.92) 65%),
     url("../assets/textures/grain-fine.png");
-  background-size: 200% 200%, 240% 240%, 200% 200%;
+  background-size: 200% 200%, 220% 220%, 180% 180%, 200% 200%;
   background-position:
     var(--veilled-x, 50%) var(--veilled-y, 50%),
-    calc(100% - var(--veilled-x, 50%)) calc(100% - var(--veilled-y, 50%)),
-    var(--veilled-x, 50%) var(--veilled-y, 50%);
-  background-blend-mode: multiply, soft-light, soft-light;
+    0% 0%,
+    0% 0%,
+    50% 50%;
+  background-blend-mode: multiply, soft-light, multiply, overlay;
   mix-blend-mode: multiply;
-  opacity: 0.6;
-  filter: contrast(1.1) brightness(0.9) saturate(1.1);
-  animation: veiledFog 12s ease-in-out infinite;
+  opacity: 0.55;
+  filter: contrast(1.2) brightness(0.85) saturate(1.1);
+  animation: veiledFog 10s ease-in-out infinite;
 }
 .card-container:hover .veilled-overlay {
-  opacity: 0.7;
+  opacity: 0.65;
 }
 .card-container .veilled-shine {
   background-image:
     url("../assets/textures/sparkle-alpha.png"),
-    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(120, 200, 255, 0.25), rgba(0, 0, 0, 0) 55%),
-    linear-gradient(110deg, rgba(120, 0, 200, 0) 40%, rgba(120, 0, 200, 0.3) 50%, rgba(0, 0, 0, 0) 60%);
+    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(120, 200, 255, 0.22), rgba(0, 0, 0, 0) 55%),
+    linear-gradient(110deg, rgba(120, 0, 200, 0) 40%, rgba(140, 0, 220, 0.35) 50%, rgba(0, 0, 0, 0) 60%);
   background-size: 200% 200%, 140% 140%, 200% 200%;
   background-position:
     var(--veilled-x, 50%) var(--veilled-y, 50%),
@@ -761,18 +765,27 @@
   filter: blur(0.45px);
   animation: veiledPulse 9s ease-in-out infinite;
 }
-@keyframes cosmicDrift {
+@keyframes auroraShift {
   0% {
     background-position:
-      20% 40%,
-      70% 20%,
-      0% 0%;
+      10% 30%,
+      90% 20%,
+      50% 50%,
+      50% 50%;
+  }
+  50% {
+    background-position:
+      60% 70%,
+      40% 80%,
+      45% 55%,
+      50% 50%;
   }
   100% {
     background-position:
-      80% 70%,
-      30% 90%,
-      100% 100%;
+      110% 30%,
+      -10% 70%,
+      50% 50%,
+      50% 50%;
   }
 }
 @keyframes cosmicTwinkle {
@@ -790,14 +803,16 @@
   0%, 100% {
     background-position:
       30% 60%,
-      20% 80%,
-      0% 0%;
+      0% 0%,
+      0% 0%,
+      50% 50%;
   }
   50% {
     background-position:
       60% 40%,
-      40% 60%,
-      10% 10%;
+      20% 20%,
+      10% 10%,
+      50% 50%;
   }
 }
 @keyframes veiledPulse {
@@ -2116,19 +2131,21 @@
 }
 .mini-card-container .cosmic-overlay {
   background-image:
+    linear-gradient(125deg, rgba(40, 255, 200, 0) 10%, rgba(40, 255, 200, 0.3) 45%, rgba(140, 80, 255, 0.2) 65%, rgba(0, 0, 0, 0) 85%),
+    linear-gradient(210deg, rgba(0, 180, 255, 0) 15%, rgba(0, 180, 255, 0.22) 45%, rgba(120, 40, 255, 0.2) 70%, rgba(0, 0, 0, 0) 90%),
     url("../assets/textures/cosmic-stars.png"),
-    url("../assets/textures/foil-lines.png"),
     url("../assets/textures/grain-fine.png");
-  background-size: 180% 180%, 220% 220%, 200% 200%;
+  background-size: 260% 260%, 300% 300%, 180% 180%, 200% 200%;
   background-position:
     var(--cosmic-x, 50%) var(--cosmic-y, 50%),
     calc(100% - var(--cosmic-x, 50%)) calc(100% - var(--cosmic-y, 50%)),
-    var(--cosmic-x, 50%) var(--cosmic-y, 50%);
-  background-blend-mode: screen, color-dodge, soft-light;
+    50% 50%,
+    50% 50%;
+  background-blend-mode: screen, screen, soft-light, overlay;
   mix-blend-mode: screen;
-  opacity: 0.5;
-  filter: saturate(1.25) contrast(1.05) brightness(1.05);
-  animation: cosmicDrift 12s linear infinite;
+  opacity: 0.48;
+  filter: saturate(1.3) contrast(1.05) brightness(1.03) blur(0.3px);
+  animation: auroraShift 10s linear infinite;
 }
 .mini-card-container:hover .cosmic-overlay {
   opacity: 0.6;
@@ -2144,34 +2161,36 @@
     var(--cosmic-x, 50%) var(--cosmic-y, 50%),
     var(--cosmic-x, 50%) var(--cosmic-y, 50%);
   mix-blend-mode: screen;
-  opacity: 0.35;
+  opacity: 0.32;
   filter: blur(0.35px);
   animation: cosmicTwinkle 8s linear infinite;
 }
 .mini-card-container .veilled-overlay {
   background-image:
     url("../assets/textures/veil-smoke.png"),
-    url("../assets/textures/foil-lines.png"),
+    repeating-linear-gradient(130deg, rgba(255, 255, 255, 0.08) 0 2px, rgba(0, 0, 0, 0) 2px 14px),
+    linear-gradient(160deg, rgba(5, 5, 18, 0.75) 0%, rgba(0, 0, 0, 0.9) 65%),
     url("../assets/textures/grain-fine.png");
-  background-size: 200% 200%, 220% 220%, 200% 200%;
+  background-size: 200% 200%, 220% 220%, 180% 180%, 200% 200%;
   background-position:
     var(--veilled-x, 50%) var(--veilled-y, 50%),
-    calc(100% - var(--veilled-x, 50%)) calc(100% - var(--veilled-y, 50%)),
-    var(--veilled-x, 50%) var(--veilled-y, 50%);
-  background-blend-mode: multiply, soft-light, soft-light;
+    0% 0%,
+    0% 0%,
+    50% 50%;
+  background-blend-mode: multiply, soft-light, multiply, overlay;
   mix-blend-mode: multiply;
-  opacity: 0.55;
-  filter: contrast(1.05) brightness(0.9) saturate(1.1);
-  animation: veiledFog 12s ease-in-out infinite;
+  opacity: 0.5;
+  filter: contrast(1.15) brightness(0.85) saturate(1.1);
+  animation: veiledFog 10s ease-in-out infinite;
 }
 .mini-card-container:hover .veilled-overlay {
-  opacity: 0.65;
+  opacity: 0.6;
 }
 .mini-card-container .veilled-shine {
   background-image:
     url("../assets/textures/sparkle-alpha.png"),
     radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(120, 200, 255, 0.22), rgba(0, 0, 0, 0) 55%),
-    linear-gradient(110deg, rgba(120, 0, 200, 0) 40%, rgba(120, 0, 200, 0.25) 50%, rgba(0, 0, 0, 0) 60%);
+    linear-gradient(110deg, rgba(120, 0, 200, 0) 40%, rgba(140, 0, 220, 0.3) 50%, rgba(0, 0, 0, 0) 60%);
   background-size: 200% 200%, 140% 140%, 200% 200%;
   background-position:
     var(--veilled-x, 50%) var(--veilled-y, 50%),
