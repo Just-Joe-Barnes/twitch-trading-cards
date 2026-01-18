@@ -212,6 +212,11 @@ const BaseCard = ({
         const x = clientX - rect.left;
         const y = clientY - rect.top;
         setCursorPosition({x, y});
+        const dx = x - rect.width / 2;
+        const dy = y - rect.height / 2;
+        const maxDist = Math.hypot(rect.width / 2, rect.height / 2) || 1;
+        const dist = Math.min(1, Math.hypot(dx, dy) / maxDist);
+        card.style.setProperty('--cursor-dist', dist.toFixed(3));
 
         if (rarity.toLowerCase() === 'event' && eventEffectContainerRef.current) {
             const shimmerX = (x / rect.width) * 100;
@@ -307,14 +312,15 @@ const BaseCard = ({
         }
     };
 
-    const handlePointerLeave = () => {
-        const card = cardRef.current;
-        if (card) {
-            card.style.transform = 'scale(var(--card-scale, 1)) perspective(700px) rotateX(0deg) rotateY(0deg)';
-            card.style.removeProperty('--cursor-x');
-            card.style.removeProperty('--cursor-y');
-            card.style.transitionDuration = '1s';
-        }
+        const handlePointerLeave = () => {
+            const card = cardRef.current;
+            if (card) {
+                card.style.transform = 'scale(var(--card-scale, 1)) perspective(700px) rotateX(0deg) rotateY(0deg)';
+                card.style.removeProperty('--cursor-x');
+                card.style.removeProperty('--cursor-y');
+                card.style.transitionDuration = '1s';
+                card.style.setProperty('--cursor-dist', '1');
+            }
         if (eventEffectContainerRef.current) {
             eventEffectContainerRef.current.style.opacity = '0';
             eventEffectContainerRef.current.style.webkitMaskImage = 'none';
