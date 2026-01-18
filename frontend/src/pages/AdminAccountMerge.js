@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import NavAdmin from '../components/NavAdmin';
 import { fetchWithAuth } from '../utils/api';
 import '../styles/AdminActions.css';
 import '../styles/AdminAccountMerge.css';
@@ -60,9 +59,8 @@ const AdminAccountMerge = () => {
     };
 
     return (
-        <div className="page">
+        <div className="page admin-merge-page">
             <h1>Account Merge</h1>
-            <NavAdmin />
 
             <section className="section-card admin-merge-card">
                 <h2>Merge Accounts</h2>
