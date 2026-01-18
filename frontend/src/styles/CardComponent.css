@@ -610,6 +610,8 @@
 }
 .card-container .glitch-overlay,
 .card-container .prismatic-overlay,
+.card-container .rainbow-overlay,
+.card-container .rainbow-shine,
 .card-container .limited-overlay {
   position: absolute;
   inset: 8px;
@@ -656,6 +658,43 @@
   background: url("../assets/textures/rainbowpop.gif") center/cover;
   mix-blend-mode: color-dodge;
   opacity: 0.1;
+}
+.card-container .rainbow-overlay {
+  --rainbow-x: 50%;
+  --rainbow-y: 50%;
+  background-image:
+    radial-gradient(circle at var(--rainbow-x) var(--rainbow-y), rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0) 40%),
+    linear-gradient(120deg, #ff2d55, #ffcc00, #34c759, #00c7ff, #5856d6, #ff2d55);
+  background-size: 180% 180%;
+  background-position: var(--rainbow-x) var(--rainbow-y);
+  mix-blend-mode: screen;
+  opacity: 0.35;
+  filter: saturate(1.4) contrast(1.05);
+  animation: rainbowDrift 8s linear infinite;
+}
+.card-container:hover .rainbow-overlay {
+  opacity: 0.55;
+}
+.card-container .rainbow-shine {
+  --rainbow-x: 50%;
+  --rainbow-y: 50%;
+  background:
+    radial-gradient(circle at var(--rainbow-x) var(--rainbow-y), rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 45%),
+    linear-gradient(115deg, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 65%);
+  mix-blend-mode: overlay;
+  opacity: 0.4;
+  filter: blur(0.3px);
+}
+@keyframes rainbowDrift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 .card-container.mythic .prismatic-overlay, .card-container.divine .prismatic-overlay, .card-container.event .prismatic-overlay {
   opacity: 0.3;
@@ -1689,6 +1728,8 @@
 }
 .mini-card-container .glitch-overlay,
 .mini-card-container .prismatic-overlay,
+.mini-card-container .rainbow-overlay,
+.mini-card-container .rainbow-shine,
 .mini-card-container .limited-overlay {
   position: absolute;
   inset: 4px;
@@ -1735,6 +1776,32 @@
   background: url("../assets/textures/rainbowpop.gif") center/cover;
   mix-blend-mode: color-dodge;
   opacity: 0.1;
+}
+.mini-card-container .rainbow-overlay {
+  --rainbow-x: 50%;
+  --rainbow-y: 50%;
+  background-image:
+    radial-gradient(circle at var(--rainbow-x) var(--rainbow-y), rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0) 40%),
+    linear-gradient(120deg, #ff2d55, #ffcc00, #34c759, #00c7ff, #5856d6, #ff2d55);
+  background-size: 180% 180%;
+  background-position: var(--rainbow-x) var(--rainbow-y);
+  mix-blend-mode: screen;
+  opacity: 0.3;
+  filter: saturate(1.4) contrast(1.05);
+  animation: rainbowDrift 8s linear infinite;
+}
+.mini-card-container:hover .rainbow-overlay {
+  opacity: 0.5;
+}
+.mini-card-container .rainbow-shine {
+  --rainbow-x: 50%;
+  --rainbow-y: 50%;
+  background:
+    radial-gradient(circle at var(--rainbow-x) var(--rainbow-y), rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 45%),
+    linear-gradient(115deg, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 65%);
+  mix-blend-mode: overlay;
+  opacity: 0.35;
+  filter: blur(0.3px);
 }
 .mini-card-container.mythic .prismatic-overlay, .mini-card-container.divine .prismatic-overlay, .mini-card-container.event .prismatic-overlay {
   opacity: 0.3;

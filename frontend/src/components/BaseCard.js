@@ -40,6 +40,7 @@ const BaseCard = ({
     const [modifierData, setModifierData] = useState(null);
     const [cursorPosition, setCursorPosition] = useState({x: 0, y: 0});
     const isGlitch = modifierData?.name === 'Glitch';
+    const isRainbow = modifierData?.name === 'Rainbow';
     const eventEffectContainerRef = useRef(null);
 
     useEffect(() => {
@@ -284,6 +285,12 @@ const BaseCard = ({
             card.style.setProperty('--glitch-x', `${gx}px`);
             card.style.setProperty('--glitch-y', `${gy}px`);
         }
+        if (isRainbow) {
+            const rx = ((x / rect.width) * 100).toFixed(2);
+            const ry = ((y / rect.height) * 100).toFixed(2);
+            card.style.setProperty('--rainbow-x', `${rx}%`);
+            card.style.setProperty('--rainbow-y', `${ry}%`);
+        }
     };
 
     const handlePointerLeave = () => {
@@ -315,6 +322,8 @@ const BaseCard = ({
         }
         card.style.removeProperty('--glitch-x');
         card.style.removeProperty('--glitch-y');
+        card.style.setProperty('--rainbow-x', '50%');
+        card.style.setProperty('--rainbow-y', '50%');
     };
 
     const handleClick = (e) => {
@@ -423,6 +432,12 @@ const BaseCard = ({
                         {modifierData?.name === 'Negative' && ( <div className={`negative-overlay ${miniCard ? 'mini' : ''}`}/> )}
                         {modifierData?.name === 'Glitch' && ( <div className={`glitch-overlay ${miniCard ? 'mini' : ''}`}/> )}
                         {modifierData?.name === 'Prismatic' && ( <div className={`prismatic-overlay ${miniCard ? 'mini' : ''}`}/> )}
+                        {modifierData?.name === 'Rainbow' && (
+                            <>
+                                <div className={`rainbow-overlay ${miniCard ? 'mini' : ''}`}/>
+                                <div className={`rainbow-shine ${miniCard ? 'mini' : ''}`}/>
+                            </>
+                        )}
                         {limited && (<div className={`limited-overlay ${miniCard ? 'mini' : ''}`}/>)}
                         <div className={`overlay-badges ${miniCard ? 'mini' : ''}`}>
                             {featured && ( <div className="overlay-badge featured-badge">Featured</div> )}
