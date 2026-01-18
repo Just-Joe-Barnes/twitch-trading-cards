@@ -712,16 +712,29 @@
 .card-container .fracture-overlay {
   --fracture-x: 50%;
   --fracture-y: 50%;
-  background-image:
-    linear-gradient(110deg, transparent 22%, rgba(255, 255, 255, 0.55) 24%, transparent 28%),
-    linear-gradient(35deg, transparent 18%, rgba(255, 255, 255, 0.4) 20%, transparent 24%),
-    linear-gradient(210deg, transparent 30%, rgba(255, 255, 255, 0.45) 33%, transparent 37%),
-    linear-gradient(160deg, transparent 40%, rgba(255, 255, 255, 0.35) 42%, transparent 46%),
-    linear-gradient(75deg, transparent 55%, rgba(255, 255, 255, 0.35) 57%, transparent 61%),
-    radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 55%),
+  background: rgba(12, 12, 12, 0.6);
+  -webkit-mask-image:
+    linear-gradient(110deg, rgba(0, 0, 0, 1) 0 40%, rgba(0, 0, 0, 0) 42%, rgba(0, 0, 0, 1) 46%),
+    linear-gradient(35deg, rgba(0, 0, 0, 1) 0 28%, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 1) 34%),
+    linear-gradient(210deg, rgba(0, 0, 0, 1) 0 46%, rgba(0, 0, 0, 0) 48%, rgba(0, 0, 0, 1) 52%),
+    linear-gradient(160deg, rgba(0, 0, 0, 1) 0 55%, rgba(0, 0, 0, 0) 57%, rgba(0, 0, 0, 1) 61%),
+    linear-gradient(75deg, rgba(0, 0, 0, 1) 0 62%, rgba(0, 0, 0, 0) 64%, rgba(0, 0, 0, 1) 68%),
+    radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 60%),
     url("../assets/textures/noise.png");
-  background-size: 200% 200%, 220% 220%, 180% 180%, 240% 240%, 260% 260%, 140% 140%, cover;
-  background-position: var(--fracture-x, 50%) var(--fracture-y, 50%), 20% 80%, 80% 20%, 60% 10%, 10% 60%, var(--cursor-x, 50%) var(--cursor-y, 50%), center;
+  -webkit-mask-size: 200% 200%, 220% 220%, 180% 180%, 240% 240%, 260% 260%, 140% 140%, cover;
+  -webkit-mask-position: var(--fracture-x, 50%) var(--fracture-y, 50%), 20% 80%, 80% 20%, 60% 10%, 10% 60%, var(--cursor-x, 50%) var(--cursor-y, 50%), center;
+  -webkit-mask-repeat: no-repeat;
+  mask-image:
+    linear-gradient(110deg, rgba(0, 0, 0, 1) 0 40%, rgba(0, 0, 0, 0) 42%, rgba(0, 0, 0, 1) 46%),
+    linear-gradient(35deg, rgba(0, 0, 0, 1) 0 28%, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 1) 34%),
+    linear-gradient(210deg, rgba(0, 0, 0, 1) 0 46%, rgba(0, 0, 0, 0) 48%, rgba(0, 0, 0, 1) 52%),
+    linear-gradient(160deg, rgba(0, 0, 0, 1) 0 55%, rgba(0, 0, 0, 0) 57%, rgba(0, 0, 0, 1) 61%),
+    linear-gradient(75deg, rgba(0, 0, 0, 1) 0 62%, rgba(0, 0, 0, 0) 64%, rgba(0, 0, 0, 1) 68%),
+    radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 60%),
+    url("../assets/textures/noise.png");
+  mask-size: 200% 200%, 220% 220%, 180% 180%, 240% 240%, 260% 260%, 140% 140%, cover;
+  mask-position: var(--fracture-x, 50%) var(--fracture-y, 50%), 20% 80%, 80% 20%, 60% 10%, 10% 60%, var(--cursor-x, 50%) var(--cursor-y, 50%), center;
+  mask-repeat: no-repeat;
   mix-blend-mode: screen;
   opacity: 0.35;
   filter: contrast(1.25) brightness(1.1);
@@ -1893,16 +1906,29 @@
 .mini-card-container .fracture-overlay {
   --fracture-x: 50%;
   --fracture-y: 50%;
-  background-image:
-    linear-gradient(110deg, transparent 22%, rgba(255, 255, 255, 0.5) 24%, transparent 28%),
-    linear-gradient(35deg, transparent 18%, rgba(255, 255, 255, 0.35) 20%, transparent 24%),
-    linear-gradient(210deg, transparent 30%, rgba(255, 255, 255, 0.4) 33%, transparent 37%),
-    linear-gradient(160deg, transparent 40%, rgba(255, 255, 255, 0.3) 42%, transparent 46%),
-    linear-gradient(75deg, transparent 55%, rgba(255, 255, 255, 0.3) 57%, transparent 61%),
-    radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 55%),
+  background: rgba(12, 12, 12, 0.6);
+  -webkit-mask-image:
+    linear-gradient(110deg, rgba(0, 0, 0, 1) 0 40%, rgba(0, 0, 0, 0) 42%, rgba(0, 0, 0, 1) 46%),
+    linear-gradient(35deg, rgba(0, 0, 0, 1) 0 28%, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 1) 34%),
+    linear-gradient(210deg, rgba(0, 0, 0, 1) 0 46%, rgba(0, 0, 0, 0) 48%, rgba(0, 0, 0, 1) 52%),
+    linear-gradient(160deg, rgba(0, 0, 0, 1) 0 55%, rgba(0, 0, 0, 0) 57%, rgba(0, 0, 0, 1) 61%),
+    linear-gradient(75deg, rgba(0, 0, 0, 1) 0 62%, rgba(0, 0, 0, 0) 64%, rgba(0, 0, 0, 1) 68%),
+    radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 60%),
     url("../assets/textures/noise.png");
-  background-size: 200% 200%, 220% 220%, 180% 180%, 240% 240%, 260% 260%, 140% 140%, cover;
-  background-position: var(--fracture-x, 50%) var(--fracture-y, 50%), 20% 80%, 80% 20%, 60% 10%, 10% 60%, var(--cursor-x, 50%) var(--cursor-y, 50%), center;
+  -webkit-mask-size: 200% 200%, 220% 220%, 180% 180%, 240% 240%, 260% 260%, 140% 140%, cover;
+  -webkit-mask-position: var(--fracture-x, 50%) var(--fracture-y, 50%), 20% 80%, 80% 20%, 60% 10%, 10% 60%, var(--cursor-x, 50%) var(--cursor-y, 50%), center;
+  -webkit-mask-repeat: no-repeat;
+  mask-image:
+    linear-gradient(110deg, rgba(0, 0, 0, 1) 0 40%, rgba(0, 0, 0, 0) 42%, rgba(0, 0, 0, 1) 46%),
+    linear-gradient(35deg, rgba(0, 0, 0, 1) 0 28%, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 1) 34%),
+    linear-gradient(210deg, rgba(0, 0, 0, 1) 0 46%, rgba(0, 0, 0, 0) 48%, rgba(0, 0, 0, 1) 52%),
+    linear-gradient(160deg, rgba(0, 0, 0, 1) 0 55%, rgba(0, 0, 0, 0) 57%, rgba(0, 0, 0, 1) 61%),
+    linear-gradient(75deg, rgba(0, 0, 0, 1) 0 62%, rgba(0, 0, 0, 0) 64%, rgba(0, 0, 0, 1) 68%),
+    radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 60%),
+    url("../assets/textures/noise.png");
+  mask-size: 200% 200%, 220% 220%, 180% 180%, 240% 240%, 260% 260%, 140% 140%, cover;
+  mask-position: var(--fracture-x, 50%) var(--fracture-y, 50%), 20% 80%, 80% 20%, 60% 10%, 10% 60%, var(--cursor-x, 50%) var(--cursor-y, 50%), center;
+  mask-repeat: no-repeat;
   mix-blend-mode: screen;
   opacity: 0.3;
   filter: contrast(1.15) brightness(1.05);
