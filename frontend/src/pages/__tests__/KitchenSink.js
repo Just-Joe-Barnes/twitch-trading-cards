@@ -204,6 +204,26 @@ const KitchenSink = () => {
                     grade={6}
                     slabbed={toggleSlabbedPreview}
                 />
+                <BaseCard
+                    name="Fractured The Cursed Bristles"
+                    image="/images/cards/thecursedbristles.jpg"
+                    description="Worn by a long-forgotten pirate lord, this beard carries the whispers of the deep. Each strand is tangled with lost treasure, but those who dare to claim it are doomed to an itch that never fades. -ItchyBeard"
+                    rarity="basic"
+                    mintNumber="666"
+                    modifier="Fractured Glass"
+                    grade={6}
+                    slabbed={toggleSlabbedPreview}
+                />
+                <BaseCard
+                    name="Circuit The Cursed Bristles"
+                    image="/images/cards/thecursedbristles.jpg"
+                    description="Worn by a long-forgotten pirate lord, this beard carries the whispers of the deep. Each strand is tangled with lost treasure, but those who dare to claim it are doomed to an itch that never fades. -ItchyBeard"
+                    rarity="basic"
+                    mintNumber="666"
+                    modifier="Neon Circuit"
+                    grade={6}
+                    slabbed={toggleSlabbedPreview}
+                />
             </div>
 
             <button className="sm" style={{float: 'right'}} onClick={() => setToggleSlabbedPreview(!toggleSlabbedPreview)}>Toggle Slabbed</button>
@@ -288,6 +308,28 @@ const KitchenSink = () => {
                     rarity="basic"
                     mintNumber="666"
                     modifier="Rainbow"
+                    grade={6}
+                    slabbed={toggleSlabbedPreview}
+                    miniCard={true}
+                />
+                <BaseCard
+                    name="Fractured The Cursed Bristles"
+                    image="/images/cards/thecursedbristles.jpg"
+                    description="Worn by a long-forgotten pirate lord, this beard carries the whispers of the deep. Each strand is tangled with lost treasure, but those who dare to claim it are doomed to an itch that never fades. -ItchyBeard"
+                    rarity="basic"
+                    mintNumber="666"
+                    modifier="Fractured Glass"
+                    grade={6}
+                    slabbed={toggleSlabbedPreview}
+                    miniCard={true}
+                />
+                <BaseCard
+                    name="Circuit The Cursed Bristles"
+                    image="/images/cards/thecursedbristles.jpg"
+                    description="Worn by a long-forgotten pirate lord, this beard carries the whispers of the deep. Each strand is tangled with lost treasure, but those who dare to claim it are doomed to an itch that never fades. -ItchyBeard"
+                    rarity="basic"
+                    mintNumber="666"
+                    modifier="Neon Circuit"
                     grade={6}
                     slabbed={toggleSlabbedPreview}
                     miniCard={true}

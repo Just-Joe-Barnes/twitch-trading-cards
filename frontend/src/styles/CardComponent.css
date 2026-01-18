@@ -612,6 +612,10 @@
 .card-container .prismatic-overlay,
 .card-container .rainbow-overlay,
 .card-container .rainbow-shine,
+.card-container .fracture-overlay,
+.card-container .fracture-shine,
+.card-container .circuit-overlay,
+.card-container .circuit-glow,
 .card-container .limited-overlay {
   position: absolute;
   inset: 8px;
@@ -663,26 +667,27 @@
   --rainbow-x: 50%;
   --rainbow-y: 50%;
   background-image:
-    radial-gradient(circle at var(--rainbow-x) var(--rainbow-y), rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0) 40%),
-    linear-gradient(120deg, #ff2d55, #ffcc00, #34c759, #00c7ff, #5856d6, #ff2d55);
-  background-size: 180% 180%;
-  background-position: var(--rainbow-x) var(--rainbow-y);
+    radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 45%),
+    conic-gradient(from 180deg at var(--cursor-x, 50%) var(--cursor-y, 50%), #ff2d55, #ffcc00, #34c759, #00c7ff, #5856d6, #ff2d55),
+    url("../assets/textures/noise.png");
+  background-size: 200% 200%, 160% 160%, cover;
+  background-position: var(--cursor-x, 50%) var(--cursor-y, 50%), var(--cursor-x, 50%) var(--cursor-y, 50%), center;
   mix-blend-mode: screen;
-  opacity: 0.35;
-  filter: saturate(1.4) contrast(1.05);
-  animation: rainbowDrift 8s linear infinite;
+  opacity: 0.55;
+  filter: saturate(1.8) contrast(1.15) brightness(1.1);
+  animation: rainbowDrift 6s linear infinite, rainbowPulse 4s ease-in-out infinite;
 }
 .card-container:hover .rainbow-overlay {
-  opacity: 0.55;
+  opacity: 0.75;
 }
 .card-container .rainbow-shine {
   --rainbow-x: 50%;
   --rainbow-y: 50%;
   background:
-    radial-gradient(circle at var(--rainbow-x) var(--rainbow-y), rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 45%),
+    radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0) 45%),
     linear-gradient(115deg, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 65%);
   mix-blend-mode: overlay;
-  opacity: 0.4;
+  opacity: 0.6;
   filter: blur(0.3px);
 }
 @keyframes rainbowDrift {
@@ -694,6 +699,84 @@
   }
   100% {
     background-position: 0% 50%;
+  }
+}
+@keyframes rainbowPulse {
+  0%, 100% {
+    filter: saturate(1.8) contrast(1.1) brightness(1.05) hue-rotate(0deg);
+  }
+  50% {
+    filter: saturate(2.1) contrast(1.2) brightness(1.2) hue-rotate(25deg);
+  }
+}
+.card-container .fracture-overlay {
+  --fracture-x: 50%;
+  --fracture-y: 50%;
+  background-image:
+    linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.5) 32%, transparent 36%),
+    linear-gradient(55deg, transparent 20%, rgba(255, 255, 255, 0.35) 22%, transparent 26%),
+    linear-gradient(210deg, transparent 35%, rgba(255, 255, 255, 0.4) 38%, transparent 42%),
+    radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 55%),
+    url("../assets/textures/noise.png");
+  background-size: 200% 200%, 220% 220%, 180% 180%, 140% 140%, cover;
+  background-position: var(--fracture-x, 50%) var(--fracture-y, 50%), 20% 80%, 80% 20%, var(--cursor-x, 50%) var(--cursor-y, 50%), center;
+  mix-blend-mode: screen;
+  opacity: 0.35;
+  filter: contrast(1.2) brightness(1.05);
+  animation: fractureShift 5s ease-in-out infinite;
+}
+.card-container:hover .fracture-overlay {
+  opacity: 0.55;
+}
+.card-container .fracture-shine {
+  background:
+    radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0) 45%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0) 65%);
+  mix-blend-mode: screen;
+  opacity: 0.45;
+  filter: blur(0.5px);
+}
+@keyframes fractureShift {
+  0%, 100% {
+    background-position: 10% 20%, 20% 80%, 80% 20%, 50% 50%, center;
+  }
+  50% {
+    background-position: 80% 70%, 60% 40%, 20% 80%, 60% 40%, center;
+  }
+}
+.card-container .circuit-overlay {
+  --circuit-x: 50%;
+  --circuit-y: 50%;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0, 255, 255, 0.25) 0 2px, transparent 2px 22px),
+    repeating-linear-gradient(0deg, rgba(255, 0, 255, 0.2) 0 2px, transparent 2px 26px),
+    radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(0, 255, 255, 0.45), rgba(0, 0, 0, 0) 55%);
+  background-size: 140% 140%, 140% 140%, 120% 120%;
+  background-position: var(--circuit-x, 50%) var(--circuit-y, 50%), var(--circuit-x, 50%) var(--circuit-y, 50%), var(--cursor-x, 50%) var(--cursor-y, 50%);
+  mix-blend-mode: screen;
+  opacity: 0.35;
+  animation: circuitFlow 6s linear infinite;
+}
+.card-container:hover .circuit-overlay {
+  opacity: 0.6;
+}
+.card-container .circuit-glow {
+  background-image:
+    radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(0, 255, 255, 0.6), rgba(0, 0, 0, 0) 55%),
+    radial-gradient(circle at 30% 70%, rgba(255, 0, 255, 0.4), rgba(0, 0, 0, 0) 50%);
+  mix-blend-mode: screen;
+  opacity: 0.5;
+  filter: blur(1px);
+}
+@keyframes circuitFlow {
+  0% {
+    background-position: 0% 50%, 0% 50%, 50% 50%;
+  }
+  50% {
+    background-position: 100% 50%, 50% 100%, 50% 50%;
+  }
+  100% {
+    background-position: 0% 50%, 0% 50%, 50% 50%;
   }
 }
 .card-container.mythic .prismatic-overlay, .card-container.divine .prismatic-overlay, .card-container.event .prismatic-overlay {
@@ -1730,6 +1813,10 @@
 .mini-card-container .prismatic-overlay,
 .mini-card-container .rainbow-overlay,
 .mini-card-container .rainbow-shine,
+.mini-card-container .fracture-overlay,
+.mini-card-container .fracture-shine,
+.mini-card-container .circuit-overlay,
+.mini-card-container .circuit-glow,
 .mini-card-container .limited-overlay {
   position: absolute;
   inset: 4px;
@@ -1781,27 +1868,79 @@
   --rainbow-x: 50%;
   --rainbow-y: 50%;
   background-image:
-    radial-gradient(circle at var(--rainbow-x) var(--rainbow-y), rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0) 40%),
-    linear-gradient(120deg, #ff2d55, #ffcc00, #34c759, #00c7ff, #5856d6, #ff2d55);
-  background-size: 180% 180%;
-  background-position: var(--rainbow-x) var(--rainbow-y);
+    radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 45%),
+    conic-gradient(from 180deg at var(--cursor-x, 50%) var(--cursor-y, 50%), #ff2d55, #ffcc00, #34c759, #00c7ff, #5856d6, #ff2d55),
+    url("../assets/textures/noise.png");
+  background-size: 200% 200%, 160% 160%, cover;
+  background-position: var(--cursor-x, 50%) var(--cursor-y, 50%), var(--cursor-x, 50%) var(--cursor-y, 50%), center;
   mix-blend-mode: screen;
-  opacity: 0.3;
-  filter: saturate(1.4) contrast(1.05);
-  animation: rainbowDrift 8s linear infinite;
+  opacity: 0.45;
+  filter: saturate(1.7) contrast(1.1) brightness(1.05);
+  animation: rainbowDrift 6s linear infinite, rainbowPulse 4s ease-in-out infinite;
 }
 .mini-card-container:hover .rainbow-overlay {
-  opacity: 0.5;
+  opacity: 0.65;
 }
 .mini-card-container .rainbow-shine {
   --rainbow-x: 50%;
   --rainbow-y: 50%;
   background:
-    radial-gradient(circle at var(--rainbow-x) var(--rainbow-y), rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 45%),
+    radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0) 45%),
     linear-gradient(115deg, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 65%);
   mix-blend-mode: overlay;
   opacity: 0.35;
   filter: blur(0.3px);
+}
+.mini-card-container .fracture-overlay {
+  --fracture-x: 50%;
+  --fracture-y: 50%;
+  background-image:
+    linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.45) 32%, transparent 36%),
+    linear-gradient(55deg, transparent 20%, rgba(255, 255, 255, 0.3) 22%, transparent 26%),
+    linear-gradient(210deg, transparent 35%, rgba(255, 255, 255, 0.35) 38%, transparent 42%),
+    radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 55%),
+    url("../assets/textures/noise.png");
+  background-size: 200% 200%, 220% 220%, 180% 180%, 140% 140%, cover;
+  background-position: var(--fracture-x, 50%) var(--fracture-y, 50%), 20% 80%, 80% 20%, var(--cursor-x, 50%) var(--cursor-y, 50%), center;
+  mix-blend-mode: screen;
+  opacity: 0.3;
+  filter: contrast(1.15) brightness(1.05);
+  animation: fractureShift 5s ease-in-out infinite;
+}
+.mini-card-container:hover .fracture-overlay {
+  opacity: 0.5;
+}
+.mini-card-container .fracture-shine {
+  background:
+    radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0) 45%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.45) 50%, rgba(255, 255, 255, 0) 65%);
+  mix-blend-mode: screen;
+  opacity: 0.4;
+  filter: blur(0.5px);
+}
+.mini-card-container .circuit-overlay {
+  --circuit-x: 50%;
+  --circuit-y: 50%;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0, 255, 255, 0.22) 0 2px, transparent 2px 20px),
+    repeating-linear-gradient(0deg, rgba(255, 0, 255, 0.18) 0 2px, transparent 2px 24px),
+    radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(0, 255, 255, 0.4), rgba(0, 0, 0, 0) 55%);
+  background-size: 140% 140%, 140% 140%, 120% 120%;
+  background-position: var(--circuit-x, 50%) var(--circuit-y, 50%), var(--circuit-x, 50%) var(--circuit-y, 50%), var(--cursor-x, 50%) var(--cursor-y, 50%);
+  mix-blend-mode: screen;
+  opacity: 0.3;
+  animation: circuitFlow 6s linear infinite;
+}
+.mini-card-container:hover .circuit-overlay {
+  opacity: 0.55;
+}
+.mini-card-container .circuit-glow {
+  background-image:
+    radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(0, 255, 255, 0.5), rgba(0, 0, 0, 0) 55%),
+    radial-gradient(circle at 30% 70%, rgba(255, 0, 255, 0.35), rgba(0, 0, 0, 0) 50%);
+  mix-blend-mode: screen;
+  opacity: 0.45;
+  filter: blur(1px);
 }
 .mini-card-container.mythic .prismatic-overlay, .mini-card-container.divine .prismatic-overlay, .mini-card-container.event .prismatic-overlay {
   opacity: 0.3;

@@ -41,6 +41,8 @@ const BaseCard = ({
     const [cursorPosition, setCursorPosition] = useState({x: 0, y: 0});
     const isGlitch = modifierData?.name === 'Glitch';
     const isRainbow = modifierData?.name === 'Rainbow';
+    const isFractured = modifierData?.name === 'Fractured Glass';
+    const isNeonCircuit = modifierData?.name === 'Neon Circuit';
     const eventEffectContainerRef = useRef(null);
 
     useEffect(() => {
@@ -246,6 +248,10 @@ const BaseCard = ({
             card.style.setProperty('--cursor-x', `${(x / rect.width) * 100}%`);
             card.style.setProperty('--cursor-y', `${(y / rect.height) * 100}%`);
         }
+        if (isRainbow || isFractured || isNeonCircuit) {
+            card.style.setProperty('--cursor-x', `${(x / rect.width) * 100}%`);
+            card.style.setProperty('--cursor-y', `${(y / rect.height) * 100}%`);
+        }
         if (rarity.toLowerCase() === 'legendary') {
             const lx = ((x / rect.width) * (miniCard ? 5 : 10) - (miniCard ? 2.5 : 5)).toFixed(2) + '%';
             const ly = ((y / rect.height) * (miniCard ? 5 : 10) - (miniCard ? 2.5 : 5)).toFixed(2) + '%';
@@ -291,6 +297,14 @@ const BaseCard = ({
             card.style.setProperty('--rainbow-x', `${rx}%`);
             card.style.setProperty('--rainbow-y', `${ry}%`);
         }
+        if (isFractured) {
+            card.style.setProperty('--fracture-x', `${(x / rect.width) * 100}%`);
+            card.style.setProperty('--fracture-y', `${(y / rect.height) * 100}%`);
+        }
+        if (isNeonCircuit) {
+            card.style.setProperty('--circuit-x', `${(x / rect.width) * 100}%`);
+            card.style.setProperty('--circuit-y', `${(y / rect.height) * 100}%`);
+        }
     };
 
     const handlePointerLeave = () => {
@@ -324,6 +338,10 @@ const BaseCard = ({
         card.style.removeProperty('--glitch-y');
         card.style.setProperty('--rainbow-x', '50%');
         card.style.setProperty('--rainbow-y', '50%');
+        card.style.setProperty('--fracture-x', '50%');
+        card.style.setProperty('--fracture-y', '50%');
+        card.style.setProperty('--circuit-x', '50%');
+        card.style.setProperty('--circuit-y', '50%');
     };
 
     const handleClick = (e) => {
@@ -436,6 +454,18 @@ const BaseCard = ({
                             <>
                                 <div className={`rainbow-overlay ${miniCard ? 'mini' : ''}`}/>
                                 <div className={`rainbow-shine ${miniCard ? 'mini' : ''}`}/>
+                            </>
+                        )}
+                        {modifierData?.name === 'Fractured Glass' && (
+                            <>
+                                <div className={`fracture-overlay ${miniCard ? 'mini' : ''}`}/>
+                                <div className={`fracture-shine ${miniCard ? 'mini' : ''}`}/>
+                            </>
+                        )}
+                        {modifierData?.name === 'Neon Circuit' && (
+                            <>
+                                <div className={`circuit-overlay ${miniCard ? 'mini' : ''}`}/>
+                                <div className={`circuit-glow ${miniCard ? 'mini' : ''}`}/>
                             </>
                         )}
                         {limited && (<div className={`limited-overlay ${miniCard ? 'mini' : ''}`}/>)}
