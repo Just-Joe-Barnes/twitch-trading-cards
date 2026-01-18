@@ -750,15 +750,14 @@
   --circuit-x: 50%;
   --circuit-y: 50%;
   background-image:
-    repeating-linear-gradient(90deg, rgba(0, 255, 255, 0.3) 0 2px, transparent 2px 20px),
-    repeating-linear-gradient(0deg, rgba(255, 0, 200, 0.25) 0 2px, transparent 2px 24px),
-    linear-gradient(135deg, rgba(255, 0, 200, 0.2), rgba(0, 255, 255, 0.2)),
-    radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(0, 255, 255, 0.5), rgba(0, 0, 0, 0) 55%);
-  background-size: 140% 140%, 140% 140%, 200% 200%, 120% 120%;
-  background-position: var(--circuit-x, 50%) var(--circuit-y, 50%), var(--circuit-x, 50%) var(--circuit-y, 50%), var(--cursor-x, 50%) var(--cursor-y, 50%);
+    repeating-linear-gradient(90deg, rgba(0, 255, 255, 0.35) 0 4px, transparent 4px 28px),
+    repeating-linear-gradient(0deg, rgba(255, 0, 200, 0.3) 0 4px, transparent 4px 30px),
+    linear-gradient(135deg, rgba(255, 0, 200, 0.24), rgba(0, 255, 255, 0.22));
+  background-size: 180% 180%, 180% 180%, 220% 220%;
+  background-position: 0% 0%, 0% 0%, 0% 0%;
   mix-blend-mode: screen;
   opacity: 0.35;
-  animation: circuitFlow 6s linear infinite;
+  animation: circuitFlow 8s linear infinite;
 }
 .card-container:hover .circuit-overlay {
   opacity: 0.6;
@@ -773,13 +772,10 @@
 }
 @keyframes circuitFlow {
   0% {
-    background-position: 0% 50%, 0% 50%, 50% 50%;
-  }
-  50% {
-    background-position: 100% 50%, 50% 100%, 50% 50%;
+    background-position: 0% 0%, 0% 0%, 0% 0%;
   }
   100% {
-    background-position: 0% 50%, 0% 50%, 50% 50%;
+    background-position: 200% 0%, 0% 200%, 200% 200%;
   }
 }
 .card-container.mythic .prismatic-overlay, .card-container.divine .prismatic-overlay, .card-container.event .prismatic-overlay {
@@ -1927,15 +1923,14 @@
   --circuit-x: 50%;
   --circuit-y: 50%;
   background-image:
-    repeating-linear-gradient(90deg, rgba(0, 255, 255, 0.28) 0 2px, transparent 2px 20px),
-    repeating-linear-gradient(0deg, rgba(255, 0, 200, 0.22) 0 2px, transparent 2px 24px),
-    linear-gradient(135deg, rgba(255, 0, 200, 0.18), rgba(0, 255, 255, 0.18)),
-    radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(0, 255, 255, 0.45), rgba(0, 0, 0, 0) 55%);
-  background-size: 140% 140%, 140% 140%, 200% 200%, 120% 120%;
-  background-position: var(--circuit-x, 50%) var(--circuit-y, 50%), var(--circuit-x, 50%) var(--circuit-y, 50%), var(--cursor-x, 50%) var(--cursor-y, 50%);
+    repeating-linear-gradient(90deg, rgba(0, 255, 255, 0.3) 0 3px, transparent 3px 22px),
+    repeating-linear-gradient(0deg, rgba(255, 0, 200, 0.24) 0 3px, transparent 3px 24px),
+    linear-gradient(135deg, rgba(255, 0, 200, 0.2), rgba(0, 255, 255, 0.2));
+  background-size: 180% 180%, 180% 180%, 220% 220%;
+  background-position: 0% 0%, 0% 0%, 0% 0%;
   mix-blend-mode: screen;
   opacity: 0.3;
-  animation: circuitFlow 6s linear infinite;
+  animation: circuitFlow 8s linear infinite;
 }
 .mini-card-container:hover .circuit-overlay {
   opacity: 0.55;
