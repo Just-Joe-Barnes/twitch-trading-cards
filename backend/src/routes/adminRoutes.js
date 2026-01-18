@@ -19,6 +19,10 @@ const Modifier = require('../models/modifierModel');
 const Trade = require('../models/tradeModel');
 const MarketListing = require('../models/MarketListing');
 const EventClaim = require('../models/eventClaimModel');
+const Binder = require('../models/binderModel');
+const Collection = require('../models/collectionModel');
+const MintingLog = require('../models/mintingLogModel');
+const Log = require('../models/logModel');
 const Setting = require('../models/settingsModel');
 const PeriodCounter = require('../models/periodCounterModel');
 const ExternalAccount = require('../models/externalAccountModel');
@@ -80,6 +84,393 @@ const normalizeGameTags = (value) => {
         .map((tag) => String(tag).trim())
         .filter((tag) => tag.length > 0);
     return Array.from(new Set(cleaned));
+};
+
+const normalizeEmail = (value) => {
+    if (!value) return null;
+    const normalized = String(value).trim().toLowerCase();
+    return normalized || null;
+};
+
+const resolveUserByIdentifier = async (identifier) => {
+    const trimmed = String(identifier || '').trim();
+    if (!trimmed) {
+        return { user: null, match: null };
+    }
+
+    if (mongoose.Types.ObjectId.isValid(trimmed)) {
+        const byId = await User.findById(trimmed);
+        if (byId) {
+            return { user: byId, match: { type: 'id', value: trimmed } };
+        }
+    }
+
+    const normalizedEmail = trimmed.includes('@') ? normalizeEmail(trimmed) : null;
+    if (normalizedEmail) {
+        const byEmail = await User.findOne({ email: normalizedEmail });
+        if (byEmail) {
+            return { user: byEmail, match: { type: 'email', value: normalizedEmail } };
+        }
+    }
+
+    const byUsername = await User.findOne({
+        username: new RegExp(`^${escapeRegex(trimmed)}$`, 'i')
+    });
+    if (byUsername) {
+        return { user: byUsername, match: { type: 'username', value: trimmed } };
+    }
+
+    const byTwitchId = await User.findOne({ twitchId: trimmed });
+    if (byTwitchId) {
+        return { user: byTwitchId, match: { type: 'twitchId', value: trimmed } };
+    }
+
+    return { user: null, match: null };
+};
+
+const summarizeUser = (user) => {
+    if (!user) return null;
+    return {
+        id: user._id,
+        username: user.username,
+        email: user.email || null,
+        twitchId: user.twitchId || null,
+        packs: user.packs || 0,
+        openedPacks: user.openedPacks || 0,
+        cards: user.cards ? user.cards.length : 0,
+        openedCards: user.openedCards ? user.openedCards.length : 0,
+        xp: user.xp || 0,
+        level: user.level || 1,
+        loginCount: user.loginCount || 0,
+        lastLogin: user.lastLogin || null,
+        lastLoginProvider: user.lastLoginProvider || null,
+        isAdmin: Boolean(user.isAdmin)
+    };
+};
+
+const mergeByKey = (primary = [], secondary = [], keyFn) => {
+    const seen = new Set(primary.map(keyFn));
+    const merged = [...primary];
+    secondary.forEach((item) => {
+        const key = keyFn(item);
+        if (!seen.has(key)) {
+            merged.push(item);
+            seen.add(key);
+        }
+    });
+    return merged;
+};
+
+const groupExternalAccounts = (accounts = []) => {
+    return accounts.reduce((acc, account) => {
+        const provider = account.provider || 'unknown';
+        acc[provider] = (acc[provider] || 0) + 1;
+        return acc;
+    }, {});
+};
+
+const buildMergeSummary = async (sourceUser, targetUser) => {
+    const sourceId = sourceUser._id;
+    const targetId = targetUser._id;
+
+    const [
+        sourceExternal,
+        targetExternal,
+        sourceBinder,
+        targetBinder,
+        sourceCollection,
+        targetCollection,
+        sourceActivity,
+        targetActivity,
+        sourcePackCount,
+        sourceNotificationCount,
+        sourceMintLogs,
+        sourceLogs,
+        sourceTradesSender,
+        sourceTradesRecipient,
+        sourceListings,
+        sourceListingOffers,
+        sourceEventClaims
+    ] = await Promise.all([
+        ExternalAccount.find({ userId: sourceId }).lean(),
+        ExternalAccount.find({ userId: targetId }).lean(),
+        Binder.findOne({ userId: sourceId }).lean(),
+        Binder.findOne({ userId: targetId }).lean(),
+        Collection.findOne({ userId: sourceId }).lean(),
+        Collection.findOne({ userId: targetId }).lean(),
+        UserActivity.findOne({ userId: sourceId }).lean(),
+        UserActivity.findOne({ userId: targetId }).lean(),
+        Pack.countDocuments({ userId: sourceId }),
+        Notification.countDocuments({ userId: sourceId }),
+        MintingLog.countDocuments({ userId: sourceId }),
+        Log.countDocuments({ user: sourceId }),
+        Trade.countDocuments({ sender: sourceId }),
+        Trade.countDocuments({ recipient: sourceId }),
+        MarketListing.countDocuments({ owner: sourceId }),
+        MarketListing.countDocuments({ 'offers.offerer': sourceId }),
+        EventClaim.countDocuments({ userId: sourceId })
+    ]);
+
+    const conflicts = [];
+    if (sourceUser.email && targetUser.email && sourceUser.email !== targetUser.email) {
+        conflicts.push({ field: 'email', source: sourceUser.email, target: targetUser.email });
+    }
+    if (sourceUser.twitchId && targetUser.twitchId && sourceUser.twitchId !== targetUser.twitchId) {
+        conflicts.push({ field: 'twitchId', source: sourceUser.twitchId, target: targetUser.twitchId });
+    }
+
+    const copyPlan = {
+        email: !targetUser.email && sourceUser.email ? 'copy' : 'keep',
+        twitchId: !targetUser.twitchId && sourceUser.twitchId ? 'copy' : 'keep',
+        preferredPack: !targetUser.preferredPack && sourceUser.preferredPack ? 'copy' : 'keep',
+        selectedTitle: !targetUser.selectedTitle && sourceUser.selectedTitle ? 'copy' : 'keep',
+        favoriteCard: !targetUser.favoriteCard && sourceUser.favoriteCard ? 'copy' : 'keep',
+        twitchProfilePic: !targetUser.twitchProfilePic && sourceUser.twitchProfilePic ? 'copy' : 'keep'
+    };
+
+    return {
+        source: summarizeUser(sourceUser),
+        target: summarizeUser(targetUser),
+        externalAccounts: {
+            source: groupExternalAccounts(sourceExternal),
+            target: groupExternalAccounts(targetExternal)
+        },
+        dependencies: {
+            packs: sourcePackCount,
+            notifications: sourceNotificationCount,
+            mintingLogs: sourceMintLogs,
+            logs: sourceLogs,
+            tradesAsSender: sourceTradesSender,
+            tradesAsRecipient: sourceTradesRecipient,
+            marketListings: sourceListings,
+            marketListingOffers: sourceListingOffers,
+            eventClaims: sourceEventClaims,
+            binder: sourceBinder ? 1 : 0,
+            collection: sourceCollection ? 1 : 0,
+            activity: sourceActivity ? 1 : 0
+        },
+        hasTarget: {
+            binder: Boolean(targetBinder),
+            collection: Boolean(targetCollection),
+            activity: Boolean(targetActivity)
+        },
+        conflicts,
+        copyPlan
+    };
+};
+
+const mergeEventClaims = async (sourceId, targetId) => {
+    const targetEventIds = new Set(
+        (await EventClaim.find({ userId: targetId }).distinct('eventId')).map((id) => String(id))
+    );
+    const sourceClaims = await EventClaim.find({ userId: sourceId }).lean();
+    const toUpdate = [];
+    const toDelete = [];
+
+    sourceClaims.forEach((claim) => {
+        const eventId = String(claim.eventId);
+        if (targetEventIds.has(eventId)) {
+            toDelete.push(claim._id);
+        } else {
+            toUpdate.push({
+                updateOne: {
+                    filter: { _id: claim._id },
+                    update: { $set: { userId: targetId } }
+                }
+            });
+        }
+    });
+
+    if (toUpdate.length) {
+        await EventClaim.bulkWrite(toUpdate);
+    }
+    if (toDelete.length) {
+        await EventClaim.deleteMany({ _id: { $in: toDelete } });
+    }
+};
+
+const mergeBinder = async (sourceId, targetId) => {
+    const sourceBinder = await Binder.findOne({ userId: sourceId });
+    if (!sourceBinder) return;
+    const targetBinder = await Binder.findOne({ userId: targetId });
+
+    if (!targetBinder) {
+        sourceBinder.userId = targetId;
+        await sourceBinder.save();
+        return;
+    }
+
+    const sourcePages = Array.isArray(sourceBinder.pages) ? sourceBinder.pages : [];
+    if (sourcePages.length) {
+        const targetPages = Array.isArray(targetBinder.pages) ? targetBinder.pages : [];
+        targetBinder.pages = [...targetPages, ...sourcePages];
+    }
+    if (!targetBinder.cover || Object.keys(targetBinder.cover || {}).length === 0) {
+        targetBinder.cover = sourceBinder.cover || targetBinder.cover;
+    }
+    await targetBinder.save();
+    await Binder.deleteOne({ _id: sourceBinder._id });
+};
+
+const mergeCollectionDoc = async (sourceId, targetId) => {
+    const sourceCollection = await Collection.findOne({ userId: sourceId });
+    if (!sourceCollection) return;
+    const targetCollection = await Collection.findOne({ userId: targetId });
+
+    if (!targetCollection) {
+        sourceCollection.userId = targetId;
+        await sourceCollection.save();
+        return;
+    }
+
+    const targetCards = Array.isArray(targetCollection.cards) ? targetCollection.cards : [];
+    const sourceCards = Array.isArray(sourceCollection.cards) ? sourceCollection.cards : [];
+    const mergedCards = mergeByKey(targetCards, sourceCards, (card) => `${card.name}-${card.mintNumber}`);
+    targetCollection.cards = mergedCards;
+    await targetCollection.save();
+    await Collection.deleteOne({ _id: sourceCollection._id });
+};
+
+const mergeUserActivity = async (sourceId, targetId) => {
+    const sourceActivity = await UserActivity.findOne({ userId: sourceId });
+    if (!sourceActivity) return;
+    const targetActivity = await UserActivity.findOne({ userId: targetId });
+
+    if (!targetActivity) {
+        sourceActivity.userId = targetId;
+        await sourceActivity.save();
+        return;
+    }
+
+    const sourceDate = sourceActivity.lastActive ? new Date(sourceActivity.lastActive) : null;
+    const targetDate = targetActivity.lastActive ? new Date(targetActivity.lastActive) : null;
+    if (sourceDate && (!targetDate || sourceDate > targetDate)) {
+        targetActivity.lastActive = sourceDate;
+        await targetActivity.save();
+    }
+    await UserActivity.deleteOne({ _id: sourceActivity._id });
+};
+
+const executeUserMerge = async ({ sourceUser, targetUser, adminUser }) => {
+    const sourceId = sourceUser._id;
+    const targetId = targetUser._id;
+
+    const normalizeSubdocs = (items = []) =>
+        items.map((item) => (item && typeof item.toObject === 'function' ? item.toObject() : item));
+
+    targetUser.cards = [
+        ...normalizeSubdocs(targetUser.cards || []),
+        ...normalizeSubdocs(sourceUser.cards || [])
+    ];
+    targetUser.openedCards = [
+        ...normalizeSubdocs(targetUser.openedCards || []),
+        ...normalizeSubdocs(sourceUser.openedCards || [])
+    ];
+
+    targetUser.packs = (targetUser.packs || 0) + (sourceUser.packs || 0);
+    targetUser.openedPacks = (targetUser.openedPacks || 0) + (sourceUser.openedPacks || 0);
+
+    targetUser.pendingEventReward = [
+        ...normalizeSubdocs(targetUser.pendingEventReward || []),
+        ...normalizeSubdocs(sourceUser.pendingEventReward || [])
+    ];
+
+    targetUser.unlockedTitles = mergeByKey(
+        targetUser.unlockedTitles || [],
+        sourceUser.unlockedTitles || [],
+        (value) => String(value)
+    );
+
+    targetUser.achievements = mergeByKey(
+        normalizeSubdocs(targetUser.achievements || []),
+        normalizeSubdocs(sourceUser.achievements || []),
+        (value) => String(value.name || '')
+    );
+
+    targetUser.featuredAchievements = mergeByKey(
+        normalizeSubdocs(targetUser.featuredAchievements || []),
+        normalizeSubdocs(sourceUser.featuredAchievements || []),
+        (value) => String(value.name || '')
+    );
+
+    if (!targetUser.featuredCards || targetUser.featuredCards.length === 0) {
+        targetUser.featuredCards = normalizeSubdocs(sourceUser.featuredCards || []);
+    }
+    if (!targetUser.favoriteCard && sourceUser.favoriteCard) {
+        targetUser.favoriteCard = sourceUser.favoriteCard;
+    }
+    if (!targetUser.selectedTitle && sourceUser.selectedTitle) {
+        targetUser.selectedTitle = sourceUser.selectedTitle;
+    }
+    if (!targetUser.preferredPack && sourceUser.preferredPack) {
+        targetUser.preferredPack = sourceUser.preferredPack;
+    }
+    if (!targetUser.twitchProfilePic && sourceUser.twitchProfilePic) {
+        targetUser.twitchProfilePic = sourceUser.twitchProfilePic;
+    }
+    if (!targetUser.email && sourceUser.email) {
+        targetUser.email = sourceUser.email;
+    }
+    if (!targetUser.twitchId && sourceUser.twitchId) {
+        targetUser.twitchId = sourceUser.twitchId;
+    }
+
+    targetUser.xp = (targetUser.xp || 0) + (sourceUser.xp || 0);
+    targetUser.level = Math.max(targetUser.level || 1, sourceUser.level || 1);
+    targetUser.loginCount = (targetUser.loginCount || 0) + (sourceUser.loginCount || 0);
+    targetUser.loginStreak = Math.max(targetUser.loginStreak || 0, sourceUser.loginStreak || 0);
+    targetUser.completedTrades = (targetUser.completedTrades || 0) + (sourceUser.completedTrades || 0);
+    targetUser.createdListings = (targetUser.createdListings || 0) + (sourceUser.createdListings || 0);
+    targetUser.completedListings = (targetUser.completedListings || 0) + (sourceUser.completedListings || 0);
+    targetUser.completedPurchases = (targetUser.completedPurchases || 0) + (sourceUser.completedPurchases || 0);
+    targetUser.firstLogin = Boolean(targetUser.firstLogin || sourceUser.firstLogin);
+    targetUser.isAdmin = Boolean(targetUser.isAdmin || sourceUser.isAdmin);
+
+    const sourceLastLogin = sourceUser.lastLogin ? new Date(sourceUser.lastLogin) : null;
+    const targetLastLogin = targetUser.lastLogin ? new Date(targetUser.lastLogin) : null;
+    if (sourceLastLogin && (!targetLastLogin || sourceLastLogin > targetLastLogin)) {
+        targetUser.lastLogin = sourceLastLogin;
+    }
+    if (!targetUser.lastLoginProvider && sourceUser.lastLoginProvider) {
+        targetUser.lastLoginProvider = sourceUser.lastLoginProvider;
+    }
+
+    await targetUser.save();
+
+    await ExternalAccount.updateMany({ userId: sourceId }, { $set: { userId: targetId } });
+    await Pack.updateMany({ userId: sourceId }, { $set: { userId: targetId } });
+    await Notification.updateMany({ userId: sourceId }, { $set: { userId: targetId } });
+    await MintingLog.updateMany({ userId: sourceId }, { $set: { userId: targetId } });
+    await Log.updateMany({ user: sourceId }, { $set: { user: targetId } });
+    await Trade.updateMany({ sender: sourceId }, { $set: { sender: targetId } });
+    await Trade.updateMany({ recipient: sourceId }, { $set: { recipient: targetId } });
+    await MarketListing.updateMany({ owner: sourceId }, { $set: { owner: targetId } });
+    await MarketListing.updateMany(
+        { 'offers.offerer': sourceId },
+        { $set: { 'offers.$[offer].offerer': targetId } },
+        { arrayFilters: [{ 'offer.offerer': sourceId }] }
+    );
+
+    await mergeEventClaims(sourceId, targetId);
+    await mergeBinder(sourceId, targetId);
+    await mergeCollectionDoc(sourceId, targetId);
+    await mergeUserActivity(sourceId, targetId);
+
+    await User.deleteOne({ _id: sourceId });
+
+    if (adminUser) {
+        await createLogEntry(
+            adminUser,
+            'ADMIN_ACCOUNT_MERGE',
+            `Merged ${sourceUser.username} (${sourceId}) into ${targetUser.username} (${targetId})`,
+            {
+                sourceUserId: sourceId,
+                targetUserId: targetId
+            }
+        );
+    }
+
+    return { sourceUserId: sourceId, targetUserId: targetId };
 };
 
 const slugify = (text) => {
@@ -294,6 +685,59 @@ router.post('/link-external', protect, adminOnly, async (req, res) => {
         user: { id: targetUser._id, username: targetUser.username },
         pendingPacksApplied: pendingPacks
     });
+});
+
+router.post('/merge-users', protect, adminOnly, async (req, res) => {
+    try {
+        const sourceIdentifier = req.body.source || req.body.sourceUserId || '';
+        const targetIdentifier = req.body.target || req.body.targetUserId || '';
+        const dryRun = Boolean(req.body.dryRun);
+        const confirm = Boolean(req.body.confirm);
+
+        if (!sourceIdentifier || !targetIdentifier) {
+            return res.status(400).json({ error: 'Source and target identifiers are required.' });
+        }
+
+        const { user: sourceUser, match: sourceMatch } = await resolveUserByIdentifier(sourceIdentifier);
+        const { user: targetUser, match: targetMatch } = await resolveUserByIdentifier(targetIdentifier);
+
+        if (!sourceUser) {
+            return res.status(404).json({ error: 'Source user not found.' });
+        }
+        if (!targetUser) {
+            return res.status(404).json({ error: 'Target user not found.' });
+        }
+        if (String(sourceUser._id) === String(targetUser._id)) {
+            return res.status(400).json({ error: 'Source and target must be different users.' });
+        }
+
+        const summary = await buildMergeSummary(sourceUser, targetUser);
+
+        if (dryRun || !confirm) {
+            return res.json({
+                dryRun: true,
+                summary,
+                sourceMatch,
+                targetMatch
+            });
+        }
+
+        const result = await executeUserMerge({
+            sourceUser,
+            targetUser,
+            adminUser: req.user
+        });
+
+        return res.json({
+            dryRun: false,
+            merged: true,
+            summary,
+            result
+        });
+    } catch (error) {
+        console.error('[Admin Merge] Failed to merge users:', error);
+        return res.status(500).json({ error: 'Failed to merge users.' });
+    }
 });
 
 router.get('/users', protect, adminOnly, async (req, res) => {

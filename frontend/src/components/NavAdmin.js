@@ -24,6 +24,7 @@ const NavAdmin = () => {
                 <NavLink to="/admin/card-ownership" onClick={closeMenu}>Card Ownership</NavLink>
                 <NavLink to="/admin/trades" onClick={closeMenu}>Trades</NavLink>
                 <NavLink to="/admin/titles" onClick={closeMenu}>Titles</NavLink>
+                <NavLink to="/admin/account-merge" onClick={closeMenu}>Account Merge</NavLink>
                 <NavLink to="/admin/packs" onClick={closeMenu}>Pack Management</NavLink>
                 <NavLink to="/admin/events" onClick={closeMenu}>Event Management</NavLink>
                 <NavLink to="/admin/gift" onClick={closeMenu}>Gift</NavLink>
