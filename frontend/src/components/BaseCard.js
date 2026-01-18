@@ -41,8 +41,8 @@ const BaseCard = ({
     const [cursorPosition, setCursorPosition] = useState({x: 0, y: 0});
     const isGlitch = modifierData?.name === 'Glitch';
     const isRainbow = modifierData?.name === 'Rainbow';
-    const isFractured = modifierData?.name === 'Fractured Glass';
-    const isNeonCircuit = modifierData?.name === 'Neon Circuit';
+    const isCosmic = modifierData?.name === 'Cosmic' || modifierData?.name === 'Fractured Glass';
+    const isVeilled = modifierData?.name === 'Veilled' || modifierData?.name === 'Neon Circuit';
     const eventEffectContainerRef = useRef(null);
 
     useEffect(() => {
@@ -253,7 +253,7 @@ const BaseCard = ({
             card.style.setProperty('--cursor-x', `${(x / rect.width) * 100}%`);
             card.style.setProperty('--cursor-y', `${(y / rect.height) * 100}%`);
         }
-        if (isRainbow || isFractured || isNeonCircuit) {
+        if (isRainbow || isCosmic || isVeilled) {
             card.style.setProperty('--cursor-x', `${(x / rect.width) * 100}%`);
             card.style.setProperty('--cursor-y', `${(y / rect.height) * 100}%`);
         }
@@ -302,13 +302,13 @@ const BaseCard = ({
             card.style.setProperty('--rainbow-x', `${rx}%`);
             card.style.setProperty('--rainbow-y', `${ry}%`);
         }
-        if (isFractured) {
-            card.style.setProperty('--fracture-x', `${(x / rect.width) * 100}%`);
-            card.style.setProperty('--fracture-y', `${(y / rect.height) * 100}%`);
+        if (isCosmic) {
+            card.style.setProperty('--cosmic-x', `${(x / rect.width) * 100}%`);
+            card.style.setProperty('--cosmic-y', `${(y / rect.height) * 100}%`);
         }
-        if (isNeonCircuit) {
-            card.style.setProperty('--circuit-x', `${(x / rect.width) * 100}%`);
-            card.style.setProperty('--circuit-y', `${(y / rect.height) * 100}%`);
+        if (isVeilled) {
+            card.style.setProperty('--veilled-x', `${(x / rect.width) * 100}%`);
+            card.style.setProperty('--veilled-y', `${(y / rect.height) * 100}%`);
         }
     };
 
@@ -344,10 +344,10 @@ const BaseCard = ({
         card.style.removeProperty('--glitch-y');
         card.style.setProperty('--rainbow-x', '50%');
         card.style.setProperty('--rainbow-y', '50%');
-        card.style.setProperty('--fracture-x', '50%');
-        card.style.setProperty('--fracture-y', '50%');
-        card.style.setProperty('--circuit-x', '50%');
-        card.style.setProperty('--circuit-y', '50%');
+        card.style.setProperty('--cosmic-x', '50%');
+        card.style.setProperty('--cosmic-y', '50%');
+        card.style.setProperty('--veilled-x', '50%');
+        card.style.setProperty('--veilled-y', '50%');
     };
 
     const handleClick = (e) => {
@@ -462,16 +462,16 @@ const BaseCard = ({
                                 <div className={`rainbow-shine ${miniCard ? 'mini' : ''}`}/>
                             </>
                         )}
-                        {modifierData?.name === 'Fractured Glass' && (
+                        {isCosmic && (
                             <>
-                                <div className={`fracture-overlay ${miniCard ? 'mini' : ''}`}/>
-                                <div className={`fracture-shine ${miniCard ? 'mini' : ''}`}/>
+                                <div className={`cosmic-overlay ${miniCard ? 'mini' : ''}`}/>
+                                <div className={`cosmic-shine ${miniCard ? 'mini' : ''}`}/>
                             </>
                         )}
-                        {modifierData?.name === 'Neon Circuit' && (
+                        {isVeilled && (
                             <>
-                                <div className={`circuit-overlay ${miniCard ? 'mini' : ''}`}/>
-                                <div className={`circuit-glow ${miniCard ? 'mini' : ''}`}/>
+                                <div className={`veilled-overlay ${miniCard ? 'mini' : ''}`}/>
+                                <div className={`veilled-shine ${miniCard ? 'mini' : ''}`}/>
                             </>
                         )}
                         {limited && (<div className={`limited-overlay ${miniCard ? 'mini' : ''}`}/>)}

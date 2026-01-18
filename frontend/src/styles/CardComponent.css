@@ -612,6 +612,10 @@
 .card-container .prismatic-overlay,
 .card-container .rainbow-overlay,
 .card-container .rainbow-shine,
+.card-container .cosmic-overlay,
+.card-container .cosmic-shine,
+.card-container .veilled-overlay,
+.card-container .veilled-shine,
 .card-container .fracture-overlay,
 .card-container .fracture-shine,
 .card-container .circuit-overlay,
@@ -688,6 +692,133 @@
   filter: blur(0.4px);
   background-size: 200% 200%, 200% 200%;
   background-position: var(--cursor-x, 50%) var(--cursor-y, 50%), var(--cursor-x, 50%) var(--cursor-y, 50%);
+}
+.card-container .cosmic-overlay {
+  background-image:
+    url("../assets/textures/galaxy.jpg"),
+    url("../assets/textures/stars-particle-effect.gif"),
+    url("../assets/textures/holo3.png"),
+    linear-gradient(120deg, rgba(120, 30, 255, 0.25), rgba(0, 200, 255, 0.22), rgba(0, 0, 0, 0) 65%),
+    url("../assets/textures/noise.png");
+  background-size: 180% 180%, 200% 200%, 240% 240%, 200% 200%, cover;
+  background-position:
+    var(--cosmic-x, 50%) var(--cosmic-y, 50%),
+    calc(100% - var(--cosmic-x, 50%)) calc(100% - var(--cosmic-y, 50%)),
+    var(--cosmic-x, 50%) var(--cosmic-y, 50%),
+    0% 0%,
+    center;
+  background-blend-mode: screen, screen, color-dodge, soft-light, overlay;
+  mix-blend-mode: screen;
+  opacity: 0.7;
+  filter: saturate(1.6) contrast(1.15) brightness(1.1);
+  animation: cosmicDrift 12s linear infinite;
+}
+.card-container:hover .cosmic-overlay {
+  opacity: 0.85;
+}
+.card-container .cosmic-shine {
+  background-image:
+    url("../assets/textures/sparkle.png"),
+    linear-gradient(120deg, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0) 65%),
+    radial-gradient(circle at var(--cosmic-x, 50%) var(--cosmic-y, 50%), rgba(120, 220, 255, 0.6), rgba(0, 0, 0, 0) 55%);
+  background-size: 180% 180%, 200% 200%, 140% 140%;
+  background-position:
+    var(--cosmic-x, 50%) var(--cosmic-y, 50%),
+    var(--cosmic-x, 50%) var(--cosmic-y, 50%),
+    var(--cosmic-x, 50%) var(--cosmic-y, 50%);
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  filter: blur(0.35px);
+  animation: cosmicTwinkle 8s linear infinite;
+}
+.card-container .veilled-overlay {
+  background-image:
+    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(110, 20, 140, 0.35), rgba(0, 0, 0, 0.95) 60%),
+    radial-gradient(circle at 20% 80%, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 1) 70%),
+    linear-gradient(160deg, rgba(10, 5, 20, 0.85), rgba(0, 0, 0, 0.98)),
+    url("../assets/textures/noise.png");
+  background-size: 160% 160%, 200% 200%, 220% 220%, cover;
+  background-position:
+    var(--veilled-x, 50%) var(--veilled-y, 50%),
+    20% 80%,
+    0% 0%,
+    center;
+  background-blend-mode: multiply, multiply, multiply, soft-light;
+  mix-blend-mode: multiply;
+  opacity: 0.85;
+  filter: contrast(1.2) brightness(0.9) saturate(1.2);
+  animation: veiledFog 12s ease-in-out infinite;
+}
+.card-container:hover .veilled-overlay {
+  opacity: 0.92;
+}
+.card-container .veilled-shine {
+  background-image:
+    url("../assets/textures/holo5.png"),
+    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(120, 200, 255, 0.35), rgba(0, 0, 0, 0) 55%),
+    linear-gradient(110deg, rgba(120, 0, 200, 0) 40%, rgba(120, 0, 200, 0.45) 50%, rgba(0, 0, 0, 0) 60%);
+  background-size: 200% 200%, 140% 140%, 200% 200%;
+  background-position:
+    var(--veilled-x, 50%) var(--veilled-y, 50%),
+    var(--veilled-x, 50%) var(--veilled-y, 50%),
+    0% 0%;
+  mix-blend-mode: screen;
+  opacity: 0.4;
+  filter: blur(0.45px);
+  animation: veiledPulse 9s ease-in-out infinite;
+}
+@keyframes cosmicDrift {
+  0% {
+    background-position:
+      20% 40%,
+      70% 20%,
+      40% 60%,
+      0% 0%,
+      center;
+  }
+  100% {
+    background-position:
+      80% 70%,
+      30% 90%,
+      70% 30%,
+      100% 100%,
+      center;
+  }
+}
+@keyframes cosmicTwinkle {
+  0% {
+    filter: blur(0.35px) brightness(1);
+  }
+  50% {
+    filter: blur(0.5px) brightness(1.25);
+  }
+  100% {
+    filter: blur(0.35px) brightness(1);
+  }
+}
+@keyframes veiledFog {
+  0%, 100% {
+    background-position:
+      30% 60%,
+      20% 80%,
+      0% 0%,
+      center;
+  }
+  50% {
+    background-position:
+      60% 40%,
+      40% 60%,
+      10% 10%,
+      center;
+  }
+}
+@keyframes veiledPulse {
+  0%, 100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 .card-container .fracture-overlay {
   --fracture-x: 50%;
@@ -1914,6 +2045,10 @@
 .mini-card-container .prismatic-overlay,
 .mini-card-container .rainbow-overlay,
 .mini-card-container .rainbow-shine,
+.mini-card-container .cosmic-overlay,
+.mini-card-container .cosmic-shine,
+.mini-card-container .veilled-overlay,
+.mini-card-container .veilled-shine,
 .mini-card-container .fracture-overlay,
 .mini-card-container .fracture-shine,
 .mini-card-container .circuit-overlay,
@@ -1990,6 +2125,80 @@
   filter: blur(0.35px);
   background-size: 200% 200%, 200% 200%;
   background-position: var(--cursor-x, 50%) var(--cursor-y, 50%), var(--cursor-x, 50%) var(--cursor-y, 50%);
+}
+.mini-card-container .cosmic-overlay {
+  background-image:
+    url("../assets/textures/galaxy.jpg"),
+    url("../assets/textures/stars-particle-effect.gif"),
+    url("../assets/textures/holo3.png"),
+    linear-gradient(120deg, rgba(120, 30, 255, 0.2), rgba(0, 200, 255, 0.2), rgba(0, 0, 0, 0) 65%),
+    url("../assets/textures/noise.png");
+  background-size: 170% 170%, 200% 200%, 220% 220%, 200% 200%, cover;
+  background-position:
+    var(--cosmic-x, 50%) var(--cosmic-y, 50%),
+    calc(100% - var(--cosmic-x, 50%)) calc(100% - var(--cosmic-y, 50%)),
+    var(--cosmic-x, 50%) var(--cosmic-y, 50%),
+    0% 0%,
+    center;
+  background-blend-mode: screen, screen, color-dodge, soft-light, overlay;
+  mix-blend-mode: screen;
+  opacity: 0.6;
+  filter: saturate(1.5) contrast(1.1) brightness(1.05);
+  animation: cosmicDrift 12s linear infinite;
+}
+.mini-card-container:hover .cosmic-overlay {
+  opacity: 0.7;
+}
+.mini-card-container .cosmic-shine {
+  background-image:
+    url("../assets/textures/sparkle.png"),
+    linear-gradient(120deg, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 65%),
+    radial-gradient(circle at var(--cosmic-x, 50%) var(--cosmic-y, 50%), rgba(120, 220, 255, 0.5), rgba(0, 0, 0, 0) 55%);
+  background-size: 180% 180%, 200% 200%, 140% 140%;
+  background-position:
+    var(--cosmic-x, 50%) var(--cosmic-y, 50%),
+    var(--cosmic-x, 50%) var(--cosmic-y, 50%),
+    var(--cosmic-x, 50%) var(--cosmic-y, 50%);
+  mix-blend-mode: screen;
+  opacity: 0.45;
+  filter: blur(0.35px);
+  animation: cosmicTwinkle 8s linear infinite;
+}
+.mini-card-container .veilled-overlay {
+  background-image:
+    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(110, 20, 140, 0.3), rgba(0, 0, 0, 0.95) 60%),
+    radial-gradient(circle at 20% 80%, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 1) 70%),
+    linear-gradient(160deg, rgba(10, 5, 20, 0.85), rgba(0, 0, 0, 0.98)),
+    url("../assets/textures/noise.png");
+  background-size: 160% 160%, 200% 200%, 220% 220%, cover;
+  background-position:
+    var(--veilled-x, 50%) var(--veilled-y, 50%),
+    20% 80%,
+    0% 0%,
+    center;
+  background-blend-mode: multiply, multiply, multiply, soft-light;
+  mix-blend-mode: multiply;
+  opacity: 0.8;
+  filter: contrast(1.15) brightness(0.9) saturate(1.15);
+  animation: veiledFog 12s ease-in-out infinite;
+}
+.mini-card-container:hover .veilled-overlay {
+  opacity: 0.88;
+}
+.mini-card-container .veilled-shine {
+  background-image:
+    url("../assets/textures/holo5.png"),
+    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(120, 200, 255, 0.3), rgba(0, 0, 0, 0) 55%),
+    linear-gradient(110deg, rgba(120, 0, 200, 0) 40%, rgba(120, 0, 200, 0.4) 50%, rgba(0, 0, 0, 0) 60%);
+  background-size: 200% 200%, 140% 140%, 200% 200%;
+  background-position:
+    var(--veilled-x, 50%) var(--veilled-y, 50%),
+    var(--veilled-x, 50%) var(--veilled-y, 50%),
+    0% 0%;
+  mix-blend-mode: screen;
+  opacity: 0.35;
+  filter: blur(0.45px);
+  animation: veiledPulse 9s ease-in-out infinite;
 }
 .mini-card-container .fracture-overlay {
   --fracture-x: 50%;
