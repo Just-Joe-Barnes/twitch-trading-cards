@@ -422,7 +422,17 @@ const executeUserMerge = async ({ sourceUser, targetUser, adminUser }) => {
         }
     }
     if (!targetUser.twitchId && sourceUser.twitchId) {
-        targetUser.twitchId = sourceUser.twitchId;
+        const normalizedTwitchId = String(sourceUser.twitchId).trim();
+        if (normalizedTwitchId) {
+            const existingTwitchUser = await User.findOne({
+                twitchId: normalizedTwitchId,
+                _id: { $nin: [sourceId, targetId] }
+            });
+            if (!existingTwitchUser) {
+                await User.updateOne({ _id: sourceId }, { $unset: { twitchId: 1 } });
+                targetUser.twitchId = normalizedTwitchId;
+            }
+        }
     }
 
     targetUser.xp = (targetUser.xp || 0) + (sourceUser.xp || 0);
