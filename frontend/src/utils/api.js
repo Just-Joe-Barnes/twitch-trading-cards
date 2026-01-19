@@ -372,6 +372,13 @@ export const searchUsers = async (query) => {
     }
 };
 
+export const searchAdminUsers = async (query) => {
+    const response = await fetchWithAuth(`/api/admin/user-lookup?query=${encodeURIComponent(query)}`, {
+        method: "GET",
+    });
+    return response?.results || [];
+};
+
 export const fetchNotifications = async () => {
     return fetchWithAuth('/api/notifications', {method: 'GET'});
 };

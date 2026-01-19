@@ -45,3 +45,79 @@
   border-color: #dc3545;
   color: #ffd6d6;
 }
+
+.admin-merge-hint {
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.admin-merge-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.7rem;
+}
+
+.admin-merge-suggestion {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(16, 16, 16, 0.8);
+  padding: 0.65rem 0.8rem;
+  border-radius: 10px;
+  text-align: left;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.admin-merge-suggestion:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.admin-merge-selected {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.provider-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+}
+
+.provider-username {
+  font-weight: 600;
+}
+
+.provider-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.provider-twitch {
+  color: #9146ff;
+  text-shadow: 0 0 8px rgba(145, 70, 255, 0.35);
+}
+
+.provider-youtube {
+  color: #ff3b30;
+  text-shadow: 0 0 8px rgba(255, 59, 48, 0.35);
+}
+
+.provider-tiktok {
+  color: #fe2c55;
+  text-shadow: 0 0 8px rgba(37, 244, 238, 0.35);
+}
+
+.provider-unknown {
+  color: #b0b6c4;
+}

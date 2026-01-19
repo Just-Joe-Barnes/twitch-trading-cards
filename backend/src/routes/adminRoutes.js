@@ -740,6 +740,100 @@ router.post('/merge-users', protect, adminOnly, async (req, res) => {
     }
 });
 
+router.get('/user-lookup', protect, adminOnly, async (req, res) => {
+    try {
+        const query = String(req.query.query || '').trim();
+        if (!query || query.length < 2) {
+            return res.json({ results: [] });
+        }
+
+        const regex = new RegExp(escapeRegex(query), 'i');
+        const userQuery = [
+            { username: regex },
+            { email: regex },
+            { twitchId: regex }
+        ];
+
+        if (mongoose.Types.ObjectId.isValid(query)) {
+            userQuery.push({ _id: query });
+        }
+
+        const [directUsers, externalMatches] = await Promise.all([
+            User.find({ $or: userQuery })
+                .select('username email twitchId lastLoginProvider')
+                .limit(20)
+                .lean(),
+            ExternalAccount.find({
+                $or: [{ providerUserId: regex }, { username: regex }]
+            })
+                .select('provider username providerUserId userId')
+                .limit(40)
+                .lean()
+        ]);
+
+        const userMap = new Map();
+        directUsers.forEach((user) => {
+            userMap.set(String(user._id), user);
+        });
+
+        const externalUserIds = externalMatches
+            .map((account) => account.userId)
+            .filter(Boolean)
+            .map((id) => String(id));
+
+        const missingIds = externalUserIds.filter((id) => !userMap.has(id));
+        if (missingIds.length) {
+            const extraUsers = await User.find({ _id: { $in: missingIds } })
+                .select('username email twitchId lastLoginProvider')
+                .lean();
+            extraUsers.forEach((user) => {
+                userMap.set(String(user._id), user);
+            });
+        }
+
+        const userIds = Array.from(userMap.keys());
+        if (userIds.length === 0) {
+            return res.json({ results: [] });
+        }
+
+        const linkedAccounts = await ExternalAccount.find({ userId: { $in: userIds } })
+            .select('provider username providerUserId userId')
+            .lean();
+
+        const accountsByUser = new Map();
+        linkedAccounts.forEach((account) => {
+            const key = String(account.userId);
+            if (!accountsByUser.has(key)) {
+                accountsByUser.set(key, []);
+            }
+            accountsByUser.get(key).push({
+                provider: account.provider,
+                username: account.username || null,
+                providerUserId: account.providerUserId || null
+            });
+        });
+
+        const results = userIds
+            .map((id) => {
+                const user = userMap.get(id);
+                return {
+                    id,
+                    username: user.username,
+                    email: user.email || null,
+                    twitchId: user.twitchId || null,
+                    lastLoginProvider: user.lastLoginProvider || null,
+                    providers: accountsByUser.get(id) || []
+                };
+            })
+            .sort((a, b) => a.username.localeCompare(b.username));
+
+        return res.json({ results });
+    } catch (error) {
+        console.error('[Admin Lookup] Error:', error.message);
+        return res.status(500).json({ error: 'Failed to search users.' });
+    }
+});
+
 router.get('/users', protect, adminOnly, async (req, res) => {
     const start = process.hrtime();
     try {
