@@ -16,7 +16,7 @@ const LoginPage = () => {
     const providerAvailability = {
         twitch: true,
         youtube: true,
-        tiktok: false,
+        tiktok: true,
     };
 
     const handleLogin = (provider) => () => {
@@ -85,7 +85,7 @@ const LoginPage = () => {
                         disabled={!providerAvailability.tiktok}
                         aria-disabled={!providerAvailability.tiktok}
                     >
-                        TikTok (Coming soon)
+                        Login with TikTok
                     </button>
                 </div>
             </div>

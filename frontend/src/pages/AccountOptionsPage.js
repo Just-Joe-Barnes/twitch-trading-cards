@@ -22,7 +22,7 @@ const AccountOptionsPage = () => {
     const linkProviders = [
         { key: 'twitch', label: 'Twitch' },
         { key: 'youtube', label: 'YouTube' },
-        { key: 'tiktok', label: 'TikTok', disabled: true },
+        { key: 'tiktok', label: 'TikTok' },
     ];
 
     useEffect(() => {
