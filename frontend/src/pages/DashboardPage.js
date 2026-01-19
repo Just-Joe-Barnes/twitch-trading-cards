@@ -9,12 +9,22 @@ const CHANNEL_POINTS_COST = parseInt(
     process.env.REACT_APP_CHANNEL_POINTS_COST || '5000',
     10
 );
+const TIKTOK_COINS_PER_PACK = parseInt(
+    process.env.REACT_APP_TIKTOK_COINS_PER_PACK || '200',
+    10
+);
+const YOUTUBE_SUPERCHAT_PACK_USD = parseFloat(
+    process.env.REACT_APP_YOUTUBE_SUPERCHAT_PACK_USD || '5'
+);
+const TUTORIAL_STORAGE_KEY = 'nedsdecks_tutorial_v1_seen';
 
 const DashboardPage = () => {
     const [userData, setUserData] = useState(null);
     const [packCount, setPackCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [showTutorial, setShowTutorial] = useState(false);
+    const [tutorialStep, setTutorialStep] = useState(0);
 
     const fetchUserData = async () => {
         try {
@@ -23,6 +33,10 @@ const DashboardPage = () => {
 
             setUserData(userProfile);
             setPackCount(userProfile?.packs || 0);
+            const hasSeen = localStorage.getItem(TUTORIAL_STORAGE_KEY) === 'true';
+            if (!hasSeen) {
+                setShowTutorial(true);
+            }
         } catch (err) {
             console.error('Error fetching user data:', err.message);
             setError(err.message || 'Failed to load dashboard data. Please try again.');
@@ -42,6 +56,46 @@ const DashboardPage = () => {
     if (error) {
         return <p className="error-message">{error}</p>;
     }
+
+    const tutorialSteps = [
+        {
+            title: 'Welcome to Ned’s Decks',
+            body: 'Collect trading cards inspired by the Just Joe Show. Build sets, trade with the community, and show off your collection.',
+        },
+        {
+            title: 'Earn Packs',
+            body: 'Packs come from Twitch/YouTube subs, YouTube Super Chats, TikTok gifts, and channel point redemptions.',
+        },
+        {
+            title: 'Live Pack Opens',
+            body: 'Packs are opened for you on stream during live segments, so the community gets to share the moment.',
+        },
+        {
+            title: 'Trading & Market',
+            body: 'Swap cards with other collectors or list them on the market to complete your collection.',
+        },
+        {
+            title: 'Link Your Accounts',
+            body: 'Connect Twitch, YouTube, and TikTok so all rewards land in one place.',
+        },
+    ];
+
+    const closeTutorial = () => {
+        setShowTutorial(false);
+        localStorage.setItem(TUTORIAL_STORAGE_KEY, 'true');
+    };
+
+    const handleTutorialNext = () => {
+        if (tutorialStep >= tutorialSteps.length - 1) {
+            closeTutorial();
+            return;
+        }
+        setTutorialStep((step) => step + 1);
+    };
+
+    const handleTutorialBack = () => {
+        setTutorialStep((step) => Math.max(0, step - 1));
+    };
 
     const twitchIframeSrc =
         'https://player.twitch.tv/?channel=just_joe_' +
@@ -73,20 +127,32 @@ const DashboardPage = () => {
                         <ul>
                             <li>Earn 1 pack for your first login and signing into the app.</li>
                             <li>
-                                Earn packs when you subscribe: 3 packs for tier 1,
-                                6 packs for tier 2, and 12 packs for tier 3.
+                                Twitch/YouTube memberships: 3 packs for tier 1, 6 packs for tier 2, and 12 packs for tier 3.
                             </li>
                             <li>
-                                Gifted subscriptions award packs to the gifter and
-                                each recipient based on the same tier values.
+                                YouTube Super Chats: {YOUTUBE_SUPERCHAT_PACK_USD} USD per pack (rounded down).
                             </li>
                             <li>
-                                Earn 1 pack by redeeming{' '}
-                                {CHANNEL_POINTS_COST.toLocaleString()} channel
-                                points.
+                                TikTok gifts: {TIKTOK_COINS_PER_PACK} coins per pack (coins carry over to the next pack).
+                            </li>
+                            <li>
+                                Gifted subscriptions award packs to the gifter and each recipient based on the same tier values.
+                            </li>
+                            <li>
+                                Earn 1 pack by redeeming {CHANNEL_POINTS_COST.toLocaleString()} channel points.
                             </li>
                         </ul>
                     </div>
+                    <button
+                        type="button"
+                        className="tutorial-trigger"
+                        onClick={() => {
+                            setTutorialStep(0);
+                            setShowTutorial(true);
+                        }}
+                    >
+                        View quick tour
+                    </button>
                 </div>
                 <div className="twitch-section section-card">
                     <h2>Watch The Just Joe Show Live</h2>
@@ -103,6 +169,33 @@ const DashboardPage = () => {
                     </p>
                 </div>
             </div>
+            {showTutorial && (
+                <div className="tutorial-overlay" onClick={closeTutorial}>
+                    <div className="tutorial-modal" onClick={(event) => event.stopPropagation()}>
+                        <div className="tutorial-header">
+                            <span className="tutorial-step">Step {tutorialStep + 1} of {tutorialSteps.length}</span>
+                            <button type="button" className="tutorial-skip" onClick={closeTutorial}>
+                                Skip
+                            </button>
+                        </div>
+                        <h2>{tutorialSteps[tutorialStep].title}</h2>
+                        <p>{tutorialSteps[tutorialStep].body}</p>
+                        <div className="tutorial-actions">
+                            <button
+                                type="button"
+                                className="secondary-button"
+                                onClick={handleTutorialBack}
+                                disabled={tutorialStep === 0}
+                            >
+                                Back
+                            </button>
+                            <button type="button" className="primary-button" onClick={handleTutorialNext}>
+                                {tutorialStep === tutorialSteps.length - 1 ? 'Finish' : 'Next'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
