@@ -409,7 +409,17 @@ const executeUserMerge = async ({ sourceUser, targetUser, adminUser }) => {
         targetUser.twitchProfilePic = sourceUser.twitchProfilePic;
     }
     if (!targetUser.email && sourceUser.email) {
-        targetUser.email = sourceUser.email;
+        const normalizedSourceEmail = normalizeEmail(sourceUser.email);
+        if (normalizedSourceEmail) {
+            const existingEmailUser = await User.findOne({
+                email: normalizedSourceEmail,
+                _id: { $nin: [sourceId, targetId] }
+            });
+            if (!existingEmailUser) {
+                await User.updateOne({ _id: sourceId }, { $unset: { email: 1 } });
+                targetUser.email = normalizedSourceEmail;
+            }
+        }
     }
     if (!targetUser.twitchId && sourceUser.twitchId) {
         targetUser.twitchId = sourceUser.twitchId;
