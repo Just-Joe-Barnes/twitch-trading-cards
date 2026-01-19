@@ -151,12 +151,12 @@ const startYouTubeRelay = () => {
             return state.liveChatId;
         }
 
+        const channelId = getChannelId();
         const fetchLiveVideoId = async () => {
             if (state.liveVideoId) {
                 return state.liveVideoId;
             }
 
-            const channelId = getChannelId();
             if (!channelId) {
                 return null;
             }
@@ -222,17 +222,25 @@ const startYouTubeRelay = () => {
             }
         }
 
+        if (channelId) {
+            return null;
+        }
+
         const response = await axios.get('https://www.googleapis.com/youtube/v3/liveBroadcasts', {
             params: {
-                part: 'snippet,contentDetails',
-                broadcastStatus: 'active',
+                part: 'snippet,contentDetails,status',
                 mine: true,
+                maxResults: 5,
             },
             headers: { Authorization: `Bearer ${accessToken}` },
         });
 
-        const broadcast = (response.data && response.data.items && response.data.items[0]) || null;
-        const liveChatId = broadcast && broadcast.contentDetails && broadcast.contentDetails.activeLiveChatId;
+        const items = response.data?.items || [];
+        const broadcast = items.find((item) => item?.contentDetails?.activeLiveChatId) ||
+            items.find((item) => item?.status?.lifeCycleStatus === 'live') ||
+            items[0] ||
+            null;
+        const liveChatId = broadcast?.contentDetails?.activeLiveChatId || null;
 
         if (!liveChatId) {
             return null;
