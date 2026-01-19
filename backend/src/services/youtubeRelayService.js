@@ -25,6 +25,16 @@ const getClientCredentials = () => {
     };
 };
 
+const getLiveVideoId = () => {
+    const value = String(process.env.YOUTUBE_LIVE_VIDEO_ID || '').trim();
+    return value || null;
+};
+
+const getApiKey = () => {
+    const value = String(process.env.YOUTUBE_API_KEY || '').trim();
+    return value || null;
+};
+
 const getEventEndpoint = () => {
     const baseUrl = normalizeBaseUrl(
         process.env.YOUTUBE_EVENT_BASE_URL ||
@@ -134,6 +144,32 @@ const startYouTubeRelay = () => {
             return state.liveChatId;
         }
 
+        const liveVideoId = getLiveVideoId();
+        if (liveVideoId) {
+            const apiKey = getApiKey();
+            const headers = apiKey ? {} : { Authorization: `Bearer ${accessToken}` };
+            const params = {
+                part: 'liveStreamingDetails',
+                id: liveVideoId,
+            };
+            if (apiKey) {
+                params.key = apiKey;
+            }
+
+            const response = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
+                params,
+                headers,
+            });
+
+            const video = (response.data && response.data.items && response.data.items[0]) || null;
+            const liveChatId = video && video.liveStreamingDetails && video.liveStreamingDetails.activeLiveChatId;
+            if (liveChatId) {
+                state.liveChatId = liveChatId;
+                state.nextPageToken = null;
+                return liveChatId;
+            }
+        }
+
         const response = await axios.get('https://www.googleapis.com/youtube/v3/liveBroadcasts', {
             params: {
                 part: 'snippet,contentDetails',
@@ -225,7 +261,7 @@ const startYouTubeRelay = () => {
         try {
             liveChatId = await fetchLiveChatId(accessToken);
         } catch (error) {
-            console.error('[YouTube Relay] Failed to fetch live broadcast:', error.message);
+            console.error('[YouTube Relay] Failed to fetch live broadcast:', error.response?.data || error.message);
             state.liveChatId = null;
             return DEFAULT_RETRY_DELAY_MS;
         }
