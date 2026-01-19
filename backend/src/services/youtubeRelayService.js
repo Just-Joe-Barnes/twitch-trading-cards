@@ -30,6 +30,11 @@ const getLiveVideoId = () => {
     return value || null;
 };
 
+const getChannelId = () => {
+    const value = String(process.env.YOUTUBE_CHANNEL_ID || '').trim();
+    return value || null;
+};
+
 const getApiKey = () => {
     const value = String(process.env.YOUTUBE_API_KEY || '').trim();
     return value || null;
@@ -108,6 +113,8 @@ const startYouTubeRelay = () => {
         accessToken: null,
         accessTokenExpiry: 0,
         liveChatId: process.env.YOUTUBE_LIVE_CHAT_ID || null,
+        liveVideoId: getLiveVideoId(),
+        liveVideoLocked: Boolean(getLiveVideoId()),
         nextPageToken: null,
         seen: createSeenTracker(),
         running: true,
@@ -144,13 +151,48 @@ const startYouTubeRelay = () => {
             return state.liveChatId;
         }
 
-        const liveVideoId = getLiveVideoId();
-        if (liveVideoId) {
+        const fetchLiveVideoId = async () => {
+            if (state.liveVideoId) {
+                return state.liveVideoId;
+            }
+
+            const channelId = getChannelId();
+            if (!channelId) {
+                return null;
+            }
+
+            const apiKey = getApiKey();
+            const headers = apiKey ? {} : { Authorization: `Bearer ${accessToken}` };
+            const params = {
+                part: 'snippet',
+                channelId,
+                eventType: 'live',
+                type: 'video',
+                maxResults: 1,
+            };
+            if (apiKey) {
+                params.key = apiKey;
+            }
+
+            const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
+                params,
+                headers,
+            });
+
+            const item = response.data?.items?.[0];
+            const videoId = item?.id?.videoId || null;
+            if (videoId) {
+                state.liveVideoId = videoId;
+            }
+            return videoId;
+        };
+
+        const resolveChatFromVideo = async (videoId) => {
             const apiKey = getApiKey();
             const headers = apiKey ? {} : { Authorization: `Bearer ${accessToken}` };
             const params = {
                 part: 'liveStreamingDetails',
-                id: liveVideoId,
+                id: videoId,
             };
             if (apiKey) {
                 params.key = apiKey;
@@ -161,11 +203,21 @@ const startYouTubeRelay = () => {
                 headers,
             });
 
-            const video = (response.data && response.data.items && response.data.items[0]) || null;
-            const liveChatId = video && video.liveStreamingDetails && video.liveStreamingDetails.activeLiveChatId;
+            const video = response.data?.items?.[0] || null;
+            const liveChatId = video?.liveStreamingDetails?.activeLiveChatId || null;
             if (liveChatId) {
                 state.liveChatId = liveChatId;
                 state.nextPageToken = null;
+            } else if (!state.liveVideoLocked) {
+                state.liveVideoId = null;
+            }
+            return liveChatId;
+        };
+
+        const liveVideoId = await fetchLiveVideoId();
+        if (liveVideoId) {
+            const liveChatId = await resolveChatFromVideo(liveVideoId);
+            if (liveChatId) {
                 return liveChatId;
             }
         }
@@ -304,6 +356,9 @@ const startYouTubeRelay = () => {
             if (reason === 'liveChatEnded' || reason === 'liveChatNotFound') {
                 state.liveChatId = null;
                 state.nextPageToken = null;
+                if (!state.liveVideoLocked) {
+                    state.liveVideoId = null;
+                }
             }
 
             return DEFAULT_RETRY_DELAY_MS;
