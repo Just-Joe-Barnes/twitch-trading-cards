@@ -7,6 +7,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const Setting = require('./src/models/settingsModel');
+const User = require('./src/models/userModel');
 const cron = require('node-cron');
 require('dotenv').config();
 
@@ -135,8 +136,23 @@ if (require.main === module) {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         })
-        .then(() => {
+        .then(async () => {
             console.log("MongoDB connected successfully");
+            try {
+                await User.updateMany({ twitchId: null }, { $unset: { twitchId: 1 } });
+                await User.updateMany({ twitchId: '' }, { $unset: { twitchId: 1 } });
+
+                const indexes = await User.collection.indexes();
+                const twitchIndex = indexes.find((index) => index.name === 'twitchId_1');
+                if (twitchIndex && !twitchIndex.sparse) {
+                    await User.collection.dropIndex('twitchId_1');
+                }
+
+                await User.syncIndexes();
+                console.log('[Indexes] Synced user indexes.');
+            } catch (error) {
+                console.warn('[Indexes] Unable to sync user indexes:', error.message);
+            }
             Setting.initialize();
         })
         .catch((err) => {
