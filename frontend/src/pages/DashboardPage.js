@@ -71,6 +71,18 @@ const DashboardPage = () => {
             body: 'Packs are opened for you on stream during live segments, so the community gets to share the moment.',
         },
         {
+            title: 'Achievements',
+            body: 'Complete achievements to earn extra packs, cards, and titles. Check the Achievements tab for progress.',
+        },
+        {
+            title: 'Monthly Community Goals',
+            body: 'Hit monthly goals together to unlock perks and bonus packs for everyone. See the Community page for targets.',
+        },
+        {
+            title: 'Card Grading',
+            body: 'Submit cards for grading to boost their prestige. Graded cards are slabbed and shown in your collection.',
+        },
+        {
             title: 'Trading & Market',
             body: 'Swap cards with other collectors or list them on the market to complete your collection.',
         },
