@@ -584,7 +584,13 @@ router.post('/webhook', validateApiKey, async (req, res) => {
                  await createLogEntry(streamerUser, 'EVENTFLOW_ROUTE_REDEMPTION', `Anonymous/Unknown user (ID: ${twitchUserId}) gifted ${quantity} subs. No packs awarded to gifter. They would have been rewarded ${packsToAward} for tier ${tier}.`);
             }
         } else if (eventType === 'redeem') {
-             if (payload.rewardTitle === "Rush Pack") {
+             const rewardTitle = String(payload.rewardTitle || '').trim().toLowerCase();
+             if (rewardTitle.includes('rush pack')) {
+                if (!streamerUser) {
+                    await createLogEntry(null, 'ERROR_EVENTFLOW_ROUTE_REDEMPTION', 'Rush Pack redemption failed: streamer not found.');
+                    return res.status(404).json({ message: 'Streamer not found for Rush Pack redemption.' });
+                }
+
                 const userId = payload.twitchUserId;
                 const redeemer = await User.findOne({ twitchId: userId }).populate('preferredPack');
 
@@ -593,11 +599,11 @@ router.post('/webhook', validateApiKey, async (req, res) => {
                     const templateId = redeemer.preferredPack?._id || defaultPackId;
 
                     if (templateId) {
-                        // await addToQueue({
-                        //     streamerDbId: streamerUser ? streamerUser._id : null,
-                        //     redeemer: redeemer,
-                        //     templateId: templateId
-                        // });
+                        await addToQueue({
+                            streamerDbId: streamerUser._id,
+                            redeemer: redeemer,
+                            templateId: templateId
+                        });
                         await createLogEntry(streamerUser, 'EVENTFLOW_ROUTE_REDEMPTION', `User ${redeemer.username} redeemed a Rush Pack.`);
                     } else {
                          await createLogEntry(streamerUser, 'ERROR_EVENTFLOW_ROUTE_REDEMPTION', 'Default pack not configured for Rush Pack redemption.');

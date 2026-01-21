@@ -113,7 +113,7 @@ async function createTrade(senderId, { recipient, offeredItems, requestedItems, 
             return true;
         });
         if (pendingOfferedCards.length > 0 || pendingRequestedCards.length > 0) {
-            return { success: false, status: 400, message: 'One or more cards are pending in another trade or listing.' };
+            return { success: false, status: 400, message: 'One or more cards are busy or unavailable for trade.' };
         }
 
         if (

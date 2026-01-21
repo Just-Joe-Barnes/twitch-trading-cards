@@ -75,8 +75,14 @@ const processQueue = async () => {
 
     try {
         if (!redeemer) {
-            await createLogEntry(streamerUser, 'ERROR_TWITCH_ROUTE_REDEMPTION', `User with Twitch ID ${userId} not found.`);
-            return res.status(404).json({ message: `User with Twitch ID ${userId} not found.` });
+            console.error(`[QueueService] Missing redeemer for job ${nextJob._id}. Removing job.`);
+            await QueuedPack.findByIdAndDelete(nextJob._id);
+            if (nextJob.streamerDbId && /^[0-9a-fA-F]{24}$/.test(String(nextJob.streamerDbId))) {
+                await createLogEntry({ _id: nextJob.streamerDbId }, 'ERROR_QUEUE_PROCESS', `Queue job ${nextJob._id} had no redeemer and was removed.`);
+            }
+            isOverlayBusy = false;
+            busyForStreamerId = null;
+            return;
         }
 
         await User.findByIdAndUpdate(redeemer._id, {

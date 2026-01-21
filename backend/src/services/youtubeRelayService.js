@@ -3,6 +3,8 @@ const axios = require('axios');
 const DEFAULT_POLL_INTERVAL_MS = 15000;
 const DEFAULT_RETRY_DELAY_MS = 30000;
 const MIN_POLL_INTERVAL_MS = 5000;
+const DEFAULT_LIVE_LOOKUP_INTERVAL_MS = 900000;
+const DEFAULT_QUOTA_BACKOFF_MS = 3600000;
 const MAX_SEEN_IDS = 1000;
 
 const toNumber = (value) => {
@@ -38,6 +40,16 @@ const getChannelId = () => {
 const getApiKey = () => {
     const value = String(process.env.YOUTUBE_API_KEY || '').trim();
     return value || null;
+};
+
+const getLiveLookupIntervalMs = () => {
+    const value = toNumber(process.env.YOUTUBE_LIVE_LOOKUP_INTERVAL_MS);
+    return value || DEFAULT_LIVE_LOOKUP_INTERVAL_MS;
+};
+
+const getQuotaBackoffMs = () => {
+    const value = toNumber(process.env.YOUTUBE_QUOTA_BACKOFF_MS);
+    return value || DEFAULT_QUOTA_BACKOFF_MS;
 };
 
 const getEventEndpoint = () => {
@@ -118,6 +130,9 @@ const startYouTubeRelay = () => {
         nextPageToken: null,
         seen: createSeenTracker(),
         running: true,
+        nextLiveLookupAt: 0,
+        liveLookupIntervalMs: getLiveLookupIntervalMs(),
+        quotaBackoffMs: getQuotaBackoffMs(),
     };
 
     const getAccessToken = async () => {
@@ -151,6 +166,11 @@ const startYouTubeRelay = () => {
             return state.liveChatId;
         }
 
+        const now = Date.now();
+        if (state.nextLiveLookupAt && now < state.nextLiveLookupAt) {
+            return null;
+        }
+
         const channelId = getChannelId();
         const fetchLiveVideoId = async () => {
             if (state.liveVideoId) {
@@ -174,17 +194,30 @@ const startYouTubeRelay = () => {
                 params.key = apiKey;
             }
 
-            const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
-                params,
-                headers,
-            });
+            try {
+                const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
+                    params,
+                    headers,
+                });
 
-            const item = response.data?.items?.[0];
-            const videoId = item?.id?.videoId || null;
-            if (videoId) {
-                state.liveVideoId = videoId;
+                const item = response.data?.items?.[0];
+                const videoId = item?.id?.videoId || null;
+                if (videoId) {
+                    state.liveVideoId = videoId;
+                } else {
+                    state.nextLiveLookupAt = now + state.liveLookupIntervalMs;
+                }
+                return videoId;
+            } catch (error) {
+                const reason = error.response?.data?.error?.errors?.[0]?.reason;
+                const message = error.response?.data?.error?.message || error.message;
+                if (reason === 'quotaExceeded' || /quota/i.test(message)) {
+                    state.nextLiveLookupAt = now + state.quotaBackoffMs;
+                    console.warn('[YouTube Relay] Quota exceeded while searching for live video. Backing off.');
+                    return null;
+                }
+                throw error;
             }
-            return videoId;
         };
 
         const resolveChatFromVideo = async (videoId) => {
@@ -198,20 +231,32 @@ const startYouTubeRelay = () => {
                 params.key = apiKey;
             }
 
-            const response = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
-                params,
-                headers,
-            });
+            try {
+                const response = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
+                    params,
+                    headers,
+                });
 
-            const video = response.data?.items?.[0] || null;
-            const liveChatId = video?.liveStreamingDetails?.activeLiveChatId || null;
-            if (liveChatId) {
-                state.liveChatId = liveChatId;
-                state.nextPageToken = null;
-            } else if (!state.liveVideoLocked) {
-                state.liveVideoId = null;
+                const video = response.data?.items?.[0] || null;
+                const liveChatId = video?.liveStreamingDetails?.activeLiveChatId || null;
+                if (liveChatId) {
+                    state.liveChatId = liveChatId;
+                    state.nextPageToken = null;
+                } else if (!state.liveVideoLocked) {
+                    state.liveVideoId = null;
+                    state.nextLiveLookupAt = now + state.liveLookupIntervalMs;
+                }
+                return liveChatId;
+            } catch (error) {
+                const reason = error.response?.data?.error?.errors?.[0]?.reason;
+                const message = error.response?.data?.error?.message || error.message;
+                if (reason === 'quotaExceeded' || /quota/i.test(message)) {
+                    state.nextLiveLookupAt = now + state.quotaBackoffMs;
+                    console.warn('[YouTube Relay] Quota exceeded while resolving live chat. Backing off.');
+                    return null;
+                }
+                throw error;
             }
-            return liveChatId;
         };
 
         const liveVideoId = await fetchLiveVideoId();
@@ -223,32 +268,45 @@ const startYouTubeRelay = () => {
         }
 
         if (channelId) {
+            state.nextLiveLookupAt = now + state.liveLookupIntervalMs;
             return null;
         }
 
-        const response = await axios.get('https://www.googleapis.com/youtube/v3/liveBroadcasts', {
-            params: {
-                part: 'snippet,contentDetails,status',
-                mine: true,
-                maxResults: 5,
-            },
-            headers: { Authorization: `Bearer ${accessToken}` },
-        });
+        try {
+            const response = await axios.get('https://www.googleapis.com/youtube/v3/liveBroadcasts', {
+                params: {
+                    part: 'snippet,contentDetails,status',
+                    mine: true,
+                    maxResults: 5,
+                },
+                headers: { Authorization: `Bearer ${accessToken}` },
+            });
 
-        const items = response.data?.items || [];
-        const broadcast = items.find((item) => item?.contentDetails?.activeLiveChatId) ||
-            items.find((item) => item?.status?.lifeCycleStatus === 'live') ||
-            items[0] ||
-            null;
-        const liveChatId = broadcast?.contentDetails?.activeLiveChatId || null;
+            const items = response.data?.items || [];
+            const broadcast = items.find((item) => item?.contentDetails?.activeLiveChatId) ||
+                items.find((item) => item?.status?.lifeCycleStatus === 'live') ||
+                items[0] ||
+                null;
+            const liveChatId = broadcast?.contentDetails?.activeLiveChatId || null;
 
-        if (!liveChatId) {
-            return null;
+            if (!liveChatId) {
+                state.nextLiveLookupAt = now + state.liveLookupIntervalMs;
+                return null;
+            }
+
+            state.liveChatId = liveChatId;
+            state.nextPageToken = null;
+            return liveChatId;
+        } catch (error) {
+            const reason = error.response?.data?.error?.errors?.[0]?.reason;
+            const message = error.response?.data?.error?.message || error.message;
+            if (reason === 'quotaExceeded' || /quota/i.test(message)) {
+                state.nextLiveLookupAt = now + state.quotaBackoffMs;
+                console.warn('[YouTube Relay] Quota exceeded while fetching live broadcast. Backing off.');
+                return null;
+            }
+            throw error;
         }
-
-        state.liveChatId = liveChatId;
-        state.nextPageToken = null;
-        return liveChatId;
     };
 
     const postEvent = async (payload) => {
@@ -367,6 +425,11 @@ const startYouTubeRelay = () => {
                 if (!state.liveVideoLocked) {
                     state.liveVideoId = null;
                 }
+            }
+
+            if (reason === 'quotaExceeded') {
+                state.nextLiveLookupAt = Date.now() + state.quotaBackoffMs;
+                return state.quotaBackoffMs;
             }
 
             return DEFAULT_RETRY_DELAY_MS;

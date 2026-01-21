@@ -231,6 +231,13 @@ const TradingPage = ({userId}) => {
     }, [activeIndex]);
 
     const handleSelectItem = (item, type) => {
+        const isBusy = item.gradingRequestedAt || (item.status && item.status !== 'available');
+        if (isBusy) {
+            if (window.showToast) {
+                window.showToast('This card is busy or unavailable for trade.', 'warning');
+            }
+            return;
+        }
         const setter = type === "offer" ? setTradeOffer : setTradeRequest;
         setter((prev) => {
             const exists = prev.some((i) => i._id === item._id);
@@ -536,7 +543,7 @@ const TradingPage = ({userId}) => {
                                                     {displayUserCollection.length > 0 ? (
                                                         displayUserCollection.map((card) => (
                                                             <div key={card._id}
-                                                                 className={`card-tile ${tradeOffer.some((c) => c._id === card._id) ? "selected" : ""} ${card.slabbed ? 'slabbed' : ''} ${card.gradingRequestedAt ? 'busy' : ''}`}>
+                                                                 className={`card-tile ${tradeOffer.some((c) => c._id === card._id) ? "selected" : ""} ${card.slabbed ? 'slabbed' : ''} ${card.gradingRequestedAt || (card.status && card.status !== 'available') ? 'busy' : ''}`}>
                                                                 <BaseCard name={card.name} image={card.imageUrl}
                                                                           description={card.flavorText}
                                                                           rarity={card.rarity || (card.rarities && card.rarities[0]?.rarity)}
@@ -549,8 +556,8 @@ const TradingPage = ({userId}) => {
                                                                         className={tradeOffer.some((c) => c._id === card._id) ? "primary-button" : ""}
                                                                         onClick={() => handleSelectItem(card, "offer")}
                                                                         type="button"
-                                                                        disabled={card.gradingRequestedAt}>
-                                                                        {card.gradingRequestedAt ? 'Busy' : tradeOffer.some((c) => c._id === card._id) ? "Unselect" : "Select"}
+                                                                        aria-disabled={card.gradingRequestedAt || (card.status && card.status !== 'available')}>
+                                                                        {card.gradingRequestedAt || (card.status && card.status !== 'available') ? 'Busy' : tradeOffer.some((c) => c._id === card._id) ? "Unselect" : "Select"}
                                                                     </button>
                                                                 </div>
                                                             </div>
@@ -668,7 +675,7 @@ const TradingPage = ({userId}) => {
                                                         {displayRecipientCollection.length > 0 ? (
                                                             displayRecipientCollection.map((card) => (
                                                                 <div key={card._id}
-                                                                     className={`card-tile ${tradeRequest.some((c) => c._id === card._id) ? "selected" : ""} ${card.slabbed ? 'slabbed' : ''} ${card.gradingRequestedAt ? 'busy' : ''}`}>
+                                                                     className={`card-tile ${tradeRequest.some((c) => c._id === card._id) ? "selected" : ""} ${card.slabbed ? 'slabbed' : ''} ${card.gradingRequestedAt || (card.status && card.status !== 'available') ? 'busy' : ''}`}>
                                                                     <BaseCard name={card.name} image={card.imageUrl}
                                                                               description={card.flavorText}
                                                                               rarity={card.rarity || (card.rarities && card.rarities[0]?.rarity)}
@@ -681,8 +688,8 @@ const TradingPage = ({userId}) => {
                                                                             className={tradeRequest.some((c) => c._id === card._id) ? "primary-button" : ""}
                                                                             onClick={() => handleSelectItem(card, "request")}
                                                                             type="button"
-                                                                            disabled={card.gradingRequestedAt}>
-                                                                            {card.gradingRequestedAt ? 'Busy' : tradeRequest.some((c) => c._id === card._id) ? "Unselect" : "Select"}
+                                                                            aria-disabled={card.gradingRequestedAt || (card.status && card.status !== 'available')}>
+                                                                            {card.gradingRequestedAt || (card.status && card.status !== 'available') ? 'Busy' : tradeRequest.some((c) => c._id === card._id) ? "Unselect" : "Select"}
                                                                         </button>
                                                                     </div>
                                                                 </div>
