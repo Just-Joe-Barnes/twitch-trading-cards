@@ -502,6 +502,7 @@ const BinderPage = () => {
     const touchStartRef = useRef(null);
 
     const isMobile = useIsMobile();
+    const useMiniCards = useIsMobile(520);
     const binderIdentifier = collectionOwner || loggedInUser;
     const isOwner = !collectionOwner || loggedInUser === collectionOwner;
     const isCoverView = currentSpreadIndex < 0;
@@ -1165,14 +1166,14 @@ const BinderPage = () => {
                                         onClick={() => handleSlotClick(pageIndex, slotIndex)}
                                     >
                                         {slotData ? (
-                                            <div className="slot-content-wrapper">
+                                            <div className={`slot-content-wrapper ${useMiniCards ? 'mini' : ''}`}>
                                                 <BaseCard
                                                     {...slotData}
                                                     image={slotData.imageUrl}
                                                     description={slotData.flavorText}
                                                     limited={isCardLimited(slotData)}
                                                     inspectOnClick={false}
-                                                    miniCard={false}
+                                                    miniCard={useMiniCards}
                                                 />
 
                                                 {isOwner && showSlotControls && (

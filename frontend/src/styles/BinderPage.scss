@@ -388,6 +388,12 @@ $transition-speed: 0.3s;
     pointer-events: none; // Let clicks pass through to slot
   }
 
+  .slot-content-wrapper.mini {
+    width: 100%;
+    height: 100%;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
   .card-container {
     margin: 0;
   }
