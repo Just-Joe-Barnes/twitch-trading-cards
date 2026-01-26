@@ -733,39 +733,43 @@
 }
 .card-container .veilled-overlay {
   background-image:
+    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(130, 180, 255, 0.25), rgba(0, 0, 0, 0) 55%),
+    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 38%, rgba(0, 0, 0, 0.7) 100%),
     url("../assets/textures/veil-smoke.png"),
-    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(70, 120, 200, 0.18), rgba(0, 0, 0, 0) 55%),
-    linear-gradient(160deg, rgba(6, 6, 14, 0.92) 0%, rgba(0, 0, 0, 0.98) 70%),
+    url("../assets/textures/foil-lines.png"),
     url("../assets/textures/grain-fine.png");
-  background-size: 220% 220%, 160% 160%, 200% 200%, 200% 200%;
+  background-size: 180% 180%, 140% 140%, 240% 240%, 220% 220%, 200% 200%;
   background-position:
     var(--veilled-x, 50%) var(--veilled-y, 50%),
+    50% 50%,
+    calc(100% - var(--veilled-x, 50%)) calc(100% - var(--veilled-y, 50%)),
     var(--veilled-x, 50%) var(--veilled-y, 50%),
-    0% 0%,
     50% 50%;
   background-repeat: no-repeat;
-  background-blend-mode: multiply, screen, multiply, overlay;
-  mix-blend-mode: multiply;
-  opacity: 0.48;
-  filter: contrast(1.35) brightness(0.8) saturate(1.05);
-  animation: veiledFog 14s ease-in-out infinite;
+  background-blend-mode: screen, multiply, soft-light, overlay, overlay;
+  mix-blend-mode: soft-light;
+  opacity: 0.55;
+  filter: contrast(1.25) brightness(0.85) saturate(1.1);
+  animation: veiledFog 16s ease-in-out infinite;
 }
 .card-container:hover .veilled-overlay {
-  opacity: 0.58;
+  opacity: 0.68;
 }
 .card-container .veilled-shine {
   background-image:
-    linear-gradient(125deg, rgba(255, 255, 255, 0) 38%, rgba(160, 190, 255, 0.35) 50%, rgba(255, 255, 255, 0) 62%),
-    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(90, 150, 255, 0.2), rgba(0, 0, 0, 0) 45%);
-  background-size: 220% 220%, 160% 160%;
+    url("../assets/textures/holo5.png"),
+    linear-gradient(120deg, rgba(255, 255, 255, 0) 40%, rgba(120, 180, 255, 0.45) 50%, rgba(255, 255, 255, 0) 60%),
+    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(140, 200, 255, 0.3), rgba(0, 0, 0, 0) 50%);
+  background-size: 180% 180%, 220% 220%, 140% 140%;
   background-position:
     var(--veilled-x, 50%) var(--veilled-y, 50%),
+    calc(100% - var(--veilled-x, 50%)) calc(100% - var(--veilled-y, 50%)),
     var(--veilled-x, 50%) var(--veilled-y, 50%);
   background-repeat: no-repeat;
   mix-blend-mode: screen;
-  opacity: 0.22;
-  filter: blur(0.35px);
-  animation: veiledPulse 9s ease-in-out infinite;
+  opacity: 0.18;
+  filter: blur(0.4px) saturate(1.2);
+  animation: veiledPulse 10s ease-in-out infinite;
 }
 @keyframes auroraShift {
   0% {
@@ -804,16 +808,18 @@
 @keyframes veiledFog {
   0%, 100% {
     background-position:
-      30% 60%,
-      0% 0%,
-      0% 0%,
+      var(--veilled-x, 50%) var(--veilled-y, 50%),
+      50% 50%,
+      calc(100% - var(--veilled-x, 50%)) calc(100% - var(--veilled-y, 50%)),
+      var(--veilled-x, 50%) var(--veilled-y, 50%),
       50% 50%;
   }
   50% {
     background-position:
-      60% 40%,
-      20% 20%,
-      10% 10%,
+      calc(var(--veilled-x, 50%) + 6%) calc(var(--veilled-y, 50%) - 4%),
+      50% 50%,
+      calc(100% - var(--veilled-x, 50%) - 8%) calc(100% - var(--veilled-y, 50%) + 6%),
+      calc(var(--veilled-x, 50%) - 4%) calc(var(--veilled-y, 50%) + 6%),
       50% 50%;
   }
 }
@@ -2171,39 +2177,43 @@
 }
 .mini-card-container .veilled-overlay {
   background-image:
+    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(120, 170, 255, 0.22), rgba(0, 0, 0, 0) 55%),
+    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.68) 100%),
     url("../assets/textures/veil-smoke.png"),
-    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(70, 120, 200, 0.16), rgba(0, 0, 0, 0) 55%),
-    linear-gradient(160deg, rgba(6, 6, 14, 0.9) 0%, rgba(0, 0, 0, 0.96) 70%),
+    url("../assets/textures/foil-lines.png"),
     url("../assets/textures/grain-fine.png");
-  background-size: 220% 220%, 160% 160%, 200% 200%, 200% 200%;
+  background-size: 180% 180%, 140% 140%, 240% 240%, 220% 220%, 200% 200%;
   background-position:
     var(--veilled-x, 50%) var(--veilled-y, 50%),
+    50% 50%,
+    calc(100% - var(--veilled-x, 50%)) calc(100% - var(--veilled-y, 50%)),
     var(--veilled-x, 50%) var(--veilled-y, 50%),
-    0% 0%,
     50% 50%;
   background-repeat: no-repeat;
-  background-blend-mode: multiply, screen, multiply, overlay;
-  mix-blend-mode: multiply;
-  opacity: 0.45;
-  filter: contrast(1.3) brightness(0.82) saturate(1.05);
-  animation: veiledFog 14s ease-in-out infinite;
+  background-blend-mode: screen, multiply, soft-light, overlay, overlay;
+  mix-blend-mode: soft-light;
+  opacity: 0.5;
+  filter: contrast(1.2) brightness(0.86) saturate(1.08);
+  animation: veiledFog 16s ease-in-out infinite;
 }
 .mini-card-container:hover .veilled-overlay {
-  opacity: 0.55;
+  opacity: 0.62;
 }
 .mini-card-container .veilled-shine {
   background-image:
-    linear-gradient(125deg, rgba(255, 255, 255, 0) 38%, rgba(160, 190, 255, 0.3) 50%, rgba(255, 255, 255, 0) 62%),
-    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(90, 150, 255, 0.18), rgba(0, 0, 0, 0) 45%);
-  background-size: 220% 220%, 160% 160%;
+    url("../assets/textures/holo5.png"),
+    linear-gradient(120deg, rgba(255, 255, 255, 0) 40%, rgba(120, 180, 255, 0.4) 50%, rgba(255, 255, 255, 0) 60%),
+    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(120, 190, 255, 0.26), rgba(0, 0, 0, 0) 50%);
+  background-size: 180% 180%, 220% 220%, 140% 140%;
   background-position:
     var(--veilled-x, 50%) var(--veilled-y, 50%),
+    calc(100% - var(--veilled-x, 50%)) calc(100% - var(--veilled-y, 50%)),
     var(--veilled-x, 50%) var(--veilled-y, 50%);
   background-repeat: no-repeat;
   mix-blend-mode: screen;
-  opacity: 0.2;
-  filter: blur(0.35px);
-  animation: veiledPulse 9s ease-in-out infinite;
+  opacity: 0.16;
+  filter: blur(0.4px) saturate(1.15);
+  animation: veiledPulse 10s ease-in-out infinite;
 }
 .mini-card-container .fracture-overlay {
   --fracture-x: 50%;
