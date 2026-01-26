@@ -733,43 +733,79 @@
 }
 .card-container .veilled-overlay {
   background-image:
-    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(130, 180, 255, 0.25), rgba(0, 0, 0, 0) 55%),
-    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 38%, rgba(0, 0, 0, 0.7) 100%),
-    url("../assets/textures/veil-smoke.png"),
+    url("../assets/textures/holo2.png"),
     url("../assets/textures/foil-lines.png"),
-    url("../assets/textures/grain-fine.png");
-  background-size: 180% 180%, 140% 140%, 240% 240%, 220% 220%, 200% 200%;
+    linear-gradient(135deg, rgba(10, 4, 20, 0.85), rgba(0, 0, 0, 0.98)),
+    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(140, 80, 255, 0.45), rgba(0, 0, 0, 0) 60%),
+    url("../assets/textures/noise.png");
+  background-size: 260% 260%, 220% 220%, 200% 200%, 160% 160%, cover;
   background-position:
     var(--veilled-x, 50%) var(--veilled-y, 50%),
-    50% 50%,
     calc(100% - var(--veilled-x, 50%)) calc(100% - var(--veilled-y, 50%)),
+    50% 50%,
     var(--veilled-x, 50%) var(--veilled-y, 50%),
-    50% 50%;
+    center;
   background-repeat: no-repeat;
-  background-blend-mode: screen, multiply, soft-light, overlay, overlay;
-  mix-blend-mode: soft-light;
-  opacity: 0.55;
-  filter: contrast(1.25) brightness(0.85) saturate(1.1);
-  animation: veiledFog 16s ease-in-out infinite;
+  background-blend-mode: color-dodge, screen, multiply, screen, overlay;
+  mix-blend-mode: screen;
+  opacity: 0.62;
+  filter: saturate(1.4) contrast(1.2) brightness(1.02) drop-shadow(0 0 10px rgba(120, 60, 255, 0.25));
+  animation: veiledFog 12s ease-in-out infinite;
+  -webkit-mask-image:
+    conic-gradient(from 40deg at var(--veilled-x, 50%) var(--veilled-y, 50%),
+      rgba(255, 255, 255, 0) 0deg 18deg,
+      rgba(255, 255, 255, 0.95) 18deg 58deg,
+      rgba(255, 255, 255, 0) 58deg 76deg,
+      rgba(255, 255, 255, 0.9) 76deg 120deg,
+      rgba(255, 255, 255, 0) 120deg 140deg,
+      rgba(255, 255, 255, 0.85) 140deg 210deg,
+      rgba(255, 255, 255, 0) 210deg 240deg,
+      rgba(255, 255, 255, 0.95) 240deg 300deg,
+      rgba(255, 255, 255, 0) 300deg 360deg),
+    repeating-linear-gradient(120deg, rgba(255, 255, 255, 0.9) 0 8%, rgba(255, 255, 255, 0) 8% 18%),
+    repeating-linear-gradient(-25deg, rgba(255, 255, 255, 0.7) 0 6%, rgba(255, 255, 255, 0) 6% 16%),
+    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 65%);
+  -webkit-mask-size: 200% 200%, 220% 220%, 200% 200%, 140% 140%;
+  -webkit-mask-position: var(--veilled-x, 50%) var(--veilled-y, 50%), 0% 0%, 100% 0%, var(--veilled-x, 50%) var(--veilled-y, 50%);
+  -webkit-mask-repeat: no-repeat;
+  mask-image:
+    conic-gradient(from 40deg at var(--veilled-x, 50%) var(--veilled-y, 50%),
+      rgba(255, 255, 255, 0) 0deg 18deg,
+      rgba(255, 255, 255, 0.95) 18deg 58deg,
+      rgba(255, 255, 255, 0) 58deg 76deg,
+      rgba(255, 255, 255, 0.9) 76deg 120deg,
+      rgba(255, 255, 255, 0) 120deg 140deg,
+      rgba(255, 255, 255, 0.85) 140deg 210deg,
+      rgba(255, 255, 255, 0) 210deg 240deg,
+      rgba(255, 255, 255, 0.95) 240deg 300deg,
+      rgba(255, 255, 255, 0) 300deg 360deg),
+    repeating-linear-gradient(120deg, rgba(255, 255, 255, 0.9) 0 8%, rgba(255, 255, 255, 0) 8% 18%),
+    repeating-linear-gradient(-25deg, rgba(255, 255, 255, 0.7) 0 6%, rgba(255, 255, 255, 0) 6% 16%),
+    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 65%);
+  mask-size: 200% 200%, 220% 220%, 200% 200%, 140% 140%;
+  mask-position: var(--veilled-x, 50%) var(--veilled-y, 50%), 0% 0%, 100% 0%, var(--veilled-x, 50%) var(--veilled-y, 50%);
+  mask-repeat: no-repeat;
 }
 .card-container:hover .veilled-overlay {
-  opacity: 0.68;
+  opacity: 0.78;
 }
 .card-container .veilled-shine {
   background-image:
     url("../assets/textures/holo5.png"),
-    linear-gradient(120deg, rgba(255, 255, 255, 0) 40%, rgba(120, 180, 255, 0.45) 50%, rgba(255, 255, 255, 0) 60%),
-    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(140, 200, 255, 0.3), rgba(0, 0, 0, 0) 50%);
-  background-size: 180% 180%, 220% 220%, 140% 140%;
+    linear-gradient(115deg, rgba(255, 255, 255, 0) 35%, rgba(160, 210, 255, 0.55) 50%, rgba(255, 255, 255, 0) 65%),
+    linear-gradient(220deg, rgba(255, 0, 200, 0) 35%, rgba(255, 0, 200, 0.35) 50%, rgba(0, 0, 0, 0) 65%),
+    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(180, 120, 255, 0.4), rgba(0, 0, 0, 0) 55%);
+  background-size: 200% 200%, 220% 220%, 200% 200%, 140% 140%;
   background-position:
     var(--veilled-x, 50%) var(--veilled-y, 50%),
     calc(100% - var(--veilled-x, 50%)) calc(100% - var(--veilled-y, 50%)),
+    var(--veilled-x, 50%) var(--veilled-y, 50%),
     var(--veilled-x, 50%) var(--veilled-y, 50%);
   background-repeat: no-repeat;
   mix-blend-mode: screen;
-  opacity: 0.18;
-  filter: blur(0.4px) saturate(1.2);
-  animation: veiledPulse 10s ease-in-out infinite;
+  opacity: 0.22;
+  filter: blur(0.6px) saturate(1.3);
+  animation: veiledPulse 8s ease-in-out infinite;
 }
 @keyframes auroraShift {
   0% {
@@ -809,27 +845,44 @@
   0%, 100% {
     background-position:
       var(--veilled-x, 50%) var(--veilled-y, 50%),
-      50% 50%,
       calc(100% - var(--veilled-x, 50%)) calc(100% - var(--veilled-y, 50%)),
+      50% 50%,
       var(--veilled-x, 50%) var(--veilled-y, 50%),
-      50% 50%;
+      center;
+    -webkit-mask-position:
+      var(--veilled-x, 50%) var(--veilled-y, 50%),
+      0% 0%,
+      100% 0%,
+      var(--veilled-x, 50%) var(--veilled-y, 50%);
+    mask-position:
+      var(--veilled-x, 50%) var(--veilled-y, 50%),
+      0% 0%,
+      100% 0%,
+      var(--veilled-x, 50%) var(--veilled-y, 50%);
   }
   50% {
     background-position:
-      calc(var(--veilled-x, 50%) + 6%) calc(var(--veilled-y, 50%) - 4%),
+      calc(var(--veilled-x, 50%) + 8%) calc(var(--veilled-y, 50%) - 6%),
+      calc(100% - var(--veilled-x, 50%) - 10%) calc(100% - var(--veilled-y, 50%) + 8%),
       50% 50%,
-      calc(100% - var(--veilled-x, 50%) - 8%) calc(100% - var(--veilled-y, 50%) + 6%),
-      calc(var(--veilled-x, 50%) - 4%) calc(var(--veilled-y, 50%) + 6%),
-      50% 50%;
+      calc(var(--veilled-x, 50%) - 6%) calc(var(--veilled-y, 50%) + 8%),
+      center;
+    -webkit-mask-position:
+      calc(var(--veilled-x, 50%) + 6%) calc(var(--veilled-y, 50%) - 4%),
+      25% 15%,
+      75% 10%,
+      calc(var(--veilled-x, 50%) - 6%) calc(var(--veilled-y, 50%) + 6%);
+    mask-position:
+      calc(var(--veilled-x, 50%) + 6%) calc(var(--veilled-y, 50%) - 4%),
+      25% 15%,
+      75% 10%,
+      calc(var(--veilled-x, 50%) - 6%) calc(var(--veilled-y, 50%) + 6%);
   }
 }
 @keyframes veiledPulse {
-  0%, 100% {
-    opacity: 0.2;
-  }
-  50% {
-    opacity: 0.35;
-  }
+  0%, 100% { opacity: 0.16; }
+  40% { opacity: 0.35; }
+  70% { opacity: 0.22; }
 }
 .card-container .fracture-overlay {
   --fracture-x: 50%;
@@ -2177,43 +2230,79 @@
 }
 .mini-card-container .veilled-overlay {
   background-image:
-    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(120, 170, 255, 0.22), rgba(0, 0, 0, 0) 55%),
-    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.68) 100%),
-    url("../assets/textures/veil-smoke.png"),
+    url("../assets/textures/holo2.png"),
     url("../assets/textures/foil-lines.png"),
-    url("../assets/textures/grain-fine.png");
-  background-size: 180% 180%, 140% 140%, 240% 240%, 220% 220%, 200% 200%;
+    linear-gradient(135deg, rgba(10, 4, 20, 0.85), rgba(0, 0, 0, 0.98)),
+    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(120, 80, 255, 0.4), rgba(0, 0, 0, 0) 60%),
+    url("../assets/textures/noise.png");
+  background-size: 240% 240%, 200% 200%, 200% 200%, 150% 150%, cover;
   background-position:
     var(--veilled-x, 50%) var(--veilled-y, 50%),
-    50% 50%,
     calc(100% - var(--veilled-x, 50%)) calc(100% - var(--veilled-y, 50%)),
+    50% 50%,
     var(--veilled-x, 50%) var(--veilled-y, 50%),
-    50% 50%;
+    center;
   background-repeat: no-repeat;
-  background-blend-mode: screen, multiply, soft-light, overlay, overlay;
-  mix-blend-mode: soft-light;
-  opacity: 0.5;
-  filter: contrast(1.2) brightness(0.86) saturate(1.08);
-  animation: veiledFog 16s ease-in-out infinite;
+  background-blend-mode: color-dodge, screen, multiply, screen, overlay;
+  mix-blend-mode: screen;
+  opacity: 0.58;
+  filter: saturate(1.35) contrast(1.15) brightness(1);
+  animation: veiledFog 12s ease-in-out infinite;
+  -webkit-mask-image:
+    conic-gradient(from 40deg at var(--veilled-x, 50%) var(--veilled-y, 50%),
+      rgba(255, 255, 255, 0) 0deg 22deg,
+      rgba(255, 255, 255, 0.95) 22deg 60deg,
+      rgba(255, 255, 255, 0) 60deg 80deg,
+      rgba(255, 255, 255, 0.9) 80deg 130deg,
+      rgba(255, 255, 255, 0) 130deg 150deg,
+      rgba(255, 255, 255, 0.85) 150deg 220deg,
+      rgba(255, 255, 255, 0) 220deg 245deg,
+      rgba(255, 255, 255, 0.95) 245deg 300deg,
+      rgba(255, 255, 255, 0) 300deg 360deg),
+    repeating-linear-gradient(120deg, rgba(255, 255, 255, 0.9) 0 8%, rgba(255, 255, 255, 0) 8% 18%),
+    repeating-linear-gradient(-25deg, rgba(255, 255, 255, 0.7) 0 6%, rgba(255, 255, 255, 0) 6% 16%),
+    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 65%);
+  -webkit-mask-size: 200% 200%, 220% 220%, 200% 200%, 140% 140%;
+  -webkit-mask-position: var(--veilled-x, 50%) var(--veilled-y, 50%), 0% 0%, 100% 0%, var(--veilled-x, 50%) var(--veilled-y, 50%);
+  -webkit-mask-repeat: no-repeat;
+  mask-image:
+    conic-gradient(from 40deg at var(--veilled-x, 50%) var(--veilled-y, 50%),
+      rgba(255, 255, 255, 0) 0deg 22deg,
+      rgba(255, 255, 255, 0.95) 22deg 60deg,
+      rgba(255, 255, 255, 0) 60deg 80deg,
+      rgba(255, 255, 255, 0.9) 80deg 130deg,
+      rgba(255, 255, 255, 0) 130deg 150deg,
+      rgba(255, 255, 255, 0.85) 150deg 220deg,
+      rgba(255, 255, 255, 0) 220deg 245deg,
+      rgba(255, 255, 255, 0.95) 245deg 300deg,
+      rgba(255, 255, 255, 0) 300deg 360deg),
+    repeating-linear-gradient(120deg, rgba(255, 255, 255, 0.9) 0 8%, rgba(255, 255, 255, 0) 8% 18%),
+    repeating-linear-gradient(-25deg, rgba(255, 255, 255, 0.7) 0 6%, rgba(255, 255, 255, 0) 6% 16%),
+    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 65%);
+  mask-size: 200% 200%, 220% 220%, 200% 200%, 140% 140%;
+  mask-position: var(--veilled-x, 50%) var(--veilled-y, 50%), 0% 0%, 100% 0%, var(--veilled-x, 50%) var(--veilled-y, 50%);
+  mask-repeat: no-repeat;
 }
 .mini-card-container:hover .veilled-overlay {
-  opacity: 0.62;
+  opacity: 0.7;
 }
 .mini-card-container .veilled-shine {
   background-image:
     url("../assets/textures/holo5.png"),
-    linear-gradient(120deg, rgba(255, 255, 255, 0) 40%, rgba(120, 180, 255, 0.4) 50%, rgba(255, 255, 255, 0) 60%),
-    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(120, 190, 255, 0.26), rgba(0, 0, 0, 0) 50%);
-  background-size: 180% 180%, 220% 220%, 140% 140%;
+    linear-gradient(115deg, rgba(255, 255, 255, 0) 35%, rgba(160, 210, 255, 0.5) 50%, rgba(255, 255, 255, 0) 65%),
+    linear-gradient(220deg, rgba(255, 0, 200, 0) 35%, rgba(255, 0, 200, 0.3) 50%, rgba(0, 0, 0, 0) 65%),
+    radial-gradient(circle at var(--veilled-x, 50%) var(--veilled-y, 50%), rgba(180, 120, 255, 0.35), rgba(0, 0, 0, 0) 55%);
+  background-size: 200% 200%, 220% 220%, 200% 200%, 140% 140%;
   background-position:
     var(--veilled-x, 50%) var(--veilled-y, 50%),
     calc(100% - var(--veilled-x, 50%)) calc(100% - var(--veilled-y, 50%)),
+    var(--veilled-x, 50%) var(--veilled-y, 50%),
     var(--veilled-x, 50%) var(--veilled-y, 50%);
   background-repeat: no-repeat;
   mix-blend-mode: screen;
-  opacity: 0.16;
-  filter: blur(0.4px) saturate(1.15);
-  animation: veiledPulse 10s ease-in-out infinite;
+  opacity: 0.2;
+  filter: blur(0.6px) saturate(1.25);
+  animation: veiledPulse 8s ease-in-out infinite;
 }
 .mini-card-container .fracture-overlay {
   --fracture-x: 50%;
