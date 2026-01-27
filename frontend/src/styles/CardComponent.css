@@ -734,9 +734,9 @@
 .card-container .aqua-overlay {
   --space: 5%;
   --angle: 133deg;
-  --imgsize: 50% 42%;
+  --imgsize: 180% 180%;
   background-image:
-    url("../assets/textures/foil-lines.png"),
+    url("../assets/textures/holo5.png"),
     repeating-linear-gradient(0deg,
       rgb(14, 94, 180) calc(var(--space) * 1),
       rgba(58, 170, 235, 1) calc(var(--space) * 2),
@@ -768,8 +768,8 @@
     0% var(--cursor-y, 50%),
     var(--cursor-x, 50%) var(--cursor-y, 50%),
     var(--cursor-x, 50%) var(--cursor-y, 50%);
-  background-repeat: repeat;
-  filter: brightness(0.82) contrast(2.85) saturate(0.85);
+  background-repeat: no-repeat, repeat, repeat, no-repeat;
+  filter: brightness(0.82) contrast(2.85) saturate(0.85) hue-rotate(-12deg);
   mix-blend-mode: color-dodge;
   opacity: 0.75;
 }
@@ -778,9 +778,9 @@
 }
 .card-container .aqua-shine {
   background-image:
-    url("../assets/textures/sparkle-alpha.png"),
-    linear-gradient(120deg, rgba(255, 255, 255, 0) 35%, rgba(190, 230, 255, 0.55) 50%, rgba(255, 255, 255, 0) 65%),
-    radial-gradient(circle at var(--aqua-x, 50%) var(--aqua-y, 50%), rgba(160, 210, 255, 0.45), rgba(0, 0, 0, 0) 55%);
+    url("../assets/textures/grain-fine.png"),
+    linear-gradient(120deg, rgba(255, 255, 255, 0) 35%, rgba(170, 220, 255, 0.55) 50%, rgba(255, 255, 255, 0) 65%),
+    radial-gradient(circle at var(--aqua-x, 50%) var(--aqua-y, 50%), rgba(140, 200, 255, 0.45), rgba(0, 0, 0, 0) 55%);
   background-size: 180% 180%, 200% 200%, 140% 140%;
   background-position:
     var(--aqua-x, 50%) var(--aqua-y, 50%),
@@ -789,7 +789,7 @@
   background-repeat: no-repeat;
   mix-blend-mode: screen;
   opacity: 0.25;
-  filter: blur(0.45px) saturate(1.1);
+  filter: blur(0.45px) saturate(1.05) hue-rotate(-10deg);
   animation: aquaPulse 9s ease-in-out infinite;
 }
 @keyframes auroraShift {
@@ -2178,9 +2178,9 @@
 .mini-card-container .aqua-overlay {
   --space: 5%;
   --angle: 133deg;
-  --imgsize: 50% 42%;
+  --imgsize: 180% 180%;
   background-image:
-    url("../assets/textures/foil-lines.png"),
+    url("../assets/textures/holo5.png"),
     repeating-linear-gradient(0deg,
       rgb(14, 94, 180) calc(var(--space) * 1),
       rgba(58, 170, 235, 1) calc(var(--space) * 2),
@@ -2212,8 +2212,8 @@
     0% var(--cursor-y, 50%),
     var(--cursor-x, 50%) var(--cursor-y, 50%),
     var(--cursor-x, 50%) var(--cursor-y, 50%);
-  background-repeat: repeat;
-  filter: brightness(0.82) contrast(2.85) saturate(0.85);
+  background-repeat: no-repeat, repeat, repeat, no-repeat;
+  filter: brightness(0.82) contrast(2.85) saturate(0.85) hue-rotate(-12deg);
   mix-blend-mode: color-dodge;
   opacity: 0.75;
 }
@@ -2222,9 +2222,9 @@
 }
 .mini-card-container .aqua-shine {
   background-image:
-    url("../assets/textures/sparkle-alpha.png"),
-    linear-gradient(120deg, rgba(255, 255, 255, 0) 35%, rgba(190, 230, 255, 0.55) 50%, rgba(255, 255, 255, 0) 65%),
-    radial-gradient(circle at var(--aqua-x, 50%) var(--aqua-y, 50%), rgba(160, 210, 255, 0.4), rgba(0, 0, 0, 0) 55%);
+    url("../assets/textures/grain-fine.png"),
+    linear-gradient(120deg, rgba(255, 255, 255, 0) 35%, rgba(170, 220, 255, 0.55) 50%, rgba(255, 255, 255, 0) 65%),
+    radial-gradient(circle at var(--aqua-x, 50%) var(--aqua-y, 50%), rgba(140, 200, 255, 0.4), rgba(0, 0, 0, 0) 55%);
   background-size: 180% 180%, 200% 200%, 140% 140%;
   background-position:
     var(--aqua-x, 50%) var(--aqua-y, 50%),
@@ -2233,7 +2233,7 @@
   background-repeat: no-repeat;
   mix-blend-mode: screen;
   opacity: 0.22;
-  filter: blur(0.45px) saturate(1.1);
+  filter: blur(0.45px) saturate(1.05) hue-rotate(-10deg);
   animation: aquaPulse 9s ease-in-out infinite;
 }
 .mini-card-container .fracture-overlay {
