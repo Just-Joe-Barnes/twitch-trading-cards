@@ -614,8 +614,8 @@
 .card-container .rainbow-shine,
 .card-container .cosmic-overlay,
 .card-container .cosmic-shine,
-.card-container .fractured-overlay,
-.card-container .fractured-shine,
+.card-container .aqua-overlay,
+.card-container .aqua-shine,
 .card-container .fracture-overlay,
 .card-container .fracture-shine,
 .card-container .circuit-overlay,
@@ -731,81 +731,100 @@
   filter: blur(0.35px);
   animation: cosmicTwinkle 8s linear infinite;
 }
-.card-container .fractured-overlay {
+.card-container .aqua-overlay {
+  --space: 5%;
+  --angle: 133deg;
+  --imgsize: 50% 42%;
   background-image:
     url("../assets/textures/holo2.png"),
-    url("../assets/textures/foil-lines.png"),
-    linear-gradient(135deg, rgba(18, 18, 22, 0.9), rgba(0, 0, 0, 0.98)),
-    radial-gradient(circle at var(--fractured-x, 50%) var(--fractured-y, 50%), rgba(255, 255, 255, 0.28), rgba(0, 0, 0, 0) 60%),
-    url("../assets/textures/noise.png");
-  background-size: 260% 260%, 220% 220%, 200% 200%, 160% 160%, cover;
-  background-position:
-    var(--fractured-x, 50%) var(--fractured-y, 50%),
-    calc(100% - var(--fractured-x, 50%)) calc(100% - var(--fractured-y, 50%)),
-    50% 50%,
-    var(--fractured-x, 50%) var(--fractured-y, 50%),
-    center;
-  background-repeat: no-repeat;
-  background-blend-mode: soft-light, overlay, multiply, screen, overlay;
-  mix-blend-mode: soft-light;
-  opacity: 0.5;
-  filter: saturate(0.4) contrast(1.12) brightness(0.95);
-  animation: fracturedFog 14s ease-in-out infinite;
-  -webkit-mask-image:
-    conic-gradient(from 40deg at var(--fractured-x, 50%) var(--fractured-y, 50%),
-      rgba(255, 255, 255, 0) 0deg 18deg,
-      rgba(255, 255, 255, 0.95) 18deg 58deg,
-      rgba(255, 255, 255, 0) 58deg 76deg,
-      rgba(255, 255, 255, 0.9) 76deg 120deg,
-      rgba(255, 255, 255, 0) 120deg 140deg,
-      rgba(255, 255, 255, 0.85) 140deg 210deg,
-      rgba(255, 255, 255, 0) 210deg 240deg,
-      rgba(255, 255, 255, 0.95) 240deg 300deg,
-      rgba(255, 255, 255, 0) 300deg 360deg),
-    repeating-linear-gradient(120deg, rgba(255, 255, 255, 0.9) 0 8%, rgba(255, 255, 255, 0) 8% 18%),
-    repeating-linear-gradient(-25deg, rgba(255, 255, 255, 0.7) 0 6%, rgba(255, 255, 255, 0) 6% 16%),
-    radial-gradient(circle at var(--fractured-x, 50%) var(--fractured-y, 50%), rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 65%);
-  -webkit-mask-size: 200% 200%, 220% 220%, 200% 200%, 140% 140%;
-  -webkit-mask-position: var(--fractured-x, 50%) var(--fractured-y, 50%), 0% 0%, 100% 0%, var(--fractured-x, 50%) var(--fractured-y, 50%);
-  -webkit-mask-repeat: no-repeat;
-  mask-image:
-    conic-gradient(from 40deg at var(--fractured-x, 50%) var(--fractured-y, 50%),
-      rgba(255, 255, 255, 0) 0deg 18deg,
-      rgba(255, 255, 255, 0.95) 18deg 58deg,
-      rgba(255, 255, 255, 0) 58deg 76deg,
-      rgba(255, 255, 255, 0.9) 76deg 120deg,
-      rgba(255, 255, 255, 0) 120deg 140deg,
-      rgba(255, 255, 255, 0.85) 140deg 210deg,
-      rgba(255, 255, 255, 0) 210deg 240deg,
-      rgba(255, 255, 255, 0.95) 240deg 300deg,
-      rgba(255, 255, 255, 0) 300deg 360deg),
-    repeating-linear-gradient(120deg, rgba(255, 255, 255, 0.9) 0 8%, rgba(255, 255, 255, 0) 8% 18%),
-    repeating-linear-gradient(-25deg, rgba(255, 255, 255, 0.7) 0 6%, rgba(255, 255, 255, 0) 6% 16%),
-    radial-gradient(circle at var(--fractured-x, 50%) var(--fractured-y, 50%), rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 65%);
-  mask-size: 200% 200%, 220% 220%, 200% 200%, 140% 140%;
-  mask-position: var(--fractured-x, 50%) var(--fractured-y, 50%), 0% 0%, 100% 0%, var(--fractured-x, 50%) var(--fractured-y, 50%);
-  mask-repeat: no-repeat;
+    repeating-linear-gradient(0deg,
+      rgb(22, 108, 194) calc(var(--space) * 1),
+      rgba(60, 180, 255, 1) calc(var(--space) * 2),
+      rgba(132, 224, 255, 1) calc(var(--space) * 3),
+      rgba(40, 210, 240, 1) calc(var(--space) * 4),
+      rgba(50, 140, 255, 1) calc(var(--space) * 5),
+      rgba(14, 78, 170, 1) calc(var(--space) * 6),
+      rgb(22, 108, 194) calc(var(--space) * 7)
+    ),
+    repeating-linear-gradient(
+      var(--angle),
+      #0a1a2a 0%,
+      hsl(205, 35%, 55%) 3.8%,
+      hsl(200, 45%, 62%) 4.5%,
+      hsl(205, 35%, 55%) 5.2%,
+      #0a1a2a 10%,
+      #0a1a2a 12%
+    ),
+    radial-gradient(
+      farthest-corner circle at var(--mx) var(--my),
+      rgba(0, 0, 0, 0.12) 12%,
+      rgba(0, 0, 0, 0.18) 20%,
+      rgba(0, 0, 0, 0.35) 120%
+    );
+  background-blend-mode: exclusion, hue, hard-light;
+  background-size: var(--imgsize), 200% 700%, 300% 100%, 200% 100%;
+  background-position: center center, 0% var(--posy), var(--posx) var(--posy), var(--posx) var(--posy);
+  filter: brightness(calc((var(--hyp) * 0.28) + 0.55)) contrast(1.8) saturate(1.2);
+  mix-blend-mode: screen;
+  opacity: 0.52;
+  animation: aquaFlow 12s ease-in-out infinite;
+  position: relative;
 }
-.card-container:hover .fractured-overlay {
-  opacity: 0.62;
-}
-.card-container .fractured-shine {
+.card-container .aqua-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
   background-image:
-    url("../assets/textures/holo5.png"),
-    linear-gradient(115deg, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.45) 50%, rgba(255, 255, 255, 0) 65%),
-    linear-gradient(220deg, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.3) 50%, rgba(0, 0, 0, 0) 65%),
-    radial-gradient(circle at var(--fractured-x, 50%) var(--fractured-y, 50%), rgba(255, 255, 255, 0.35), rgba(0, 0, 0, 0) 55%);
-  background-size: 200% 200%, 220% 220%, 200% 200%, 140% 140%;
+    url("../assets/textures/holo3.png"),
+    repeating-linear-gradient(0deg,
+      rgba(18, 72, 150, 1) calc(var(--space) * 1),
+      rgba(60, 150, 230, 1) calc(var(--space) * 2),
+      rgba(120, 210, 255, 1) calc(var(--space) * 3),
+      rgba(44, 196, 235, 1) calc(var(--space) * 4),
+      rgba(36, 118, 210, 1) calc(var(--space) * 5),
+      rgba(14, 68, 150, 1) calc(var(--space) * 6),
+      rgba(18, 72, 150, 1) calc(var(--space) * 7)
+    ),
+    repeating-linear-gradient(
+      var(--angle),
+      #071521 0%,
+      hsl(200, 30%, 45%) 3.8%,
+      hsl(200, 40%, 55%) 4.5%,
+      hsl(200, 30%, 45%) 5.2%,
+      #071521 10%,
+      #071521 12%
+    ),
+    radial-gradient(
+      farthest-corner circle at var(--mx) var(--my),
+      rgba(0, 0, 0, 0.1) 12%,
+      rgba(0, 0, 0, 0.16) 20%,
+      rgba(0, 0, 0, 0.32) 120%
+    );
+  background-size: var(--imgsize), 200% 400%, 195% 100%, 200% 100%;
+  background-position: center center, 0% var(--posy), calc(var(--posx) * -1) calc(var(--posy) * -1), var(--posx) var(--posy);
+  mix-blend-mode: exclusion;
+  filter: brightness(calc((var(--hyp) * 0.45) + 0.75)) contrast(1.4) saturate(1.15);
+  opacity: 0.6;
+}
+.card-container:hover .aqua-overlay {
+  opacity: 0.64;
+}
+.card-container .aqua-shine {
+  background-image:
+    url("../assets/textures/sparkle-alpha.png"),
+    linear-gradient(120deg, rgba(255, 255, 255, 0) 35%, rgba(190, 230, 255, 0.55) 50%, rgba(255, 255, 255, 0) 65%),
+    radial-gradient(circle at var(--aqua-x, 50%) var(--aqua-y, 50%), rgba(160, 210, 255, 0.45), rgba(0, 0, 0, 0) 55%);
+  background-size: 180% 180%, 200% 200%, 140% 140%;
   background-position:
-    var(--fractured-x, 50%) var(--fractured-y, 50%),
-    calc(100% - var(--fractured-x, 50%)) calc(100% - var(--fractured-y, 50%)),
-    var(--fractured-x, 50%) var(--fractured-y, 50%),
-    var(--fractured-x, 50%) var(--fractured-y, 50%);
+    var(--aqua-x, 50%) var(--aqua-y, 50%),
+    var(--aqua-x, 50%) var(--aqua-y, 50%),
+    var(--aqua-x, 50%) var(--aqua-y, 50%);
   background-repeat: no-repeat;
   mix-blend-mode: screen;
-  opacity: 0.16;
-  filter: blur(0.6px) saturate(0.6);
-  animation: fracturedPulse 10s ease-in-out infinite;
+  opacity: 0.25;
+  filter: blur(0.45px) saturate(1.1);
+  animation: aquaPulse 9s ease-in-out infinite;
 }
 @keyframes auroraShift {
   0% {
@@ -841,48 +860,26 @@
     filter: blur(0.35px) brightness(1);
   }
 }
-@keyframes fracturedFog {
+@keyframes aquaFlow {
   0%, 100% {
     background-position:
-      var(--fractured-x, 50%) var(--fractured-y, 50%),
-      calc(100% - var(--fractured-x, 50%)) calc(100% - var(--fractured-y, 50%)),
-      50% 50%,
-      var(--fractured-x, 50%) var(--fractured-y, 50%),
-      center;
-    -webkit-mask-position:
-      var(--fractured-x, 50%) var(--fractured-y, 50%),
-      0% 0%,
-      100% 0%,
-      var(--fractured-x, 50%) var(--fractured-y, 50%);
-    mask-position:
-      var(--fractured-x, 50%) var(--fractured-y, 50%),
-      0% 0%,
-      100% 0%,
-      var(--fractured-x, 50%) var(--fractured-y, 50%);
+      center center,
+      0% var(--posy),
+      var(--posx) var(--posy),
+      var(--posx) var(--posy);
   }
   50% {
     background-position:
-      calc(var(--fractured-x, 50%) + 8%) calc(var(--fractured-y, 50%) - 6%),
-      calc(100% - var(--fractured-x, 50%) - 10%) calc(100% - var(--fractured-y, 50%) + 8%),
-      50% 50%,
-      calc(var(--fractured-x, 50%) - 6%) calc(var(--fractured-y, 50%) + 8%),
-      center;
-    -webkit-mask-position:
-      calc(var(--fractured-x, 50%) + 6%) calc(var(--fractured-y, 50%) - 4%),
-      25% 15%,
-      75% 10%,
-      calc(var(--fractured-x, 50%) - 6%) calc(var(--fractured-y, 50%) + 6%);
-    mask-position:
-      calc(var(--fractured-x, 50%) + 6%) calc(var(--fractured-y, 50%) - 4%),
-      25% 15%,
-      75% 10%,
-      calc(var(--fractured-x, 50%) - 6%) calc(var(--fractured-y, 50%) + 6%);
+      center center,
+      100% var(--posy),
+      calc(var(--posx) + 20%) calc(var(--posy) - 12%),
+      calc(var(--posx) - 10%) calc(var(--posy) + 8%);
   }
 }
-@keyframes fracturedPulse {
-  0%, 100% { opacity: 0.12; }
-  40% { opacity: 0.3; }
-  70% { opacity: 0.18; }
+@keyframes aquaPulse {
+  0%, 100% { opacity: 0.16; }
+  40% { opacity: 0.32; }
+  70% { opacity: 0.2; }
 }
 .card-container .fracture-overlay {
   --fracture-x: 50%;
@@ -2111,8 +2108,8 @@
 .mini-card-container .rainbow-shine,
 .mini-card-container .cosmic-overlay,
 .mini-card-container .cosmic-shine,
-.mini-card-container .fractured-overlay,
-.mini-card-container .fractured-shine,
+.mini-card-container .aqua-overlay,
+.mini-card-container .aqua-shine,
 .mini-card-container .fracture-overlay,
 .mini-card-container .fracture-shine,
 .mini-card-container .circuit-overlay,
@@ -2228,81 +2225,100 @@
   filter: blur(0.35px);
   animation: cosmicTwinkle 8s linear infinite;
 }
-.mini-card-container .fractured-overlay {
+.mini-card-container .aqua-overlay {
+  --space: 5%;
+  --angle: 133deg;
+  --imgsize: 50% 42%;
   background-image:
     url("../assets/textures/holo2.png"),
-    url("../assets/textures/foil-lines.png"),
-    linear-gradient(135deg, rgba(18, 18, 22, 0.9), rgba(0, 0, 0, 0.98)),
-    radial-gradient(circle at var(--fractured-x, 50%) var(--fractured-y, 50%), rgba(255, 255, 255, 0.22), rgba(0, 0, 0, 0) 60%),
-    url("../assets/textures/noise.png");
-  background-size: 220% 220%, 200% 200%, 200% 200%, 150% 150%, cover;
-  background-position:
-    var(--fractured-x, 50%) var(--fractured-y, 50%),
-    calc(100% - var(--fractured-x, 50%)) calc(100% - var(--fractured-y, 50%)),
-    50% 50%,
-    var(--fractured-x, 50%) var(--fractured-y, 50%),
-    center;
-  background-repeat: no-repeat;
-  background-blend-mode: soft-light, overlay, multiply, screen, overlay;
-  mix-blend-mode: soft-light;
+    repeating-linear-gradient(0deg,
+      rgb(22, 108, 194) calc(var(--space) * 1),
+      rgba(60, 180, 255, 1) calc(var(--space) * 2),
+      rgba(132, 224, 255, 1) calc(var(--space) * 3),
+      rgba(40, 210, 240, 1) calc(var(--space) * 4),
+      rgba(50, 140, 255, 1) calc(var(--space) * 5),
+      rgba(14, 78, 170, 1) calc(var(--space) * 6),
+      rgb(22, 108, 194) calc(var(--space) * 7)
+    ),
+    repeating-linear-gradient(
+      var(--angle),
+      #0a1a2a 0%,
+      hsl(205, 35%, 55%) 3.8%,
+      hsl(200, 45%, 62%) 4.5%,
+      hsl(205, 35%, 55%) 5.2%,
+      #0a1a2a 10%,
+      #0a1a2a 12%
+    ),
+    radial-gradient(
+      farthest-corner circle at var(--mx) var(--my),
+      rgba(0, 0, 0, 0.12) 12%,
+      rgba(0, 0, 0, 0.18) 20%,
+      rgba(0, 0, 0, 0.35) 120%
+    );
+  background-blend-mode: exclusion, hue, hard-light;
+  background-size: var(--imgsize), 200% 700%, 300% 100%, 200% 100%;
+  background-position: center center, 0% var(--posy), var(--posx) var(--posy), var(--posx) var(--posy);
+  filter: brightness(calc((var(--hyp) * 0.28) + 0.55)) contrast(1.8) saturate(1.2);
+  mix-blend-mode: screen;
   opacity: 0.5;
-  filter: saturate(0.4) contrast(1.1) brightness(0.95);
-  animation: fracturedFog 14s ease-in-out infinite;
-  -webkit-mask-image:
-    conic-gradient(from 40deg at var(--fractured-x, 50%) var(--fractured-y, 50%),
-      rgba(255, 255, 255, 0) 0deg 22deg,
-      rgba(255, 255, 255, 0.95) 22deg 60deg,
-      rgba(255, 255, 255, 0) 60deg 80deg,
-      rgba(255, 255, 255, 0.9) 80deg 130deg,
-      rgba(255, 255, 255, 0) 130deg 150deg,
-      rgba(255, 255, 255, 0.85) 150deg 220deg,
-      rgba(255, 255, 255, 0) 220deg 245deg,
-      rgba(255, 255, 255, 0.95) 245deg 300deg,
-      rgba(255, 255, 255, 0) 300deg 360deg),
-    repeating-linear-gradient(120deg, rgba(255, 255, 255, 0.9) 0 8%, rgba(255, 255, 255, 0) 8% 18%),
-    repeating-linear-gradient(-25deg, rgba(255, 255, 255, 0.7) 0 6%, rgba(255, 255, 255, 0) 6% 16%),
-    radial-gradient(circle at var(--fractured-x, 50%) var(--fractured-y, 50%), rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 65%);
-  -webkit-mask-size: 200% 200%, 220% 220%, 200% 200%, 140% 140%;
-  -webkit-mask-position: var(--fractured-x, 50%) var(--fractured-y, 50%), 0% 0%, 100% 0%, var(--fractured-x, 50%) var(--fractured-y, 50%);
-  -webkit-mask-repeat: no-repeat;
-  mask-image:
-    conic-gradient(from 40deg at var(--fractured-x, 50%) var(--fractured-y, 50%),
-      rgba(255, 255, 255, 0) 0deg 22deg,
-      rgba(255, 255, 255, 0.95) 22deg 60deg,
-      rgba(255, 255, 255, 0) 60deg 80deg,
-      rgba(255, 255, 255, 0.9) 80deg 130deg,
-      rgba(255, 255, 255, 0) 130deg 150deg,
-      rgba(255, 255, 255, 0.85) 150deg 220deg,
-      rgba(255, 255, 255, 0) 220deg 245deg,
-      rgba(255, 255, 255, 0.95) 245deg 300deg,
-      rgba(255, 255, 255, 0) 300deg 360deg),
-    repeating-linear-gradient(120deg, rgba(255, 255, 255, 0.9) 0 8%, rgba(255, 255, 255, 0) 8% 18%),
-    repeating-linear-gradient(-25deg, rgba(255, 255, 255, 0.7) 0 6%, rgba(255, 255, 255, 0) 6% 16%),
-    radial-gradient(circle at var(--fractured-x, 50%) var(--fractured-y, 50%), rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 65%);
-  mask-size: 200% 200%, 220% 220%, 200% 200%, 140% 140%;
-  mask-position: var(--fractured-x, 50%) var(--fractured-y, 50%), 0% 0%, 100% 0%, var(--fractured-x, 50%) var(--fractured-y, 50%);
-  mask-repeat: no-repeat;
+  animation: aquaFlow 12s ease-in-out infinite;
+  position: relative;
 }
-.mini-card-container:hover .fractured-overlay {
+.mini-card-container .aqua-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image:
+    url("../assets/textures/holo3.png"),
+    repeating-linear-gradient(0deg,
+      rgba(18, 72, 150, 1) calc(var(--space) * 1),
+      rgba(60, 150, 230, 1) calc(var(--space) * 2),
+      rgba(120, 210, 255, 1) calc(var(--space) * 3),
+      rgba(44, 196, 235, 1) calc(var(--space) * 4),
+      rgba(36, 118, 210, 1) calc(var(--space) * 5),
+      rgba(14, 68, 150, 1) calc(var(--space) * 6),
+      rgba(18, 72, 150, 1) calc(var(--space) * 7)
+    ),
+    repeating-linear-gradient(
+      var(--angle),
+      #071521 0%,
+      hsl(200, 30%, 45%) 3.8%,
+      hsl(200, 40%, 55%) 4.5%,
+      hsl(200, 30%, 45%) 5.2%,
+      #071521 10%,
+      #071521 12%
+    ),
+    radial-gradient(
+      farthest-corner circle at var(--mx) var(--my),
+      rgba(0, 0, 0, 0.1) 12%,
+      rgba(0, 0, 0, 0.16) 20%,
+      rgba(0, 0, 0, 0.32) 120%
+    );
+  background-size: var(--imgsize), 200% 400%, 195% 100%, 200% 100%;
+  background-position: center center, 0% var(--posy), calc(var(--posx) * -1) calc(var(--posy) * -1), var(--posx) var(--posy);
+  mix-blend-mode: exclusion;
+  filter: brightness(calc((var(--hyp) * 0.45) + 0.75)) contrast(1.4) saturate(1.15);
+  opacity: 0.55;
+}
+.mini-card-container:hover .aqua-overlay {
   opacity: 0.6;
 }
-.mini-card-container .fractured-shine {
+.mini-card-container .aqua-shine {
   background-image:
-    url("../assets/textures/holo5.png"),
-    linear-gradient(115deg, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 65%),
-    linear-gradient(220deg, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.25) 50%, rgba(0, 0, 0, 0) 65%),
-    radial-gradient(circle at var(--fractured-x, 50%) var(--fractured-y, 50%), rgba(255, 255, 255, 0.3), rgba(0, 0, 0, 0) 55%);
-  background-size: 200% 200%, 220% 220%, 200% 200%, 140% 140%;
+    url("../assets/textures/sparkle-alpha.png"),
+    linear-gradient(120deg, rgba(255, 255, 255, 0) 35%, rgba(190, 230, 255, 0.55) 50%, rgba(255, 255, 255, 0) 65%),
+    radial-gradient(circle at var(--aqua-x, 50%) var(--aqua-y, 50%), rgba(160, 210, 255, 0.4), rgba(0, 0, 0, 0) 55%);
+  background-size: 180% 180%, 200% 200%, 140% 140%;
   background-position:
-    var(--fractured-x, 50%) var(--fractured-y, 50%),
-    calc(100% - var(--fractured-x, 50%)) calc(100% - var(--fractured-y, 50%)),
-    var(--fractured-x, 50%) var(--fractured-y, 50%),
-    var(--fractured-x, 50%) var(--fractured-y, 50%);
+    var(--aqua-x, 50%) var(--aqua-y, 50%),
+    var(--aqua-x, 50%) var(--aqua-y, 50%),
+    var(--aqua-x, 50%) var(--aqua-y, 50%);
   background-repeat: no-repeat;
   mix-blend-mode: screen;
-  opacity: 0.15;
-  filter: blur(0.6px) saturate(0.6);
-  animation: fracturedPulse 10s ease-in-out infinite;
+  opacity: 0.22;
+  filter: blur(0.45px) saturate(1.1);
+  animation: aquaPulse 9s ease-in-out infinite;
 }
 .mini-card-container .fracture-overlay {
   --fracture-x: 50%;

@@ -42,7 +42,7 @@ const BaseCard = ({
     const isGlitch = modifierData?.name === 'Glitch';
     const isRainbow = modifierData?.name === 'Rainbow';
     const isCosmic = modifierData?.name === 'Cosmic' || modifierData?.name === 'Fractured Glass';
-    const isFractured = modifierData?.name === 'Fractured' || modifierData?.name === 'Veilled' || modifierData?.name === 'Neon Circuit';
+    const isAqua = modifierData?.name === 'Aqua' || modifierData?.name === 'Fractured' || modifierData?.name === 'Veilled';
     const eventEffectContainerRef = useRef(null);
 
     useEffect(() => {
@@ -253,7 +253,7 @@ const BaseCard = ({
             card.style.setProperty('--cursor-x', `${(x / rect.width) * 100}%`);
             card.style.setProperty('--cursor-y', `${(y / rect.height) * 100}%`);
         }
-        if (isRainbow || isCosmic || isFractured) {
+        if (isRainbow || isCosmic || isAqua) {
             card.style.setProperty('--cursor-x', `${(x / rect.width) * 100}%`);
             card.style.setProperty('--cursor-y', `${(y / rect.height) * 100}%`);
         }
@@ -306,9 +306,9 @@ const BaseCard = ({
             card.style.setProperty('--cosmic-x', `${(x / rect.width) * 100}%`);
             card.style.setProperty('--cosmic-y', `${(y / rect.height) * 100}%`);
         }
-        if (isFractured) {
-            card.style.setProperty('--fractured-x', `${(x / rect.width) * 100}%`);
-            card.style.setProperty('--fractured-y', `${(y / rect.height) * 100}%`);
+        if (isAqua) {
+            card.style.setProperty('--aqua-x', `${(x / rect.width) * 100}%`);
+            card.style.setProperty('--aqua-y', `${(y / rect.height) * 100}%`);
         }
     };
 
@@ -346,8 +346,8 @@ const BaseCard = ({
         card.style.setProperty('--rainbow-y', '50%');
         card.style.setProperty('--cosmic-x', '50%');
         card.style.setProperty('--cosmic-y', '50%');
-        card.style.setProperty('--fractured-x', '50%');
-        card.style.setProperty('--fractured-y', '50%');
+        card.style.setProperty('--aqua-x', '50%');
+        card.style.setProperty('--aqua-y', '50%');
     };
 
     const handleClick = (e) => {
@@ -468,10 +468,10 @@ const BaseCard = ({
                                 <div className={`cosmic-shine ${miniCard ? 'mini' : ''}`}/>
                             </>
                         )}
-                        {isFractured && (
+                        {isAqua && (
                             <>
-                                <div className={`fractured-overlay ${miniCard ? 'mini' : ''}`}/>
-                                <div className={`fractured-shine ${miniCard ? 'mini' : ''}`}/>
+                                <div className={`aqua-overlay ${miniCard ? 'mini' : ''}`}/>
+                                <div className={`aqua-shine ${miniCard ? 'mini' : ''}`}/>
                             </>
                         )}
                         {limited && (<div className={`limited-overlay ${miniCard ? 'mini' : ''}`}/>)}

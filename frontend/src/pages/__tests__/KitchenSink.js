@@ -215,12 +215,12 @@ const KitchenSink = () => {
                     slabbed={toggleSlabbedPreview}
                 />
                 <BaseCard
-                    name="Fractured The Cursed Bristles"
+                    name="Aqua The Cursed Bristles"
                     image="/images/cards/thecursedbristles.jpg"
                     description="Worn by a long-forgotten pirate lord, this beard carries the whispers of the deep. Each strand is tangled with lost treasure, but those who dare to claim it are doomed to an itch that never fades. -ItchyBeard"
                     rarity="basic"
                     mintNumber="666"
-                    modifier="Fractured"
+                    modifier="Aqua"
                     grade={6}
                     slabbed={toggleSlabbedPreview}
                 />
@@ -324,12 +324,12 @@ const KitchenSink = () => {
                     miniCard={true}
                 />
                 <BaseCard
-                    name="Fractured The Cursed Bristles"
+                    name="Aqua The Cursed Bristles"
                     image="/images/cards/thecursedbristles.jpg"
                     description="Worn by a long-forgotten pirate lord, this beard carries the whispers of the deep. Each strand is tangled with lost treasure, but those who dare to claim it are doomed to an itch that never fades. -ItchyBeard"
                     rarity="basic"
                     mintNumber="666"
-                    modifier="Fractured"
+                    modifier="Aqua"
                     grade={6}
                     slabbed={toggleSlabbedPreview}
                     miniCard={true}
