@@ -739,34 +739,34 @@
     url("../assets/textures/holo2.png"),
     repeating-linear-gradient(0deg,
       rgb(22, 108, 194) calc(var(--space) * 1),
-      rgba(60, 180, 255, 1) calc(var(--space) * 2),
-      rgba(132, 224, 255, 1) calc(var(--space) * 3),
-      rgba(40, 210, 240, 1) calc(var(--space) * 4),
-      rgba(50, 140, 255, 1) calc(var(--space) * 5),
-      rgba(14, 78, 170, 1) calc(var(--space) * 6),
+      rgba(70, 190, 255, 1) calc(var(--space) * 2),
+      rgba(150, 230, 255, 1) calc(var(--space) * 3),
+      rgba(60, 214, 245, 1) calc(var(--space) * 4),
+      rgba(70, 150, 255, 1) calc(var(--space) * 5),
+      rgba(12, 68, 150, 1) calc(var(--space) * 6),
       rgb(22, 108, 194) calc(var(--space) * 7)
     ),
     repeating-linear-gradient(
       var(--angle),
-      #0a1a2a 0%,
-      hsl(205, 35%, 55%) 3.8%,
-      hsl(200, 45%, 62%) 4.5%,
-      hsl(205, 35%, 55%) 5.2%,
-      #0a1a2a 10%,
-      #0a1a2a 12%
+      #0e152e 0%,
+      hsl(200, 25%, 60%) 3.8%,
+      hsl(200, 40%, 70%) 4.5%,
+      hsl(200, 25%, 60%) 5.2%,
+      #0e152e 10%,
+      #0e152e 12%
     ),
     radial-gradient(
       farthest-corner circle at var(--mx) var(--my),
-      rgba(0, 0, 0, 0.12) 12%,
-      rgba(0, 0, 0, 0.18) 20%,
-      rgba(0, 0, 0, 0.35) 120%
+      rgba(0, 0, 0, 0.1) 12%,
+      rgba(0, 0, 0, 0.15) 20%,
+      rgba(0, 0, 0, 0.25) 120%
     );
   background-blend-mode: exclusion, hue, hard-light;
   background-size: var(--imgsize), 200% 700%, 300% 100%, 200% 100%;
-  background-position: center center, 0% var(--posy), var(--posx) var(--posy), var(--posx) var(--posy);
-  filter: brightness(calc((var(--hyp) * 0.28) + 0.55)) contrast(1.8) saturate(1.2);
+  background-position: center center, 0% var(--cursor-y), var(--cursor-x) var(--cursor-y), var(--cursor-x) var(--cursor-y);
+  filter: brightness(calc((var(--hyp) * 0.3) + 0.5)) contrast(2) saturate(1.5);
   mix-blend-mode: screen;
-  opacity: 0.52;
+  opacity: 0.55;
   animation: aquaFlow 12s ease-in-out infinite;
   position: relative;
 }
@@ -778,33 +778,33 @@
   background-image:
     url("../assets/textures/holo3.png"),
     repeating-linear-gradient(0deg,
-      rgba(18, 72, 150, 1) calc(var(--space) * 1),
-      rgba(60, 150, 230, 1) calc(var(--space) * 2),
-      rgba(120, 210, 255, 1) calc(var(--space) * 3),
-      rgba(44, 196, 235, 1) calc(var(--space) * 4),
-      rgba(36, 118, 210, 1) calc(var(--space) * 5),
-      rgba(14, 68, 150, 1) calc(var(--space) * 6),
-      rgba(18, 72, 150, 1) calc(var(--space) * 7)
+      rgba(16, 76, 160, 1) calc(var(--space) * 1),
+      rgba(70, 160, 235, 1) calc(var(--space) * 2),
+      rgba(130, 215, 255, 1) calc(var(--space) * 3),
+      rgba(54, 198, 235, 1) calc(var(--space) * 4),
+      rgba(46, 128, 220, 1) calc(var(--space) * 5),
+      rgba(12, 64, 140, 1) calc(var(--space) * 6),
+      rgba(16, 76, 160, 1) calc(var(--space) * 7)
     ),
     repeating-linear-gradient(
       var(--angle),
-      #071521 0%,
-      hsl(200, 30%, 45%) 3.8%,
-      hsl(200, 40%, 55%) 4.5%,
-      hsl(200, 30%, 45%) 5.2%,
-      #071521 10%,
-      #071521 12%
+      #0b1226 0%,
+      hsl(200, 22%, 52%) 3.8%,
+      hsl(200, 35%, 62%) 4.5%,
+      hsl(200, 22%, 52%) 5.2%,
+      #0b1226 10%,
+      #0b1226 12%
     ),
     radial-gradient(
       farthest-corner circle at var(--mx) var(--my),
       rgba(0, 0, 0, 0.1) 12%,
-      rgba(0, 0, 0, 0.16) 20%,
-      rgba(0, 0, 0, 0.32) 120%
+      rgba(0, 0, 0, 0.14) 20%,
+      rgba(0, 0, 0, 0.22) 120%
     );
   background-size: var(--imgsize), 200% 400%, 195% 100%, 200% 100%;
-  background-position: center center, 0% var(--posy), calc(var(--posx) * -1) calc(var(--posy) * -1), var(--posx) var(--posy);
+  background-position: center center, 0% var(--cursor-y), calc(var(--cursor-x) * -1) calc(var(--cursor-y) * -1), var(--cursor-x) var(--cursor-y);
   mix-blend-mode: exclusion;
-  filter: brightness(calc((var(--hyp) * 0.45) + 0.75)) contrast(1.4) saturate(1.15);
+  filter: brightness(calc((var(--hyp) * 0.5) + 0.8)) contrast(1.6) saturate(1.4);
   opacity: 0.6;
 }
 .card-container:hover .aqua-overlay {
@@ -864,16 +864,16 @@
   0%, 100% {
     background-position:
       center center,
-      0% var(--posy),
-      var(--posx) var(--posy),
-      var(--posx) var(--posy);
+      0% var(--cursor-y),
+      var(--cursor-x) var(--cursor-y),
+      var(--cursor-x) var(--cursor-y);
   }
   50% {
     background-position:
       center center,
-      100% var(--posy),
-      calc(var(--posx) + 20%) calc(var(--posy) - 12%),
-      calc(var(--posx) - 10%) calc(var(--posy) + 8%);
+      100% var(--cursor-y),
+      calc(var(--cursor-x) + 20%) calc(var(--cursor-y) - 12%),
+      calc(var(--cursor-x) - 10%) calc(var(--cursor-y) + 8%);
   }
 }
 @keyframes aquaPulse {
@@ -2233,32 +2233,32 @@
     url("../assets/textures/holo2.png"),
     repeating-linear-gradient(0deg,
       rgb(22, 108, 194) calc(var(--space) * 1),
-      rgba(60, 180, 255, 1) calc(var(--space) * 2),
-      rgba(132, 224, 255, 1) calc(var(--space) * 3),
-      rgba(40, 210, 240, 1) calc(var(--space) * 4),
-      rgba(50, 140, 255, 1) calc(var(--space) * 5),
-      rgba(14, 78, 170, 1) calc(var(--space) * 6),
+      rgba(70, 190, 255, 1) calc(var(--space) * 2),
+      rgba(150, 230, 255, 1) calc(var(--space) * 3),
+      rgba(60, 214, 245, 1) calc(var(--space) * 4),
+      rgba(70, 150, 255, 1) calc(var(--space) * 5),
+      rgba(12, 68, 150, 1) calc(var(--space) * 6),
       rgb(22, 108, 194) calc(var(--space) * 7)
     ),
     repeating-linear-gradient(
       var(--angle),
-      #0a1a2a 0%,
-      hsl(205, 35%, 55%) 3.8%,
-      hsl(200, 45%, 62%) 4.5%,
-      hsl(205, 35%, 55%) 5.2%,
-      #0a1a2a 10%,
-      #0a1a2a 12%
+      #0e152e 0%,
+      hsl(200, 25%, 60%) 3.8%,
+      hsl(200, 40%, 70%) 4.5%,
+      hsl(200, 25%, 60%) 5.2%,
+      #0e152e 10%,
+      #0e152e 12%
     ),
     radial-gradient(
       farthest-corner circle at var(--mx) var(--my),
-      rgba(0, 0, 0, 0.12) 12%,
-      rgba(0, 0, 0, 0.18) 20%,
-      rgba(0, 0, 0, 0.35) 120%
+      rgba(0, 0, 0, 0.1) 12%,
+      rgba(0, 0, 0, 0.15) 20%,
+      rgba(0, 0, 0, 0.25) 120%
     );
   background-blend-mode: exclusion, hue, hard-light;
   background-size: var(--imgsize), 200% 700%, 300% 100%, 200% 100%;
-  background-position: center center, 0% var(--posy), var(--posx) var(--posy), var(--posx) var(--posy);
-  filter: brightness(calc((var(--hyp) * 0.28) + 0.55)) contrast(1.8) saturate(1.2);
+  background-position: center center, 0% var(--cursor-y), var(--cursor-x) var(--cursor-y), var(--cursor-x) var(--cursor-y);
+  filter: brightness(calc((var(--hyp) * 0.3) + 0.5)) contrast(2) saturate(1.5);
   mix-blend-mode: screen;
   opacity: 0.5;
   animation: aquaFlow 12s ease-in-out infinite;
@@ -2272,34 +2272,34 @@
   background-image:
     url("../assets/textures/holo3.png"),
     repeating-linear-gradient(0deg,
-      rgba(18, 72, 150, 1) calc(var(--space) * 1),
-      rgba(60, 150, 230, 1) calc(var(--space) * 2),
-      rgba(120, 210, 255, 1) calc(var(--space) * 3),
-      rgba(44, 196, 235, 1) calc(var(--space) * 4),
-      rgba(36, 118, 210, 1) calc(var(--space) * 5),
-      rgba(14, 68, 150, 1) calc(var(--space) * 6),
-      rgba(18, 72, 150, 1) calc(var(--space) * 7)
+      rgba(16, 76, 160, 1) calc(var(--space) * 1),
+      rgba(70, 160, 235, 1) calc(var(--space) * 2),
+      rgba(130, 215, 255, 1) calc(var(--space) * 3),
+      rgba(54, 198, 235, 1) calc(var(--space) * 4),
+      rgba(46, 128, 220, 1) calc(var(--space) * 5),
+      rgba(12, 64, 140, 1) calc(var(--space) * 6),
+      rgba(16, 76, 160, 1) calc(var(--space) * 7)
     ),
     repeating-linear-gradient(
       var(--angle),
-      #071521 0%,
-      hsl(200, 30%, 45%) 3.8%,
-      hsl(200, 40%, 55%) 4.5%,
-      hsl(200, 30%, 45%) 5.2%,
-      #071521 10%,
-      #071521 12%
+      #0b1226 0%,
+      hsl(200, 22%, 52%) 3.8%,
+      hsl(200, 35%, 62%) 4.5%,
+      hsl(200, 22%, 52%) 5.2%,
+      #0b1226 10%,
+      #0b1226 12%
     ),
     radial-gradient(
       farthest-corner circle at var(--mx) var(--my),
       rgba(0, 0, 0, 0.1) 12%,
-      rgba(0, 0, 0, 0.16) 20%,
-      rgba(0, 0, 0, 0.32) 120%
+      rgba(0, 0, 0, 0.14) 20%,
+      rgba(0, 0, 0, 0.22) 120%
     );
   background-size: var(--imgsize), 200% 400%, 195% 100%, 200% 100%;
-  background-position: center center, 0% var(--posy), calc(var(--posx) * -1) calc(var(--posy) * -1), var(--posx) var(--posy);
+  background-position: center center, 0% var(--cursor-y), calc(var(--cursor-x) * -1) calc(var(--cursor-y) * -1), var(--cursor-x) var(--cursor-y);
   mix-blend-mode: exclusion;
-  filter: brightness(calc((var(--hyp) * 0.45) + 0.75)) contrast(1.4) saturate(1.15);
-  opacity: 0.55;
+  filter: brightness(calc((var(--hyp) * 0.5) + 0.8)) contrast(1.6) saturate(1.4);
+  opacity: 0.6;
 }
 .mini-card-container:hover .aqua-overlay {
   opacity: 0.6;
