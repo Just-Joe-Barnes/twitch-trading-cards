@@ -42,7 +42,7 @@ const BaseCard = ({
     const isGlitch = modifierData?.name === 'Glitch';
     const isRainbow = modifierData?.name === 'Rainbow';
     const isCosmic = modifierData?.name === 'Cosmic' || modifierData?.name === 'Fractured Glass';
-    const isVeilled = modifierData?.name === 'Veilled' || modifierData?.name === 'Neon Circuit';
+    const isFractured = modifierData?.name === 'Fractured' || modifierData?.name === 'Veilled' || modifierData?.name === 'Neon Circuit';
     const eventEffectContainerRef = useRef(null);
 
     useEffect(() => {
@@ -253,7 +253,7 @@ const BaseCard = ({
             card.style.setProperty('--cursor-x', `${(x / rect.width) * 100}%`);
             card.style.setProperty('--cursor-y', `${(y / rect.height) * 100}%`);
         }
-        if (isRainbow || isCosmic || isVeilled) {
+        if (isRainbow || isCosmic || isFractured) {
             card.style.setProperty('--cursor-x', `${(x / rect.width) * 100}%`);
             card.style.setProperty('--cursor-y', `${(y / rect.height) * 100}%`);
         }
@@ -306,9 +306,9 @@ const BaseCard = ({
             card.style.setProperty('--cosmic-x', `${(x / rect.width) * 100}%`);
             card.style.setProperty('--cosmic-y', `${(y / rect.height) * 100}%`);
         }
-        if (isVeilled) {
-            card.style.setProperty('--veilled-x', `${(x / rect.width) * 100}%`);
-            card.style.setProperty('--veilled-y', `${(y / rect.height) * 100}%`);
+        if (isFractured) {
+            card.style.setProperty('--fractured-x', `${(x / rect.width) * 100}%`);
+            card.style.setProperty('--fractured-y', `${(y / rect.height) * 100}%`);
         }
     };
 
@@ -346,8 +346,8 @@ const BaseCard = ({
         card.style.setProperty('--rainbow-y', '50%');
         card.style.setProperty('--cosmic-x', '50%');
         card.style.setProperty('--cosmic-y', '50%');
-        card.style.setProperty('--veilled-x', '50%');
-        card.style.setProperty('--veilled-y', '50%');
+        card.style.setProperty('--fractured-x', '50%');
+        card.style.setProperty('--fractured-y', '50%');
     };
 
     const handleClick = (e) => {
@@ -468,10 +468,10 @@ const BaseCard = ({
                                 <div className={`cosmic-shine ${miniCard ? 'mini' : ''}`}/>
                             </>
                         )}
-                        {isVeilled && (
+                        {isFractured && (
                             <>
-                                <div className={`veilled-overlay ${miniCard ? 'mini' : ''}`}/>
-                                <div className={`veilled-shine ${miniCard ? 'mini' : ''}`}/>
+                                <div className={`fractured-overlay ${miniCard ? 'mini' : ''}`}/>
+                                <div className={`fractured-shine ${miniCard ? 'mini' : ''}`}/>
                             </>
                         )}
                         {limited && (<div className={`limited-overlay ${miniCard ? 'mini' : ''}`}/>)}
