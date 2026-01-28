@@ -42,6 +42,10 @@ const normalizePages = (pages, cardIdSet) => {
     const safePages = Array.isArray(pages) ? pages.slice(0, MAX_PAGES) : [];
     const sourcePages = safePages.length > 0 ? safePages : createDefaultPages();
 
+    while (sourcePages.length < 2) {
+        sourcePages.push(createEmptySlots());
+    }
+
     return sourcePages.map((page) => {
         const slots = Array.isArray(page) ? page : [];
         return Array.from({ length: SLOT_COUNT }, (_, slotIndex) => {

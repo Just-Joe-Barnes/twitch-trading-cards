@@ -120,9 +120,23 @@ h1::after {
   cursor: pointer;
   transition: 0.2s ease;
 }
+.binder-action-bar .action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: #2a2a2a;
+  color: #666;
+}
 .binder-action-bar .action-btn:hover {
   border-color: var(--brand-primary);
   color: var(--brand-primary);
+}
+.binder-action-bar .action-btn.danger {
+  border-color: rgba(255, 86, 86, 0.4);
+  color: #ffb3b3;
+}
+.binder-action-bar .action-btn.danger:hover {
+  border-color: #ff5656;
+  color: #ffb3b3;
 }
 .binder-cover-controls {
   display: grid;
@@ -644,7 +658,7 @@ h1::after {
     grid-template-columns: 1fr auto 1fr;
   }
   .binder-mobile-toolbar .insert-row {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
   }
   .binder-mobile-toolbar .nav-btn,
   .binder-mobile-toolbar .insert-btn-mobile {
@@ -670,6 +684,10 @@ h1::after {
   .binder-mobile-toolbar .insert-btn-mobile:hover {
     border-color: var(--brand-primary);
     color: var(--brand-primary);
+  }
+  .binder-mobile-toolbar .insert-btn-mobile.danger {
+    border-color: rgba(255, 86, 86, 0.4);
+    color: #ffb3b3;
   }
   .binder-mobile-toolbar .page-indicator {
     font-size: 0.85rem;

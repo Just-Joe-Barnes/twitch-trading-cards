@@ -530,6 +530,7 @@ const BinderPage = () => {
         : (isMobile ? 'Swipe left or right to flip pages.' : 'Viewing binder layout.');
     const isNextDisabled = !isCoverView && currentSpreadIndex >= totalPages - 1;
     const isPrevDisabled = isCoverView;
+    const deleteLabel = isMobile ? 'Delete page' : 'Delete spread';
 
     const fetchCatalogue = async () => {
         try {
@@ -690,6 +691,52 @@ const BinderPage = () => {
             setPages(updatedPages);
         }
     };
+
+    const getRemovalIndexes = useCallback(() => {
+        if (isCoverView) return [];
+        if (isMobile) {
+            return currentSpreadIndex >= 0 ? [currentSpreadIndex] : [];
+        }
+        return [currentSpreadIndex, currentSpreadIndex + 1].filter((idx) => idx >= 0 && idx < pages.length);
+    }, [isCoverView, isMobile, currentSpreadIndex, pages.length]);
+
+    const canRemovePages = useMemo(() => {
+        if (!isOwner || isCoverView) return false;
+        const indexes = getRemovalIndexes();
+        if (indexes.length === 0) return false;
+        if (indexes.some((idx) => idx < 2)) return false;
+        return pages.length - indexes.length >= 2;
+    }, [getRemovalIndexes, isOwner, isCoverView, pages.length]);
+
+    const handleRemovePages = useCallback(() => {
+        if (!canRemovePages) {
+            if (window.showToast) {
+                window.showToast('You can’t delete the first two pages.', 'error');
+            }
+            return;
+        }
+        const indexes = getRemovalIndexes();
+        if (indexes.length === 0) return;
+        const label = indexes.length === 1
+            ? `page ${indexes[0] + 1}`
+            : `pages ${indexes[0] + 1}-${indexes[indexes.length - 1] + 1}`;
+        const confirmed = typeof window.confirm === 'function'
+            ? window.confirm(`Delete ${label}? This cannot be undone.`)
+            : true;
+        if (!confirmed) return;
+
+        const updatedPages = pages.filter((_, idx) => !indexes.includes(idx));
+        setPages(updatedPages);
+
+        if (isCoverView) return;
+        if (isMobile) {
+            const nextIndex = Math.min(currentSpreadIndex, updatedPages.length - 1);
+            setCurrentSpreadIndex(Math.max(0, nextIndex));
+        } else {
+            const nextIndex = Math.min(currentSpreadIndex, Math.max(0, updatedPages.length - 2));
+            setCurrentSpreadIndex(Math.max(0, nextIndex));
+        }
+    }, [canRemovePages, getRemovalIndexes, pages, isCoverView, isMobile, currentSpreadIndex]);
 
     const handleNext = useCallback(() => {
         if (isCoverView) {
@@ -1286,6 +1333,15 @@ const BinderPage = () => {
                                 <i className="fa-solid fa-plus"></i>
                                 <span>Insert After</span>
                             </button>
+                            <button
+                                type="button"
+                                className="insert-btn-mobile danger"
+                                onClick={handleRemovePages}
+                                disabled={!canRemovePages}
+                            >
+                                <i className="fa-solid fa-trash"></i>
+                                <span>{deleteLabel}</span>
+                            </button>
                         </div>
                     )}
                 </div>
@@ -1323,6 +1379,14 @@ const BinderPage = () => {
                         onClick={() => setLockStateForVisiblePages(false)}
                     >
                         Unlock all on page
+                    </button>
+                    <button
+                        type="button"
+                        className="action-btn danger"
+                        onClick={handleRemovePages}
+                        disabled={!canRemovePages}
+                    >
+                        {deleteLabel}
                     </button>
                 </div>
             )}
