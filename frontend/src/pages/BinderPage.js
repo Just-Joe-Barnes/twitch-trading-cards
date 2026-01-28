@@ -531,6 +531,10 @@ const BinderPage = () => {
     const isNextDisabled = !isCoverView && currentSpreadIndex >= totalPages - 1;
     const isPrevDisabled = isCoverView;
     const deleteLabel = isMobile ? 'Delete page' : 'Delete spread';
+    const isPageEmpty = useCallback((page) => {
+        if (!Array.isArray(page) || page.length === 0) return true;
+        return page.every((slot) => !slot);
+    }, []);
 
     const fetchCatalogue = async () => {
         try {
@@ -717,13 +721,16 @@ const BinderPage = () => {
         }
         const indexes = getRemovalIndexes();
         if (indexes.length === 0) return;
-        const label = indexes.length === 1
-            ? `page ${indexes[0] + 1}`
-            : `pages ${indexes[0] + 1}-${indexes[indexes.length - 1] + 1}`;
-        const confirmed = typeof window.confirm === 'function'
-            ? window.confirm(`Delete ${label}? This cannot be undone.`)
-            : true;
-        if (!confirmed) return;
+        const allEmpty = indexes.every((idx) => isPageEmpty(pages[idx]));
+        if (!allEmpty) {
+            const label = indexes.length === 1
+                ? `page ${indexes[0] + 1}`
+                : `pages ${indexes[0] + 1}-${indexes[indexes.length - 1] + 1}`;
+            const confirmed = typeof window.confirm === 'function'
+                ? window.confirm(`Delete ${label}? This cannot be undone.`)
+                : true;
+            if (!confirmed) return;
+        }
 
         const updatedPages = pages.filter((_, idx) => !indexes.includes(idx));
         setPages(updatedPages);
@@ -736,7 +743,36 @@ const BinderPage = () => {
             const nextIndex = Math.min(currentSpreadIndex, Math.max(0, updatedPages.length - 2));
             setCurrentSpreadIndex(Math.max(0, nextIndex));
         }
-    }, [canRemovePages, getRemovalIndexes, pages, isCoverView, isMobile, currentSpreadIndex]);
+    }, [canRemovePages, getRemovalIndexes, isPageEmpty, pages, isCoverView, isMobile, currentSpreadIndex]);
+
+    const trailingEmptyCount = useMemo(() => {
+        if (pages.length <= 2) return 0;
+        let count = 0;
+        for (let i = pages.length - 1; i >= 2; i -= 1) {
+            if (isPageEmpty(pages[i])) {
+                count += 1;
+            } else {
+                break;
+            }
+        }
+        return count;
+    }, [pages, isPageEmpty]);
+
+    const canTrimEmptyPages = isOwner && trailingEmptyCount > 0;
+
+    const handleTrimEmptyPages = useCallback(() => {
+        if (!canTrimEmptyPages) return;
+        const updatedPages = pages.slice(0, pages.length - trailingEmptyCount);
+        setPages(updatedPages);
+        if (isCoverView) return;
+        if (isMobile) {
+            const nextIndex = Math.min(currentSpreadIndex, updatedPages.length - 1);
+            setCurrentSpreadIndex(Math.max(0, nextIndex));
+        } else {
+            const nextIndex = Math.min(currentSpreadIndex, Math.max(0, updatedPages.length - 2));
+            setCurrentSpreadIndex(Math.max(0, nextIndex));
+        }
+    }, [canTrimEmptyPages, pages, trailingEmptyCount, isCoverView, isMobile, currentSpreadIndex]);
 
     const handleNext = useCallback(() => {
         if (isCoverView) {
@@ -1379,6 +1415,14 @@ const BinderPage = () => {
                         onClick={() => setLockStateForVisiblePages(false)}
                     >
                         Unlock all on page
+                    </button>
+                    <button
+                        type="button"
+                        className="action-btn"
+                        onClick={handleTrimEmptyPages}
+                        disabled={!canTrimEmptyPages}
+                    >
+                        Remove empty pages
                     </button>
                     <button
                         type="button"
