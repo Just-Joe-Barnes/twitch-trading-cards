@@ -42,7 +42,7 @@ const BaseCard = ({
     const isGlitch = modifierData?.name === 'Glitch';
     const isRainbow = modifierData?.name === 'Rainbow';
     const isCosmic = modifierData?.name === 'Cosmic' || modifierData?.name === 'Fractured Glass';
-    const isAqua = modifierData?.name === 'Aqua' || modifierData?.name === 'Fractured' || modifierData?.name === 'Veilled';
+    const isGlacial = modifierData?.name === 'Glacial' || modifierData?.name === 'Aqua' || modifierData?.name === 'Fractured' || modifierData?.name === 'Veilled';
     const eventEffectContainerRef = useRef(null);
 
     useEffect(() => {
@@ -253,7 +253,7 @@ const BaseCard = ({
             card.style.setProperty('--cursor-x', `${(x / rect.width) * 100}%`);
             card.style.setProperty('--cursor-y', `${(y / rect.height) * 100}%`);
         }
-        if (isRainbow || isCosmic || isAqua) {
+        if (isRainbow || isCosmic || isGlacial) {
             card.style.setProperty('--cursor-x', `${(x / rect.width) * 100}%`);
             card.style.setProperty('--cursor-y', `${(y / rect.height) * 100}%`);
         }
@@ -306,7 +306,7 @@ const BaseCard = ({
             card.style.setProperty('--cosmic-x', `${(x / rect.width) * 100}%`);
             card.style.setProperty('--cosmic-y', `${(y / rect.height) * 100}%`);
         }
-        if (isAqua) {
+        if (isGlacial) {
             card.style.setProperty('--aqua-x', `${(x / rect.width) * 100}%`);
             card.style.setProperty('--aqua-y', `${(y / rect.height) * 100}%`);
         }
@@ -468,7 +468,7 @@ const BaseCard = ({
                                 <div className={`cosmic-shine ${miniCard ? 'mini' : ''}`}/>
                             </>
                         )}
-                        {isAqua && (
+                        {isGlacial && (
                             <>
                                 <div className={`aqua-overlay ${miniCard ? 'mini' : ''}`}/>
                                 <div className={`aqua-shine ${miniCard ? 'mini' : ''}`}/>

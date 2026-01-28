@@ -11,6 +11,7 @@ const { openPackForUserLogic } = require('../helpers/packHelpers');
 const Log = require("../models/logModel");
 const {createLogEntry} = require("../utils/logService");
 const MODIFIER_CHANCE = parseFloat(process.env.MODIFIER_CHANCE || '0.05');
+const normalizeModifierName = (name) => (name === 'Aqua' ? 'Glacial' : name);
 
 const getUsersWithPacks = async (req, res) => {
     try {
@@ -56,7 +57,8 @@ const openPack = async (req, res) => {
 
         if (modifierDoc) {
             newCard.modifier = modifierDoc._id;
-            const prefix = modifierDoc.name === 'Glitch' ? 'Glitched' : modifierDoc.name;
+            const normalizedName = normalizeModifierName(modifierDoc.name);
+            const prefix = normalizedName === 'Glitch' ? 'Glitched' : normalizedName;
             newCard.name = `${prefix} ${newCard.name}`;
         }
 

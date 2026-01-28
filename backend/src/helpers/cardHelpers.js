@@ -5,6 +5,7 @@ const { getCardAvailability } = require("../controllers/cardController");
 const PeriodCounter = require('../models/periodCounterModel');
 const Setting = require('../models/settingsModel');
 const { getWeeklyKey } = require("../scripts/periods");
+const normalizeModifierName = (name) => (name === 'Aqua' ? 'Glacial' : name);
 
 const rarityProbabilities = [
     { rarity: 'Basic', probability: 0.40 },
@@ -652,7 +653,8 @@ const generateCardPreviewFromPool = async (poolIds, options = {}) => {
                 if (modifiers.length > 0) {
                     const modToApply = modifiers[Math.floor(Math.random() * modifiers.length)];
                     appliedModifierId = modToApply._id;
-                    let cardPrefix = modToApply.name === "Glitch" ? "Glitched" : modToApply.name;
+                    const normalizedName = normalizeModifierName(modToApply.name);
+                    let cardPrefix = normalizedName === "Glitch" ? "Glitched" : normalizedName;
                     selectedCard.name = cardPrefix + " " + selectedCard.name;
                 }
             }

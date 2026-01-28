@@ -48,12 +48,17 @@ const adminOnly = (req, res, next) => {
 const MODIFIER_NAME_TO_PREFIX_MAP = {
     "Glitch": "Glitched ",
     "Negative": "Negative ",
-    "Prismatic": "Prismatic "
+    "Prismatic": "Prismatic ",
+    "Glacial": "Glacial "
 };
+const LEGACY_MODIFIER_PREFIXES = ["Aqua "];
 
 const stripCardNameModifiers = (cardName) => {
     if (typeof cardName !== 'string') return cardName;
-    const PREFIXES_TO_STRIP = Object.values(MODIFIER_NAME_TO_PREFIX_MAP);
+    const PREFIXES_TO_STRIP = Array.from(new Set([
+        ...Object.values(MODIFIER_NAME_TO_PREFIX_MAP),
+        ...LEGACY_MODIFIER_PREFIXES
+    ]));
     for (const modifier of PREFIXES_TO_STRIP) {
         if (cardName.startsWith(modifier)) {
             return cardName.substring(modifier.length);
@@ -70,7 +75,10 @@ const normalizeCardName = (cardName) => {
 const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const buildCardNameRegex = (name) => {
-    const prefixes = Object.values(MODIFIER_NAME_TO_PREFIX_MAP).map(escapeRegex);
+    const prefixes = Array.from(new Set([
+        ...Object.values(MODIFIER_NAME_TO_PREFIX_MAP),
+        ...LEGACY_MODIFIER_PREFIXES
+    ])).map(escapeRegex);
     const prefixPattern = prefixes.length ? `(?:${prefixes.join('|')})` : '';
     const base = escapeRegex(name);
     const pattern = prefixPattern ? `^(?:${prefixPattern})?${base}$` : `^${base}$`;

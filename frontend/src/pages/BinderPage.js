@@ -68,9 +68,13 @@ const CardPickerModal = ({
     const [selectedRarity, setSelectedRarity] = useState('');
     const [showModifiedOnly, setShowModifiedOnly] = useState(false);
 
-    const modifierNames = useMemo(() =>
-            modifiers.filter(m => m.name !== 'None').map(m => m.name.toLowerCase())
-        , []);
+    const modifierNames = useMemo(() => {
+        const names = modifiers.filter(m => m.name !== 'None').map(m => m.name.toLowerCase());
+        if (!names.includes('aqua')) {
+            names.push('aqua');
+        }
+        return names;
+    }, []);
 
     const getNameForSort = useCallback((name) => {
         let sortableName = name;

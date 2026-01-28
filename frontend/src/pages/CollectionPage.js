@@ -70,9 +70,13 @@ const CollectionPage = ({
     const maxCardScale = isMobile ? 1.3 : 2;
     const minCardScale = isMobile ? 0.35 : 0.35;
 
-    const modifierNames = useMemo(() =>
-            modifiers.filter(m => m.name !== 'None').map(m => m.name.toLowerCase())
-        , []);
+    const modifierNames = useMemo(() => {
+        const names = modifiers.filter(m => m.name !== 'None').map(m => m.name.toLowerCase());
+        if (!names.includes('aqua')) {
+            names.push('aqua');
+        }
+        return names;
+    }, []);
 
     const getNameForSort = useCallback((name) => {
         let sortableName = name;
