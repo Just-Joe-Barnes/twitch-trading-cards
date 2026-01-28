@@ -14,66 +14,71 @@ const seedModifiers = async () => {
     });
     console.log('MongoDB connected for seeding modifiers');
 
+    const upsertModifier = async ({ name, description }) => {
+      const existing = await Modifier.findOne({ name });
+      if (!existing) {
+        const modifier = new Modifier({
+          name,
+          description,
+          css: JSON.stringify({}),
+          blendMode: null,
+          filter: null,
+          animation: null,
+          overlayImage: null,
+          overlayBlendMode: null,
+        });
+        await modifier.save();
+        console.log(`${name} modifier created`);
+      } else {
+        console.log(`${name} modifier already exists`);
+      }
+    };
+
+    const aquaModifier = await Modifier.findOne({ name: 'Aqua' });
+    const glacialModifier = await Modifier.findOne({ name: 'Glacial' });
+    if (aquaModifier && !glacialModifier) {
+      aquaModifier.name = 'Glacial';
+      await aquaModifier.save();
+      console.log('Aqua modifier renamed to Glacial');
+    } else if (aquaModifier && glacialModifier) {
+      console.log('Both Aqua and Glacial modifiers exist; no rename performed');
+    }
+
     // Check if the Negative modifier already exists
-    const existingModifier = await Modifier.findOne({ name: 'Negative' });
-
-    if (!existingModifier) {
-      const negativeModifier = new Modifier({
-        name: 'Negative',
-        description: 'Inverts the card colours.',
-        css: JSON.stringify({}),
-        blendMode: null,
-        filter: 'invert(1)',
-        animation: null,
-        overlayImage: null,
-        overlayBlendMode: null,
-      });
-
-      await negativeModifier.save();
-      console.log('Negative modifier created');
-    } else {
-      console.log('Negative modifier already exists');
+    await upsertModifier({
+      name: 'Negative',
+      description: 'Inverts the card colours.',
+    });
+    const negative = await Modifier.findOne({ name: 'Negative' });
+    if (negative && negative.filter !== 'invert(1)') {
+      negative.filter = 'invert(1)';
+      await negative.save();
     }
 
-    const glitchExisting = await Modifier.findOne({ name: 'Glitch' });
+    await upsertModifier({
+      name: 'Glitch',
+      description: 'Reactive glitch lines with static overlay.',
+    });
 
-    if (!glitchExisting) {
-      const glitchModifier = new Modifier({
-        name: 'Glitch',
-        description: 'Reactive glitch lines with static overlay.',
-        css: JSON.stringify({}),
-        blendMode: null,
-        filter: null,
-        animation: null,
-        overlayImage: null,
-        overlayBlendMode: null,
-      });
+    await upsertModifier({
+      name: 'Prismatic',
+      description: 'Rainbow holographic shimmer.',
+    });
 
-      await glitchModifier.save();
-      console.log('Glitch modifier created');
-    } else {
-      console.log('Glitch modifier already exists');
-    }
+    await upsertModifier({
+      name: 'Rainbow',
+      description: 'Vivid rainbow holographic sheen.',
+    });
 
-    const prismExisting = await Modifier.findOne({ name: 'Prismatic' });
+    await upsertModifier({
+      name: 'Cosmic',
+      description: 'Deep space shimmer with starfield.',
+    });
 
-    if (!prismExisting) {
-      const prismModifier = new Modifier({
-        name: 'Prismatic',
-        description: 'Rainbow holographic shimmer.',
-        css: JSON.stringify({}),
-        blendMode: null,
-        filter: null,
-        animation: null,
-        overlayImage: null,
-        overlayBlendMode: null,
-      });
-
-      await prismModifier.save();
-      console.log('Prismatic modifier created');
-    } else {
-      console.log('Prismatic modifier already exists');
-    }
+    await upsertModifier({
+      name: 'Glacial',
+      description: 'Icy blue holo shimmer.',
+    });
 
     mongoose.disconnect();
     console.log('MongoDB disconnected');

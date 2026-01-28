@@ -49,7 +49,9 @@ const MODIFIER_NAME_TO_PREFIX_MAP = {
     "Glitch": "Glitched ",
     "Negative": "Negative ",
     "Prismatic": "Prismatic ",
-    "Glacial": "Glacial "
+    "Glacial": "Glacial ",
+    "Rainbow": "Rainbow ",
+    "Cosmic": "Cosmic "
 };
 const LEGACY_MODIFIER_PREFIXES = ["Aqua "];
 
@@ -1971,8 +1973,8 @@ router.post('/trades/backfill-snapshots', protect, adminOnly, async (req, res) =
                         filter: { _id: trade._id },
                         update: {
                             $set: {
-                                offeredItemsSnapshot: offeredItemsSnapshot.map(c => ({ originalId: c._id, name: c.name, rarity: c.rarity, mintNumber: c.mintNumber, imageUrl: c.imageUrl })),
-                                requestedItemsSnapshot: requestedItemsSnapshot.map(c => ({ originalId: c._id, name: c.name, rarity: c.rarity, mintNumber: c.mintNumber, imageUrl: c.imageUrl }))
+                                offeredItemsSnapshot: offeredItemsSnapshot.map(c => ({ originalId: c._id, name: c.name, rarity: c.rarity, mintNumber: c.mintNumber, imageUrl: c.imageUrl, modifier: c.modifier ?? null })),
+                                requestedItemsSnapshot: requestedItemsSnapshot.map(c => ({ originalId: c._id, name: c.name, rarity: c.rarity, mintNumber: c.mintNumber, imageUrl: c.imageUrl, modifier: c.modifier ?? null }))
                             }
                         }
                     }

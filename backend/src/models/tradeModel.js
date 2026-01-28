@@ -5,7 +5,8 @@ const cardSnapshotSchema = new mongoose.Schema({
     name: {type: String, required: true},
     rarity: {type: String, required: true},
     mintNumber: {type: Number, required: true},
-    imageUrl: {type: String}
+    imageUrl: {type: String},
+    modifier: {type: mongoose.Schema.Types.Mixed, default: null}
 }, {_id: false}); // No separate _id for the subdocument
 
 const tradeSchema = new mongoose.Schema({

@@ -4,4 +4,6 @@ export const modifiers = [
   { name: 'Glitch', color: '#ec407a' },
   { name: 'Prismatic', color: '#ffee58', text: '#000' },
   { name: 'Glacial', color: '#5db3ff' },
+  { name: 'Rainbow', color: '#ff6ad5' },
+  { name: 'Cosmic', color: '#7f6bff' },
 ];

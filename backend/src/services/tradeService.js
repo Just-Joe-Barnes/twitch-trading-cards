@@ -35,7 +35,8 @@ async function createTrade(senderId, { recipient, offeredItems, requestedItems, 
                     name: card.name,
                     rarity: card.rarity,
                     mintNumber: card.mintNumber,
-                    imageUrl: card.imageUrl
+                    imageUrl: card.imageUrl,
+                    modifier: card.modifier ?? null
                 });
             }
         }
@@ -49,7 +50,8 @@ async function createTrade(senderId, { recipient, offeredItems, requestedItems, 
                     name: card.name,
                     rarity: card.rarity,
                     mintNumber: card.mintNumber,
-                    imageUrl: card.imageUrl
+                    imageUrl: card.imageUrl,
+                    modifier: card.modifier ?? null
                 });
             }
         }
