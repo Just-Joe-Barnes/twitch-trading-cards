@@ -734,62 +734,70 @@
 .card-container .aqua-overlay {
   --space: 5%;
   --angle: 133deg;
-  --imgsize: 180% 180%;
+  --imgsize: 55% 45%;
   background-image:
-    url("../assets/textures/holo5.png"),
+    url("../assets/textures/foil-lines.png"),
     repeating-linear-gradient(0deg,
-      rgb(14, 94, 180) calc(var(--space) * 1),
-      rgba(58, 170, 235, 1) calc(var(--space) * 2),
-      rgba(120, 222, 255, 1) calc(var(--space) * 3),
-      rgba(74, 205, 235, 1) calc(var(--space) * 4),
-      rgba(64, 145, 230, 1) calc(var(--space) * 5),
-      rgba(12, 72, 150, 1) calc(var(--space) * 6),
-      rgb(14, 94, 180) calc(var(--space) * 7)
+      rgb(18, 88, 170) calc(var(--space) * 1),
+      rgb(32, 140, 210) calc(var(--space) * 2),
+      rgb(92, 210, 255) calc(var(--space) * 3),
+      rgb(38, 175, 235) calc(var(--space) * 4),
+      rgb(20, 125, 200) calc(var(--space) * 5),
+      rgb(10, 70, 150) calc(var(--space) * 6),
+      rgb(18, 88, 170) calc(var(--space) * 7)
     ),
     repeating-linear-gradient(
       var(--angle),
-      #0b1021 0%,
-      hsl(202, 20%, 58%) 3.8%,
-      hsl(198, 33%, 66%) 4.5%,
-      hsl(202, 20%, 58%) 5.2%,
-      #0b1021 10%,
-      #0b1021 12%
+      #071a3a 0%,
+      hsl(203, 32%, 55%) 3.8%,
+      hsl(199, 45%, 66%) 4.5%,
+      hsl(203, 32%, 55%) 5.2%,
+      #071a3a 10%,
+      #071a3a 12%
     ),
     radial-gradient(
-      farthest-corner circle at var(--cursor-x, 50%) var(--cursor-y, 50%),
-      rgba(0, 0, 0, 0.1) 12%,
-      rgba(0, 0, 0, 0.15) 20%,
-      rgba(0, 0, 0, 0.25) 120%
+      farthest-corner circle at var(--aqua-x, 50%) var(--aqua-y, 50%),
+      rgba(220, 240, 255, 0.4) 0%,
+      rgba(25, 70, 110, 0.25) 28%,
+      rgba(0, 0, 0, 0.55) 85%
     );
   background-blend-mode: exclusion, hue, hard-light;
-  background-size: var(--imgsize), 200% 700%, 300% 100%, 200% 100%;
+  background-size: var(--imgsize), 200% 700%, 300% 100%, 200% 200%;
   background-position:
     center,
-    0% var(--cursor-y, 50%),
-    var(--cursor-x, 50%) var(--cursor-y, 50%),
-    var(--cursor-x, 50%) var(--cursor-y, 50%);
+    0% var(--aqua-y, 50%),
+    var(--aqua-x, 50%) var(--aqua-y, 50%),
+    var(--aqua-x, 50%) var(--aqua-y, 50%);
   background-repeat: no-repeat, repeat, repeat, no-repeat;
-  filter: brightness(0.82) contrast(2.85) saturate(0.85) hue-rotate(-12deg);
+  filter: brightness(calc(0.65 + (1 - var(--cursor-dist, 1)) * 0.7)) contrast(2.2) saturate(1.1);
   mix-blend-mode: color-dodge;
-  opacity: 0.75;
+  opacity: 0.78;
 }
 .card-container:hover .aqua-overlay {
   opacity: 0.85;
 }
 .card-container .aqua-shine {
+  --space: 5%;
+  --angle: 133deg;
   background-image:
     url("../assets/textures/grain-fine.png"),
-    linear-gradient(120deg, rgba(255, 255, 255, 0) 35%, rgba(170, 220, 255, 0.55) 50%, rgba(255, 255, 255, 0) 65%),
-    radial-gradient(circle at var(--aqua-x, 50%) var(--aqua-y, 50%), rgba(140, 200, 255, 0.45), rgba(0, 0, 0, 0) 55%);
-  background-size: 180% 180%, 200% 200%, 140% 140%;
+    repeating-linear-gradient(0deg,
+      rgba(20, 120, 210, 0.35) calc(var(--space) * 1),
+      rgba(70, 190, 255, 0.55) calc(var(--space) * 2),
+      rgba(140, 225, 255, 0.6) calc(var(--space) * 3),
+      rgba(60, 175, 235, 0.45) calc(var(--space) * 4),
+      rgba(20, 120, 210, 0.35) calc(var(--space) * 5)
+    ),
+    radial-gradient(circle at var(--aqua-x, 50%) var(--aqua-y, 50%), rgba(170, 220, 255, 0.55), rgba(0, 0, 0, 0) 60%);
+  background-size: 180% 180%, 200% 700%, 140% 140%;
   background-position:
-    var(--aqua-x, 50%) var(--aqua-y, 50%),
-    var(--aqua-x, 50%) var(--aqua-y, 50%),
-    var(--aqua-x, 50%) var(--aqua-y, 50%);
-  background-repeat: no-repeat;
-  mix-blend-mode: screen;
-  opacity: 0.25;
-  filter: blur(0.45px) saturate(1.05) hue-rotate(-10deg);
+    center,
+    0% var(--aqua-y, 50%),
+    calc(100% - var(--aqua-x, 50%)) calc(100% - var(--aqua-y, 50%));
+  background-repeat: no-repeat, repeat, no-repeat;
+  mix-blend-mode: exclusion;
+  opacity: 0.22;
+  filter: blur(0.4px) saturate(1.15);
   animation: aquaPulse 9s ease-in-out infinite;
 }
 @keyframes auroraShift {
@@ -2178,62 +2186,70 @@
 .mini-card-container .aqua-overlay {
   --space: 5%;
   --angle: 133deg;
-  --imgsize: 180% 180%;
+  --imgsize: 65% 55%;
   background-image:
-    url("../assets/textures/holo5.png"),
+    url("../assets/textures/foil-lines.png"),
     repeating-linear-gradient(0deg,
-      rgb(14, 94, 180) calc(var(--space) * 1),
-      rgba(58, 170, 235, 1) calc(var(--space) * 2),
-      rgba(120, 222, 255, 1) calc(var(--space) * 3),
-      rgba(74, 205, 235, 1) calc(var(--space) * 4),
-      rgba(64, 145, 230, 1) calc(var(--space) * 5),
-      rgba(12, 72, 150, 1) calc(var(--space) * 6),
-      rgb(14, 94, 180) calc(var(--space) * 7)
+      rgb(18, 88, 170) calc(var(--space) * 1),
+      rgb(32, 140, 210) calc(var(--space) * 2),
+      rgb(92, 210, 255) calc(var(--space) * 3),
+      rgb(38, 175, 235) calc(var(--space) * 4),
+      rgb(20, 125, 200) calc(var(--space) * 5),
+      rgb(10, 70, 150) calc(var(--space) * 6),
+      rgb(18, 88, 170) calc(var(--space) * 7)
     ),
     repeating-linear-gradient(
       var(--angle),
-      #0b1021 0%,
-      hsl(202, 20%, 58%) 3.8%,
-      hsl(198, 33%, 66%) 4.5%,
-      hsl(202, 20%, 58%) 5.2%,
-      #0b1021 10%,
-      #0b1021 12%
+      #071a3a 0%,
+      hsl(203, 32%, 55%) 3.8%,
+      hsl(199, 45%, 66%) 4.5%,
+      hsl(203, 32%, 55%) 5.2%,
+      #071a3a 10%,
+      #071a3a 12%
     ),
     radial-gradient(
-      farthest-corner circle at var(--cursor-x, 50%) var(--cursor-y, 50%),
-      rgba(0, 0, 0, 0.1) 12%,
-      rgba(0, 0, 0, 0.15) 20%,
-      rgba(0, 0, 0, 0.25) 120%
+      farthest-corner circle at var(--aqua-x, 50%) var(--aqua-y, 50%),
+      rgba(220, 240, 255, 0.35) 0%,
+      rgba(25, 70, 110, 0.25) 28%,
+      rgba(0, 0, 0, 0.55) 85%
     );
   background-blend-mode: exclusion, hue, hard-light;
-  background-size: var(--imgsize), 200% 700%, 300% 100%, 200% 100%;
+  background-size: var(--imgsize), 200% 700%, 300% 100%, 200% 200%;
   background-position:
     center,
-    0% var(--cursor-y, 50%),
-    var(--cursor-x, 50%) var(--cursor-y, 50%),
-    var(--cursor-x, 50%) var(--cursor-y, 50%);
+    0% var(--aqua-y, 50%),
+    var(--aqua-x, 50%) var(--aqua-y, 50%),
+    var(--aqua-x, 50%) var(--aqua-y, 50%);
   background-repeat: no-repeat, repeat, repeat, no-repeat;
-  filter: brightness(0.82) contrast(2.85) saturate(0.85) hue-rotate(-12deg);
+  filter: brightness(calc(0.7 + (1 - var(--cursor-dist, 1)) * 0.6)) contrast(2.1) saturate(1.05);
   mix-blend-mode: color-dodge;
-  opacity: 0.75;
+  opacity: 0.76;
 }
 .mini-card-container:hover .aqua-overlay {
   opacity: 0.85;
 }
 .mini-card-container .aqua-shine {
+  --space: 5%;
+  --angle: 133deg;
   background-image:
     url("../assets/textures/grain-fine.png"),
-    linear-gradient(120deg, rgba(255, 255, 255, 0) 35%, rgba(170, 220, 255, 0.55) 50%, rgba(255, 255, 255, 0) 65%),
-    radial-gradient(circle at var(--aqua-x, 50%) var(--aqua-y, 50%), rgba(140, 200, 255, 0.4), rgba(0, 0, 0, 0) 55%);
-  background-size: 180% 180%, 200% 200%, 140% 140%;
+    repeating-linear-gradient(0deg,
+      rgba(20, 120, 210, 0.3) calc(var(--space) * 1),
+      rgba(70, 190, 255, 0.45) calc(var(--space) * 2),
+      rgba(140, 225, 255, 0.5) calc(var(--space) * 3),
+      rgba(60, 175, 235, 0.4) calc(var(--space) * 4),
+      rgba(20, 120, 210, 0.3) calc(var(--space) * 5)
+    ),
+    radial-gradient(circle at var(--aqua-x, 50%) var(--aqua-y, 50%), rgba(170, 220, 255, 0.45), rgba(0, 0, 0, 0) 60%);
+  background-size: 180% 180%, 200% 700%, 140% 140%;
   background-position:
-    var(--aqua-x, 50%) var(--aqua-y, 50%),
-    var(--aqua-x, 50%) var(--aqua-y, 50%),
-    var(--aqua-x, 50%) var(--aqua-y, 50%);
-  background-repeat: no-repeat;
-  mix-blend-mode: screen;
-  opacity: 0.22;
-  filter: blur(0.45px) saturate(1.05) hue-rotate(-10deg);
+    center,
+    0% var(--aqua-y, 50%),
+    calc(100% - var(--aqua-x, 50%)) calc(100% - var(--aqua-y, 50%));
+  background-repeat: no-repeat, repeat, no-repeat;
+  mix-blend-mode: exclusion;
+  opacity: 0.2;
+  filter: blur(0.4px) saturate(1.1);
   animation: aquaPulse 9s ease-in-out infinite;
 }
 .mini-card-container .fracture-overlay {
