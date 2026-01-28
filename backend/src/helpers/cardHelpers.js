@@ -6,6 +6,56 @@ const PeriodCounter = require('../models/periodCounterModel');
 const Setting = require('../models/settingsModel');
 const { getWeeklyKey } = require("../scripts/periods");
 const normalizeModifierName = (name) => (name === 'Aqua' ? 'Glacial' : name);
+const MODIFIER_CACHE_TTL_MS = 5 * 60 * 1000;
+let modifierCache = { items: null, at: 0 };
+
+const REQUIRED_MODIFIERS = [
+    { name: 'Negative', description: 'Inverts the card colours.', filter: 'invert(1)' },
+    { name: 'Glitch', description: 'Reactive glitch lines with static overlay.' },
+    { name: 'Prismatic', description: 'Rainbow holographic shimmer.' },
+    { name: 'Rainbow', description: 'Vivid rainbow holographic sheen.' },
+    { name: 'Cosmic', description: 'Deep space shimmer with starfield.' },
+    { name: 'Glacial', description: 'Icy blue holo shimmer.' }
+];
+
+const ensureModifiersExist = async () => {
+    const aquaModifier = await Modifier.findOne({ name: 'Aqua' });
+    const glacialModifier = await Modifier.findOne({ name: 'Glacial' });
+    if (aquaModifier && !glacialModifier) {
+        aquaModifier.name = 'Glacial';
+        await aquaModifier.save();
+    }
+
+    for (const modifier of REQUIRED_MODIFIERS) {
+        await Modifier.updateOne(
+            { name: modifier.name },
+            {
+                $setOnInsert: {
+                    name: modifier.name,
+                    description: modifier.description,
+                    css: JSON.stringify({}),
+                    blendMode: null,
+                    filter: modifier.filter ?? null,
+                    animation: null,
+                    overlayImage: null,
+                    overlayBlendMode: null,
+                }
+            },
+            { upsert: true }
+        );
+    }
+};
+
+const getModifierPool = async () => {
+    const now = Date.now();
+    if (modifierCache.items && now - modifierCache.at < MODIFIER_CACHE_TTL_MS) {
+        return modifierCache.items;
+    }
+    await ensureModifiersExist();
+    const modifiers = await Modifier.find().lean();
+    modifierCache = { items: modifiers, at: now };
+    return modifiers;
+};
 
 const rarityProbabilities = [
     { rarity: 'Basic', probability: 0.40 },
@@ -409,7 +459,7 @@ const generateCardPreview = async (options = {}) => {
             let appliedModifierId = null;
             let cardName = selectedCard.name;
             if ((Math.random() < MODIFIER_CHANCE) || forceModifier) {
-                const modifiers = await Modifier.find().lean();
+                const modifiers = await getModifierPool();
                 if (modifiers.length > 0) {
                     const modToApply = modifiers[Math.floor(Math.random() * modifiers.length)];
                     appliedModifierId = modToApply._id;
@@ -664,7 +714,7 @@ const generateCardPreviewFromPool = async (poolIds, options = {}) => {
             const gameTags = Array.isArray(selectedCard.gameTags) ? selectedCard.gameTags : [];
 
             if ((Math.random() < MODIFIER_CHANCE) || forceModifier) {
-                const modifiers = await Modifier.find().lean();
+                const modifiers = await getModifierPool();
                 if (modifiers.length > 0) {
                     const modToApply = modifiers[Math.floor(Math.random() * modifiers.length)];
                     appliedModifierId = modToApply._id;
@@ -860,5 +910,6 @@ module.exports = {
     generateCardPreviewFromPool,
     generatePackPreviewFromPool,
     rarityProbabilities,
-    MODIFIER_CHANCE
+    MODIFIER_CHANCE,
+    getModifierPool
 };

@@ -5,7 +5,8 @@ const {
     generateCardWithProbability,
     generatePack,
     generatePackPreview,
-    generatePackPreviewFromPool
+    generatePackPreviewFromPool,
+    getModifierPool
 } = require('../helpers/cardHelpers');
 const { openPackForUserLogic } = require('../helpers/packHelpers');
 const Log = require("../models/logModel");
@@ -33,12 +34,12 @@ const openPack = async (req, res) => {
             return res.status(400).json({ message: 'No unopened packs available' });
         }
 
-        const forceModifier = req.body?.forceModifier === true;
+        const forceModifier = req.body?.forceModifier === true || req.body?.forceModifier === 'true';
         let modifierDoc = null;
 
         const [newCard, mods] = await Promise.all([
             generateCardWithProbability(),
-            Modifier.find().lean(),
+            getModifierPool(),
         ]);
 
         if (!newCard) {
@@ -99,7 +100,8 @@ const getAllPacks = async (req, res) => {
 const openPacksForUser = async (req, res) => {
     try {
         const { userId } = req.params;
-        const { templateId, forceModifier } = req.body;
+        const { templateId } = req.body;
+        const forceModifier = req.body?.forceModifier === true || req.body?.forceModifier === 'true';
 
         const { newCards } = await openPackForUserLogic(userId, templateId, forceModifier);
 
@@ -118,8 +120,9 @@ const openPacksForUser = async (req, res) => {
 const debugOpenPackForUser = async (req, res) => {
     try {
         const { userId } = req.params;
-        const { templateId, forceModifier } = req.body;
-        console.log('[debugOpenPackForUser] start', { userId, templateId });
+        const { templateId } = req.body;
+        const forceModifier = req.body?.forceModifier === true || req.body?.forceModifier === 'true';
+        console.log('[debugOpenPackForUser] start', { userId, templateId, forceModifier });
         const start = Date.now();
 
         const user = await User.findById(userId);
