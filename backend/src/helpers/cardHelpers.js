@@ -368,7 +368,8 @@ const generatePackFromPool = async (poolIds, packSize = 5) => {
     return pack;
 };
 
-const generateCardPreview = async () => {
+const generateCardPreview = async (options = {}) => {
+    const { forceModifier = false } = options;
     while (true) {
         try {
             const selectedRarity = pickRarity();
@@ -405,10 +406,24 @@ const generateCardPreview = async () => {
             const idx = Math.floor(Math.random() * rarityObj.availableMintNumbers.length);
             const mintNumber = rarityObj.availableMintNumbers[idx];
 
+            let appliedModifierId = null;
+            let cardName = selectedCard.name;
+            if ((Math.random() < MODIFIER_CHANCE) || forceModifier) {
+                const modifiers = await Modifier.find().lean();
+                if (modifiers.length > 0) {
+                    const modToApply = modifiers[Math.floor(Math.random() * modifiers.length)];
+                    appliedModifierId = modToApply._id;
+                    const normalizedName = normalizeModifierName(modToApply.name);
+                    const prefix = normalizedName === "Glitch" ? "Glitched" : normalizedName;
+                    cardName = `${prefix} ${cardName}`;
+                }
+            }
+
             return {
-                name: selectedCard.name,
+                name: cardName,
                 rarity: selectedRarity,
                 mintNumber,
+                modifier: appliedModifierId,
                 imageUrl: selectedCard.imageUrl,
                 flavorText: selectedCard.flavorText || 'No flavor text available',
                 lore: selectedCard.lore,
@@ -421,25 +436,25 @@ const generateCardPreview = async () => {
     }
 };
 
-const generateRareCardPreview = async () => {
+const generateRareCardPreview = async (options = {}) => {
     while (true) {
-        const card = await generateCardPreview();
+        const card = await generateCardPreview(options);
         if (card && isRareOrAbove(card.rarity)) {
             return card;
         }
     }
 };
 
-const generatePackPreview = async (packSize = 5) => {
+const generatePackPreview = async (packSize = 5, forceModifier = false) => {
     const pack = [];
     while (pack.length < packSize) {
-        const card = await generateCardPreview();
+        const card = await generateCardPreview({ forceModifier });
         if (card) {
             pack.push(card);
         }
     }
     if (!pack.some(c => isRareOrAbove(c.rarity))) {
-        const rareCard = await generateRareCardPreview();
+        const rareCard = await generateRareCardPreview({ forceModifier });
         if (rareCard) {
             pack[0] = rareCard;
         }

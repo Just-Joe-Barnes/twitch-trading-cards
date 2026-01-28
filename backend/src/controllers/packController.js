@@ -118,7 +118,7 @@ const openPacksForUser = async (req, res) => {
 const debugOpenPackForUser = async (req, res) => {
     try {
         const { userId } = req.params;
-        const { templateId } = req.body;
+        const { templateId, forceModifier } = req.body;
         console.log('[debugOpenPackForUser] start', { userId, templateId });
         const start = Date.now();
 
@@ -150,9 +150,9 @@ const debugOpenPackForUser = async (req, res) => {
 
             const filteredIds = poolCards.map(card => card._id.toString());
 
-            pack = await generatePackPreviewFromPool(filteredIds, 5, req.body?.forceModifier);
+            pack = await generatePackPreviewFromPool(filteredIds, 5, forceModifier);
         } else {
-            pack = await generatePackPreview(5);
+            pack = await generatePackPreview(5, forceModifier);
         }
 
         const duration = Date.now() - start;
