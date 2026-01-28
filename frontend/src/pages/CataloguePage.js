@@ -400,7 +400,10 @@ const CataloguePage = ({user}) => {
                                                     Negative: <i className="fa-solid fa-square-half-stroke"></i>,
                                                     Glitch: <i className="fa-solid fa-bolt-lightning"></i>,
                                                     Prismatic: <i className="fa-solid fa-sparkles"></i>,
-                                                }
+                                                    Glacial: <i className="fa-solid fa-snowflake"></i>,
+                                                    Rainbow: <i className="fa-solid fa-rainbow"></i>,
+                                                    Cosmic: <i className="fa-solid fa-moon"></i>,
+                                                };
                                                 return (
                                                     <button
                                                         key={m.name}
@@ -408,7 +411,7 @@ const CataloguePage = ({user}) => {
                                                         onClick={() => handleModifierChange(m.name)}
                                                         className={`cata-modifier-button ${selectedModifier === m.name ? 'active' : ''}`}
                                                     >
-                                                        {iconMap[m.name]}
+                                                        {iconMap[m.name] ?? <span>{m.name[0]}</span>}
                                                     </button>
                                                 );
                                             })}
