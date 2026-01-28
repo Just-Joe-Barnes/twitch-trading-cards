@@ -735,36 +735,37 @@
   --space: 4.6%;
   --angle: 133deg;
   background-image:
+    linear-gradient(135deg, rgba(10, 90, 170, 0.25), rgba(10, 140, 220, 0.15)),
     url("../assets/textures/veil-smoke.png"),
     url("../assets/textures/grain-fine.png"),
     repeating-linear-gradient(0deg,
-      rgba(10, 70, 140, 0.72) 0%,
-      rgba(20, 95, 175, 0.72) calc(var(--space) * 1),
-      rgba(40, 125, 200, 0.72) calc(var(--space) * 2),
-      rgba(70, 165, 225, 0.72) calc(var(--space) * 3),
-      rgba(120, 210, 245, 0.68) calc(var(--space) * 4),
-      rgba(95, 195, 235, 0.7) calc(var(--space) * 5),
-      rgba(60, 150, 215, 0.72) calc(var(--space) * 6),
-      rgba(30, 110, 190, 0.72) calc(var(--space) * 7),
-      rgba(15, 80, 160, 0.72) calc(var(--space) * 8)
+      rgba(6, 80, 165, 0.78) 0%,
+      rgba(14, 110, 195, 0.78) calc(var(--space) * 1),
+      rgba(28, 135, 215, 0.78) calc(var(--space) * 2),
+      rgba(55, 175, 235, 0.76) calc(var(--space) * 3),
+      rgba(105, 215, 255, 0.72) calc(var(--space) * 4),
+      rgba(75, 195, 245, 0.74) calc(var(--space) * 5),
+      rgba(40, 150, 225, 0.78) calc(var(--space) * 6),
+      rgba(18, 115, 205, 0.78) calc(var(--space) * 7),
+      rgba(8, 90, 185, 0.78) calc(var(--space) * 8)
     ),
     repeating-linear-gradient(
       var(--angle),
-      rgba(10, 40, 85, 0.62) 0%,
-      rgba(35, 90, 150, 0.62) 3.5%,
-      rgba(70, 145, 210, 0.62) 5%,
-      rgba(35, 90, 150, 0.62) 6.5%,
-      rgba(10, 40, 85, 0.62) 10%,
-      rgba(10, 40, 85, 0.62) 12%
+      rgba(6, 45, 105, 0.68) 0%,
+      rgba(25, 105, 185, 0.68) 3.5%,
+      rgba(70, 165, 230, 0.68) 5%,
+      rgba(25, 105, 185, 0.68) 6.5%,
+      rgba(6, 45, 105, 0.68) 10%,
+      rgba(6, 45, 105, 0.68) 12%
     ),
     radial-gradient(
       farthest-corner circle at var(--aqua-x, 50%) var(--aqua-y, 50%),
-      rgba(210, 235, 255, 0.18) 0%,
-      rgba(55, 120, 170, 0.16) 45%,
+      rgba(185, 230, 255, 0.22) 0%,
+      rgba(35, 120, 190, 0.18) 45%,
       rgba(0, 0, 0, 0) 80%
     );
-  background-blend-mode: soft-light, soft-light, screen, soft-light, normal;
-  background-size: 140% 140%, 200% 200%, 260% 900%, 320% 120%, 200% 200%;
+  background-blend-mode: color-dodge, soft-light, soft-light, screen, soft-light, normal;
+  background-size: 180% 180%, 140% 140%, 200% 200%, 260% 900%, 320% 120%, 200% 200%;
   background-position:
     center,
     0% var(--aqua-y, 50%),
@@ -772,9 +773,9 @@
     var(--aqua-x, 50%) var(--aqua-y, 50%),
     var(--aqua-x, 50%) var(--aqua-y, 50%);
   background-repeat: no-repeat, repeat, repeat, repeat, no-repeat;
-  filter: brightness(calc(0.72 + (1 - var(--cursor-dist, 1)) * 0.35)) contrast(1.45) saturate(1.05) blur(0.25px);
+  filter: brightness(calc(0.74 + (1 - var(--cursor-dist, 1)) * 0.35)) contrast(1.5) saturate(1.22) blur(0.25px);
   mix-blend-mode: screen;
-  opacity: 0.3;
+  opacity: 0.32;
 }
 .card-container:hover .aqua-overlay {
   opacity: 0.36;
@@ -783,36 +784,37 @@
   --space: 4.6%;
   --angle: 133deg;
   background-image:
+    linear-gradient(135deg, rgba(0, 120, 210, 0.2), rgba(0, 170, 240, 0.12)),
     url("../assets/textures/veil-smoke.png"),
     url("../assets/textures/grain-fine.png"),
     repeating-linear-gradient(0deg,
-      rgba(20, 110, 200, 0.2) calc(var(--space) * 1),
-      rgba(55, 155, 225, 0.25) calc(var(--space) * 2),
-      rgba(95, 195, 240, 0.3) calc(var(--space) * 3),
-      rgba(140, 220, 255, 0.32) calc(var(--space) * 4),
-      rgba(90, 185, 235, 0.26) calc(var(--space) * 5),
-      rgba(45, 135, 210, 0.22) calc(var(--space) * 6)
+      rgba(12, 120, 220, 0.22) calc(var(--space) * 1),
+      rgba(40, 165, 235, 0.26) calc(var(--space) * 2),
+      rgba(85, 205, 245, 0.3) calc(var(--space) * 3),
+      rgba(135, 230, 255, 0.32) calc(var(--space) * 4),
+      rgba(80, 195, 240, 0.28) calc(var(--space) * 5),
+      rgba(35, 145, 220, 0.24) calc(var(--space) * 6)
     ),
     repeating-linear-gradient(
       var(--angle),
-      rgba(10, 35, 70, 0.28) 0%,
-      rgba(45, 110, 175, 0.24) 4%,
-      rgba(100, 195, 245, 0.3) 6%,
-      rgba(45, 110, 175, 0.24) 8%,
-      rgba(10, 35, 70, 0.28) 12%
+      rgba(6, 50, 105, 0.3) 0%,
+      rgba(30, 120, 200, 0.26) 4%,
+      rgba(90, 200, 250, 0.32) 6%,
+      rgba(30, 120, 200, 0.26) 8%,
+      rgba(6, 50, 105, 0.3) 12%
     ),
-    radial-gradient(circle at var(--aqua-x, 50%) var(--aqua-y, 50%), rgba(190, 235, 255, 0.25), rgba(0, 0, 0, 0) 65%);
-  background-size: 140% 140%, 180% 180%, 220% 800%, 260% 220%, 140% 140%;
+    radial-gradient(circle at var(--aqua-x, 50%) var(--aqua-y, 50%), rgba(165, 225, 255, 0.28), rgba(0, 0, 0, 0) 65%);
+  background-size: 180% 180%, 140% 140%, 180% 180%, 220% 800%, 260% 220%, 140% 140%;
   background-position:
     center,
     0% var(--aqua-y, 50%),
     calc(var(--aqua-x, 50%) * 1) calc(var(--aqua-y, 50%) * 1),
     calc(100% - var(--aqua-x, 50%)) calc(100% - var(--aqua-y, 50%)),
     var(--aqua-x, 50%) var(--aqua-y, 50%);
-  background-repeat: no-repeat, no-repeat, repeat, repeat, no-repeat;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat, no-repeat;
   mix-blend-mode: soft-light;
   opacity: 0.07;
-  filter: blur(0.8px) saturate(1.02);
+  filter: blur(0.85px) saturate(1.18);
   animation: aquaPulse 9s ease-in-out infinite;
 }
 @keyframes auroraShift {
@@ -2202,36 +2204,37 @@
   --space: 4.6%;
   --angle: 133deg;
   background-image:
+    linear-gradient(135deg, rgba(10, 90, 170, 0.22), rgba(10, 140, 220, 0.12)),
     url("../assets/textures/veil-smoke.png"),
     url("../assets/textures/grain-fine.png"),
     repeating-linear-gradient(0deg,
-      rgba(10, 70, 140, 0.72) 0%,
-      rgba(20, 95, 175, 0.72) calc(var(--space) * 1),
-      rgba(40, 125, 200, 0.72) calc(var(--space) * 2),
-      rgba(70, 165, 225, 0.72) calc(var(--space) * 3),
-      rgba(120, 210, 245, 0.68) calc(var(--space) * 4),
-      rgba(95, 195, 235, 0.7) calc(var(--space) * 5),
-      rgba(60, 150, 215, 0.72) calc(var(--space) * 6),
-      rgba(30, 110, 190, 0.72) calc(var(--space) * 7),
-      rgba(15, 80, 160, 0.72) calc(var(--space) * 8)
+      rgba(6, 80, 165, 0.78) 0%,
+      rgba(14, 110, 195, 0.78) calc(var(--space) * 1),
+      rgba(28, 135, 215, 0.78) calc(var(--space) * 2),
+      rgba(55, 175, 235, 0.76) calc(var(--space) * 3),
+      rgba(105, 215, 255, 0.72) calc(var(--space) * 4),
+      rgba(75, 195, 245, 0.74) calc(var(--space) * 5),
+      rgba(40, 150, 225, 0.78) calc(var(--space) * 6),
+      rgba(18, 115, 205, 0.78) calc(var(--space) * 7),
+      rgba(8, 90, 185, 0.78) calc(var(--space) * 8)
     ),
     repeating-linear-gradient(
       var(--angle),
-      rgba(10, 40, 85, 0.62) 0%,
-      rgba(35, 90, 150, 0.62) 3.5%,
-      rgba(70, 145, 210, 0.62) 5%,
-      rgba(35, 90, 150, 0.62) 6.5%,
-      rgba(10, 40, 85, 0.62) 10%,
-      rgba(10, 40, 85, 0.62) 12%
+      rgba(6, 45, 105, 0.68) 0%,
+      rgba(25, 105, 185, 0.68) 3.5%,
+      rgba(70, 165, 230, 0.68) 5%,
+      rgba(25, 105, 185, 0.68) 6.5%,
+      rgba(6, 45, 105, 0.68) 10%,
+      rgba(6, 45, 105, 0.68) 12%
     ),
     radial-gradient(
       farthest-corner circle at var(--aqua-x, 50%) var(--aqua-y, 50%),
-      rgba(210, 235, 255, 0.18) 0%,
-      rgba(55, 120, 170, 0.16) 45%,
+      rgba(185, 230, 255, 0.22) 0%,
+      rgba(35, 120, 190, 0.18) 45%,
       rgba(0, 0, 0, 0) 80%
     );
-  background-blend-mode: soft-light, soft-light, screen, soft-light, normal;
-  background-size: 140% 140%, 200% 200%, 260% 900%, 320% 120%, 200% 200%;
+  background-blend-mode: color-dodge, soft-light, soft-light, screen, soft-light, normal;
+  background-size: 180% 180%, 140% 140%, 200% 200%, 260% 900%, 320% 120%, 200% 200%;
   background-position:
     center,
     0% var(--aqua-y, 50%),
@@ -2239,9 +2242,9 @@
     var(--aqua-x, 50%) var(--aqua-y, 50%),
     var(--aqua-x, 50%) var(--aqua-y, 50%);
   background-repeat: no-repeat, repeat, repeat, repeat, no-repeat;
-  filter: brightness(calc(0.74 + (1 - var(--cursor-dist, 1)) * 0.32)) contrast(1.45) saturate(1.02) blur(0.25px);
+  filter: brightness(calc(0.75 + (1 - var(--cursor-dist, 1)) * 0.3)) contrast(1.5) saturate(1.2) blur(0.25px);
   mix-blend-mode: screen;
-  opacity: 0.3;
+  opacity: 0.32;
 }
 .mini-card-container:hover .aqua-overlay {
   opacity: 0.36;
@@ -2250,36 +2253,37 @@
   --space: 4.6%;
   --angle: 133deg;
   background-image:
+    linear-gradient(135deg, rgba(0, 120, 210, 0.18), rgba(0, 170, 240, 0.1)),
     url("../assets/textures/veil-smoke.png"),
     url("../assets/textures/grain-fine.png"),
     repeating-linear-gradient(0deg,
-      rgba(20, 110, 200, 0.2) calc(var(--space) * 1),
-      rgba(55, 155, 225, 0.25) calc(var(--space) * 2),
-      rgba(95, 195, 240, 0.3) calc(var(--space) * 3),
-      rgba(140, 220, 255, 0.32) calc(var(--space) * 4),
-      rgba(90, 185, 235, 0.26) calc(var(--space) * 5),
-      rgba(45, 135, 210, 0.22) calc(var(--space) * 6)
+      rgba(12, 120, 220, 0.22) calc(var(--space) * 1),
+      rgba(40, 165, 235, 0.26) calc(var(--space) * 2),
+      rgba(85, 205, 245, 0.3) calc(var(--space) * 3),
+      rgba(135, 230, 255, 0.32) calc(var(--space) * 4),
+      rgba(80, 195, 240, 0.28) calc(var(--space) * 5),
+      rgba(35, 145, 220, 0.24) calc(var(--space) * 6)
     ),
     repeating-linear-gradient(
       var(--angle),
-      rgba(10, 35, 70, 0.28) 0%,
-      rgba(45, 110, 175, 0.24) 4%,
-      rgba(100, 195, 245, 0.3) 6%,
-      rgba(45, 110, 175, 0.24) 8%,
-      rgba(10, 35, 70, 0.28) 12%
+      rgba(6, 50, 105, 0.3) 0%,
+      rgba(30, 120, 200, 0.26) 4%,
+      rgba(90, 200, 250, 0.32) 6%,
+      rgba(30, 120, 200, 0.26) 8%,
+      rgba(6, 50, 105, 0.3) 12%
     ),
-    radial-gradient(circle at var(--aqua-x, 50%) var(--aqua-y, 50%), rgba(190, 235, 255, 0.22), rgba(0, 0, 0, 0) 65%);
-  background-size: 140% 140%, 180% 180%, 220% 800%, 260% 220%, 140% 140%;
+    radial-gradient(circle at var(--aqua-x, 50%) var(--aqua-y, 50%), rgba(165, 225, 255, 0.26), rgba(0, 0, 0, 0) 65%);
+  background-size: 180% 180%, 140% 140%, 180% 180%, 220% 800%, 260% 220%, 140% 140%;
   background-position:
     center,
     0% var(--aqua-y, 50%),
     calc(var(--aqua-x, 50%) * 1) calc(var(--aqua-y, 50%) * 1),
     calc(100% - var(--aqua-x, 50%)) calc(100% - var(--aqua-y, 50%)),
     var(--aqua-x, 50%) var(--aqua-y, 50%);
-  background-repeat: no-repeat, no-repeat, repeat, repeat, no-repeat;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat, no-repeat;
   mix-blend-mode: soft-light;
   opacity: 0.07;
-  filter: blur(0.8px) saturate(1.02);
+  filter: blur(0.85px) saturate(1.18);
   animation: aquaPulse 9s ease-in-out infinite;
 }
 .mini-card-container .fracture-overlay {
