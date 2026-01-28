@@ -698,37 +698,43 @@
     linear-gradient(125deg, rgba(40, 255, 200, 0) 10%, rgba(40, 255, 200, 0.35) 45%, rgba(140, 80, 255, 0.25) 65%, rgba(0, 0, 0, 0) 85%),
     linear-gradient(210deg, rgba(0, 180, 255, 0) 15%, rgba(0, 180, 255, 0.25) 45%, rgba(120, 40, 255, 0.22) 70%, rgba(0, 0, 0, 0) 90%),
     url("../assets/textures/cosmic-stars.png"),
-    url("../assets/textures/grain-fine.png");
-  background-size: 260% 260%, 300% 300%, 180% 180%, 200% 200%;
+    url("../assets/textures/galaxy.jpg"),
+    url("../assets/textures/grain-fine.png"),
+    url("../assets/textures/noise.png");
+  background-size: 260% 260%, 300% 300%, 180% 180%, 170% 170%, 200% 200%, 240% 240%;
   background-position:
     var(--cosmic-x, 50%) var(--cosmic-y, 50%),
     calc(100% - var(--cosmic-x, 50%)) calc(100% - var(--cosmic-y, 50%)),
     50% 50%,
+    calc(50% + (var(--cosmic-x, 50%) - 50%) * 0.4) calc(50% + (var(--cosmic-y, 50%) - 50%) * 0.4),
+    50% 50%,
     50% 50%;
   background-repeat: no-repeat;
-  background-blend-mode: screen, screen, soft-light, overlay;
+  background-blend-mode: screen, screen, screen, color-dodge, soft-light, overlay;
   mix-blend-mode: screen;
-  opacity: 0.5;
-  filter: saturate(1.4) contrast(1.1) brightness(1.05) blur(0.3px);
+  opacity: 0.62;
+  filter: saturate(1.65) contrast(1.2) brightness(1.05) blur(0.25px);
   transition: opacity 0.2s ease, filter 0.2s ease;
 }
 .card-container:hover .cosmic-overlay {
-  opacity: 0.65;
+  opacity: 0.75;
 }
 .card-container .cosmic-shine {
   background-image:
     url("../assets/textures/sparkle-alpha.png"),
+    url("../assets/textures/galaxy.png"),
     linear-gradient(120deg, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0) 65%),
     radial-gradient(circle at var(--cosmic-x, 50%) var(--cosmic-y, 50%), rgba(120, 220, 255, 0.6), rgba(0, 0, 0, 0) 55%);
-  background-size: 180% 180%, 200% 200%, 140% 140%;
+  background-size: 180% 180%, 200% 200%, 200% 200%, 140% 140%;
   background-position:
+    var(--cosmic-x, 50%) var(--cosmic-y, 50%),
     var(--cosmic-x, 50%) var(--cosmic-y, 50%),
     var(--cosmic-x, 50%) var(--cosmic-y, 50%),
     var(--cosmic-x, 50%) var(--cosmic-y, 50%);
   background-repeat: no-repeat;
   mix-blend-mode: screen;
-  opacity: 0.35;
-  filter: blur(0.35px);
+  opacity: 0.45;
+  filter: blur(0.3px) saturate(1.2);
   animation: cosmicTwinkle 8s linear infinite;
 }
 .card-container .aqua-overlay {
@@ -2167,37 +2173,43 @@
     linear-gradient(125deg, rgba(40, 255, 200, 0) 10%, rgba(40, 255, 200, 0.3) 45%, rgba(140, 80, 255, 0.2) 65%, rgba(0, 0, 0, 0) 85%),
     linear-gradient(210deg, rgba(0, 180, 255, 0) 15%, rgba(0, 180, 255, 0.22) 45%, rgba(120, 40, 255, 0.2) 70%, rgba(0, 0, 0, 0) 90%),
     url("../assets/textures/cosmic-stars.png"),
-    url("../assets/textures/grain-fine.png");
-  background-size: 260% 260%, 300% 300%, 180% 180%, 200% 200%;
+    url("../assets/textures/galaxy.jpg"),
+    url("../assets/textures/grain-fine.png"),
+    url("../assets/textures/noise.png");
+  background-size: 260% 260%, 300% 300%, 180% 180%, 170% 170%, 200% 200%, 240% 240%;
   background-position:
     var(--cosmic-x, 50%) var(--cosmic-y, 50%),
     calc(100% - var(--cosmic-x, 50%)) calc(100% - var(--cosmic-y, 50%)),
     50% 50%,
+    calc(50% + (var(--cosmic-x, 50%) - 50%) * 0.4) calc(50% + (var(--cosmic-y, 50%) - 50%) * 0.4),
+    50% 50%,
     50% 50%;
   background-repeat: no-repeat;
-  background-blend-mode: screen, screen, soft-light, overlay;
+  background-blend-mode: screen, screen, screen, color-dodge, soft-light, overlay;
   mix-blend-mode: screen;
-  opacity: 0.48;
-  filter: saturate(1.3) contrast(1.05) brightness(1.03) blur(0.3px);
+  opacity: 0.6;
+  filter: saturate(1.55) contrast(1.15) brightness(1.04) blur(0.25px);
   transition: opacity 0.2s ease, filter 0.2s ease;
 }
 .mini-card-container:hover .cosmic-overlay {
-  opacity: 0.6;
+  opacity: 0.72;
 }
 .mini-card-container .cosmic-shine {
   background-image:
     url("../assets/textures/sparkle.png"),
+    url("../assets/textures/galaxy.png"),
     linear-gradient(120deg, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 65%),
     radial-gradient(circle at var(--cosmic-x, 50%) var(--cosmic-y, 50%), rgba(120, 220, 255, 0.5), rgba(0, 0, 0, 0) 55%);
-  background-size: 180% 180%, 200% 200%, 140% 140%;
+  background-size: 180% 180%, 200% 200%, 200% 200%, 140% 140%;
   background-position:
+    var(--cosmic-x, 50%) var(--cosmic-y, 50%),
     var(--cosmic-x, 50%) var(--cosmic-y, 50%),
     var(--cosmic-x, 50%) var(--cosmic-y, 50%),
     var(--cosmic-x, 50%) var(--cosmic-y, 50%);
   background-repeat: no-repeat;
   mix-blend-mode: screen;
-  opacity: 0.32;
-  filter: blur(0.35px);
+  opacity: 0.42;
+  filter: blur(0.3px) saturate(1.15);
   animation: cosmicTwinkle 8s linear infinite;
 }
 .mini-card-container .aqua-overlay {
