@@ -26,6 +26,7 @@ const Log = require('../models/logModel');
 const Setting = require('../models/settingsModel');
 const PeriodCounter = require('../models/periodCounterModel');
 const ExternalAccount = require('../models/externalAccountModel');
+const TIKTOK_COINS_PER_PACK = parseInt(process.env.TIKTOK_COINS_PER_PACK || '1000', 10);
 
 const { protect } = require('../middleware/authMiddleware');
 const { broadcastNotification, sendNotificationToUser} = require('../../notificationService');
@@ -861,6 +862,138 @@ router.get('/user-lookup', protect, adminOnly, async (req, res) => {
     } catch (error) {
         console.error('[Admin Lookup] Error:', error.message);
         return res.status(500).json({ error: 'Failed to search users.' });
+    }
+});
+
+router.get('/tiktok-accounts', protect, adminOnly, async (req, res) => {
+    try {
+        const query = String(req.query.query || '').trim();
+        if (!query || query.length < 2) {
+            return res.json({ results: [] });
+        }
+
+        const regex = new RegExp(escapeRegex(query), 'i');
+        const userQuery = [
+            { username: regex },
+            { email: regex },
+            { twitchId: regex }
+        ];
+
+        if (mongoose.Types.ObjectId.isValid(query)) {
+            userQuery.push({ _id: query });
+        }
+
+        const [matchedUsers, matchedAccounts] = await Promise.all([
+            User.find({ $or: userQuery })
+                .select('_id username email')
+                .lean(),
+            ExternalAccount.find({
+                provider: 'tiktok',
+                $or: [{ providerUserId: regex }, { username: regex }]
+            })
+                .select('provider username providerUserId userId coinBalance pendingPacks totalCoins totalPacksAwarded lastEventAt')
+                .lean()
+        ]);
+
+        const userMap = new Map();
+        matchedUsers.forEach((user) => {
+            userMap.set(String(user._id), user);
+        });
+
+        const accountUserIds = matchedAccounts
+            .map((account) => account.userId)
+            .filter(Boolean)
+            .map((id) => String(id));
+
+        const missingUserIds = accountUserIds.filter((id) => !userMap.has(id));
+        if (missingUserIds.length) {
+            const extraUsers = await User.find({ _id: { $in: missingUserIds } })
+                .select('_id username email')
+                .lean();
+            extraUsers.forEach((user) => {
+                userMap.set(String(user._id), user);
+            });
+        }
+
+        const userIds = Array.from(userMap.keys());
+        const linkedAccounts = await ExternalAccount.find({
+            provider: 'tiktok',
+            userId: { $in: userIds }
+        })
+            .select('provider username providerUserId userId coinBalance pendingPacks totalCoins totalPacksAwarded lastEventAt')
+            .lean();
+
+        const accountsByUser = new Map();
+        linkedAccounts.forEach((account) => {
+            const key = String(account.userId);
+            if (!accountsByUser.has(key)) {
+                accountsByUser.set(key, []);
+            }
+            accountsByUser.get(key).push(account);
+        });
+
+        const results = [];
+        userIds.forEach((userId) => {
+            const user = userMap.get(userId);
+            const accounts = accountsByUser.get(userId) || [];
+            if (accounts.length === 0) {
+                return;
+            }
+            accounts.forEach((account) => {
+                const coinBalance = Number(account.coinBalance || 0);
+                const coinsToNextPack = coinBalance > 0
+                    ? Math.max(TIKTOK_COINS_PER_PACK - coinBalance, 0)
+                    : 0;
+                results.push({
+                    userId,
+                    appUsername: user?.username || null,
+                    email: user?.email || null,
+                    tiktokUsername: account.username || null,
+                    providerUserId: account.providerUserId || null,
+                    coinBalance,
+                    coinsToNextPack,
+                    pendingPacks: Number(account.pendingPacks || 0),
+                    totalCoins: Number(account.totalCoins || 0),
+                    totalPacksAwarded: Number(account.totalPacksAwarded || 0),
+                    lastEventAt: account.lastEventAt || null,
+                    linked: true
+                });
+            });
+        });
+
+        matchedAccounts.forEach((account) => {
+            if (!account.userId) {
+                const coinBalance = Number(account.coinBalance || 0);
+                const coinsToNextPack = coinBalance > 0
+                    ? Math.max(TIKTOK_COINS_PER_PACK - coinBalance, 0)
+                    : 0;
+                results.push({
+                    userId: null,
+                    appUsername: null,
+                    email: null,
+                    tiktokUsername: account.username || null,
+                    providerUserId: account.providerUserId || null,
+                    coinBalance,
+                    coinsToNextPack,
+                    pendingPacks: Number(account.pendingPacks || 0),
+                    totalCoins: Number(account.totalCoins || 0),
+                    totalPacksAwarded: Number(account.totalPacksAwarded || 0),
+                    lastEventAt: account.lastEventAt || null,
+                    linked: false
+                });
+            }
+        });
+
+        results.sort((a, b) => {
+            const nameA = (a.appUsername || a.tiktokUsername || '').toLowerCase();
+            const nameB = (b.appUsername || b.tiktokUsername || '').toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
+
+        return res.json({ results });
+    } catch (error) {
+        console.error('[Admin TikTok] Error:', error.message);
+        return res.status(500).json({ error: 'Failed to fetch TikTok account stats.' });
     }
 });
 

@@ -37,6 +37,10 @@ const AdminActions = () => {
     const [packLuckStatus, setPackLuckStatus] = useState({ weeklyCount: 0, overrideEnabled: false, overrideCount: 0 });
     const [packLuckOverrideInput, setPackLuckOverrideInput] = useState('');
     const [packLuckLoading, setPackLuckLoading] = useState(false);
+    const [tiktokQuery, setTiktokQuery] = useState('');
+    const [tiktokResults, setTiktokResults] = useState([]);
+    const [tiktokLoading, setTiktokLoading] = useState(false);
+    const [tiktokError, setTiktokError] = useState('');
 
 
     const navigate = useNavigate();
@@ -372,6 +376,34 @@ const AdminActions = () => {
         }
     };
 
+    const handleTiktokSearch = async (e) => {
+        e.preventDefault();
+        const trimmed = tiktokQuery.trim();
+        if (trimmed.length < 2) {
+            setTiktokResults([]);
+            setTiktokError('Enter at least 2 characters to search.');
+            return;
+        }
+
+        setTiktokLoading(true);
+        setTiktokError('');
+        try {
+            const data = await fetchWithAuth(`/api/admin/tiktok-accounts?query=${encodeURIComponent(trimmed)}`);
+            setTiktokResults(Array.isArray(data.results) ? data.results : []);
+        } catch (err) {
+            setTiktokError(err.message || 'Failed to load TikTok account stats.');
+        } finally {
+            setTiktokLoading(false);
+        }
+    };
+
+    const formatLastEvent = (value) => {
+        if (!value) return '—';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '—';
+        return date.toLocaleString();
+    };
+
     const filteredUsers = selectedUser
         ? users.filter(u => u.username.toLowerCase().includes(selectedUser.toLowerCase()))
         : [];
@@ -695,6 +727,81 @@ const AdminActions = () => {
                             </button>
                         </div>
                     </form>
+                </section>
+
+                <section className="section-card tiktok-admin">
+                    <h2>TikTok Pack Status</h2>
+                    <p className="muted-text">
+                        Search by app username, email, Twitch ID, TikTok username, or TikTok provider ID.
+                    </p>
+                    <form className="tiktok-admin-form" onSubmit={handleTiktokSearch}>
+                        <input
+                            type="text"
+                            value={tiktokQuery}
+                            onChange={(e) => setTiktokQuery(e.target.value)}
+                            placeholder="Search TikTok accounts..."
+                            className="search-bar"
+                        />
+                        <button type="submit" disabled={tiktokLoading}>
+                            {tiktokLoading ? 'Searching...' : 'Search'}
+                        </button>
+                    </form>
+                    {tiktokError && <div className="error-text">{tiktokError}</div>}
+                    {!tiktokError && tiktokResults.length === 0 && tiktokQuery.trim().length >= 2 && !tiktokLoading && (
+                        <div className="muted-text">No TikTok accounts found for that search.</div>
+                    )}
+                    {tiktokResults.length > 0 && (
+                        <div className="tiktok-admin-results">
+                            {tiktokResults.map((result) => (
+                                <div key={`${result.providerUserId || result.tiktokUsername}-${result.userId || 'unlinked'}`} className="tiktok-admin-card">
+                                    <div className="tiktok-admin-header">
+                                        <div>
+                                            <div className="tiktok-admin-name">
+                                                {result.appUsername || 'Unlinked account'}
+                                            </div>
+                                            <div className="tiktok-admin-sub">
+                                                {result.tiktokUsername || 'Unknown TikTok user'}
+                                            </div>
+                                        </div>
+                                        <span className={`tiktok-badge ${result.linked ? 'linked' : 'unlinked'}`}>
+                                            {result.linked ? 'linked' : 'unlinked'}
+                                        </span>
+                                    </div>
+                                    <div className="tiktok-admin-grid">
+                                        <div>
+                                            <span>Coin balance</span>
+                                            <strong>{result.coinBalance}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Coins to next pack</span>
+                                            <strong>{result.coinsToNextPack}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Pending packs</span>
+                                            <strong>{result.pendingPacks}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Total coins</span>
+                                            <strong>{result.totalCoins}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Total packs awarded</span>
+                                            <strong>{result.totalPacksAwarded}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Last event</span>
+                                            <strong>{formatLastEvent(result.lastEventAt)}</strong>
+                                        </div>
+                                    </div>
+                                    <div className="tiktok-admin-meta">
+                                        <span>App user: {result.appUsername || '—'}</span>
+                                        <span>Email: {result.email || '—'}</span>
+                                        <span>Provider ID: {result.providerUserId || '—'}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </section>
 
                 <section className="section-card">
