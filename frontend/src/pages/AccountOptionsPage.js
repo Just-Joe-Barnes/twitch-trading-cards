@@ -66,6 +66,24 @@ const AccountOptionsPage = () => {
         return Array.from(names);
     }, [profile, externalAccounts]);
 
+    const tiktokAccount = useMemo(
+        () => externalAccounts.find((account) => account.provider === 'tiktok'),
+        [externalAccounts]
+    );
+
+    const formatNumber = (value) => {
+        const numeric = Number(value);
+        if (!Number.isFinite(numeric)) return '—';
+        return numeric.toLocaleString();
+    };
+
+    const formatTimestamp = (value) => {
+        if (!value) return '—';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '—';
+        return date.toLocaleString();
+    };
+
     const handleSaveUsername = async () => {
         if (!selectedUsername || !profile) {
             return;
@@ -184,6 +202,51 @@ const AccountOptionsPage = () => {
                     You can only link an account you sign in with. If a provider is already linked to someone else,
                     it will be rejected.
                 </p>
+            </div>
+
+            <div className="section-card tiktok-stats">
+                <h2>TikTok</h2>
+                <p className="account-options-help">
+                    Progress toward packs earned from TikTok gifts.
+                </p>
+                {tiktokAccount ? (
+                    <div className="tiktok-grid">
+                        <div className="tiktok-stat">
+                            <span className="tiktok-label">Username</span>
+                            <strong className="tiktok-value">
+                                {tiktokAccount.username ? `@${tiktokAccount.username}` : '—'}
+                            </strong>
+                        </div>
+                        <div className="tiktok-stat">
+                            <span className="tiktok-label">Coins toward pack</span>
+                            <strong className="tiktok-value">{formatNumber(tiktokAccount.coinBalance)}</strong>
+                        </div>
+                        <div className="tiktok-stat">
+                            <span className="tiktok-label">Coins to next pack</span>
+                            <strong className="tiktok-value">{formatNumber(tiktokAccount.coinsToNextPack)}</strong>
+                        </div>
+                        <div className="tiktok-stat">
+                            <span className="tiktok-label">Pending packs</span>
+                            <strong className="tiktok-value">{formatNumber(tiktokAccount.pendingPacks)}</strong>
+                        </div>
+                        <div className="tiktok-stat">
+                            <span className="tiktok-label">Total coins</span>
+                            <strong className="tiktok-value">{formatNumber(tiktokAccount.totalCoins)}</strong>
+                        </div>
+                        <div className="tiktok-stat">
+                            <span className="tiktok-label">Total packs awarded</span>
+                            <strong className="tiktok-value">{formatNumber(tiktokAccount.totalPacksAwarded)}</strong>
+                        </div>
+                        <div className="tiktok-stat">
+                            <span className="tiktok-label">Last event</span>
+                            <strong className="tiktok-value">{formatTimestamp(tiktokAccount.lastEventAt)}</strong>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="tiktok-empty">
+                        No TikTok account linked yet. Link TikTok above to track gift progress.
+                    </div>
+                )}
             </div>
         </div>
     );
