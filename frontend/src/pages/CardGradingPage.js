@@ -58,7 +58,17 @@ const CardGradingPage = () => {
 
 
     const inProcessCards = useMemo(() => cards.filter(c => c.gradingRequestedAt && c.rarity !== 'Event'), [cards]);
+    const completedInProcessCards = useMemo(
+        () => inProcessCards.filter(card => card.slabbed),
+        [inProcessCards]
+    );
     const collectionCards = useMemo(() => cards.filter(c => !c.gradingRequestedAt && c.rarity !== 'Event'), [cards]);
+
+    const refreshCollection = async () => {
+        if (!selectedUser) return;
+        const data = await fetchWithAuth(`/api/users/${selectedUser}/collection`);
+        setCards(data.cards || []);
+    };
 
     // Card Scaling Effects and Handlers
     useEffect(() => {
@@ -200,8 +210,7 @@ const CardGradingPage = () => {
         setGradingLoading(true);
         try {
             await gradeCard(selectedUser, selectedCard._id);
-            const data = await fetchWithAuth(`/api/users/${selectedUser}/collection`);
-            setCards(data.cards || []);
+            await refreshCollection();
             setSelectedCard(null);
         } catch (err) {
             console.error('Error grading card', err);
@@ -214,8 +223,7 @@ const CardGradingPage = () => {
         setGradingLoading(true);
         try {
             await completeGrading(selectedUser, cardId);
-            const data = await fetchWithAuth(`/api/users/${selectedUser}/collection`);
-            setCards(data.cards || []);
+            await refreshCollection();
         } catch (err) {
             console.error('Error completing grading', err);
         } finally {
@@ -227,8 +235,7 @@ const CardGradingPage = () => {
         setGradingLoading(true);
         try {
             await revealGradedCard(selectedUser, cardId);
-            const data = await fetchWithAuth(`/api/users/${selectedUser}/collection`);
-            setCards(data.cards || []);
+            await refreshCollection();
             setRevealedCards(prev => {
                 const copy = {...prev};
                 delete copy[cardId];
@@ -236,6 +243,31 @@ const CardGradingPage = () => {
             });
         } catch (err) {
             console.error('Error marking grading done', err);
+        } finally {
+            setGradingLoading(false);
+        }
+    };
+
+    const handleDoneAll = async () => {
+        if (!selectedUser || completedInProcessCards.length === 0) return;
+
+        setGradingLoading(true);
+        try {
+            for (const card of completedInProcessCards) {
+                await revealGradedCard(selectedUser, card._id);
+            }
+            await refreshCollection();
+            setRevealedCards(prev => {
+                const copy = {...prev};
+                completedInProcessCards.forEach(card => {
+                    delete copy[card._id];
+                });
+                return copy;
+            });
+            window.showToast?.(`Accepted ${completedInProcessCards.length} completed graded card(s).`, 'success');
+        } catch (err) {
+            console.error('Error accepting all completed grading cards', err);
+            window.showToast?.('Failed to accept all completed graded cards.', 'error');
         } finally {
             setGradingLoading(false);
         }
@@ -401,7 +433,19 @@ const CardGradingPage = () => {
                         <>
                             {inProcessCards.length > 0 && (
                                 <div data-testid="inprocess-list">
-                                    <h3>Grading In Progress</h3>
+                                    <div className="grading-inprocess-header">
+                                        <h3>Grading In Progress</h3>
+                                        {completedInProcessCards.length > 0 && (
+                                            <button
+                                                className="success-button"
+                                                onClick={handleDoneAll}
+                                                disabled={gradingLoading}
+                                                data-testid="accept-all-completed-btn"
+                                            >
+                                                Accept Completed ({completedInProcessCards.length})
+                                            </button>
+                                        )}
+                                    </div>
                                     <div
                                         className={`cards-grid ${showSlabbedOnly ? 'slabbed' : ''}`}
                                     >

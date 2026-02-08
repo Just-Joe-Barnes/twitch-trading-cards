@@ -281,6 +281,18 @@
   margin-bottom: 2rem;
 }
 
+.grading-inprocess-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.grading-inprocess-header h3 {
+  margin: 0;
+}
+
 .grading-remaining {
   text-align: center;
 }
