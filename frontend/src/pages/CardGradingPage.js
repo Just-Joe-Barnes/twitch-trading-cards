@@ -433,22 +433,22 @@ const CardGradingPage = () => {
                         <>
                             {inProcessCards.length > 0 && (
                                 <div data-testid="inprocess-list">
-                                    <div className="grading-inprocess-header">
-                                        <h3>Grading In Progress</h3>
-                                        {completedInProcessCards.length > 0 && (
-                                            <button
-                                                className="success-button"
-                                                onClick={handleDoneAll}
-                                                disabled={gradingLoading}
-                                                data-testid="accept-all-completed-btn"
-                                            >
-                                                Accept Completed ({completedInProcessCards.length})
-                                            </button>
-                                        )}
-                                    </div>
+                                    <h3>Grading In Progress</h3>
                                     <div
                                         className={`cards-grid ${showSlabbedOnly ? 'slabbed' : ''}`}
                                     >
+                                        {completedInProcessCards.length > 0 && (
+                                            <div className="grading-inprocess-actions">
+                                                <button
+                                                    className="success-button"
+                                                    onClick={handleDoneAll}
+                                                    disabled={gradingLoading}
+                                                    data-testid="accept-all-completed-btn"
+                                                >
+                                                    Accept Completed ({completedInProcessCards.length})
+                                                </button>
+                                            </div>
+                                        )}
                                         {inProcessCards.map(card => (
                                             <GradingInProgressCard
                                                 key={card._id}
