@@ -4,6 +4,7 @@ const PeriodCounter = require('../models/periodCounterModel');
 const { protect, adminOnly} = require('../middleware/authMiddleware');
 const { updatePeriodCounters } = require('../services/periodCounterService');
 const {getWeeklyKey, getMonthlyKey} = require("../scripts/periods");
+const { getStatus } = require('../services/queueService');
 
 router.get('/stats', protect, async (req, res) => {
     try {
@@ -31,6 +32,21 @@ router.get('/stats', protect, async (req, res) => {
     } catch (error) {
         console.error('Failed to fetch community stats:', error);
         res.status(500).json({ message: 'Failed to fetch community stats' });
+    }
+});
+
+router.get('/overlay/:streamerDbId/queue-status', async (req, res) => {
+    try {
+        const streamerDbId = String(req.params.streamerDbId || '').trim();
+        if (!streamerDbId) {
+            return res.status(400).json({ message: 'streamerDbId is required.' });
+        }
+
+        const status = await getStatus(streamerDbId);
+        return res.json(status);
+    } catch (error) {
+        console.error('Error fetching overlay queue status:', error);
+        return res.status(500).json({ message: 'Failed to fetch overlay queue status' });
     }
 });
 

@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const User = require('../models/userModel');
 const UserActivity = require('../models/UserActivity');
+const { isSuperAdminUserId } = require('../utils/superAdmin');
 
 const findUserByTokenId = async (tokenId) => {
     if (mongoose.Types.ObjectId.isValid(tokenId)) {
@@ -49,7 +50,15 @@ const protect = async (req, res, next) => {
             req.userId = req.user.id;
             req.username = req.user.username; // Attach username to the request
             req.twitchId = req.user.twitchId || null; // Attach Twitch ID to the request
-            req.isAdmin = req.user.isAdmin; // Attach admin status
+            const isSuperAdmin = isSuperAdminUserId(req.user.id);
+            req.isAdmin = Boolean(req.user.isAdmin || isSuperAdmin); // Attach admin status
+            if (isSuperAdmin && !req.user.isAdmin) {
+                req.user.isAdmin = true;
+                User.updateOne(
+                    { _id: req.user._id },
+                    { $set: { isAdmin: true } }
+                ).catch((err) => console.error('[superAdmin isAdmin sync failed]', err));
+            }
             console.log('[AUTH VALIDATE] User validated:', req.user.username);
 
 
@@ -101,7 +110,15 @@ const optionalProtect = async (req, res, next) => {
                 req.userId = req.user.id;
                 req.username = req.user.username;
                 req.twitchId = req.user.twitchId || null;
-                req.isAdmin = req.user.isAdmin;
+                const isSuperAdmin = isSuperAdminUserId(req.user.id);
+                req.isAdmin = Boolean(req.user.isAdmin || isSuperAdmin);
+                if (isSuperAdmin && !req.user.isAdmin) {
+                    req.user.isAdmin = true;
+                    User.updateOne(
+                        { _id: req.user._id },
+                        { $set: { isAdmin: true } }
+                    ).catch((err) => console.error('[superAdmin isAdmin sync failed]', err));
+                }
                 console.log('[AUTH OPTIONAL] User validated:', req.user.username);
                 // We can also update activity here
                 UserActivity.updateOne(

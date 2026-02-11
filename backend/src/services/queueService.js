@@ -157,8 +157,9 @@ const handleOverlayDisconnect = (userId) => {
     pauseQueue();
 };
 
-const getStatus = async () => {
-    const jobs = await QueuedPack.find()
+const getStatus = async (streamerDbId = null) => {
+    const query = streamerDbId ? { streamerDbId: String(streamerDbId) } : {};
+    const jobs = await QueuedPack.find(query)
         .populate('redeemer', 'username')
         .sort({ createdAt: 'asc' });
 

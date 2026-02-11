@@ -42,7 +42,7 @@ const StreamOverlayPage = () => {
 
         const fetchQueueStatus = async () => {
             try {
-                const response = await fetch(`${apiUrl}/admin/queues/status`);
+                const response = await fetch(`${apiUrl}/community/overlay/${encodeURIComponent(userId)}/queue-status`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch queue status');
                 }

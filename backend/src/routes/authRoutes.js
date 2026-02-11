@@ -10,6 +10,7 @@ const { protect } = require('../middleware/authMiddleware');
 const { checkAndAwardLoginEvents } = require('../services/eventService');
 const Setting = require('../models/settingsModel');
 const {trackUserActivity} = require("../services/periodCounterService");
+const { isSuperAdminUserId } = require('../utils/superAdmin');
 
 const router = express.Router();
 
@@ -235,7 +236,17 @@ const createUserWithFallback = async (userData, email) => {
     }
 };
 
+const ensureSuperAdminAccess = async (dbUser) => {
+    if (!dbUser) return;
+    if (isSuperAdminUserId(dbUser._id) && !dbUser.isAdmin) {
+        dbUser.isAdmin = true;
+        await dbUser.save();
+    }
+};
+
 const finalizeLogin = async (dbUser, isNewUser) => {
+    await ensureSuperAdminAccess(dbUser);
+
     const maintenanceSetting = await Setting.findOne({ key: 'maintenanceMode' });
     const isMaintenanceMode = maintenanceSetting ? maintenanceSetting.value : false;
 
@@ -773,6 +784,15 @@ module.exports = function(io) {
             if (!user) {
                 return res.status(401).json({ message: "User not found" });
             }
+
+            if (isSuperAdminUserId(user._id) && !user.isAdmin) {
+                user.isAdmin = true;
+                User.updateOne(
+                    { _id: user._id },
+                    { $set: { isAdmin: true } }
+                ).catch((error) => console.error('[validate] super admin sync failed:', error.message));
+            }
+
             return res.status(200).json(user);
         } catch (err) {
             return res.status(401).json({ message: "Invalid token" });

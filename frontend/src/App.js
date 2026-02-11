@@ -137,6 +137,12 @@ const App = () => {
     };
 
     useEffect(() => {
+        const isStreamOverlay = window.location.pathname.startsWith('/stream-overlay');
+        if (isStreamOverlay) {
+            setLoading(false);
+            return;
+        }
+
         const initializeApp = async () => {
             try {
                 const maintenanceResponse = await fetch(`${API_BASE_URL}/api/settings/maintenance`);
@@ -189,14 +195,7 @@ const App = () => {
         };
 
         handleTokenFromURL();
-
-        const isStreamOverlay = window.location.pathname.startsWith('/stream-overlay');
-
-        if (isStreamOverlay) {
-            setLoading(false);
-        } else {
-            initializeApp();
-        }
+        initializeApp();
     }, []);
 
 
