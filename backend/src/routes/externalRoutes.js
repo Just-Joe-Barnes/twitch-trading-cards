@@ -585,7 +585,7 @@ router.post('/webhook', validateApiKey, async (req, res) => {
             }
         } else if (eventType === 'redeem') {
              const rewardTitle = String(payload.rewardTitle || '').trim().toLowerCase();
-             if (rewardTitle === "Rush a pack!") {
+             if (rewardTitle === "rush a pack!") {
                 if (!streamerUser) {
                     await createLogEntry(null, 'ERROR_EVENTFLOW_ROUTE_REDEMPTION', 'Rush Pack redemption failed: streamer not found.');
                     return res.status(404).json({ message: 'Streamer not found for Rush Pack redemption.' });
