@@ -52,10 +52,14 @@ const AchievementsPage = lazy(() => import('./pages/AchievementsPage'));
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 const App = () => {
+    const overlayMatch = (window.location.pathname || '').match(/^\/stream-overlay\/([^/?#]+)/i);
+    const isOverlayRoute = Boolean(overlayMatch);
+    const overlayUserId = overlayMatch ? decodeURIComponent(overlayMatch[1]) : '';
+
     const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
 
     const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!isOverlayRoute);
     const [toasts, setToasts] = useState([]);
     const [inspectedCard, setInspectedCard] = useState(null);
     const [currentReward, setCurrentReward] = useState(null);
@@ -137,8 +141,7 @@ const App = () => {
     };
 
     useEffect(() => {
-        const isStreamOverlay = window.location.pathname.startsWith('/stream-overlay');
-        if (isStreamOverlay) {
+        if (isOverlayRoute) {
             setLoading(false);
             return;
         }
@@ -196,11 +199,15 @@ const App = () => {
 
         handleTokenFromURL();
         initializeApp();
-    }, []);
+    }, [isOverlayRoute]);
 
 
     if (loading) {
         return <LoadingSpinner/>;
+    }
+
+    if (isOverlayRoute) {
+        return <StreamOverlayPage userId={overlayUserId} />;
     }
 
     if (isMaintenanceMode && user && !user.isAdmin) {

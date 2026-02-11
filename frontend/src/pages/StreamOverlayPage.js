@@ -1,5 +1,4 @@
 import React, {useState, useEffect, useMemo, useRef} from 'react';
-import {useParams} from 'react-router-dom';
 import io from 'socket.io-client';
 import BaseCard from '../components/BaseCard';
 import {getRarityColor, rarities} from '../constants/rarities';
@@ -16,8 +15,14 @@ const packMessages = [
     "Good luck, {username}! Let's see what you got."
 ];
 
-const StreamOverlayPage = () => {
-    const {userId} = useParams();
+const getOverlayUserIdFromPath = () => {
+    const pathname = window.location.pathname || '';
+    const match = pathname.match(/^\/stream-overlay\/([^/?#]+)/i);
+    return match ? decodeURIComponent(match[1]) : '';
+};
+
+const StreamOverlayPage = ({ userId: userIdProp }) => {
+    const userId = userIdProp || getOverlayUserIdFromPath();
     const [openedCards, setOpenedCards] = useState([]);
     const [isOpening, setIsOpening] = useState(false);
     const [revealedCards, setRevealedCards] = useState([]);
