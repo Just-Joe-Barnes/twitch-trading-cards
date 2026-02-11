@@ -1,4 +1,7 @@
-body.transparent, html.transparent {
+html.transparent,
+body.transparent,
+#root.transparent-root {
+  background: transparent !important;
   background-color: transparent !important;
 }
 

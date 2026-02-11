@@ -41,9 +41,24 @@ const StreamOverlayPage = ({ userId: userIdProp }) => {
     const apiUrl = `${socketUrl}/api`;
 
     useEffect(() => {
-        if (!userId) return;
-
+        const rootElement = document.getElementById('root');
+        document.documentElement.classList.add('transparent');
         document.body.classList.add('transparent');
+        if (rootElement) {
+            rootElement.classList.add('transparent-root');
+        }
+
+        return () => {
+            document.documentElement.classList.remove('transparent');
+            document.body.classList.remove('transparent');
+            if (rootElement) {
+                rootElement.classList.remove('transparent-root');
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!userId) return;
 
         const fetchQueueStatus = async () => {
             try {
@@ -97,7 +112,6 @@ const StreamOverlayPage = ({ userId: userIdProp }) => {
 
         return () => {
             socket.disconnect();
-            document.body.classList.remove('transparent');
         };
     }, [userId, rarityOrderMap, apiUrl, socketUrl]);
 
