@@ -327,13 +327,19 @@ const generateCardFromPool = async (poolIds) => {
                         'rarities.rarity': selectedRarity,
                         'rarities.remainingCopies': { $gt: 0 },
                         'rarities.availableMintNumbers.0': { $exists: true },
-                        $or: [
-                            { availableFrom: null },
-                            { availableFrom: { $lte: now } }
-                        ],
-                        $or: [
-                            { availableTo: null },
-                            { availableTo: { $gte: now } }
+                        $and: [
+                            {
+                                $or: [
+                                    { availableFrom: null },
+                                    { availableFrom: { $lte: now } }
+                                ]
+                            },
+                            {
+                                $or: [
+                                    { availableTo: null },
+                                    { availableTo: { $gte: now } }
+                                ]
+                            }
                         ]
                     }
                 },
@@ -430,13 +436,19 @@ const generateCardPreview = async (options = {}) => {
                         'rarities.rarity': selectedRarity,
                         'rarities.remainingCopies': { $gt: 0 },
                         'rarities.availableMintNumbers.0': { $exists: true },
-                        $or: [
-                            { availableFrom: null },
-                            { availableFrom: { $lte: now } }
-                        ],
-                        $or: [
-                            { availableTo: null },
-                            { availableTo: { $gte: now } }
+                        $and: [
+                            {
+                                $or: [
+                                    { availableFrom: null },
+                                    { availableFrom: { $lte: now } }
+                                ]
+                            },
+                            {
+                                $or: [
+                                    { availableTo: null },
+                                    { availableTo: { $gte: now } }
+                                ]
+                            }
                         ]
                     }
                 },

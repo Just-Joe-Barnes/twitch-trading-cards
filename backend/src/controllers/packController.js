@@ -26,7 +26,7 @@ const getUsersWithPacks = async (req, res) => {
 const openPack = async (req, res) => {
     try {
         const userId = req.user.id;
-        const user = await User.findById(userId).select("packs");
+        const user = await User.findById(userId).select("packs xp");
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -141,17 +141,26 @@ const debugOpenPackForUser = async (req, res) => {
             const now = new Date();
             const poolCards = await Card.find({
                 _id: { $in: templatePack.cardPool },
-                $or: [
-                    { availableFrom: null },
-                    { availableFrom: { $lte: now } }
-                ],
-                $or: [
-                    { availableTo: null },
-                    { availableTo: { $gte: now } }
+                $and: [
+                    {
+                        $or: [
+                            { availableFrom: null },
+                            { availableFrom: { $lte: now } }
+                        ]
+                    },
+                    {
+                        $or: [
+                            { availableTo: null },
+                            { availableTo: { $gte: now } }
+                        ]
+                    }
                 ]
             }).select('_id').lean();
 
             const filteredIds = poolCards.map(card => card._id.toString());
+            if (filteredIds.length === 0) {
+                return res.status(400).json({ message: 'Selected pack template has no cards currently available.' });
+            }
 
             pack = await generatePackPreviewFromPool(filteredIds, 5, forceModifier);
         } else {
@@ -197,13 +206,19 @@ const openPackById = async (req, res) => {
             const now = new Date();
             const poolCards = await Card.find({
                 _id: { $in: pack.cardPool },
-                $or: [
-                    { availableFrom: null },
-                    { availableFrom: { $lte: now } }
-                ],
-                $or: [
-                    { availableTo: null },
-                    { availableTo: { $gte: now } }
+                $and: [
+                    {
+                        $or: [
+                            { availableFrom: null },
+                            { availableFrom: { $lte: now } }
+                        ]
+                    },
+                    {
+                        $or: [
+                            { availableTo: null },
+                            { availableTo: { $gte: now } }
+                        ]
+                    }
                 ]
             });
 

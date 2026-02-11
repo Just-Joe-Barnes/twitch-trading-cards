@@ -25,17 +25,26 @@ async function openPackForUserLogic(userId, templateId, forceModifier = false) {
         const now = new Date();
         const poolCards = await Card.find({
             _id: { $in: templatePack.cardPool },
-            $or: [
-                { availableFrom: null },
-                { availableFrom: { $lte: now } }
-            ],
-            $or: [
-                { availableTo: null },
-                { availableTo: { $gte: now } }
+            $and: [
+                {
+                    $or: [
+                        { availableFrom: null },
+                        { availableFrom: { $lte: now } }
+                    ]
+                },
+                {
+                    $or: [
+                        { availableTo: null },
+                        { availableTo: { $gte: now } }
+                    ]
+                }
             ]
         }).select('_id').lean();
 
         const filteredIds = poolCards.map(card => card._id.toString());
+        if (filteredIds.length === 0) {
+            throw new Error('Selected pack template has no cards currently available.');
+        }
         newCards = await generatePackPreviewFromPool(filteredIds, 5, forceModifier, true);
     } else {
         newCards = await generatePackPreview(5, forceModifier, true);
