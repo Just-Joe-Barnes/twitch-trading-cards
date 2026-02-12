@@ -20,8 +20,8 @@ const createTrade = async (req, res) => {
         recipient: Joi.alternatives().try(Joi.string().required(), Joi.string().hex().length(24).required()),
         offeredItems: Joi.array().items(Joi.string().hex().length(24)).required(),
         requestedItems: Joi.array().items(Joi.string().hex().length(24)).required(),
-        offeredPacks: Joi.number().min(0).required(),
-        requestedPacks: Joi.number().min(0).required(),
+        offeredPacks: Joi.number().min(0).max(50).required(),
+        requestedPacks: Joi.number().min(0).max(50).required(),
         counterOf: Joi.string().hex().length(24).optional()
     });
 

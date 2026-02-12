@@ -388,7 +388,7 @@ const TradingPage = ({userId}) => {
             <div className="page" style={{paddingBottom: 0}}>
                 <h1>Trading</h1>
                 <div className="section-card">
-                    Welcome to the trading system! You can trade up to 5 cards and/or up to 10 packs with other users.
+                    Welcome to the trading system! You can trade up to 5 cards and/or up to 50 packs with other users.
                     Double-click on any selected card to remove it from your trade. Make sure to review your offers
                     and requests carefully before confirming a trade. Existing trades can be managed through the "View
                     Trades" button below.
@@ -729,9 +729,9 @@ const TradingPage = ({userId}) => {
                                             <input
                                                 type="number"
                                                 value={offeredPacks}
-                                                onChange={(e) => setOfferedPacks(Math.min(10, Math.max(0, e.target.value)))}
+                                                onChange={(e) => setOfferedPacks(Math.min(50, Math.max(0, e.target.value)))}
                                                 min="0"
-                                                max="10"
+                                                max="50"
                                             />
                                         </div>
                                     </div>
@@ -758,9 +758,9 @@ const TradingPage = ({userId}) => {
                                             <input
                                                 type="number"
                                                 value={requestedPacks}
-                                                onChange={(e) => setRequestedPacks(Math.min(10, Math.max(0, e.target.value)))}
+                                                onChange={(e) => setRequestedPacks(Math.min(50, Math.max(0, e.target.value)))}
                                                 min="0"
-                                                max="10"
+                                                max="50"
                                             />
                                         </div>
                                     </div>
