@@ -24,7 +24,9 @@ export const fetchWithAuth = async (endpoint, options = {}) => {
         if (!response.ok) {
             if (response.status === 401) {
                 localStorage.removeItem("token");
-                window.location.href = "/login";
+                if (!window.location.pathname.includes('/stream-overlay')) {
+                    window.location.href = "/login";
+                }
             }
             let errorMessage = `HTTP error! Status: ${response.status}`;
             try {

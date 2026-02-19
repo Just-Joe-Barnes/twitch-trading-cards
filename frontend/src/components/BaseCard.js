@@ -108,6 +108,9 @@ const BaseCard = ({
                 setModifierData({name: modifier});
                 return;
             }
+            if (window.location.pathname.includes('/stream-overlay')) {
+                return;
+            }
             try {
                 const data = await fetchWithAuth(`/api/modifiers/${modifier}`, {method: 'GET'});
                 setModifierData(data);
