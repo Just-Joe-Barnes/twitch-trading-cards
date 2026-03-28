@@ -305,7 +305,7 @@ const CardGradingPage = () => {
                                 ) : (
                                     <>
                                         <div>Show Filters</div>
-                                        <i className="fa-regular fa-filter"/>
+                                        <i className="fa-solid fa-filter"/>
                                     </>
                                 )}
                             </button>
@@ -339,9 +339,9 @@ const CardGradingPage = () => {
                                     <div className="sort-order-toggle checkbox-wrapper">
                                         <label htmlFor="sortOrderToggle">
                                             {order === 'asc' ? (
-                                                <i className="fa-regular fa-arrow-down-a-z"></i>
+                                                <i className="fa-solid fa-arrow-down-a-z"></i>
                                             ) : (
-                                                <i className="fa-regular fa-arrow-up-a-z"></i>
+                                                <i className="fa-solid fa-arrow-up-a-z"></i>
                                             )}
                                         </label>
                                         <input

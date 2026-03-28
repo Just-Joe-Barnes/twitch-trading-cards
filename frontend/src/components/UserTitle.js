@@ -2,7 +2,7 @@ import React from 'react';
 import { normalizeTitleEffect } from '../utils/titleEffects';
 import '../styles/UserTitle.css';
 
-const UserTitle = ({ username, title, className = '', separator = ' ' }) => {
+const UserTitle = ({ username, title, className = '', orientation = 'horizontal'}) => {
     const titleName = title?.name ? String(title.name).trim() : '';
     const hasGradient = Boolean(title?.gradient && String(title.gradient).trim());
     const effectSlug = normalizeTitleEffect(title?.effect);
@@ -13,17 +13,16 @@ const UserTitle = ({ username, title, className = '', separator = ' ' }) => {
         : { color: title?.color || 'inherit' };
 
     return (
-        <span className={`user-title ${className}`.trim()}>
+        <span className={`user-title ${className.trim()} ${orientation}`}>
             <span className="user-title-name">{username}</span>
             {titleName && (
                 <span className="user-title-badge">
-                    <span className="user-title-sep">{separator}</span>
                     <span className="user-title-tooltip">
                         <span
                             className={`user-title-text${hasGradient ? ' gradient' : ''}${title?.isAnimated ? ' animated' : ''}${effectClass}`}
                             style={titleStyle}
                         >
-                            {titleName}
+                            &nbsp;{titleName}
                         </span>
                         <span className="user-title-hover">
                             <span

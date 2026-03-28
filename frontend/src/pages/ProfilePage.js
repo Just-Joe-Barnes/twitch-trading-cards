@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {useNavigate, useParams, Link} from 'react-router-dom';
 import BaseCard from '../components/BaseCard';
 import {
@@ -9,26 +9,20 @@ import {
     updateFavoriteCard,
     searchCardsByName,
     fetchUserMarketListings,
-    fetchAllPacks,
-    fetchPreferredPack,
-    updatePreferredPack,
-    updateSelectedTitle,
+    updateFeaturedCards,
 } from '../utils/api';
-import { normalizeTitleEffect } from '../utils/titleEffects';
 import LoadingSpinner from '../components/LoadingSpinner';
 import UserTitle from '../components/UserTitle';
 import '../styles/ProfilePage.css';
 import '../styles/MarketPage.css';
 
 const ProfilePage = () => {
-    const [featuredCards, setFeaturedCards] = useState([]);
+    const [featuredCards, setFeaturedCards] = useState(Array(4).fill(null)); // Initialize with 4 null slots
     const [favoriteCard, setFavoriteCard] = useState(null);
     const [cardQuery, setCardQuery] = useState('');
     const [cardResults, setCardResults] = useState([]);
     const [selectedRarity, setSelectedRarity] = useState('');
     const [availableRarities, setAvailableRarities] = useState([]);
-    const [preferredPackId, setPreferredPackId] = useState('');
-    const [packOptions, setPackOptions] = useState([]);
     const [editingFavorite, setEditingFavorite] = useState(false);
     const [isOwnProfile, setIsOwnProfile] = useState(false);
     const [collectionCount, setCollectionCount] = useState(0);
@@ -39,10 +33,8 @@ const ProfilePage = () => {
     const [profileId, setProfileId] = useState(null);
     const [userListings, setUserListings] = useState([]);
     const [selectedTitle, setSelectedTitle] = useState(null);
-    const [unlockedTitles, setUnlockedTitles] = useState([]);
     const navigate = useNavigate();
     const {username: routeUsername} = useParams();
-    const [isTitleModalOpen, setIsTitleModalOpen] = useState(false);
 
     const [xp, setXp] = useState(0);
     const [level, setLevel] = useState(1);
@@ -51,9 +43,6 @@ const ProfilePage = () => {
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
-                const packs = await fetchAllPacks();
-                setPackOptions(packs);
-
                 let me = null;
                 try {
                     me = await fetchUserProfile();
@@ -74,20 +63,16 @@ const ProfilePage = () => {
                 setOpenedPacks(profile.openedPacks || 0);
                 setXp(profile.xp || 0);
                 setLevel(profile.level || 1);
-                setPreferredPackId(profile.preferredPack?._id || '');
                 setSelectedTitle(profile.selectedTitle || null);
 
                 const ownProfile = me && profile && me.username === profile.username;
                 setIsOwnProfile(ownProfile);
-                setUnlockedTitles(ownProfile ? (profile.unlockedTitles || []) : []);
 
                 let tempFeatured = profile.featuredCards || [];
                 if (ownProfile) {
                     try {
                         const fav = await fetchFavoriteCard();
                         setFavoriteCard(fav);
-                        const pref = await fetchPreferredPack();
-                        setPreferredPackId(pref?._id || '');
                     } catch (e) {
                         console.error('Error fetching favorite card:', e);
                     }
@@ -105,7 +90,12 @@ const ProfilePage = () => {
                         );
                     }
                 }
-                setFeaturedCards(tempFeatured);
+                // Ensure _id is always a string and fill up to 4 slots
+                const initialFeatured = tempFeatured.map(card => ({
+                    ...card,
+                    _id: card._id.toString() // Explicitly convert to string
+                }));
+                setFeaturedCards(initialFeatured.concat(Array(4 - initialFeatured.length).fill(null)));
                 setAchievements(profile.featuredAchievements || []);
             } catch (error) {
                 console.error('Error fetching user profile:', error);
@@ -167,9 +157,6 @@ const ProfilePage = () => {
         setAvailableRarities(raritiesForCard);
 
         // Set the selected rarity for the dropdown and the card preview
-        setSelectedRarity(firstAvailableRarity);
-
-        // Update the card preview object
         setFavoriteCard({
             name: card.name,
             imageUrl: card.imageUrl,
@@ -205,54 +192,71 @@ const ProfilePage = () => {
         }
     };
 
-    const handleTitleChange = async (titleId) => {
-        const selectedId = titleId || '';
+    const handleRemoveFeaturedCard = useCallback(async (cardIdToRemove) => {
+        const updatedFeaturedCards = featuredCards.filter(card => card && card._id !== cardIdToRemove);
+        // Fill with nulls to maintain 4 slots
+        const newFeatured = updatedFeaturedCards.concat(Array(4 - updatedFeaturedCards.length).fill(null));
+        setFeaturedCards(newFeatured);
         try {
-            const res = await updateSelectedTitle(selectedId);
-            setSelectedTitle(res.selectedTitle || null);
-        } catch (err) {
-            console.error('Error updating title:', err);
-            if (window.showToast) {
-                window.showToast('Error updating title.', 'error');
-            }
+            await updateFeaturedCards(newFeatured.filter(Boolean).map(card => card._id));
+        } catch (error) {
+            console.error('Error removing featured card:', error);
+            // Optionally revert state or show error
         }
+    }, [featuredCards]);
+
+    // Native HTML5 Drag and Drop Handlers
+    const handleDragStart = (e, card, index) => {
+        if (!card || !isOwnProfile) {
+            e.preventDefault();
+            return;
+        }
+        e.dataTransfer.setData('text/plain', JSON.stringify({ card, index }));
+        e.dataTransfer.effectAllowed = 'move';
+        // Optional: Set a custom drag image (transparent image to hide default ghost image)
+        const img = new Image();
+        img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+        e.dataTransfer.setDragImage(img, 0, 0);
     };
 
-    useEffect(() => {
-        const handleKeyDown = (event) => {
-            if (event.key === 'Escape') {
-                setIsTitleModalOpen(false);
-            }
-        };
-        if (isTitleModalOpen) {
-            document.addEventListener('keydown', handleKeyDown);
-        }
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [isTitleModalOpen]);
-
-    const renderTitleLabel = (title) => {
-        if (!title) {
-            return <span className="title-select-placeholder">No title</span>;
-        }
-        const titleName = title?.name || title?.slug;
-        if (!titleName) {
-            return <span className="title-select-placeholder">Untitled</span>;
-        }
-        const hasGradient = Boolean(title?.gradient && String(title.gradient).trim());
-        const effectSlug = normalizeTitleEffect(title?.effect);
-        const effectClass = effectSlug ? ` title-effect title-effect-${effectSlug}` : '';
-        const titleStyle = hasGradient
-            ? { '--title-gradient': title.gradient }
-            : { color: title?.color || 'inherit' };
-        const titleClassName = `title-select-text user-title-text${hasGradient ? ' gradient' : ''}${title?.isAnimated ? ' animated' : ''}${effectClass}`;
-        return (
-            <span className={titleClassName} style={titleStyle}>
-                {titleName}
-            </span>
-        );
+    const handleDragOver = (e) => {
+        e.preventDefault(); // Necessary to allow dropping
+        e.dataTransfer.dropEffect = 'move';
     };
+
+    const handleDrop = useCallback(async (e, targetIndex) => {
+        e.preventDefault();
+        if (!isOwnProfile) return;
+
+        const draggedData = JSON.parse(e.dataTransfer.getData('text/plain'));
+        const { card: draggedCard, index: sourceIndex } = draggedData;
+
+        const newFeaturedCards = [...featuredCards];
+        const targetCard = newFeaturedCards[targetIndex];
+
+        if (sourceIndex === targetIndex) {
+            // Dropped on the same slot, no change
+            return;
+        }
+
+        if (targetCard) {
+            // Swap cards
+            newFeaturedCards[targetIndex] = draggedCard;
+            newFeaturedCards[sourceIndex] = targetCard;
+        } else {
+            // Move to empty slot
+            newFeaturedCards[targetIndex] = draggedCard;
+            newFeaturedCards[sourceIndex] = null;
+        }
+
+        setFeaturedCards(newFeaturedCards);
+        try {
+            await updateFeaturedCards(newFeaturedCards.filter(Boolean).map(card => card._id));
+        } catch (error) {
+            console.error('Error updating featured cards order:', error);
+            // Optionally revert state or show error
+        }
+    }, [featuredCards, isOwnProfile]);
 
     if (loading) {
         return <LoadingSpinner/>;
@@ -287,45 +291,6 @@ const ProfilePage = () => {
                         <div className="xp-bar-fill" style={{width: `${(xp % 100)}%`}}></div>
                     </div>
                 </div>
-                {isOwnProfile && (
-                    <div className="stat preferred-pack-container">
-                        <div>Preferred Pack</div>
-                        <select
-                            value={preferredPackId}
-                            onChange={async (e) => {
-                                const id = e.target.value;
-                                setPreferredPackId(id);
-                                try {
-                                    await updatePreferredPack(id);
-                                } catch (err) {
-                                    console.error('Error updating preferred pack:', err);
-                                }
-                            }}
-                        >
-                            <option value="">Select a pack</option>
-                            {packOptions.map((p) => (
-                                <option key={p._id} value={p._id}>
-                                    {p.name || p.type || 'Unnamed'}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                )}
-                {isOwnProfile && (
-                    <div className="stat preferred-pack-container">
-                        <div>Title</div>
-                        <button
-                            type="button"
-                            className="title-select-toggle"
-                            onClick={() => setIsTitleModalOpen(true)}
-                        >
-                            <span className="title-select-value">
-                                {renderTitleLabel(selectedTitle)}
-                            </span>
-                            <i className="fa-solid fa-list"></i>
-                        </button>
-                    </div>
-                )}
 
                 <div className="button-group profile-actions">
                     {!isOwnProfile && (
@@ -336,46 +301,94 @@ const ProfilePage = () => {
                     <button className="secondary-button" onClick={handleViewCollection} style={{margin: '0'}}>
                         View Full Collection
                     </button>
+                    {isOwnProfile && (
+                        <Link to="/account" className="button secondary-button" style={{margin: '0', display: 'flex', justifyContent: 'center'}}>
+                            Account Options
+                        </Link>
+                    )}
                 </div>
             </div>
             <div className="section-card">
                 <h2>Featured Cards</h2>
-                {featuredCards.length > 0 ? (
-                    <div className="cards-grid">
-                        {featuredCards.map((card) => (
-                            <BaseCard
-                                key={card._id}
-                                name={card.name}
-                                image={card.imageUrl}
-                                rarity={card.rarity}
-                                description={card.flavorText}
-                                mintNumber={card.mintNumber}
-                                maxMint={card?.maxMint || '???'}
-                                modifier={card.modifier}
-                                grade={card.grade}
-                                slabbed={card.slabbed}
-                            />
+                {isOwnProfile ? (
+                    <div className="cards-grid featured-cards-grid"> {/* Added a specific class for styling */}
+                        {featuredCards.map((card, index) => (
+                            <div
+                                key={card ? card._id : `empty-${index}`} // Use card ID or unique empty key
+                                className={`featured-card-slot ${card ? '' : 'empty-slot'}`}
+                                draggable={!!card} // Only draggable if there's a card
+                                onDragStart={(e) => handleDragStart(e, card, index)}
+                                onDragOver={handleDragOver}
+                                onDrop={(e) => handleDrop(e, index)}
+                                onDragEnd={() => { /* Optional: handle drag end cleanup */ }}
+                            >
+                                {card ? (
+                                    <>
+                                        <BaseCard
+                                            name={card.name}
+                                            image={card.imageUrl}
+                                            rarity={card.rarity}
+                                            description={card.flavorText}
+                                            mintNumber={card.mintNumber}
+                                            maxMint={card?.maxMint || '???'}
+                                            modifier={card.modifier}
+                                            grade={card.grade}
+                                            slabbed={card.slabbed}
+                                        />
+                                        <button
+                                            className="remove-featured-card-button"
+                                            onClick={() => handleRemoveFeaturedCard(card._id)}
+                                        >
+                                            &times;
+                                        </button>
+                                    </>
+                                ) : (
+                                    <div className="empty-card-placeholder" data-tooltip="Add featured cards on your collection page">
+                                        <i className="fa-solid fa-plus"></i>
+                                    </div>
+                                )}
+                            </div>
                         ))}
                     </div>
                 ) : (
-                    <p>Set your featured cards on your collection page</p>
+                    featuredCards.filter(Boolean).length > 0 ? ( // Filter out nulls for display on other profiles
+                        <div className="cards-grid featured-cards-grid"> {/* Specific class for centering */}
+                            {featuredCards.filter(Boolean).map((card) => (
+                                <BaseCard
+                                    key={card._id}
+                                    name={card.name}
+                                    image={card.imageUrl}
+                                    rarity={card.rarity}
+                                    description={card.flavorText}
+                                    mintNumber={card.mintNumber}
+                                    maxMint={card?.maxMint || '???'}
+                                    modifier={card.modifier}
+                                    grade={card.grade}
+                                    slabbed={card.slabbed}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <p>No featured cards set</p>
+                    )
                 )}
             </div>
 
             <div className="row-container three-one">
                 <div className="column-container">
-                    <div className="section-card">
-                        <h2>Featured Achievements</h2>
-                        <div className="achievements-container">
-                            {achievements.length === 0 && <p>No achievements yet.</p>}
-                            {achievements.map((ach, idx) => (
-                                <div key={idx} className="achievement-badge" title={ach.description}
-                                     data-tooltip={ach.description}>
-                                    <span>{ach.name}</span>
-                                </div>
-                            ))}
+                    {achievements.length > 0 && (
+                        <div className="section-card">
+                            <h2>Featured Achievements</h2>
+                            <div className="achievements-container">
+                                {achievements.map((ach, idx) => (
+                                    <div key={idx} className="achievement-badge" title={ach.description}
+                                         data-tooltip={ach.description}>
+                                        <span>{ach.name}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {userListings.length > 0 && (
                         <div className="section-card">
@@ -504,53 +517,6 @@ const ProfilePage = () => {
 
                 </div>
             </div>
-
-            {isTitleModalOpen && isOwnProfile && (
-                <div className="title-modal-overlay" onClick={() => setIsTitleModalOpen(false)}>
-                    <div className="title-modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="title-modal-header">
-                            <div>
-                                <h2>Choose your title</h2>
-                                <p>These are the titles you have unlocked.</p>
-                            </div>
-                            <button className="secondary-button" onClick={() => setIsTitleModalOpen(false)}>
-                                <i className="fa-solid fa-xmark"></i> Close
-                            </button>
-                        </div>
-
-                        <div className="title-modal-grid">
-                            <button
-                                type="button"
-                                className={`title-modal-option${selectedTitle ? '' : ' selected'}`}
-                                onClick={() => {
-                                    handleTitleChange('');
-                                    setIsTitleModalOpen(false);
-                                }}
-                            >
-                                <div className="title-modal-label">{renderTitleLabel(null)}</div>
-                                <div className="title-modal-desc">Show no title.</div>
-                            </button>
-                            {unlockedTitles.map((t) => (
-                                <button
-                                    key={t._id}
-                                    type="button"
-                                    className={`title-modal-option${selectedTitle?._id === t._id ? ' selected' : ''}`}
-                                    onClick={() => {
-                                        handleTitleChange(t._id);
-                                        setIsTitleModalOpen(false);
-                                    }}
-                                >
-                                    <div className="title-modal-label">{renderTitleLabel(t)}</div>
-                                    {t.description && <div className="title-modal-desc">{t.description}</div>}
-                                </button>
-                            ))}
-                            {unlockedTitles.length === 0 && (
-                                <div className="title-modal-empty">No titles unlocked yet.</div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
             </div>
         </>
     );

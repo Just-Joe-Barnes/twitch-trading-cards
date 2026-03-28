@@ -25,7 +25,7 @@ const UserDropdown = ({ profilePic, username, selectedTitle, onLogout, isAdmin, 
         <div className="user-dropdown" ref={dropdownRef}>
             <button className="user-dropdown-toggle" onClick={onToggle}>
                 <span className="navbar-username">
-                    <UserTitle username={username} title={selectedTitle} />
+                    <UserTitle username={username} title={selectedTitle} orientation={"vertical"} />
                 </span>
                 <img src={profilePic} alt="Profile" className="profile-pic" />
             </button>

@@ -398,12 +398,12 @@ const MarketListingDetails = () => {
                                             <div className="button-group">
                                                 {isOwner && (
                                                     <>
-                                                        <button className="primary-button" onClick={() => handleAcceptOffer(offer._id)}><i className="fa-regular fa-thumbs-up fa-fw" /> Accept</button>
-                                                        <button className="reject-button" onClick={() => handleRejectOffer(offer._id)}><i className="fa-regular fa-thumbs-down fa-fw" /> Reject</button>
+                                                        <button className="primary-button" onClick={() => handleAcceptOffer(offer._id)}><i className="fa-solid fa-thumbs-up fa-fw" /> Accept</button>
+                                                        <button className="reject-button" onClick={() => handleRejectOffer(offer._id)}><i className="fa-solid fa-thumbs-down fa-fw" /> Reject</button>
                                                     </>
                                                 )}
                                                 {!isOwner && isMyOffer && (
-                                                    <button className="reject-button" onClick={() => handleCancelOffer(offer._id)}><i className="fa-regular fa-thumbs-down fa-fw" /> Retract Offer</button>
+                                                    <button className="reject-button" onClick={() => handleCancelOffer(offer._id)}><i className="fa-solid fa-thumbs-down fa-fw" /> Retract Offer</button>
                                                 )}
                                             </div>
                                         </div>

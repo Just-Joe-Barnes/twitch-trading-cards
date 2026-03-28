@@ -527,7 +527,7 @@ const CollectionPage = ({
                         ) : (
                             <>
                                 <div>Show Filters</div>
-                                <i className="fa-regular fa-filter" />
+                                <i className="fa-solid fa-filter" />
                             </>
                         )}
                     </button>
@@ -540,7 +540,7 @@ const CollectionPage = ({
                         disabled={!binderTarget}
                     >
                         <div>View Binder</div>
-                        <i className="fa-regular fa-book-open" />
+                        <i className="fa-solid fa-book-open" />
                     </button>
                 </div>
 
@@ -573,9 +573,9 @@ const CollectionPage = ({
                                         <div className="sort-order-toggle checkbox-wrapper">
                                             <label htmlFor="sortOrderToggle">
                                                 {order === 'asc' ? (
-                                                    <i className="fa-regular fa-arrow-down-a-z"></i>
+                                                    <i className="fa-solid fa-arrow-down-a-z"></i>
                                                 ) : (
-                                                    <i className="fa-regular fa-arrow-up-a-z"></i>
+                                                    <i className="fa-solid fa-arrow-up-a-z"></i>
                                                 )}
                                             </label>
                                             <input
@@ -604,7 +604,7 @@ const CollectionPage = ({
                                         </div>
                                         <div className="checkbox-wrapper">
                                             <label htmlFor="limitedCheckbox" data-tooltip="Show only Limited and Event Cards">
-                                                <i className={`fa-${showLimitedOnly ? 'solid' : 'regular'} fa-crown`}/>
+                                                <i className={`fa-${showLimitedOnly ? 'solid' : 'regular'} fa-alarm-clock`}/>
                                             </label>
                                             <input type="checkbox" id="limitedCheckbox" name="limitedCheckboxN"
                                                    checked={showLimitedOnly}

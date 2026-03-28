@@ -756,6 +756,10 @@ h1::after {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+
+  .user-title-badge {
+    font-size: 1rem;
+  }
 }
 
 .winner-modal-content img {

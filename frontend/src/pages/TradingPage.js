@@ -461,7 +461,7 @@ const TradingPage = ({userId}) => {
                                                 ) : (
                                                     <>
                                                         <div>Show Filters</div>
-                                                        <i className="fa-regular fa-filter"/>
+                                                        <i className="fa-solid fa-filter"/>
                                                     </>
                                                 )}
                                             </button>
@@ -492,9 +492,9 @@ const TradingPage = ({userId}) => {
                                                                 <div className="sort-order-toggle checkbox-wrapper">
                                                                     <label htmlFor="leftSortOrderToggle">
                                                                         {leftSortDir === 'asc' ? (
-                                                                            <i className="fa-regular fa-arrow-down-a-z"></i>
+                                                                            <i className="fa-solid fa-arrow-down-a-z"></i>
                                                                         ) : (
-                                                                            <i className="fa-regular fa-arrow-up-a-z"></i>
+                                                                            <i className="fa-solid fa-arrow-up-a-z"></i>
                                                                         )}
                                                                     </label>
                                                                     <input
@@ -593,7 +593,7 @@ const TradingPage = ({userId}) => {
                                                     ) : (
                                                         <>
                                                             <div>Show Filters</div>
-                                                            <i className="fa-regular fa-filter"/>
+                                                            <i className="fa-solid fa-filter"/>
                                                         </>
                                                     )}
                                                 </button>
@@ -624,9 +624,9 @@ const TradingPage = ({userId}) => {
                                                                     <div className="sort-order-toggle checkbox-wrapper">
                                                                         <label htmlFor="rightSortOrderToggle">
                                                                             {rightSortDir === 'asc' ? (
-                                                                                <i className="fa-regular fa-arrow-down-a-z"></i>
+                                                                                <i className="fa-solid fa-arrow-down-a-z"></i>
                                                                             ) : (
-                                                                                <i className="fa-regular fa-arrow-up-a-z"></i>
+                                                                                <i className="fa-solid fa-arrow-up-a-z"></i>
                                                                             )}
                                                                         </label>
                                                                         <input

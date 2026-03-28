@@ -218,7 +218,7 @@ const CreateListingPage = () => {
                                                     <div className="checkbox-group button-row">
                                                         <div className="sort-order-toggle checkbox-wrapper">
                                                             <label htmlFor="sortOrderToggle">
-                                                                <i className={`fa-regular ${sortOrder === 'asc' ? 'fa-arrow-down-a-z' : 'fa-arrow-up-a-z'}`}></i>
+                                                                <i className={`fa-solid ${sortOrder === 'asc' ? 'fa-arrow-down-a-z' : 'fa-arrow-up-a-z'}`}></i>
                                                             </label>
                                                             <input type="checkbox" id="sortOrderToggle" checked={sortOrder === 'asc'} onChange={toggleSortOrder}/>
                                                         </div>
@@ -233,7 +233,7 @@ const CreateListingPage = () => {
                                                         <div className={`checkbox-wrapper ${!hasLimitedOrEventCards ? 'disabled' : ''}`}>
                                                             <label htmlFor="limitedCheckbox" data-tooltip="Show only Limited and Event Cards">
                                                                 {/* --- MODIFICATION END --- */}
-                                                                <i className={`fa-${showLimitedOnly ? 'solid' : 'regular'} fa-crown`}/>
+                                                                <i className={`fa-${showLimitedOnly ? 'solid' : 'regular'} fa-alarm-clock`}/>
                                                             </label>
                                                             <input type="checkbox" id="limitedCheckbox" checked={showLimitedOnly} onChange={(e) => setShowLimitedOnly(e.target.checked)} disabled={!hasLimitedOrEventCards}/>
                                                         </div>

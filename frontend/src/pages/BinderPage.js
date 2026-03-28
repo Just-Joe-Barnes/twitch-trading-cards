@@ -241,12 +241,12 @@ const CardPickerModal = ({
                                 <div className="checkbox-group button-row">
                                     <div className="checkbox-wrapper" style={{padding:'10px', cursor:'pointer'}}>
                                         <label onClick={() => setOrder(prev => prev === 'asc' ? 'desc' : 'asc')} style={{cursor:'pointer'}}>
-                                            <i className={`fa-regular fa-arrow-${order === 'asc' ? 'down' : 'up'}-a-z`}></i> {order === 'asc' ? 'Asc' : 'Desc'}
+                                            <i className={`fa-solid fa-arrow-${order === 'asc' ? 'down' : 'up'}-a-z`}></i> {order === 'asc' ? 'Asc' : 'Desc'}
                                         </label>
                                     </div>
                                     <div className="checkbox-wrapper" style={{padding:'10px', cursor:'pointer'}}>
                                         <label onClick={() => setShowModifiedOnly(prev => !prev)} style={{cursor:'pointer'}} title="Show only modified cards">
-                                            <i className={showModifiedOnly ? 'fa-solid fa-square-check' : 'fa-regular fa-square'}></i> Modified
+                                            <i className={showModifiedOnly ? 'fa-solid fa-square-check' : 'fa-solid fa-square'}></i> Modified
                                         </label>
                                     </div>
                                 </div>

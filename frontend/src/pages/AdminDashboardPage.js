@@ -615,7 +615,7 @@ const AdminDashboardPage = ({user}) => {
                         <img src={raffleWinner.twitchProfilePic} alt={raffleWinner.username}/>
                         <p>Ripping a pack for...</p>
                         <h1>
-                            <UserTitle username={raffleWinner.username} title={raffleWinner.selectedTitle} /><br/>
+                            <UserTitle username={raffleWinner.username} title={raffleWinner.selectedTitle} orientation={"vertical"} /><br/>
                             <span style={{margin: 0, padding: 0, fontSize: '0.8rem'}}>Packs Remaining ({raffleWinner.packs - 1})</span>
                         </h1>
 
@@ -647,7 +647,7 @@ const AdminDashboardPage = ({user}) => {
                             Reset Session
                         </button>
                         <button onClick={handleAddPacksAllActiveUsers} className="secondary-button sm">
-                            <i className="fa-solid fa-cards" style={{marginRight: '8px'}}></i>
+                            <i className="fa-solid fa-box" style={{marginRight: '8px'}}></i>
                             Add 2 packs
                         </button>
 
@@ -692,7 +692,7 @@ const AdminDashboardPage = ({user}) => {
                                              className={`raffle-user ${highlightedUserId === u._id ? 'highlighted' : ''} ${sessionCounts[u._id] ? 'has-opened-pack' : ''}`}>
                                             <img src={u.twitchProfilePic} alt={u.username}/>
                                             <span className="raffle-username">
-                                                <UserTitle username={u.username} title={u.selectedTitle} />
+                                                <UserTitle username={u.username} title={''} />
                                             </span>
                                         </div>
                                     ))}
@@ -752,7 +752,7 @@ const AdminDashboardPage = ({user}) => {
                                                 }}
                                             >
                                                 <td>
-                                                    <UserTitle username={u.username} title={u.selectedTitle} />
+                                                    <UserTitle username={u.username} title={''} />
                                                 </td>
                                                 <td>{u.packs}</td>
                                                 <td>{u.preferredPack ? (u.preferredPack.name || u.preferredPack.type || 'Unnamed') : '-'}</td>
@@ -806,7 +806,7 @@ const AdminDashboardPage = ({user}) => {
                                             disabled={loading || isOpeningAnimation || selectedUser.packs <= 0}
                                         >
                                             {loading ? 'Opening...' : (
-                                                <span>Open Pack <i className="fa-solid fa-cards-blank"/></span>)}
+                                                <span>Open Pack <i className="fa-solid fa-box"/></span>)}
                                         </button>
                                         {showDebugControls && (
                                             <div className="debug-card">

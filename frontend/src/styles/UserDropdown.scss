@@ -27,6 +27,14 @@
   .navbar-username {
     color: $color-text;
     font-weight: 500;
+    text-align: right;
+
+    .user-title {
+      align-items: flex-end;
+      .user-title-badge {
+        font-size: 0.7rem;
+      }
+    }
   }
 
   .user-menu {

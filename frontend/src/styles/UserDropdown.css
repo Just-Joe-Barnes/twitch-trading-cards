@@ -23,6 +23,13 @@
 .user-dropdown .navbar-username {
   color: #f5f5f5;
   font-weight: 500;
+  text-align: right;
+}
+.user-dropdown .navbar-username .user-title {
+  align-items: flex-end;
+}
+.user-dropdown .navbar-username .user-title .user-title-badge {
+  font-size: 0.7rem;
 }
 .user-dropdown .user-menu {
   position: absolute;

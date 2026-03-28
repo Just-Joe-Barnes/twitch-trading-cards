@@ -108,7 +108,7 @@ const CardInspector = ({card, onClose}) => {
                                     </>
                                 ) : (
                                     <>
-                                        <i className="fa-regular fa-star"/> Feature
+                                        <i className="fa-solid fa-star"/> Feature
                                     </>
                                 )}
                             </button>

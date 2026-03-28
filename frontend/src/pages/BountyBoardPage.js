@@ -137,9 +137,9 @@ const BountyBoardPage = ({ userId, username }) => {
                 />
                 <div className="actions">
                     <p className="listing-owner" style={{textAlign: 'center'}}>
-                        Wanted by <br />{' '}
+                        Wanted by <br />
                         <Link to={`/profile/${bounty.user.username}`}>
-                            <UserTitle username={bounty.user.username} title={bounty.user.selectedTitle} />
+                            <UserTitle username={bounty.user.username} title={bounty.user.selectedTitle} orientation={'vertical'}/>
                         </Link>
                     </p>
                     {bounty.user.username === username ? (

@@ -74,10 +74,10 @@ const LoginPage = () => {
 
                 <div className="login-buttons">
                     <button className="login-button login-button-twitch" onClick={handleLogin('twitch')}>
-                        Login with Twitch
+                        <i className="fa-brands fa-twitch"></i>
                     </button>
                     <button className="login-button login-button-youtube" onClick={handleLogin('youtube')}>
-                        Login with YouTube
+                        <i className="fa-brands fa-youtube"></i>
                     </button>
                     <button
                         className="login-button login-button-tiktok"
@@ -85,7 +85,7 @@ const LoginPage = () => {
                         disabled={!providerAvailability.tiktok}
                         aria-disabled={!providerAvailability.tiktok}
                     >
-                        Login with TikTok
+                        <i className="fa-brands fa-tiktok"></i>
                     </button>
                 </div>
             </div>

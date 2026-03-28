@@ -237,17 +237,17 @@ const PendingTrades = () => {
                     <button className="primary-button" onClick={() => handleAction(trade._id, 'accept')}
                             {...(hideLabels ? {'data-tooltip': 'Accept trade'} : {})}
                             aria-label={`Accept trade with ${senderName(trade)}`}>
-                        <i className="fa-regular fa-thumbs-up fa-fw"/> {!hideLabels && 'Accept trade'}
+                        <i className="fa-solid fa-thumbs-up fa-fw"/> {!hideLabels && 'Accept trade'}
                     </button>
                     <button className="secondary-button" onClick={() => handleCounter(trade)}
                             {...(hideLabels ? {'data-tooltip': 'Counter offer'} : {})}
                             aria-label={`Counter trade with ${senderName(trade)}`}>
-                        <i className="fa-regular fa-recycle fa-fw"/> {!hideLabels && 'Counter offer'}
+                        <i className="fa-solid fa-recycle fa-fw"/> {!hideLabels && 'Counter offer'}
                     </button>
                     <button className="reject-button" onClick={() => handleAction(trade._id, 'reject')}
                             {...(hideLabels ? {'data-tooltip': 'Reject trade'} : {})}
                             aria-label={`Reject trade with ${senderName(trade)}`}>
-                        <i className="fa-regular fa-thumbs-down fa-fw"/> {!hideLabels && 'Reject trade'}
+                        <i className="fa-solid fa-thumbs-down fa-fw"/> {!hideLabels && 'Reject trade'}
                     </button>
                 </div>
             ) : (
@@ -416,17 +416,17 @@ const PendingTrades = () => {
                         <button role="tab" aria-selected={activeTab === 'incoming'}
                                 className={activeTab === 'incoming' ? 'active' : ''}
                                 onClick={() => setActiveTab('incoming')}>
-                            <i className="fa-regular fa-arrow-down"/> Incoming
+                            <i className="fa-solid fa-arrow-down"/> Incoming
                         </button>
                         <button role="tab" aria-selected={activeTab === 'outgoing'}
                                 className={activeTab === 'outgoing' ? 'active' : ''}
                                 onClick={() => setActiveTab('outgoing')}>
-                            <i className="fa-regular fa-arrow-up"/> Outgoing
+                            <i className="fa-solid fa-arrow-up"/> Outgoing
                         </button>
                         <button role="tab" aria-selected={activeTab === 'completed'}
                                 className={activeTab === 'completed' ? 'active' : ''}
                                 onClick={() => setActiveTab('completed')}>
-                            <i className="fa-regular fa-check"/> Completed
+                            <i className="fa-solid fa-check"/> Completed
                         </button>
                     </div>
                 </div>
